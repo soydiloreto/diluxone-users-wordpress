@@ -70,7 +70,7 @@ defined( 'ABSPATH' ) || exit;
 
 		<?php if ( users_dlx_plus_login_has_link() ) : ?>
 			<form class="users-dlx-plus-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-				<input type="hidden" name="action" value="users_dlx_plus_login">
+				<input type="hidden" name="action" value="users_dlx_plus_acceso">
 				<?php wp_nonce_field( 'users_dlx_plus_login', 'users_dlx_plus_nonce' ); ?>
 
 				<label for="users-dlx-plus-email"><?php esc_html_e( 'Email address', 'users-dlx-plus' ); ?></label>
