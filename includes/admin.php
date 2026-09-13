@@ -368,15 +368,27 @@ function diluxone_users_admin_styles( string $hook ): void {
 	// previewing with another would be previewing something else.
 	diluxone_users_sso_enqueue_button_styles();
 
-	// And so does the account-area preview. It is loaded here whatever the
-	// setting says — the preview has to be able to show both answers without a
-	// reload, and the "off" one is drawn by stripping it back in the browser.
-	if ( false !== strpos( $hook, 'diluxone-users-account' ) ) {
+	// And so do the previews — of the account area, of the sign-in form, of
+	// the form somebody signing up meets. They render the real templates, and
+	// a real template without its stylesheet is not what the site serves.
+	//
+	// It is loaded whatever the setting says: the account preview has to be
+	// able to show both answers without a reload, and the "off" one is drawn
+	// by stripping it back in the browser.
+	$previews = array( 'diluxone-users-account', 'diluxone-users-login', 'diluxone-users-register' );
+
+	foreach ( $previews as $diluxone_users_screen ) {
+		if ( false === strpos( $hook, $diluxone_users_screen ) ) {
+			continue;
+		}
+
 		if ( ! wp_style_is( 'diluxone-users', 'registered' ) ) {
 			wp_register_style( 'diluxone-users', DILUXONE_USERS_URL . 'assets/diluxone-users.css', array(), diluxone_users_asset_version( 'assets/diluxone-users.css' ) );
 		}
 
 		wp_enqueue_style( 'diluxone-users' );
+
+		break;
 	}
 }
 add_action( 'admin_enqueue_scripts', 'diluxone_users_admin_styles' );

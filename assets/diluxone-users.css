@@ -543,7 +543,9 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	background: var(--diluxone-users-surface);
 	border: 3px solid rgba(255, 255, 255, .35);
 }
-.diluxone-users-account--cover .diluxone-users-account__name { font-size: 2.2em; line-height: 1.15; }
+/* The heading takes its colour from the theme, and on a coloured band that
+   comes out as near-black on blue. It follows the band. */
+.diluxone-users-account--cover .diluxone-users-account__name { font-size: 2.2em; line-height: 1.15; color: inherit; }
 .diluxone-users-account--cover .diluxone-users-account__since { color: inherit; opacity: .85; }
 
 /* The tab bar under the cover: a strip across the area, with the open tab

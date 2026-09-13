@@ -270,8 +270,14 @@
    they belong to, indented enough to read as its consequence. */
 .diluxone-users-scope__roles { margin: 6px 0 0 22px; }
 
-/* The social-login role list: in a column, not in a running line. */
+/* Role and option lists: in a column, not in a running line.
+   Written twice with two classes on purpose. WordPress styles
+   `.form-table td fieldset label` as inline-block, and that beats a single
+   class — so inside a fieldset the list came out as one long line of words. */
 .diluxone-users-roles__item { display: block; margin-bottom: 4px; }
+.diluxone-users-scope__roles .diluxone-users-roles__item,
+.diluxone-users-pieces .diluxone-users-roles__item,
+.form-table fieldset > .diluxone-users-roles__item { display: block; margin-bottom: 4px; }
 
 /* ── The buttons screen ─────────────────────────────────────────────────
    Settings on the left, preview on the right and always in view: if the

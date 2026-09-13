@@ -580,7 +580,7 @@ function diluxone_users_screen_account_section( string $id, array $sections, int
 
 /** Where the account area lives and how it is navigated. */
 function diluxone_users_screen_account_layout(): void {
-	diluxone_users_intro( __( 'Which page is “my account”, and how people move between its sections.', 'diluxone-users' ) );
+	diluxone_users_intro( __( 'Which page is “my account”, and whether the dashboard is still a second place to edit the same data.', 'diluxone-users' ) );
 	?>
 	<form method="post">
 		<?php wp_nonce_field( 'diluxone_users_layout', 'diluxone_users_layout_nonce' ); ?>
