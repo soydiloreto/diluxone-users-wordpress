@@ -283,14 +283,27 @@ function diluxone_users_intro( string $text ): void {
 	printf( '<p class="diluxone-users-admin__intro">%s</p>', esc_html( $text ) );
 }
 
-/** The plugin admin styles. */
+/**
+ * The plugin admin styles.
+ *
+ * Besides the plugin's own screens, WordPress's Users list and the profile
+ * screen get them too: the Access column and the block on the profile are
+ * drawn with the same pills, and without the stylesheet they come out as a
+ * run-on line of words.
+ */
 function diluxone_users_admin_styles( string $hook ): void {
-	if ( false === strpos( $hook, 'diluxone-users' ) ) {
+	$people = in_array( $hook, array( 'users.php', 'user-edit.php', 'profile.php' ), true );
+
+	if ( ! $people && false === strpos( $hook, 'diluxone-users' ) ) {
 		return;
 	}
 
 	wp_enqueue_style( 'diluxone-users-admin', DILUXONE_USERS_URL . 'assets/diluxone-users-admin.css', array(), diluxone_users_asset_version( 'assets/diluxone-users-admin.css' ) );
 	wp_enqueue_script( 'diluxone-users-admin', DILUXONE_USERS_URL . 'assets/diluxone-users-admin.js', array(), diluxone_users_asset_version( 'assets/diluxone-users-admin.js' ), true );
+
+	if ( $people ) {
+		return;
+	}
 
 	// The button preview uses the real stylesheet, the same one the site uses:
 	// previewing with another would be previewing something else.

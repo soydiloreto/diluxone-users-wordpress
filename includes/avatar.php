@@ -155,6 +155,48 @@ function diluxone_users_avatar_data( array $args, $id_or_email ): array {
 }
 add_filter( 'pre_get_avatar_data', 'diluxone_users_avatar_data', 99, 2 );
 
+/**
+ * Puts the drawn avatar back into the markup WordPress assembled.
+ *
+ * `get_avatar()` runs the URL through `esc_url()`, and `esc_url()` drops
+ * anything whose scheme is not in `wp_allowed_protocols()` — `data:` is not,
+ * so the image comes out with an empty `src`. Adding `data` to that list is
+ * not an option: it is only filterable before `wp_loaded`, after which the
+ * list is frozen, so the change would apply to every `esc_url()` and every
+ * `wp_kses()` call in the request, which is precisely the kind of hole `data:`
+ * is kept out of.
+ *
+ * So the URL is put back afterwards, and only on the image we ourselves
+ * supplied: if anybody else has already rewritten the markup, the replacement
+ * finds nothing and the markup is returned untouched.
+ *
+ * @param mixed                $id_or_email Whatever WordPress was given.
+ * @param array<string, mixed> $args
+ */
+function diluxone_users_avatar_markup( string $avatar, $id_or_email, int $size, string $default_value, string $alt, array $args = array() ): string {
+	$url = isset( $args['url'] ) ? (string) $args['url'] : '';
+
+	if ( 0 !== strpos( $url, 'data:image/svg+xml' ) ) {
+		return $avatar;
+	}
+
+	$user_id = diluxone_users_avatar_user_id( $id_or_email );
+
+	if ( $user_id <= 0 ) {
+		return $avatar;
+	}
+
+	return str_replace(
+		array( "src=''", "srcset=' 2x'" ),
+		array(
+			"src='" . esc_attr( $url ) . "'",
+			"srcset='" . esc_attr( diluxone_users_avatar_svg( $user_id, $size * 2 ) ) . " 2x'",
+		),
+		$avatar
+	);
+}
+add_filter( 'get_avatar', 'diluxone_users_avatar_markup', 10, 6 );
+
 /* ── Uploading and removing ────────────────────────────────────────── */
 
 /**

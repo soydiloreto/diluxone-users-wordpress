@@ -106,10 +106,20 @@ function diluxone_users_style_preview(): void {
 		<div class="diluxone-users-preview__frame">
 			<div class="diluxone-users-account" data-diluxone-users-preview-skin>
 				<div class="diluxone-users-account__header">
-					<div class="diluxone-users-account__avatar" aria-hidden="true">PD</div>
+					<div class="diluxone-users-account__avatar" aria-hidden="true"><?php echo esc_html( diluxone_users_avatar_initials( get_current_user_id() ) ); ?></div>
 					<div>
-						<div class="diluxone-users-account__name"><?php echo esc_html( wp_get_current_user()->display_name ); ?></div>
-						<div class="diluxone-users-account__since"><?php esc_html_e( 'Member since March 2026', 'diluxone-users' ); ?></div>
+						<div class="diluxone-users-account__name"><?php echo esc_html( diluxone_users_display_name( wp_get_current_user() ) ); ?></div>
+						<div class="diluxone-users-account__since">
+							<?php
+							echo esc_html(
+								sprintf(
+									/* translators: %s: month and year they joined */
+									__( 'Member since %s', 'diluxone-users' ),
+									wp_date( 'F Y', (int) strtotime( wp_get_current_user()->user_registered ) )
+								)
+							);
+							?>
+						</div>
 					</div>
 				</div>
 

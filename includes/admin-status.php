@@ -317,11 +317,20 @@ function diluxone_users_stats(): array {
 		);
 	};
 
+	// Social login is not one meta key but one per network, so it is counted
+	// by prefix: what is being asked is how many people have any of them.
+	$count_prefix = static function ( string $prefix ) use ( $wpdb ): int {
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- this is the status screen: the number has to be the one from now, not the one from the cache.
+		return (int) $wpdb->get_var(
+			$wpdb->prepare( "SELECT COUNT(DISTINCT user_id) FROM {$wpdb->usermeta} WHERE meta_key LIKE %s AND meta_value != ''", $wpdb->esc_like( $prefix ) . '%' )
+		);
+	};
+
 	return array(
 		'users'    => (int) count_users()['total_users'],
-		'totp'     => $count_meta( 'diluxone_users_totp_secret' ),
+		'totp'     => $count_meta( 'diluxone_users_totp' ),
 		'passkeys' => $count_meta( 'diluxone_users_passkeys' ),
-		'social'   => $count_meta( 'diluxone_users_sso' ),
+		'social'   => $count_prefix( 'diluxone_users_sso_' ),
 		'handles'  => $count_meta( 'diluxone_users_handle' ),
 	);
 }

@@ -103,7 +103,16 @@ function diluxone_users_screen_social(): void {
 			?>
 			<div class="diluxone-users-card">
 				<div class="diluxone-users-card__top" style="background: <?php echo esc_attr( $provider['color'] ); ?>">
-					<span class="diluxone-users-card__mark"><?php echo esc_html( mb_substr( $provider['name'], 0, 1 ) ); ?></span>
+					<span class="diluxone-users-card__mark">
+						<?php
+						// The network's own logo when there is one; its initial is only the fallback.
+						$logo = diluxone_users_sso_icon( $slug );
+
+						echo '' !== $logo
+							? $logo // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own SVG, no data from outside.
+							: esc_html( mb_substr( $provider['name'], 0, 1 ) );
+						?>
+					</span>
 					<span class="diluxone-users-card__name"><?php echo esc_html( $provider['name'] ); ?></span>
 				</div>
 				<div class="diluxone-users-card__foot">
@@ -252,7 +261,7 @@ function diluxone_users_screen_social_buttons( array $providers ): void {
 			</div>
 
 			<div class="diluxone-users-buttons__canvas">
-				<?php echo diluxone_users_sso_buttons( $preview, false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado. ?>
+				<?php echo diluxone_users_sso_buttons( $preview, false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own markup, already escaped. ?>
 			</div>
 			<p class="description"><?php esc_html_e( 'These buttons do nothing: they are here to be looked at.', 'diluxone-users' ); ?></p>
 		</div>

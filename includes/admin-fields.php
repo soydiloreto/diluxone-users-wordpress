@@ -287,13 +287,14 @@ function diluxone_users_screen_fields_list(): void {
 				<th><?php esc_html_e( 'Type', 'diluxone-users' ); ?></th>
 				<th><?php esc_html_e( 'Where', 'diluxone-users' ); ?></th>
 				<th><?php esc_html_e( 'Required', 'diluxone-users' ); ?></th>
+				<th><?php esc_html_e( 'They can change it', 'diluxone-users' ); ?></th>
 				<th><?php esc_html_e( 'Status', 'diluxone-users' ); ?></th>
 				<th class="diluxone-users-list__order"><?php esc_html_e( 'Order', 'diluxone-users' ); ?></th>
 			</tr>
 		</thead>
 		<tbody>
 			<?php if ( array() === $fields ) : ?>
-				<tr><td colspan="6"><?php esc_html_e( 'No fields yet.', 'diluxone-users' ); ?></td></tr>
+				<tr><td colspan="7"><?php esc_html_e( 'No fields yet.', 'diluxone-users' ); ?></td></tr>
 			<?php endif; ?>
 
 			<?php
@@ -589,6 +590,7 @@ function diluxone_users_screen_fields_usage(): void {
 			<tr><td><code>[diluxone_users_fields]</code></td><td><?php esc_html_e( 'Every field, for the person to edit.', 'diluxone-users' ); ?></td></tr>
 			<tr><td><code>[diluxone_users_fields group="basic"]</code></td><td><?php esc_html_e( 'Only the basic ones. With group="optional", only the others.', 'diluxone-users' ); ?></td></tr>
 			<tr><td><code>[diluxone_users_login]</code></td><td><?php esc_html_e( 'The email sign-in form and the social buttons.', 'diluxone-users' ); ?></td></tr>
+			<tr><td><code>[diluxone_users_login title="yes"]</code></td><td><?php esc_html_e( 'The same, with a “Sign in” heading above it — for anywhere the page title does not already say it.', 'diluxone-users' ); ?></td></tr>
 			<tr><td><code>[diluxone_users_accounts]</code></td><td><?php esc_html_e( 'Linked providers, to link or unlink.', 'diluxone-users' ); ?></td></tr>
 			<tr><td><code>[diluxone_users_sessions]</code></td><td><?php esc_html_e( 'Open sessions, with the button to close them.', 'diluxone-users' ); ?></td></tr>
 		</tbody>
@@ -596,7 +598,7 @@ function diluxone_users_screen_fields_usage(): void {
 
 	<h2><?php esc_html_e( 'Fitting them into your design', 'diluxone-users' ); ?></h2>
 	<p class="diluxone-users-admin__intro">
-		<?php esc_html_e( 'Copy any file from the plugin’s templates/ folder into your theme, inside a diluxone-users/ folder, and edit it there. The plugin will use yours. You can also turn off its stylesheet in Sign in → Presentation.', 'diluxone-users' ); ?>
+		<?php esc_html_e( 'Copy any file from the plugin’s templates/ folder into your theme, inside a diluxone-users/ folder, and edit it there. The plugin will use yours. You can also turn off its stylesheet in Account area → How it looks.', 'diluxone-users' ); ?>
 	</p>
 	<?php
 }

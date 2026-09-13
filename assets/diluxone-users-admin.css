@@ -6,10 +6,11 @@
  * the provider grid, the state pills and a couple of reading-width fixes.
  */
 
+.diluxone-users-admin { max-width: 1200px; }
 .diluxone-users-admin__intro { max-width: 72ch; }
 .diluxone-users-admin__actions { margin: 16px 0; }
 
-/* ── Pastillas de estado ──────────────────────────────────────────── */
+/* ── State pills ──────────────────────────────────────────────────── */
 .diluxone-users-pill {
 	display: inline-block; padding: 2px 10px; border-radius: 100px;
 	font-size: 12px; font-weight: 600; line-height: 1.8;
@@ -38,7 +39,7 @@
 .diluxone-users-detail { max-width: 860px; }
 .diluxone-users-detail th { width: 220px; text-align: left; }
 
-/* ── Grilla de proveedores ────────────────────────────────────────── */
+/* ── The provider grid ────────────────────────────────────────────── */
 .diluxone-users-cards {
 	display: grid; gap: 16px; margin: 20px 0 32px;
 	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -57,6 +58,7 @@
 	border-radius: 50%; background: rgba(255, 255, 255, 0.22);
 	font-size: 20px; font-weight: 700; line-height: 1;
 }
+.diluxone-users-card__mark svg { width: 22px; height: 22px; }
 .diluxone-users-card__name { font-size: 17px; font-weight: 600; }
 .diluxone-users-card__foot {
 	display: flex; align-items: center; justify-content: space-between; gap: 10px;

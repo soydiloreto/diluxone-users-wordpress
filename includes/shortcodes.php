@@ -3,6 +3,7 @@
  * The shortcodes: the door that lets this fit into any design.
  *
  *   [diluxone_users_login]    the "send me the link" form + the social buttons
+ *                             (title="yes" adds the "Sign in" heading)
  *   [diluxone_users_fields]   the person's fields, for editing
  *   [diluxone_users_sessions] the open sessions, with the button to close them
  *   [diluxone_users_accounts] the linked social networks
@@ -59,6 +60,11 @@ function diluxone_users_login_challenge(): array {
 /**
  * Login shortcode.
  *
+ * The "Sign in" heading is off by default because this form almost always
+ * lives on a page already called that, and the theme prints the page title:
+ * drawing it here too says the same thing twice. `title="yes"` brings it back
+ * for anywhere else — a widget, a section of a longer page.
+ *
  * @param array<string, string>|string $atts WordPress sends '' when there are none.
  */
 function diluxone_users_shortcode_login( $atts = array() ): string {
@@ -77,6 +83,7 @@ function diluxone_users_shortcode_login( $atts = array() ): string {
 
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	$email = isset( $_GET['email'] ) ? sanitize_email( wp_unslash( $_GET['email'] ) ) : '';
+	$atts  = shortcode_atts( array( 'title' => 'no' ), (array) $atts, 'diluxone_users_login' );
 
 	return diluxone_users_render(
 		'login.php',
@@ -85,6 +92,7 @@ function diluxone_users_shortcode_login( $atts = array() ): string {
 			'email'     => $email,
 			'providers' => diluxone_users_sso_available(),
 			'minutes'   => diluxone_users_login_expiry(),
+			'title'     => in_array( strtolower( (string) $atts['title'] ), array( 'yes', '1', 'true', 'on' ), true ),
 		)
 	);
 }

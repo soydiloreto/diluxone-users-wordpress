@@ -102,6 +102,15 @@ function diluxone_users_passkeys_ready( int $user_id ): bool {
  * @param array<int, array<string, mixed>> $keys
  */
 function diluxone_users_passkeys_save( int $user_id, array $keys ): void {
+	if ( array() === $keys ) {
+		// Somebody who took their last key off has no key, and an empty array
+		// left behind is a row that answers "yes" to every query asking who
+		// has one.
+		delete_user_meta( $user_id, 'diluxone_users_passkeys' );
+
+		return;
+	}
+
 	update_user_meta( $user_id, 'diluxone_users_passkeys', array_values( $keys ) );
 }
 

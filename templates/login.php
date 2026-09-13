@@ -9,6 +9,7 @@
  * @var string                             $email     Address the link was sent to.
  * @var array<string, array<string,mixed>> $providers Available networks.
  * @var int                                $minutes   How long the link is good for.
+ * @var bool                               $title     Whether to draw the "Sign in" heading.
  *
  * @package DiluxOneUsers
  */
@@ -35,7 +36,9 @@ defined( 'ABSPATH' ) || exit;
 
 	<?php else : ?>
 
-		<h2 class="diluxone-users-login__title"><?php esc_html_e( 'Sign in', 'diluxone-users' ); ?></h2>
+		<?php if ( $title ) : ?>
+			<h2 class="diluxone-users-login__title"><?php esc_html_e( 'Sign in', 'diluxone-users' ); ?></h2>
+		<?php endif; ?>
 
 		<?php if ( 'expired' === $state ) : ?>
 			<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'That link expired or was already used. Ask for a new one.', 'diluxone-users' ); ?></p>
@@ -55,7 +58,7 @@ defined( 'ABSPATH' ) || exit;
 		<?php endif; ?>
 
 		<?php if ( array() !== $providers ) : ?>
-			<?php echo diluxone_users_sso_buttons( $providers ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado. ?>
+			<?php echo diluxone_users_sso_buttons( $providers ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own markup, already escaped. ?>
 
 			<p class="diluxone-users-divider">
 				<span>
@@ -74,7 +77,7 @@ defined( 'ABSPATH' ) || exit;
 				<?php wp_nonce_field( 'diluxone_users_login', 'diluxone_users_nonce' ); ?>
 
 				<label for="diluxone-users-email"><?php esc_html_e( 'Email address', 'diluxone-users' ); ?></label>
-				<input type="email" id="diluxone-users-email" name="diluxone_users_email" required autocomplete="email" placeholder="vos@ejemplo.com">
+				<input type="email" id="diluxone-users-email" name="diluxone_users_email" required autocomplete="email" placeholder="<?php echo esc_attr_x( 'you@example.com', 'placeholder for the e-mail field', 'diluxone-users' ); ?>">
 
 				<button type="submit" class="diluxone-users-button"><?php esc_html_e( 'Send me the sign-in link', 'diluxone-users' ); ?></button>
 			</form>
