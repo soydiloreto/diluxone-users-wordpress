@@ -127,6 +127,59 @@
 }
 .diluxone-users-where p { margin: 0 0 8px; }
 .diluxone-users-where p:last-child { margin-bottom: 0; }
+.diluxone-users-where__names { margin: 0 0 8px; }
+.diluxone-users-where__names li { margin: 0 0 2px; }
+.diluxone-users-where__names code { margin-left: 2px; }
+/* ── The overview screen ────────────────────────────────────────────────
+   A welcome, the numbers, and then either the first steps or what people are
+   actually using. The two never show together: a checklist with everything
+   ticked is furniture, and usage figures on an unconfigured site are zeros. */
+.diluxone-users-welcome {
+	background: #fff; border: 1px solid #dcdcde; border-radius: 4px;
+	padding: 16px 20px; margin: 20px 0;
+}
+.diluxone-users-welcome h2 { margin: 0 0 4px; font-size: 20px; }
+.diluxone-users-welcome p  { margin: 0; color: #50575e; }
+
+/* The steps: a number in a circle and a line joining them, so the list reads
+   as a road and not as four unrelated boxes. */
+.diluxone-users-steps { counter-reset: diluxone-step; margin: 12px 0 24px; padding: 0; list-style: none; }
+.diluxone-users-step {
+	position: relative; counter-increment: diluxone-step;
+	padding: 0 0 20px 44px; margin: 0;
+}
+.diluxone-users-step::before {
+	content: counter(diluxone-step);
+	position: absolute; left: 0; top: 0; z-index: 1;
+	width: 28px; height: 28px; border-radius: 50%;
+	background: #2271b1; color: #fff;
+	font-size: 13px; font-weight: 600; line-height: 28px; text-align: center;
+}
+.diluxone-users-step.is-done::before { content: "\2713"; background: #00a32a; font-size: 15px; }
+/* The line runs from one circle to the next, and stops at the last. */
+.diluxone-users-step::after {
+	content: ""; position: absolute; left: 13px; top: 28px; bottom: 0;
+	width: 2px; background: #dcdcde;
+}
+.diluxone-users-step:last-child { padding-bottom: 0; }
+.diluxone-users-step:last-child::after { display: none; }
+.diluxone-users-step__body strong { display: block; font-size: 14px; }
+.diluxone-users-step__body p { margin: 2px 0 8px; color: #50575e; max-width: 70ch; }
+.diluxone-users-step.is-done .diluxone-users-step__body strong { color: #50575e; }
+
+/* The bars: a width in per cent against the number of accounts. */
+.diluxone-users-bars { margin: 12px 0 24px; padding: 0; list-style: none; max-width: 720px; }
+.diluxone-users-bars li { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.diluxone-users-bars__label { flex: 0 0 220px; }
+.diluxone-users-bars__track { flex: 1 1 auto; height: 10px; border-radius: 5px; background: #f0f0f1; overflow: hidden; }
+.diluxone-users-bars__fill  { display: block; height: 100%; background: var(--diluxone-users-accent, #2271b1); }
+.diluxone-users-bars__value { flex: 0 0 70px; text-align: right; font-variant-numeric: tabular-nums; }
+
+@media screen and (max-width: 782px) {
+	.diluxone-users-bars li { flex-wrap: wrap; }
+	.diluxone-users-bars__label { flex-basis: 100%; }
+}
+
 .diluxone-users-state-box { max-width: 900px; margin: 18px 0 24px; padding: 6px 14px; }
 
 /* The social-login role list: in a column, not in a running line. */

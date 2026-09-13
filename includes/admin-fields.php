@@ -251,14 +251,25 @@ function diluxone_users_screen_fields_list(): void {
 	<div class="diluxone-users-where">
 		<p><strong><?php esc_html_e( 'Where all this lives', 'diluxone-users' ); ?></strong></p>
 		<p>
-			<?php
-			printf(
-					/* translators: 1: option name, 2: table name */
-				esc_html__( 'What each field IS —its name, type and behaviour— is one WordPress option, %1$s. What each PERSON answered is user meta: one row per person and per field in %2$s, with the field key as the name. No extra tables.', 'diluxone-users' ),
-				'<code>diluxone_users_fields</code>',
-				'<code>' . esc_html( $GLOBALS['wpdb']->usermeta ) . '</code>'
-			);
-			?>
+			<?php esc_html_e( 'What each field IS —its name, type and behaviour— is one WordPress option. What each PERSON answered is user meta: one row per person and per field, with the field key as the name. No extra tables.', 'diluxone-users' ); ?>
+		</p>
+		<?php
+		// The two names go on lines of their own and not inside the sentence
+		// above. A <code> chip is an atom the browser cannot break, so in the
+		// middle of a paragraph it jumps to the next line whole and leaves the
+		// previous one short — which reads as a line break that nobody typed.
+		?>
+		<ul class="diluxone-users-where__names">
+			<li>
+				<?php esc_html_e( 'The definition:', 'diluxone-users' ); ?>
+				<code>diluxone_users_fields</code>
+			</li>
+			<li>
+				<?php esc_html_e( 'The answers:', 'diluxone-users' ); ?>
+				<code><?php echo esc_html( $GLOBALS['wpdb']->usermeta ); ?></code>
+			</li>
+		</ul>
+		<p>
 			<?php esc_html_e( 'That is why the key cannot change once the field exists, and why deleting a field leaves the answers alone: they are two different things.', 'diluxone-users' ); ?>
 		</p>
 	</div>

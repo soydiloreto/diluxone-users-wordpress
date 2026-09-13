@@ -15,15 +15,6 @@ msgstr ""
 "X-Domain: diluxone-users\n"
 "X-Generator: WP-CLI 2.12.0\n"
 
-#. Plugin Name of the plugin
-#: diluxone-users.php
-msgid ""
-"DiluxOne Users+ – Registration, Login, Passwordless, Social Login, 2FA, "
-"Passkeys & Front-End Account Area"
-msgstr ""
-"DiluxOne Users+ – Registrazione, accesso, accesso senza password, login "
-"social, 2FA, passkey e area account sul sito"
-
 #. Plugin URI of the plugin
 #: diluxone-users.php
 msgid "https://github.com/soydiloreto/diluxone-users-wordpress"
@@ -108,7 +99,7 @@ msgstr "Ciao, %s"
 msgid "fields filled in"
 msgstr "campi compilati"
 
-#: includes/account-sections.php:202 includes/admin-fields.php:297
+#: includes/account-sections.php:202 includes/admin-fields.php:308
 msgid "Edit"
 msgstr "Modifica"
 
@@ -140,7 +131,7 @@ msgstr "In attesa della tua conferma via e-mail"
 msgid "Confirmed — we are preparing it"
 msgstr "Confermato — lo stiamo preparando"
 
-#: includes/account-sections.php:388 includes/admin-home.php:78
+#: includes/account-sections.php:388 includes/admin-home.php:190
 msgid "Ready"
 msgstr "Pronto"
 
@@ -233,7 +224,7 @@ msgstr "Nuova sezione"
 msgid "Showing"
 msgstr "Visibile"
 
-#: includes/admin-account.php:402 includes/admin-fields.php:352
+#: includes/admin-account.php:402 includes/admin-fields.php:363
 msgid "Hidden"
 msgstr "Nascosta"
 
@@ -249,8 +240,8 @@ msgstr "Rimuovi"
 msgid "It is on, but it is not showing"
 msgstr "È attiva, ma non viene mostrata"
 
-#: includes/admin-account.php:439 includes/admin-fields.php:275
-#: includes/admin-fields.php:428
+#: includes/admin-account.php:439 includes/admin-fields.php:286
+#: includes/admin-fields.php:439
 msgid "Name"
 msgstr "Nome"
 
@@ -531,7 +522,7 @@ msgstr "Campi"
 msgid "How to use them"
 msgstr "Come usarli"
 
-#: includes/admin-fields.php:224 includes/admin-fields.php:406
+#: includes/admin-fields.php:224 includes/admin-fields.php:417
 #: includes/admin.php:69
 msgid "User fields"
 msgstr "Campi utente"
@@ -552,20 +543,7 @@ msgstr "Un campo ha bisogno di un nome."
 msgid "Where all this lives"
 msgstr "Dove vive tutto questo"
 
-#. translators: 1: option name, 2: table name
-#: includes/admin-fields.php:257
-#, php-format
-msgid ""
-"What each field IS —its name, type and behaviour— is one WordPress option, "
-"%1$s. What each PERSON answered is user meta: one row per person and per "
-"field in %2$s, with the field key as the name. No extra tables."
-msgstr ""
-"Quello che ogni campo È —il suo nome, tipo e comportamento— è un’opzione di "
-"WordPress, %1$s. Quello che ogni PERSONA ha risposto è user meta: una riga "
-"per persona e per campo in %2$s, con la chiave del campo come nome. Nessuna "
-"tabella in più."
-
-#: includes/admin-fields.php:262
+#: includes/admin-fields.php:273
 msgid ""
 "That is why the key cannot change once the field exists, and why deleting a "
 "field leaves the answers alone: they are two different things."
@@ -573,104 +551,104 @@ msgstr ""
 "Per questo la chiave non può cambiare una volta che il campo esiste, e per "
 "questo eliminare un campo lascia intatte le risposte: sono due cose diverse."
 
-#: includes/admin-fields.php:268 includes/admin-fields.php:566
+#: includes/admin-fields.php:279 includes/admin-fields.php:577
 msgid "Add field"
 msgstr "Aggiungi campo"
 
-#: includes/admin-fields.php:276 includes/admin-fields.php:439
+#: includes/admin-fields.php:287 includes/admin-fields.php:450
 msgid "Type"
 msgstr "Tipo"
 
-#: includes/admin-fields.php:277
+#: includes/admin-fields.php:288
 msgid "Where"
 msgstr "Dove"
 
-#: includes/admin-fields.php:278 includes/admin-fields.php:560
+#: includes/admin-fields.php:289 includes/admin-fields.php:571
 msgid "Required"
 msgstr "Obbligatorio"
 
-#: includes/admin-fields.php:279 includes/admin-sessions.php:156
+#: includes/admin-fields.php:290 includes/admin-sessions.php:156
 #: includes/admin-social.php:399 includes/admin-status.php:331
 #: includes/admin.php:75 templates/account/privacy.php:29
 msgid "Status"
 msgstr "Stato"
 
-#: includes/admin-fields.php:280
+#: includes/admin-fields.php:291
 msgid "Order"
 msgstr "Ordine"
 
-#: includes/admin-fields.php:285
+#: includes/admin-fields.php:296
 msgid "No fields yet."
 msgstr "Ancora nessun campo."
 
-#: includes/admin-fields.php:325
+#: includes/admin-fields.php:336
 msgid "Delete this field? The data already stored is kept."
 msgstr "Eliminare questo campo? I dati già salvati vengono mantenuti."
 
-#: includes/admin-fields.php:326
+#: includes/admin-fields.php:337
 msgid "Delete"
 msgstr "Elimina"
 
-#: includes/admin-fields.php:334
+#: includes/admin-fields.php:345
 msgid "Yes"
 msgstr "Sì"
 
-#: includes/admin-fields.php:338
+#: includes/admin-fields.php:349
 msgid "Read only"
 msgstr "Sola lettura"
 
 #. translators: %d: how many times it can be changed
-#: includes/admin-fields.php:342
+#: includes/admin-fields.php:353
 #, php-format
 msgid "%d time"
 msgid_plural "%d times"
 msgstr[0] "%d volta"
 msgstr[1] "%d volte"
 
-#: includes/admin-fields.php:352 includes/admin-sessions.php:181
+#: includes/admin-fields.php:363 includes/admin-sessions.php:181
 #: includes/admin-social.php:152
 msgid "Active"
 msgstr "Attivo"
 
-#: includes/admin-fields.php:371
+#: includes/admin-fields.php:382
 msgid "Move up"
 msgstr "Sposta su"
 
-#: includes/admin-fields.php:387
+#: includes/admin-fields.php:398
 msgid "Move down"
 msgstr "Sposta giù"
 
-#: includes/admin-fields.php:407
+#: includes/admin-fields.php:418
 msgid "That field does not exist."
 msgstr "Questo campo non esiste."
 
-#: includes/admin-fields.php:416
+#: includes/admin-fields.php:427
 msgid "New field"
 msgstr "Campo nuovo"
 
 #. translators: %s: field name
-#: includes/admin-fields.php:417
+#: includes/admin-fields.php:428
 #, php-format
 msgid "Field: %s"
 msgstr "Campo: %s"
 
-#: includes/admin-fields.php:420
+#: includes/admin-fields.php:431
 msgid "Back to the list"
 msgstr "Torna all’elenco"
 
-#: includes/admin-fields.php:432
+#: includes/admin-fields.php:443
 msgid "Key:"
 msgstr "Chiave:"
 
-#: includes/admin-fields.php:432
+#: includes/admin-fields.php:443
 msgid "it cannot change: it is the name the data is stored under."
 msgstr "non può cambiare: è il nome con cui i dati sono salvati."
 
-#: includes/admin-fields.php:434
+#: includes/admin-fields.php:445
 msgid "The key is generated from the name."
 msgstr "La chiave viene generata dal nome."
 
-#: includes/admin-fields.php:455
+#: includes/admin-fields.php:466
 msgid ""
 "This one is WordPress’s own: it can be renamed, reordered, made required or "
 "hidden, but it keeps its type and cannot be deleted."
@@ -678,7 +656,7 @@ msgstr ""
 "Questo è di WordPress: si può rinominare, riordinare, rendere obbligatorio o"
 " nascondere, ma mantiene il suo tipo e non si può eliminare."
 
-#: includes/admin-fields.php:457
+#: includes/admin-fields.php:468
 msgid ""
 "“Country” shows the full list with its dial codes; “Phone with country code”"
 " splits the number in two and stores it in international format."
@@ -686,27 +664,27 @@ msgstr ""
 "«Paese» mostra l’elenco completo con i prefissi; «Telefono con prefisso» "
 "divide il numero in due e lo salva in formato internazionale."
 
-#: includes/admin-fields.php:462
+#: includes/admin-fields.php:473
 msgid "Who can change it"
 msgstr "Chi può modificarlo"
 
-#: includes/admin-fields.php:466
+#: includes/admin-fields.php:477
 msgid "Whenever they want"
 msgstr "Quando vogliono"
 
-#: includes/admin-fields.php:467
+#: includes/admin-fields.php:478
 msgid "Only a few times, and then no more"
 msgstr "Solo alcune volte, e poi basta"
 
-#: includes/admin-fields.php:468
+#: includes/admin-fields.php:479
 msgid "Never — they can see it, only an administrator changes it"
 msgstr "Mai — lo vedono, lo modifica solo un amministratore"
 
-#: includes/admin-fields.php:480
+#: includes/admin-fields.php:491
 msgid "How many times"
 msgstr "Quante volte"
 
-#: includes/admin-fields.php:484
+#: includes/admin-fields.php:495
 msgid ""
 "This is about the person who owns the data. An administrator can always "
 "change it, from the user’s profile: otherwise a one-change field turns into "
@@ -716,11 +694,11 @@ msgstr ""
 "modificarlo, dal profilo dell’utente: altrimenti un campo modificabile una "
 "volta sola diventa un errore di battitura che nessuno può correggere."
 
-#: includes/admin-fields.php:488
+#: includes/admin-fields.php:499
 msgid "Where it goes"
 msgstr "Dove va"
 
-#: includes/admin-fields.php:495
+#: includes/admin-fields.php:506
 msgid ""
 "The profile form shows two blocks: the essentials first, and underneath the "
 "optional ones with their own explanation. This decides which one the field "
@@ -730,27 +708,27 @@ msgstr ""
 " facoltativi con la loro spiegazione. Questo decide in quale finisce il "
 "campo."
 
-#: includes/admin-fields.php:499
+#: includes/admin-fields.php:510
 msgid "Help text"
 msgstr "Testo di aiuto"
 
-#: includes/admin-fields.php:502
+#: includes/admin-fields.php:513
 msgid "Why we are asking. Shown under the field."
 msgstr "Perché lo chiediamo. Mostrato sotto il campo."
 
-#: includes/admin-fields.php:506
+#: includes/admin-fields.php:517
 msgid "Placeholder text"
 msgstr "Testo di esempio"
 
-#: includes/admin-fields.php:509
+#: includes/admin-fields.php:520
 msgid "Shown in grey inside the empty field."
 msgstr "Mostrato in grigio dentro il campo vuoto."
 
-#: includes/admin-fields.php:513
+#: includes/admin-fields.php:524
 msgid "Values"
 msgstr "Valori"
 
-#: includes/admin-fields.php:516
+#: includes/admin-fields.php:527
 msgid ""
 "One per line. In a fixed list they are the only accepted values; in text "
 "with suggestions they are just hints and the person can write something "
@@ -760,12 +738,12 @@ msgstr ""
 "testo con suggerimenti sono solo indicazioni e la persona può scrivere "
 "altro."
 
-#: includes/admin-fields.php:521
+#: includes/admin-fields.php:532
 msgid "Countries shown first"
 msgstr "Paesi mostrati per primi"
 
 #. translators: %d: number of countries
-#: includes/admin-fields.php:534
+#: includes/admin-fields.php:545
 #, php-format
 msgid ""
 "Optional. The list of %d countries comes with the plugin — there is nothing "
@@ -776,15 +754,15 @@ msgstr ""
 "caricare. Questi vanno in cima, separati dal resto, così nessuno deve "
 "scorrere per trovare quello accanto."
 
-#: includes/admin-fields.php:543
+#: includes/admin-fields.php:554
 msgid "Country selected by default"
 msgstr "Paese selezionato per impostazione predefinita"
 
-#: includes/admin-fields.php:546
+#: includes/admin-fields.php:557
 msgid "— None —"
 msgstr "— Nessuno —"
 
-#: includes/admin-fields.php:553
+#: includes/admin-fields.php:564
 msgid ""
 "The dial code the field comes with. The person can change it: the full list "
 "is always there."
@@ -792,19 +770,19 @@ msgstr ""
 "Il prefisso con cui arriva il campo. La persona può cambiarlo: l’elenco "
 "completo è sempre lì."
 
-#: includes/admin-fields.php:558
+#: includes/admin-fields.php:569
 msgid "Behaviour"
 msgstr "Comportamento"
 
-#: includes/admin-fields.php:561
+#: includes/admin-fields.php:572
 msgid "Active: show it in the forms"
 msgstr "Attivo: mostrarlo nei moduli"
 
-#: includes/admin-fields.php:566
+#: includes/admin-fields.php:577
 msgid "Save field"
 msgstr "Salva campo"
 
-#: includes/admin-fields.php:574
+#: includes/admin-fields.php:585
 msgid ""
 "The fields show up on their own in the dashboard profile, when adding a user"
 " and in the WordPress registration form. On the front end you place them "
@@ -814,31 +792,31 @@ msgstr ""
 "utente e nel modulo di registrazione di WordPress. Sul sito li posizioni con"
 " uno shortcode."
 
-#: includes/admin-fields.php:578
+#: includes/admin-fields.php:589
 msgid "Every field, for the person to edit."
 msgstr "Tutti i campi, perché la persona li modifichi."
 
-#: includes/admin-fields.php:579
+#: includes/admin-fields.php:590
 msgid "Only the basic ones. With group=\"optional\", only the others."
 msgstr "Solo quelli di base. Con group=\"optional\", solo gli altri."
 
-#: includes/admin-fields.php:580 includes/admin-social.php:416
+#: includes/admin-fields.php:591 includes/admin-social.php:416
 msgid "The email sign-in form and the social buttons."
 msgstr "Il modulo di accesso via e-mail e i pulsanti social."
 
-#: includes/admin-fields.php:581 includes/admin-social.php:417
+#: includes/admin-fields.php:592 includes/admin-social.php:417
 msgid "Linked providers, to link or unlink."
 msgstr "I provider collegati, per collegare o scollegare."
 
-#: includes/admin-fields.php:582
+#: includes/admin-fields.php:593
 msgid "Open sessions, with the button to close them."
 msgstr "Le sessioni aperte, con il pulsante per chiuderle."
 
-#: includes/admin-fields.php:586
+#: includes/admin-fields.php:597
 msgid "Fitting them into your design"
 msgstr "Inserirli nel tuo design"
 
-#: includes/admin-fields.php:588
+#: includes/admin-fields.php:599
 msgid ""
 "Copy any file from the plugin’s templates/ folder into your theme, inside a "
 "diluxone-users/ folder, and edit it there. The plugin will use yours. You "
@@ -849,162 +827,162 @@ msgstr ""
 "tuo. Puoi anche disattivare il suo foglio di stile in Accedi → "
 "Presentazione."
 
-#: includes/admin-home.php:79
+#: includes/admin-home.php:191
 msgid "Pending"
 msgstr "In attesa"
 
-#: includes/admin-home.php:80
+#: includes/admin-home.php:192
 msgid "Cannot tell"
 msgstr "Non si può sapere"
 
-#: includes/admin-home.php:110
+#: includes/admin-home.php:233
 msgid "Who is in this site, what is asked of them and how they get in."
 msgstr "Chi c’è in questo sito, che cosa gli viene chiesto e come entra."
 
-#: includes/admin-home.php:117
+#: includes/admin-home.php:240
 msgid "accounts"
 msgstr "account"
 
-#: includes/admin-home.php:119
+#: includes/admin-home.php:242
 msgid "All users"
 msgstr "Tutti gli utenti"
 
-#: includes/admin-home.php:124
+#: includes/admin-home.php:247
 msgid "with an open session"
 msgstr "con una sessione aperta"
 
-#: includes/admin-home.php:126
+#: includes/admin-home.php:249
 msgid "See who"
 msgstr "Vedi chi"
 
-#: includes/admin-home.php:131
+#: includes/admin-home.php:254
 msgid "fields in use"
 msgstr "campi in uso"
 
-#: includes/admin-home.php:133
+#: includes/admin-home.php:256
 msgid "Manage them"
 msgstr "Gestiscili"
 
-#: includes/admin-home.php:138
+#: includes/admin-home.php:261
 msgid "social providers on"
 msgstr "provider social attivi"
 
-#: includes/admin-home.php:140
+#: includes/admin-home.php:263
 msgid "Set them up"
 msgstr "Configurali"
 
-#: includes/admin-home.php:145 includes/admin-home.php:174
+#: includes/admin-home.php:276 includes/admin-home.php:305
 #: includes/admin-login.php:169
 msgid "How people get in"
 msgstr "Come entrano le persone"
 
-#: includes/admin-home.php:150 includes/admin-login.php:151
+#: includes/admin-home.php:281 includes/admin-login.php:151
 #: includes/admin-status.php:99
 msgid "Sign-in page"
 msgstr "Pagina di accesso"
 
-#: includes/admin-home.php:154
+#: includes/admin-home.php:285
 msgid "Not chosen yet: wp-login.php is doing the job."
 msgstr "Non ancora scelta: il lavoro lo fa wp-login.php."
 
-#: includes/admin-home.php:156
+#: includes/admin-home.php:287
 msgid "Choose it"
 msgstr "Sceglila"
 
-#: includes/admin-home.php:160
+#: includes/admin-home.php:291
 msgid "Link by email"
 msgstr "Link via e-mail"
 
-#: includes/admin-home.php:163
+#: includes/admin-home.php:294
 msgid ""
 "On. If the email does not exist, the account is created in the same step."
 msgstr ""
 "Attivo. Se l’e-mail non esiste, l’account viene creato nello stesso "
 "passaggio."
 
-#: includes/admin-home.php:164
+#: includes/admin-home.php:295
 msgid ""
 "On, for accounts that already exist. New ones are not created from here."
 msgstr ""
 "Attivo, per account che esistono già. I nuovi non vengono creati da qui."
 
-#: includes/admin-home.php:168
+#: includes/admin-home.php:299
 msgid "Only the email link: wp-login.php sends people to the sign-in page."
 msgstr ""
 "Solo il link via e-mail: wp-login.php manda le persone alla pagina di "
 "accesso."
 
-#: includes/admin-home.php:169
+#: includes/admin-home.php:300
 msgid "Only username and password, the WordPress one."
 msgstr "Solo nome utente e password, quella di WordPress."
 
-#: includes/admin-home.php:170
+#: includes/admin-home.php:301
 msgid "The email link and the password, both."
 msgstr "Il link via e-mail e la password, entrambi."
 
-#: includes/admin-home.php:180
+#: includes/admin-home.php:311
 msgid "Off: nobody is asked for a second step."
 msgstr "Disattivata: a nessuno viene chiesto un secondo passaggio."
 
-#: includes/admin-home.php:181
+#: includes/admin-home.php:312
 msgid "Optional: whoever wants it turns it on from their profile."
 msgstr "Facoltativa: chi vuole la attiva dal proprio profilo."
 
-#: includes/admin-home.php:182
+#: includes/admin-home.php:313
 msgid "Required for everybody who can use it."
 msgstr "Obbligatoria per tutti quelli che possono usarla."
 
-#: includes/admin-home.php:186 includes/admin-login.php:17
+#: includes/admin-home.php:317 includes/admin-login.php:17
 #: templates/account/security.php:178
 msgid "Two-step verification"
 msgstr "Verifica in due passaggi"
 
-#: includes/admin-home.php:192 includes/admin-login.php:18
+#: includes/admin-home.php:323 includes/admin-login.php:18
 #: templates/account/security.php:73
 msgid "Passkeys"
 msgstr "Passkey"
 
 #. translators: %s: the domain they end up tied to
-#: includes/admin-home.php:197
+#: includes/admin-home.php:328
 #, php-format
 msgid "On, tied to %s."
 msgstr "Attive, legate a %s."
 
-#: includes/admin-home.php:200
+#: includes/admin-home.php:331
 msgid "Off. It is the only way in that cannot be phished."
 msgstr "Disattivate. È l’unico modo di entrare che non si può phishare."
 
-#: includes/admin-home.php:204 includes/admin-social.php:83
+#: includes/admin-home.php:335 includes/admin-social.php:83
 #: includes/admin-status.php:261 includes/admin-status.php:272
 #: includes/admin.php:72
 msgid "Social login"
 msgstr "Login social"
 
 #. translators: %s: list of providers
-#: includes/admin-home.php:208
+#: includes/admin-home.php:339
 #, php-format
 msgid "Working: %s"
 msgstr "Funziona: %s"
 
-#: includes/admin-home.php:211
+#: includes/admin-home.php:342
 msgid ""
 "There are providers with credentials, but none is verified and enabled yet."
 msgstr ""
 "Ci sono provider con le credenziali, ma nessuno ancora verificato e attivo."
 
-#: includes/admin-home.php:212
+#: includes/admin-home.php:343
 msgid "No provider set up yet: only the email link works."
 msgstr "Nessun provider ancora configurato: funziona solo il link via e-mail."
 
-#: includes/admin-home.php:215 includes/admin-social.php:45
+#: includes/admin-home.php:346 includes/admin-social.php:45
 msgid "Providers"
 msgstr "Provider"
 
-#: includes/admin-home.php:224
+#: includes/admin-home.php:355
 msgid "Outgoing email"
 msgstr "E-mail in uscita"
 
-#: includes/admin-home.php:227
+#: includes/admin-home.php:358
 msgid ""
 "Something is hooked into delivery, but whether mail actually leaves cannot "
 "be known from here. Send yourself a link to find out."
@@ -1012,7 +990,7 @@ msgstr ""
 "C’è qualcosa agganciato all’invio, ma se la posta esca davvero non si può "
 "sapere da qui. Mandati un link per scoprirlo."
 
-#: includes/admin-home.php:228
+#: includes/admin-home.php:359
 msgid ""
 "Nothing is hooked into delivery: WordPress will try the server’s mail() and "
 "that usually fails. Without email there is no sign-in link."
@@ -1020,33 +998,33 @@ msgstr ""
 "Non c’è niente agganciato all’invio: WordPress proverà il mail() del server,"
 " e di solito fallisce. Senza e-mail non c’è link di accesso."
 
-#: includes/admin-home.php:232
+#: includes/admin-home.php:363
 msgid "Session length"
 msgstr "Durata della sessione"
 
 #. translators: 1: days with remember-me, 2: days without remember-me
-#: includes/admin-home.php:236
+#: includes/admin-home.php:367
 #, php-format
 msgid "%1$d days with “remember me”, %2$d without."
 msgstr "%1$d giorni con «ricordami», %2$d senza."
 
-#: includes/admin-home.php:241
+#: includes/admin-home.php:372
 msgid "Change it"
 msgstr "Cambiala"
 
-#: includes/admin-home.php:247
+#: includes/admin-home.php:378
 msgid "What is asked of people"
 msgstr "Che cosa viene chiesto alle persone"
 
-#: includes/admin-home.php:249
+#: includes/admin-home.php:380
 msgid "Nothing beyond the email address."
 msgstr "Niente oltre all’indirizzo e-mail."
 
-#: includes/admin-home.php:270
+#: includes/admin-home.php:401
 msgid "If you get locked out"
 msgstr "Se rimani fuori"
 
-#: includes/admin-home.php:272
+#: includes/admin-home.php:403
 msgid ""
 "On a site without passwords and without outgoing email, an expired session "
 "leaves you outside. With access to the server:"
@@ -2450,19 +2428,19 @@ msgstr "Quanto di tutto questo viene usato"
 msgid "Accounts"
 msgstr "Account"
 
-#: includes/admin-status.php:384
+#: includes/admin-home.php:160 includes/admin-status.php:384
 msgid "With an authenticator app"
 msgstr "Con un’app di autenticazione"
 
-#: includes/admin-status.php:385
+#: includes/admin-home.php:161 includes/admin-status.php:385
 msgid "With a passkey"
 msgstr "Con una passkey"
 
-#: includes/admin-status.php:386
+#: includes/admin-home.php:159 includes/admin-status.php:386
 msgid "With a social account linked"
 msgstr "Con un account social collegato"
 
-#: includes/admin-status.php:387
+#: includes/admin-home.php:158 includes/admin-status.php:387
 msgid "With a public name"
 msgstr "Con un nome pubblico"
 
@@ -2477,7 +2455,7 @@ msgstr ""
 "Incolla questo in una richiesta di supporto e metà dei botta e risposta "
 "sparisce."
 
-#: includes/admin-tools.php:53 includes/mail.php:90 includes/sessions.php:279
+#: includes/admin-tools.php:53 includes/mail.php:90 includes/sessions.php:325
 msgid "You are not allowed to do this."
 msgstr "Non hai il permesso di farlo."
 
@@ -4523,3 +4501,100 @@ msgstr "Questa sessione"
 #: templates/sessions.php:76
 msgid "Close the others"
 msgstr "Chiudi le altre"
+
+#. Plugin Name of the plugin
+#: diluxone-users.php
+msgid "DiluxOne Users+ – Accounts & Login"
+msgstr "DiluxOne Users+ – Accounts & Login"
+
+#: includes/admin-fields.php:254
+msgid ""
+"What each field IS —its name, type and behaviour— is one WordPress option. "
+"What each PERSON answered is user meta: one row per person and per field, "
+"with the field key as the name. No extra tables."
+msgstr ""
+"Quello che ogni campo È —il suo nome, tipo e comportamento— è un’opzione di "
+"WordPress. Quello che ogni PERSONA ha risposto è user meta: una riga per "
+"persona e per campo, con la chiave del campo come nome. Nessuna tabella in "
+"più."
+
+#: includes/admin-fields.php:264
+msgid "The definition:"
+msgstr "La definizione:"
+
+#: includes/admin-fields.php:268
+msgid "The answers:"
+msgstr "Le risposte:"
+
+#: includes/admin-home.php:86
+msgid "Choose the sign-in page"
+msgstr "Scegli la pagina di accesso"
+
+#: includes/admin-home.php:87
+msgid ""
+"The page holding the [diluxone_users_login] shortcode. Until there is one, "
+"people land on wp-login.php."
+msgstr ""
+"La pagina che contiene lo shortcode [diluxone_users_login]. Finché non ce "
+"n’è una, le persone finiscono su wp-login.php."
+
+#: includes/admin-home.php:90
+msgid "Go to Sign in"
+msgstr "Vai ad Accedi"
+
+#: includes/admin-home.php:93
+msgid "Choose the account page"
+msgstr "Scegli la pagina dell’account"
+
+#: includes/admin-home.php:94
+msgid ""
+"The page holding the [diluxone_users_account] shortcode. It is what every "
+"link to \"my account\" points at."
+msgstr ""
+"La pagina che contiene lo shortcode [diluxone_users_account]. È dove punta "
+"ogni link a «il mio account»."
+
+#: includes/admin-home.php:97
+msgid "Go to Account area"
+msgstr "Vai all’Area account"
+
+#: includes/admin-home.php:100
+msgid "Check that e-mail goes out"
+msgstr "Controlla che l’e-mail esca"
+
+#: includes/admin-home.php:101
+msgid ""
+"The sign-in link, the second-step code and the data requests are all e-mail."
+" Send yourself a test: it is the only way to know."
+msgstr ""
+"Il link di accesso, il codice del secondo passaggio e le richieste di dati "
+"sono tutti e-mail. Mandati una prova: è l’unico modo per saperlo."
+
+#: includes/admin-home.php:104
+msgid "Go to Tools"
+msgstr "Vai agli Strumenti"
+
+#. translators: %s: plugin name
+#: includes/admin-home.php:230
+#, php-format
+msgid "Welcome to %s"
+msgstr "Benvenuto in %s"
+
+#: includes/admin-home.php:269
+msgid "First steps"
+msgstr "Primi passi"
+
+#: includes/admin-home.php:272
+msgid "What your people are using"
+msgstr "Che cosa usa la tua gente"
+
+#, php-format
+#~ msgid ""
+#~ "What each field IS —its name, type and behaviour— is one WordPress option, "
+#~ "%1$s. What each PERSON answered is user meta: one row per person and per "
+#~ "field in %2$s, with the field key as the name. No extra tables."
+#~ msgstr ""
+#~ "Quello che ogni campo È —il suo nome, tipo e comportamento— è un’opzione di "
+#~ "WordPress, %1$s. Quello che ogni PERSONA ha risposto è user meta: una riga "
+#~ "per persona e per campo in %2$s, con la chiave del campo come nome. Nessuna "
+#~ "tabella in più."

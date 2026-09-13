@@ -1,4 +1,4 @@
-=== DiluxOne Users+ – Registration, Login, Passwordless, Social Login, 2FA, Passkeys & Front-End Account Area ===
+=== DiluxOne Users+ – Accounts & Login ===
 Contributors: pablodiloreto
 Tags: users, login, passwordless, two-factor, passkeys
 Requires at least: 6.0

@@ -64,6 +64,118 @@ function diluxone_users_tile( string $value, string $label, string $link = '', s
 }
 
 /**
+ * The steps a fresh install still has to go through.
+ *
+ * Three things, and no more: the plugin works out of the box, but until the
+ * site says which page holds the sign-in form and which one holds the account
+ * area, those two live nowhere — and if the mail does not go out, nobody gets
+ * in at all. Everything else has a sane default.
+ *
+ * Each step says whether it is done, so the screen can show the list while
+ * something is missing and get out of the way once it is not.
+ *
+ * @return array<int, array{label: string, detail: string, done: bool, url: string, cta: string}>
+ */
+function diluxone_users_setup_steps(): array {
+	$login   = (int) diluxone_users_option( 'diluxone_users_login_page' );
+	$account = (int) diluxone_users_option( 'diluxone_users_account_page' );
+	$mail    = diluxone_users_mail_status();
+
+	return array(
+		array(
+			'label'  => __( 'Choose the sign-in page', 'diluxone-users' ),
+			'detail' => __( 'The page holding the [diluxone_users_login] shortcode. Until there is one, people land on wp-login.php.', 'diluxone-users' ),
+			'done'   => $login > 0,
+			'url'    => diluxone_users_admin_url( 'diluxone-users-login' ),
+			'cta'    => __( 'Go to Sign in', 'diluxone-users' ),
+		),
+		array(
+			'label'  => __( 'Choose the account page', 'diluxone-users' ),
+			'detail' => __( 'The page holding the [diluxone_users_account] shortcode. It is what every link to "my account" points at.', 'diluxone-users' ),
+			'done'   => $account > 0,
+			'url'    => diluxone_users_admin_url( 'diluxone-users-account' ),
+			'cta'    => __( 'Go to Account area', 'diluxone-users' ),
+		),
+		array(
+			'label'  => __( 'Check that e-mail goes out', 'diluxone-users' ),
+			'detail' => __( 'The sign-in link, the second-step code and the data requests are all e-mail. Send yourself a test: it is the only way to know.', 'diluxone-users' ),
+			'done'   => 'ok' === $mail['state'],
+			'url'    => diluxone_users_admin_url( 'diluxone-users-tools' ),
+			'cta'    => __( 'Go to Tools', 'diluxone-users' ),
+		),
+	);
+}
+
+/**
+ * The first steps, while there are any.
+ *
+ * The one still to do carries the button; the ones already done are ticked and
+ * stay visible, because crossing something off is the point of a list like
+ * this. Once the three are done the whole block goes and the numbers below
+ * take its place: a checklist of things already done is furniture.
+ *
+ * @param array<int, array{label: string, detail: string, done: bool, url: string, cta: string}> $steps
+ */
+function diluxone_users_steps( array $steps ): void {
+	$next = true;
+
+	echo '<ol class="diluxone-users-steps">';
+
+	foreach ( $steps as $step ) {
+		$show_cta = ! $step['done'] && $next;
+		$next     = $next && $step['done'];
+
+		printf(
+			'<li class="diluxone-users-step%1$s"><div class="diluxone-users-step__body"><strong>%2$s</strong><p>%3$s</p>%4$s</div></li>',
+			$step['done'] ? ' is-done' : '',
+			esc_html( $step['label'] ),
+			esc_html( $step['detail'] ),
+			$show_cta
+				? sprintf(
+					'<a class="button button-primary" href="%1$s">%2$s</a>',
+					esc_url( $step['url'] ),
+					esc_html( $step['cta'] )
+				)
+				: ''
+		);
+	}
+
+	echo '</ol>';
+}
+
+/**
+ * What people are actually using, once the site is up.
+ *
+ * A bar per thing, drawn against the number of accounts. No chart library for
+ * five numbers: it is a width in per cent, and it prints the same on a screen
+ * reader as the table on the Status screen does.
+ */
+function diluxone_users_usage_bars(): void {
+	$stats = diluxone_users_stats();
+	$total = max( 1, (int) $stats['users'] );
+
+	$rows = array(
+		__( 'With a public name', 'diluxone-users' ) => (int) $stats['handles'],
+		__( 'With a social account linked', 'diluxone-users' ) => (int) $stats['social'],
+		__( 'With an authenticator app', 'diluxone-users' ) => (int) $stats['totp'],
+		__( 'With a passkey', 'diluxone-users' )     => (int) $stats['passkeys'],
+	);
+
+	echo '<ul class="diluxone-users-bars">';
+
+	foreach ( $rows as $label => $value ) {
+		printf(
+			'<li><span class="diluxone-users-bars__label">%1$s</span><span class="diluxone-users-bars__track"><span class="diluxone-users-bars__fill" style="width:%2$s%%"></span></span><span class="diluxone-users-bars__value">%3$s</span></li>',
+			esc_html( (string) $label ),
+			esc_attr( (string) round( $value / $total * 100, 1 ) ),
+			esc_html( number_format_i18n( $value ) )
+		);
+	}
+
+	echo '</ul>';
+}
+
+/**
  * A status row: what it is, how it is doing and what to do.
  *
  * The state has three values and not two. "To be confirmed" exists because
@@ -107,8 +219,19 @@ function diluxone_users_screen_home(): void {
 
 	diluxone_users_screen_open( diluxone_users_screens()[ DILUXONE_USERS_MENU ] );
 
-	diluxone_users_intro( __( 'Who is in this site, what is asked of them and how they get in.', 'diluxone-users' ) );
+	$steps   = diluxone_users_setup_steps();
+	$pending = array_filter( $steps, static fn( array $step ): bool => ! $step['done'] );
 	?>
+
+	<div class="diluxone-users-welcome">
+		<h2>
+			<?php
+			/* translators: %s: plugin name */
+			printf( esc_html__( 'Welcome to %s', 'diluxone-users' ), esc_html( diluxone_users_plugin_name() ) );
+			?>
+		</h2>
+		<p><?php esc_html_e( 'Who is in this site, what is asked of them and how they get in.', 'diluxone-users' ); ?></p>
+	</div>
 
 	<div class="diluxone-users-tiles">
 		<?php
@@ -141,6 +264,14 @@ function diluxone_users_screen_home(): void {
 		);
 		?>
 	</div>
+
+	<?php if ( array() !== $pending ) : ?>
+		<h2><?php esc_html_e( 'First steps', 'diluxone-users' ); ?></h2>
+		<?php diluxone_users_steps( $steps ); ?>
+	<?php else : ?>
+		<h2><?php esc_html_e( 'What your people are using', 'diluxone-users' ); ?></h2>
+		<?php diluxone_users_usage_bars(); ?>
+	<?php endif; ?>
 
 	<h2><?php esc_html_e( 'How people get in', 'diluxone-users' ); ?></h2>
 	<table class="widefat striped diluxone-users-state">
