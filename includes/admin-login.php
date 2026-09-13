@@ -108,7 +108,6 @@ function diluxone_users_screen_login_save( string $tab ): void {
 		diluxone_users_save_options(
 			array(
 				'diluxone_users_handle_enabled'  => isset( $_POST['diluxone_users_handle_enabled'] ) ? 1 : 0,
-				'diluxone_users_handle_login'    => isset( $_POST['diluxone_users_handle_login'] ) ? 1 : 0,
 				'diluxone_users_handle_min'      => absint( wp_unslash( $_POST['diluxone_users_handle_min'] ?? 3 ) ),
 				'diluxone_users_handle_max'      => absint( wp_unslash( $_POST['diluxone_users_handle_max'] ?? 30 ) ),
 				'diluxone_users_handle_charset'  => sanitize_key( wp_unslash( $_POST['diluxone_users_handle_charset'] ?? 'strict' ) ),
@@ -140,13 +139,142 @@ function diluxone_users_screen_login_save( string $tab ): void {
 			'diluxone_users_login_page'     => absint( wp_unslash( $_POST['diluxone_users_login_page'] ?? 0 ) ),
 			'diluxone_users_login_expiry'   => absint( wp_unslash( $_POST['diluxone_users_login_expiry'] ?? 15 ) ),
 			'diluxone_users_login_throttle' => absint( wp_unslash( $_POST['diluxone_users_login_throttle'] ?? 60 ) ),
+			// Lives on this tab because it is about what the sign-in box
+			// accepts, not about what a public name is.
+			'diluxone_users_handle_login'   => isset( $_POST['diluxone_users_handle_login'] ) ? 1 : 0,
 		)
 	);
 	// phpcs:enable
 }
 
+/**
+ * Every way into this site, in one place.
+ *
+ * The settings that open and close these live on four different screens, and
+ * each one only ever said what it did on its own. What nobody could see was
+ * the result: whether somebody can get in with a password on a site whose
+ * accounts were all created by e-mail link, what happens to the person who
+ * comes back from Google, whether the "forgot your password" link still leads
+ * anywhere. This table answers that, and it reads the same settings the rest
+ * of the screens write — there is no second source of truth.
+ *
+ * @return array<int, array{label: string, state: string, detail: string, url: string}>
+ */
+function diluxone_users_doors(): array {
+	$method    = diluxone_users_login_method();
+	$ready     = diluxone_users_sso_available();
+	$providers = diluxone_users_sso_providers();
+	$register  = (bool) diluxone_users_option( 'diluxone_users_login_register' );
+
+	$doors = array();
+
+	$doors[] = array(
+		'label'  => __( 'A link sent by e-mail', 'diluxone-users' ),
+		'state'  => diluxone_users_login_has_link() ? 'open' : 'closed',
+		'detail' => diluxone_users_login_has_link()
+			? __( 'The person types their e-mail and gets a single-use link. Nothing to remember and nothing to steal.', 'diluxone-users' )
+			: __( 'Closed. Nobody can ask for a link, so an account with no usable password has no way in.', 'diluxone-users' ),
+		'url'    => '',
+	);
+
+	$doors[] = array(
+		'label'  => __( 'Username and password', 'diluxone-users' ),
+		'state'  => diluxone_users_login_has_password() ? 'open' : 'closed',
+		'detail' => diluxone_users_login_has_password()
+			? __( 'WordPress\'s own form. Accounts created by e-mail link or by a social network carry a random password nobody knows — those people come in by link, or ask for a new password below.', 'diluxone-users' )
+			: __( 'Closed: wp-login.php sends people to the sign-in page, and its registration form is switched off with it.', 'diluxone-users' ),
+		'url'    => '',
+	);
+
+	$doors[] = array(
+		'label'  => __( 'A social account', 'diluxone-users' ),
+		'state'  => array() !== $ready ? 'open' : ( array() !== array_filter( array_keys( $providers ), 'diluxone_users_sso_configured' ) ? 'partial' : 'closed' ),
+		'detail' => array() !== $ready
+			? sprintf(
+				/* translators: %s: the social networks that are working, separated by commas */
+				__( 'Working: %s. Whoever comes back from one of these is signed in on the spot — the password plays no part, and if the site asks for a second step, it is still asked.', 'diluxone-users' ),
+				implode( ', ', array_map( static fn( array $p ): string => (string) $p['name'], $ready ) )
+			)
+			: __( 'No network is working yet. Credentials are not enough: a provider has to pass its live test before it can be turned on.', 'diluxone-users' ),
+		'url'    => diluxone_users_admin_url( 'diluxone-users-social' ),
+	);
+
+	$doors[] = array(
+		'label'  => __( 'A passkey', 'diluxone-users' ),
+		'state'  => diluxone_users_passkeys_enabled() ? 'open' : 'closed',
+		'detail' => diluxone_users_passkeys_enabled()
+			? __( 'For whoever added one. It asks for no second step: a passkey is already two of them in one.', 'diluxone-users' )
+			: __( 'Closed. Nobody can add one, and the ones already added stop working.', 'diluxone-users' ),
+		'url'    => diluxone_users_admin_url( 'diluxone-users-login', array( 'tab' => 'passkeys' ) ),
+	);
+
+	$doors[] = array(
+		'label'  => __( 'Typing the public name instead of the e-mail', 'diluxone-users' ),
+		'state'  => ( diluxone_users_option( 'diluxone_users_handle_enabled' ) && diluxone_users_option( 'diluxone_users_handle_login' ) ) ? 'open' : 'closed',
+		'detail' => __( 'This opens no door of its own: the link always goes to the e-mail on the account, never to what was typed. It only saves people from remembering which address they used.', 'diluxone-users' ),
+		'url'    => diluxone_users_admin_url( 'diluxone-users-login', array( 'tab' => 'handle' ) ),
+	);
+
+	$doors[] = array(
+		'label'  => __( 'Asking for a new password', 'diluxone-users' ),
+		'state'  => diluxone_users_login_has_password() ? 'open' : 'closed',
+		'detail' => diluxone_users_login_has_password()
+			? __( 'WordPress\'s "Lost your password?" works as it always did. It is the way out for somebody whose account was created without a password they know.', 'diluxone-users' )
+			: __( 'Closed with the password form, and nothing is lost: on this site a password gets nobody in.', 'diluxone-users' ),
+		'url'    => '',
+	);
+
+	$doors[] = array(
+		'label'  => __( 'Creating an account', 'diluxone-users' ),
+		'state'  => $register ? 'open' : 'closed',
+		'detail' => $register
+			? __( 'Anybody who gets in with an e-mail or a social account the site has never seen gets an account in the same step. There is no separate registration form.', 'diluxone-users' )
+			: __( 'Only people who already have an account can get in. Somebody has to create them under Users.', 'diluxone-users' ),
+		'url'    => diluxone_users_admin_url( 'diluxone-users-login', array( 'tab' => 'registration' ) ),
+	);
+
+	return $doors;
+}
+
+/** The doors, drawn. */
+function diluxone_users_doors_table(): void {
+	$labels = array(
+		'open'    => __( 'Open', 'diluxone-users' ),
+		'closed'  => __( 'Closed', 'diluxone-users' ),
+		'partial' => __( 'Not yet', 'diluxone-users' ),
+	);
+
+	echo '<table class="widefat striped diluxone-users-doors"><tbody>';
+
+	foreach ( diluxone_users_doors() as $door ) {
+		printf(
+			'<tr><td class="diluxone-users-doors__state"><span class="diluxone-users-pill diluxone-users-pill--%1$s">%2$s</span></td><th scope="row">%3$s</th><td>%4$s %5$s</td></tr>',
+			esc_attr( 'open' === $door['state'] ? 'on' : ( 'partial' === $door['state'] ? 'pending' : 'off' ) ),
+			esc_html( $labels[ $door['state'] ] ),
+			esc_html( $door['label'] ),
+			esc_html( $door['detail'] ),
+			'' === $door['url'] ? '' : sprintf(
+				'<a href="%1$s">%2$s</a>',
+				esc_url( $door['url'] ),
+				esc_html__( 'Change it', 'diluxone-users' )
+			)
+		);
+	}
+
+	echo '</tbody></table>';
+}
+
 /** How people get in: the door, the page and the timings. */
 function diluxone_users_screen_login_link(): void {
+	?>
+	<h2><?php esc_html_e( 'Every way in, and what each one means', 'diluxone-users' ); ?></h2>
+	<?php
+	diluxone_users_intro( __( 'What is open right now, read from the same settings the screens below write. The choices are spread over several tabs; the consequence is not.', 'diluxone-users' ) );
+	diluxone_users_doors_table();
+	?>
+	<h2><?php esc_html_e( 'The way in', 'diluxone-users' ); ?></h2>
+	<?php
+
 	diluxone_users_intro( __( 'The person types their email and gets a single-use link. There is no password to choose, to remember or to steal. Put the [diluxone_users_login] shortcode on the page you pick below.', 'diluxone-users' ) );
 	?>
 	<table class="form-table" role="presentation">
@@ -198,6 +326,24 @@ function diluxone_users_screen_login_link(): void {
 					);
 					?>
 				</p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'What can be typed in the box', 'diluxone-users' ); ?></th>
+			<td>
+				<label>
+					<input type="checkbox" name="diluxone_users_handle_login" value="1" <?php checked( diluxone_users_option( 'diluxone_users_handle_login' ), 1 ); ?>>
+					<?php esc_html_e( 'Accept the public name as well as the e-mail address', 'diluxone-users' ); ?>
+				</label>
+				<p class="description">
+					<?php esc_html_e( 'It opens no door of its own: the link always goes to the e-mail on the account, never to what was typed. It only saves people from remembering which address they used.', 'diluxone-users' ); ?>
+				</p>
+				<?php if ( ! diluxone_users_option( 'diluxone_users_handle_enabled' ) ) : ?>
+					<p class="description">
+						<strong><?php esc_html_e( 'Public names are turned off, so this does nothing yet.', 'diluxone-users' ); ?></strong>
+						<a href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-login', array( 'tab' => 'handle' ) ) ); ?>"><?php esc_html_e( 'Turn them on', 'diluxone-users' ); ?></a>
+					</p>
+				<?php endif; ?>
 			</td>
 		</tr>
 		<tr>
@@ -265,16 +411,6 @@ function diluxone_users_screen_login_handle(): void {
 					<?php esc_html_e( 'Let people choose their public name', 'diluxone-users' ); ?>
 				</label>
 				<p class="description"><?php esc_html_e( 'Turned off, the name comes from what they wrote as their first and last name, and the profile address is made from that.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Sign in with it', 'diluxone-users' ); ?></th>
-			<td>
-				<label>
-					<input type="checkbox" name="diluxone_users_handle_login" value="1" <?php checked( diluxone_users_option( 'diluxone_users_handle_login' ), 1 ); ?>>
-					<?php esc_html_e( 'Accept the public name in the sign-in box, as well as the email', 'diluxone-users' ); ?>
-				</label>
-				<p class="description"><?php esc_html_e( 'The link still goes to the email on the account, never to something typed at that moment: this opens no new door, it only saves people from remembering which address they used.', 'diluxone-users' ); ?></p>
 			</td>
 		</tr>
 		<tr>

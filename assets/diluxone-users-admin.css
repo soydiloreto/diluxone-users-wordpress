@@ -182,6 +182,11 @@
 
 .diluxone-users-state-box { max-width: 900px; margin: 18px 0 24px; padding: 6px 14px; }
 
+/* Every way in, with its state: the pill column is narrow and fixed so the
+   states line up and the eye can run down them. */
+.diluxone-users-doors__state { width: 90px; }
+.diluxone-users-doors th { width: 260px; }
+
 /* The "to everybody / to some roles" control: the roles hang under the radio
    they belong to, indented enough to read as its consequence. */
 .diluxone-users-scope__roles { margin: 6px 0 0 22px; }
