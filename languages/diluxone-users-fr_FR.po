@@ -571,7 +571,7 @@ msgid "Required"
 msgstr "Obligatoire"
 
 #: includes/admin-fields.php:290 includes/admin-sessions.php:156
-#: includes/admin-social.php:399 includes/admin-status.php:331
+#: includes/admin-social.php:399 includes/admin-status.php:350
 #: includes/admin.php:75 templates/account/privacy.php:29
 msgid "Status"
 msgstr "État"
@@ -884,7 +884,7 @@ msgid "How people get in"
 msgstr "Comment les gens entrent"
 
 #: includes/admin-home.php:281 includes/admin-login.php:151
-#: includes/admin-status.php:99
+#: includes/admin-status.php:118
 msgid "Sign-in page"
 msgstr "Page de connexion"
 
@@ -961,7 +961,7 @@ msgstr ""
 "Désactivées. C’est la seule façon d’entrer qui ne peut pas être hameçonnée."
 
 #: includes/admin-home.php:335 includes/admin-social.php:83
-#: includes/admin-status.php:261 includes/admin-status.php:272
+#: includes/admin-status.php:280 includes/admin-status.php:291
 #: includes/admin.php:72
 msgid "Social login"
 msgstr "Connexion sociale"
@@ -1814,7 +1814,7 @@ msgstr "Personne ne correspond."
 msgid "Expired"
 msgstr "Expirée"
 
-#: includes/admin-sessions.php:192 includes/admin-tools.php:343
+#: includes/admin-sessions.php:192 includes/admin-tools.php:400
 msgid "Close sessions"
 msgstr "Fermer les sessions"
 
@@ -2275,40 +2275,34 @@ msgstr "La page choisie n’existe plus."
 msgid "“%s” is not published, so nobody can reach it."
 msgstr "« %s » n’est pas publiée, personne ne peut donc y arriver."
 
-#. translators: 1: title of the page, 2: the shortcode that is missing
-#: includes/admin-status.php:80
-#, php-format
-msgid "“%1$s” does not contain %2$s, so the page renders empty."
-msgstr "« %1$s » ne contient pas %2$s, la page s’affiche donc vide."
-
-#: includes/admin-status.php:98
+#: includes/admin-status.php:117
 msgid "Account page"
 msgstr "Page du compte"
 
-#: includes/admin-status.php:106 includes/admin-status.php:114
-#: includes/admin-status.php:124
+#: includes/admin-status.php:125 includes/admin-status.php:133
+#: includes/admin-status.php:143
 msgid "Outgoing mail"
 msgstr "Courrier sortant"
 
-#: includes/admin-status.php:110
+#: includes/admin-status.php:129
 msgid "The last message could not be sent."
 msgstr "Le dernier message n’a pas pu être envoyé."
 
 #. translators: %s: how long ago, e.g. "2 hours"
-#: includes/admin-status.php:118
+#: includes/admin-status.php:137
 #, php-format
 msgid "Last message sent %s ago."
 msgstr "Dernier message envoyé il y a %s."
 
-#: includes/admin-status.php:126
+#: includes/admin-status.php:145
 msgid "Nothing sent yet. Send a test from Tools."
 msgstr "Rien envoyé pour l’instant. Envoyez un test depuis Outils."
 
-#: includes/admin-status.php:140
+#: includes/admin-status.php:159
 msgid "The site is served over HTTPS."
 msgstr "Le site est servi en HTTPS."
 
-#: includes/admin-status.php:146
+#: includes/admin-status.php:165
 msgid ""
 "Passkeys are on, but WebAuthn does not work outside HTTPS: nobody can "
 "register or use one."
@@ -2316,7 +2310,7 @@ msgstr ""
 "Les passkeys sont activées, mais WebAuthn ne fonctionne pas hors HTTPS : "
 "personne ne peut en enregistrer ni en utiliser une."
 
-#: includes/admin-status.php:147
+#: includes/admin-status.php:166
 msgid ""
 "The site is not served over HTTPS. Passkeys will not work if you turn them "
 "on."
@@ -2324,11 +2318,11 @@ msgstr ""
 "Le site n’est pas servi en HTTPS. Les passkeys ne fonctionneront pas si vous"
 " les activez."
 
-#: includes/admin-status.php:156 includes/admin-status.php:160
+#: includes/admin-status.php:175 includes/admin-status.php:179
 msgid "Permalinks"
 msgstr "Permaliens"
 
-#: includes/admin-status.php:158
+#: includes/admin-status.php:177
 msgid ""
 "Set to “Plain”. The account area needs pretty permalinks to route its "
 "sections."
@@ -2336,43 +2330,43 @@ msgstr ""
 "Réglés sur « Simple ». L’espace compte a besoin de permaliens jolis pour "
 "router ses sections."
 
-#: includes/admin-status.php:164 includes/admin-status.php:166
+#: includes/admin-status.php:183 includes/admin-status.php:185
 msgid "Rewrite rules"
 msgstr "Règles de réécriture"
 
-#: includes/admin-status.php:164
+#: includes/admin-status.php:183
 msgid "Up to date."
 msgstr "À jour."
 
-#: includes/admin-status.php:168
+#: includes/admin-status.php:187
 msgid ""
 "Not rewritten for this version yet. Flush them from Tools if a section 404s."
 msgstr ""
 "Pas encore réécrites pour cette version. Régénérez-les depuis Outils si une "
 "section renvoie une 404."
 
-#: includes/admin-status.php:198
+#: includes/admin-status.php:217
 msgid "password"
 msgstr "mot de passe"
 
-#: includes/admin-status.php:202 includes/admin-status.php:217
+#: includes/admin-status.php:221 includes/admin-status.php:236
 msgid "e-mail link"
 msgstr "lien par e-mail"
 
-#: includes/admin-status.php:206
+#: includes/admin-status.php:225
 msgid "social login"
 msgstr "connexion sociale"
 
-#: includes/admin-status.php:211 includes/admin-status.php:221
-#: includes/admin-status.php:227
+#: includes/admin-status.php:230 includes/admin-status.php:240
+#: includes/admin-status.php:246
 msgid "Ways in"
 msgstr "Façons d’entrer"
 
-#: includes/admin-status.php:213
+#: includes/admin-status.php:232
 msgid "No sign-in method is enabled at all."
 msgstr "Aucune méthode de connexion n’est activée."
 
-#: includes/admin-status.php:223
+#: includes/admin-status.php:242
 msgid ""
 "The e-mail link is the only way in, and mail is failing. Nobody can sign in."
 msgstr ""
@@ -2380,7 +2374,7 @@ msgstr ""
 "Personne ne peut se connecter."
 
 #. translators: %d: number of providers
-#: includes/admin-status.php:265
+#: includes/admin-status.php:284
 #, php-format
 msgid "%d provider configured and enabled."
 msgid_plural "%d providers configured and enabled."
@@ -2388,54 +2382,54 @@ msgstr[0] "%d fournisseur configuré et activé."
 msgstr[1] "%d fournisseurs configurés et activés."
 
 #. translators: %s: comma-separated provider names
-#: includes/admin-status.php:276
+#: includes/admin-status.php:295
 #, php-format
 msgid "Credentials are saved but the provider is off, so no button shows: %s."
 msgstr ""
 "Les identifiants sont enregistrés mais le fournisseur est désactivé : aucun "
 "bouton ne s’affiche : %s."
 
-#: includes/admin-status.php:319
+#: includes/admin-status.php:338
 msgid "Plugin version"
 msgstr "Version de l’extension"
 
-#: includes/admin-status.php:320
+#: includes/admin-status.php:339
 msgid "WordPress"
 msgstr "WordPress"
 
-#: includes/admin-status.php:322
+#: includes/admin-status.php:341
 msgid "Site language"
 msgstr "Langue du site"
 
-#: includes/admin-status.php:323
+#: includes/admin-status.php:342
 msgid "Multisite"
 msgstr "Multisite"
 
-#: includes/admin-status.php:323
+#: includes/admin-status.php:342
 msgid "yes"
 msgstr "oui"
 
-#: includes/admin-status.php:323
+#: includes/admin-status.php:342
 msgid "no"
 msgstr "non"
 
-#: includes/admin-status.php:324
+#: includes/admin-status.php:343
 msgid "Object cache"
 msgstr "Cache d’objets"
 
-#: includes/admin-status.php:324
+#: includes/admin-status.php:343
 msgid "external"
 msgstr "externe"
 
-#: includes/admin-status.php:324
+#: includes/admin-status.php:343
 msgid "none"
 msgstr "aucun"
 
-#: includes/admin-status.php:325
+#: includes/admin-status.php:344
 msgid "WordPress profile"
 msgstr "Profil WordPress"
 
-#: includes/admin-status.php:332
+#: includes/admin-status.php:351
 msgid ""
 "Nothing here changes anything: it looks and it counts. What needs fixing "
 "gets fixed in Tools."
@@ -2443,54 +2437,55 @@ msgstr ""
 "Rien ici ne change quoi que ce soit : cela regarde et cela compte. Ce qui "
 "doit être réparé se répare dans Outils."
 
-#: includes/admin-status.php:344
+#: includes/admin-status.php:363
 msgid "Everything checks out."
 msgstr "Tout est en ordre."
 
 #. translators: %d: number of failing checks
-#: includes/admin-status.php:349
+#: includes/admin-status.php:368
 #, php-format
 msgid "%d thing needs attention."
 msgid_plural "%d things need attention."
 msgstr[0] "%d chose demande votre attention."
 msgstr[1] "%d choses demandent votre attention."
 
-#: includes/admin-status.php:379
+#: includes/admin-status.php:398
 msgid "How much of it is being used"
 msgstr "Quelle part de tout cela est utilisée"
 
-#: includes/admin-status.php:383
+#: includes/admin-status.php:402
 msgid "Accounts"
 msgstr "Comptes"
 
-#: includes/admin-home.php:160 includes/admin-status.php:384
+#: includes/admin-home.php:160 includes/admin-status.php:403
 msgid "With an authenticator app"
 msgstr "Avec une application d’authentification"
 
-#: includes/admin-home.php:161 includes/admin-status.php:385
+#: includes/admin-home.php:161 includes/admin-status.php:404
 msgid "With a passkey"
 msgstr "Avec une passkey"
 
-#: includes/admin-home.php:159 includes/admin-status.php:386
+#: includes/admin-home.php:159 includes/admin-status.php:405
 msgid "With a social account linked"
 msgstr "Avec un compte social lié"
 
-#: includes/admin-home.php:158 includes/admin-status.php:387
+#: includes/admin-home.php:158 includes/admin-status.php:406
 msgid "With a public name"
 msgstr "Avec un nom public"
 
-#: includes/admin-status.php:400
+#: includes/admin-status.php:419
 msgid "Environment"
 msgstr "Environnement"
 
-#: includes/admin-status.php:401
+#: includes/admin-status.php:420
 msgid ""
 "Copy this into a support message and half the back-and-forth disappears."
 msgstr ""
 "Collez ceci dans une demande de support et la moitié des allers-retours "
 "disparaît."
 
-#: includes/admin-tools.php:53 includes/mail.php:90 includes/sessions.php:325
+#: includes/admin-tools.php:53 includes/admin-tools.php:279
+#: includes/sessions.php:325
 msgid "You are not allowed to do this."
 msgstr "Vous n’avez pas le droit de faire cela."
 
@@ -2546,11 +2541,11 @@ msgid_plural "%d settings restored."
 msgstr[0] "%d réglage restauré."
 msgstr[1] "%d réglages restaurés."
 
-#: includes/admin-tools.php:299 includes/admin.php:76
+#: includes/admin-tools.php:356 includes/admin.php:76
 msgid "Tools"
 msgstr "Outils"
 
-#: includes/admin-tools.php:308
+#: includes/admin-tools.php:365
 msgid ""
 "Five buttons for when something went wrong and somebody is waiting on the "
 "other side."
@@ -2558,11 +2553,11 @@ msgstr ""
 "Cinq boutons pour quand quelque chose a mal tourné et que quelqu’un attend "
 "de l’autre côté."
 
-#: includes/admin-tools.php:311
+#: includes/admin-tools.php:368
 msgid "Rebuild the rewrite rules"
 msgstr "Régénérer les règles de réécriture"
 
-#: includes/admin-tools.php:312
+#: includes/admin-tools.php:369
 msgid ""
 "Use this when a section of the account area returns a 404. The account area "
 "routes its sections through rewrite rules, and those go stale when "
@@ -2573,15 +2568,15 @@ msgstr ""
 "deviennent obsolètes quand les permaliens changent ou qu’une autre extension"
 " les réécrit."
 
-#: includes/admin-tools.php:315
+#: includes/admin-tools.php:372
 msgid "Rebuild"
 msgstr "Régénérer"
 
-#: includes/admin-tools.php:320
+#: includes/admin-tools.php:377
 msgid "Send a test message"
 msgstr "Envoyer un message de test"
 
-#: includes/admin-tools.php:321
+#: includes/admin-tools.php:378
 msgid ""
 "It goes to your own address. If it does not arrive, the sign-in links and "
 "the second-step codes are not arriving either."
@@ -2589,15 +2584,15 @@ msgstr ""
 "Il part vers votre propre adresse. S’il n’arrive pas, les liens de connexion"
 " et les codes de la deuxième étape n’arrivent pas non plus."
 
-#: includes/admin-tools.php:323
+#: includes/admin-tools.php:380
 msgid "Send it"
 msgstr "L’envoyer"
 
-#: includes/admin-tools.php:330
+#: includes/admin-tools.php:387
 msgid "Send someone a fresh code"
 msgstr "Envoyer un nouveau code à quelqu’un"
 
-#: includes/admin-tools.php:331
+#: includes/admin-tools.php:388
 msgid ""
 "For when a person says the second-step code never arrived. It sends a new "
 "one and voids the previous one. You never get to see it — the code is stored"
@@ -2607,15 +2602,15 @@ msgstr ""
 "arrivé. Cela en envoie un nouveau et annule le précédent. Vous ne le voyez "
 "jamais — le code est stocké haché, et c’est bien le but."
 
-#: includes/admin-tools.php:336 includes/admin-tools.php:351
+#: includes/admin-tools.php:393 includes/admin-tools.php:408
 msgid "their e-mail address"
 msgstr "son adresse e-mail"
 
-#: includes/admin-tools.php:338
+#: includes/admin-tools.php:395
 msgid "Send the code"
 msgstr "Envoyer le code"
 
-#: includes/admin-tools.php:344
+#: includes/admin-tools.php:401
 msgid ""
 "Closing every session on the site signs you out too. That is on purpose: if "
 "you are doing this, the session you are least sure about might be your own."
@@ -2624,23 +2619,23 @@ msgstr ""
 " si vous faites cela, la session dont vous êtes le moins sûr est peut-être "
 "la vôtre."
 
-#: includes/admin-tools.php:348
+#: includes/admin-tools.php:405
 msgid "Just this person:"
 msgstr "Seulement cette personne :"
 
-#: includes/admin-tools.php:354
+#: includes/admin-tools.php:411
 msgid "Everyone on the site, me included"
 msgstr "Tout le monde sur le site, moi compris"
 
-#: includes/admin-tools.php:356
+#: includes/admin-tools.php:413
 msgid "Close them"
 msgstr "Les fermer"
 
-#: includes/admin-tools.php:361
+#: includes/admin-tools.php:418
 msgid "Settings as a file"
 msgstr "Les réglages sous forme de fichier"
 
-#: includes/admin-tools.php:362
+#: includes/admin-tools.php:419
 msgid ""
 "Take the settings and the user fields from one site to another — staging to "
 "production, or a site you set up once and want to repeat. Social login "
@@ -2653,11 +2648,11 @@ msgstr ""
 "volontairement exclus : ce sont des secrets, et un fichier JSON qui voyage "
 "par e-mail n’est pas un endroit pour ça."
 
-#: includes/admin-tools.php:366
+#: includes/admin-tools.php:423
 msgid "Download them"
 msgstr "Les télécharger"
 
-#: includes/admin-tools.php:373
+#: includes/admin-tools.php:430
 msgid ""
 "Restoring overwrites what is set right now. Only keys this plugin knows are "
 "read, so a file from somewhere else cannot write settings that are not ours."
@@ -2666,7 +2661,7 @@ msgstr ""
 "extension connaît sont lues : un fichier venu d’ailleurs ne peut pas écrire "
 "des réglages qui ne sont pas les nôtres."
 
-#: includes/admin-tools.php:378
+#: includes/admin-tools.php:435
 msgid "Restore them"
 msgstr "Les restaurer"
 
@@ -3036,12 +3031,12 @@ msgstr ""
 "Si vous ne l’avez pas demandé, ignorez ce message : personne ne peut entrer dans votre compte sans lui."
 
 #. translators: %s: site name
-#: includes/mail.php:101
+#: includes/admin-tools.php:290
 #, php-format
 msgid "Test from %s"
 msgstr "Test depuis %s"
 
-#: includes/mail.php:104
+#: includes/admin-tools.php:293
 msgid ""
 "If this arrived, the site can send the sign-in links, the second-step codes "
 "and the data requests. If it did not, none of those work either."
@@ -3050,7 +3045,7 @@ msgstr ""
 "de la deuxième étape et les demandes de données. Si ce n’est pas arrivé, "
 "rien de tout cela ne fonctionne non plus."
 
-#: includes/mail.php:111
+#: includes/admin-tools.php:300
 msgid "wp_mail() returned false and said nothing else."
 msgstr "wp_mail() a renvoyé false sans rien dire de plus."
 
@@ -4667,6 +4662,36 @@ msgstr "Premiers pas"
 #: includes/admin-home.php:272
 msgid "What your people are using"
 msgstr "Ce que vos gens utilisent"
+
+#. translators: 1: title of the page, 2: the shortcode that was not found
+#: includes/admin-status.php:99
+#, php-format
+msgid ""
+"“%1$s” does not contain %2$s. If your theme draws it from a template, this "
+"is fine; if not, the page renders empty."
+msgstr ""
+"« %1$s » ne contient pas %2$s. Si votre thème le dessine depuis un modèle, "
+"tout va bien ; sinon, la page s’affiche vide."
+
+#. translators: %s: e-mail address
+#: includes/admin-tools.php:307
+#, php-format
+msgid ""
+"A test message is on its way to %s. If it does not arrive, nothing else will"
+" either."
+msgstr ""
+"Un message de test part vers %s. S’il n’arrive pas, rien d’autre n’arrivera "
+"non plus."
+
+#. translators: %s: the reason the send failed
+#: includes/admin-tools.php:316
+#, php-format
+msgid "The message could not be sent: %s"
+msgstr "Le message n’a pas pu être envoyé : %s"
+
+#, php-format
+#~ msgid "“%1$s” does not contain %2$s, so the page renders empty."
+#~ msgstr "« %1$s » ne contient pas %2$s, la page s’affiche donc vide."
 
 #, php-format
 #~ msgid ""

@@ -71,13 +71,32 @@ function diluxone_users_check_page( string $option, string $shortcode, string $l
 		);
 	}
 
-	if ( ! has_shortcode( (string) $page->post_content, $shortcode ) ) {
+	$draws = has_shortcode( (string) $page->post_content, $shortcode );
+
+	/**
+	 * Filters whether that page really draws this part of the plugin.
+	 *
+	 * The shortcode in the content is the ordinary way and the only one that
+	 * can be checked from here. A site that draws it from a template — which
+	 * is a supported way to use this plugin — answers true here and the check
+	 * stops calling a working page broken.
+	 *
+	 * @param bool    $draws  Whether the shortcode was found in the content.
+	 * @param string  $option The option holding the page ID.
+	 * @param WP_Post $page   The page itself.
+	 */
+	$draws = (bool) apply_filters( 'diluxone_users_page_draws', $draws, $option, $page );
+
+	if ( ! $draws ) {
+		// A warning and not a failure: what can be said for certain is that
+		// the shortcode is not in the content, and that is not the same as
+		// the page being broken.
 		return diluxone_users_check(
 			$label,
-			'fail',
+			'warn',
 			sprintf(
-				/* translators: 1: title of the page, 2: the shortcode that is missing */
-				__( '“%1$s” does not contain %2$s, so the page renders empty.', 'diluxone-users' ),
+				/* translators: 1: title of the page, 2: the shortcode that was not found */
+				__( '“%1$s” does not contain %2$s. If your theme draws it from a template, this is fine; if not, the page renders empty.', 'diluxone-users' ),
 				$page->post_title,
 				'[' . $shortcode . ']'
 			)

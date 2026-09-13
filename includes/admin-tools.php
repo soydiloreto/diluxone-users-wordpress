@@ -203,7 +203,7 @@ function diluxone_users_tool_export(): void {
 		'settings' => diluxone_users_tool_settings(),
 	);
 
-	$name = 'users-plus-' . gmdate( 'Y-m-d' ) . '.json';
+	$name = 'diluxone-users-' . gmdate( 'Y-m-d' ) . '.json';
 
 	nocache_headers();
 	header( 'Content-Type: application/json; charset=utf-8' );
@@ -263,6 +263,63 @@ function diluxone_users_tool_import(): void {
 		)
 	);
 }
+
+/**
+ * Sends a test e-mail to whoever asked for it.
+ *
+ * It lives here and not in mail.php because it is one of the buttons on this
+ * screen: it comes back to this screen, and it reports what happened the same
+ * way the rest of them do. mail.php keeps what is its own — recording what
+ * really became of the last message the site tried to send.
+ *
+ * @return never
+ */
+function diluxone_users_mail_test(): void {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_die( esc_html__( 'You are not allowed to do this.', 'diluxone-users' ) );
+	}
+
+	check_admin_referer( 'diluxone_users_mail_test' );
+
+	$user = wp_get_current_user();
+
+	$ok = wp_mail(
+		$user->user_email,
+		sprintf(
+			/* translators: %s: site name */
+			__( 'Test from %s', 'diluxone-users' ),
+			wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES )
+		),
+		__( 'If this arrived, the site can send the sign-in links, the second-step codes and the data requests. If it did not, none of those work either.', 'diluxone-users' )
+	);
+
+	// wp_mail() only reports whether it handed the message to the server; the
+	// hook in mail.php already recorded what really happened. It is stored
+	// anyway in case nothing fired.
+	if ( ! $ok && 'fail' !== diluxone_users_mail_status()['state'] ) {
+		diluxone_users_mail_failed( new WP_Error( 'diluxone_users_mail', __( 'wp_mail() returned false and said nothing else.', 'diluxone-users' ) ) );
+	}
+
+	if ( $ok ) {
+		diluxone_users_tool_done(
+			sprintf(
+				/* translators: %s: e-mail address */
+				__( 'A test message is on its way to %s. If it does not arrive, nothing else will either.', 'diluxone-users' ),
+				$user->user_email
+			)
+		);
+	}
+
+	diluxone_users_tool_done(
+		sprintf(
+			/* translators: %s: the reason the send failed */
+			__( 'The message could not be sent: %s', 'diluxone-users' ),
+			diluxone_users_mail_status()['error']
+		),
+		'error'
+	);
+}
+add_action( 'admin_post_diluxone_users_mail_test', 'diluxone_users_mail_test' );
 
 /**
  * One tool: heading, explanation and a form of its own.

@@ -83,35 +83,3 @@ function diluxone_users_mail_status(): array {
 function diluxone_users_mail_works(): bool {
 	return 'fail' !== diluxone_users_mail_status()['state'];
 }
-
-/** Sends a test e-mail to whoever asked for it, from the admin. */
-function diluxone_users_mail_test(): void {
-	if ( ! current_user_can( 'manage_options' ) ) {
-		wp_die( esc_html__( 'You are not allowed to do this.', 'diluxone-users' ) );
-	}
-
-	check_admin_referer( 'diluxone_users_mail_test' );
-
-	$user = wp_get_current_user();
-
-	$ok = wp_mail(
-		$user->user_email,
-		sprintf(
-				/* translators: %s: site name */
-			__( 'Test from %s', 'diluxone-users' ),
-			wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES )
-		),
-		__( 'If this arrived, the site can send the sign-in links, the second-step codes and the data requests. If it did not, none of those work either.', 'diluxone-users' )
-	);
-
-	// wp_mail() only reports whether it handed the message to the server; the
-	// hook above already recorded what really happened. It is stored anyway in
-	// case nothing fired.
-	if ( ! $ok && 'fail' !== diluxone_users_mail_status()['state'] ) {
-		diluxone_users_mail_failed( new WP_Error( 'diluxone_users_mail', __( 'wp_mail() returned false and said nothing else.', 'diluxone-users' ) ) );
-	}
-
-	wp_safe_redirect( diluxone_users_admin_url( 'diluxone-users', array( 'diluxone_users_mail' => $ok ? 'sent' : 'failed' ) ) );
-	exit;
-}
-add_action( 'admin_post_diluxone_users_mail_test', 'diluxone_users_mail_test' );
