@@ -125,6 +125,22 @@ function diluxone_users_sso_available(): array {
 }
 
 /**
+ * The providers the sign-in form offers.
+ *
+ * Which is not the same list as the one that works: a site can have Google
+ * set up and verified and still not want its button on the form — because it
+ * is winding the provider down, or because the buttons belong somewhere else
+ * on that page and the site places them itself. Whoever already linked an
+ * account keeps being able to use it from the account area either way; this
+ * is the form, not the plumbing.
+ *
+ * @return array<string, array<string, mixed>>
+ */
+function diluxone_users_sso_for_login(): array {
+	return diluxone_users_option( 'diluxone_users_sso_login' ) ? diluxone_users_sso_available() : array();
+}
+
+/**
  * The URL segment where the round trip with the networks lives.
  *
  * It can be moved with the filter in case a site already has a page at /sso/.

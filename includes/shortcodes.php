@@ -90,7 +90,7 @@ function diluxone_users_shortcode_login( $atts = array() ): string {
 		array(
 			'state'     => diluxone_users_state(),
 			'email'     => $email,
-			'providers' => diluxone_users_sso_available(),
+			'providers' => diluxone_users_sso_for_login(),
 			'minutes'   => diluxone_users_login_expiry(),
 			'title'     => in_array( strtolower( (string) $atts['title'] ), array( 'yes', '1', 'true', 'on' ), true ),
 		)

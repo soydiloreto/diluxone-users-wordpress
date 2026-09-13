@@ -255,7 +255,8 @@ function diluxone_users_account_post(): void {
 		diluxone_users_save_options(
 			array(
 				'diluxone_users_account_page' => absint( wp_unslash( $_POST['diluxone_users_account_page'] ?? 0 ) ),
-			)
+				'diluxone_users_wp_profile'   => sanitize_key( wp_unslash( $_POST['diluxone_users_wp_profile'] ?? 'allow' ) ),
+			) + diluxone_users_scope_posted( 'diluxone_users_wp_profile' )
 		);
 
 			// The page changed: the /account/<section>/ rules have to be rebuilt.
@@ -618,6 +619,45 @@ function diluxone_users_screen_account_layout(): void {
 					<?php if ( '' === (string) get_option( 'permalink_structure' ) ) : ?>
 						<p class="description"><?php esc_html_e( 'With plain permalinks the sections go as ?seccion=…; turn on pretty permalinks in Settings → Permalinks and they become /page/section/ on their own.', 'diluxone-users' ); ?></p>
 					<?php endif; ?>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'The dashboard profile', 'diluxone-users' ); ?></th>
+				<td>
+					<?php
+					/*
+					 * WordPress has its own screen for the same data, at
+					 * /wp-admin/profile.php. With an account area on the front
+					 * end the site has two of them, and the dashboard one does
+					 * not know about the required fields or the edit limits
+					 * set up here. This is what happens to that screen.
+					 */
+					$profile = array(
+						'allow'    => __( 'Leave it as WordPress ships it', 'diluxone-users' ),
+						'redirect' => __( 'Send people to their account on the site instead', 'diluxone-users' ),
+						'block'    => __( 'Close it — their details are only edited on the site', 'diluxone-users' ),
+					);
+
+					foreach ( $profile as $key => $label ) :
+						?>
+						<label class="diluxone-users-roles__item">
+							<input type="radio" name="diluxone_users_wp_profile" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_wp_profile' ), $key ); ?>>
+							<?php echo esc_html( $label ); ?>
+						</label>
+					<?php endforeach; ?>
+					<p class="description"><?php esc_html_e( 'Two screens for the same data is how a site ends up with a person editing their name in one place and their phone in another, under different rules: what is required here is not required there, and a field that can only be changed twice can be changed for ever there.', 'diluxone-users' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'For whom', 'diluxone-users' ); ?></th>
+				<td>
+					<?php
+					diluxone_users_scope_control(
+						'diluxone_users_wp_profile',
+						__( 'Anybody left out keeps the dashboard profile exactly as WordPress ships it.', 'diluxone-users' ),
+						__( 'Whoever can edit users is never reached by this and is not on the list: they are the person who has to be able to fix what broke, and the dashboard profile is where it gets fixed. On a network, the super administrator.', 'diluxone-users' )
+					);
+					?>
 				</td>
 			</tr>
 		</table>

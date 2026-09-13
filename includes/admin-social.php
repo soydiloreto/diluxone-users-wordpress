@@ -344,7 +344,7 @@ function diluxone_users_screen_social_general(): void {
 					/* translators: 1: name of the role accounts are created with, 2: name of the screen where it is chosen */
 				esc_html__( 'There is nothing to choose here, and that is on purpose: a new account gets the email address as its username, no password at all —not even one nobody knows how to use— and the role %1$s, which is set once for the whole site on the %2$s screen, because a role per provider would be a quiet way of handing out privileges. The name comes from the provider and only fills in what the person has not written themselves. Each linked network is stored on the person, so anybody can add a second and a third from their profile and unlink them again, and from then on any of them opens the same account.', 'diluxone-users' ),
 				esc_html( translate_user_role( wp_roles()->get_names()[ (string) diluxone_users_option( 'diluxone_users_login_role' ) ] ?? (string) diluxone_users_option( 'diluxone_users_login_role' ) ) ),
-				'«' . esc_html__( 'Registration and login', 'diluxone-users' ) . '»'
+				'«' . esc_html__( 'Registration', 'diluxone-users' ) . '»'
 			);
 			?>
 		</p>

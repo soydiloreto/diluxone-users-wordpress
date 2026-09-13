@@ -1,6 +1,12 @@
 <?php
 /**
- * The e-mail sign-in screen, with its three parts.
+ * The sign-in screen: how somebody who already has an account gets into it.
+ *
+ * Who gets an account in the first place is a different question and lives on
+ * its own screen, next to this one. They were one screen with a tab each and
+ * the tab was read as a step of the same thing — it is not: a site can open
+ * registration and change nothing about signing in, and close it and change
+ * nothing either.
  *
  * @package DiluxOneUsers
  */
@@ -10,12 +16,12 @@ defined( 'ABSPATH' ) || exit;
 /** The registration and sign-in screen, with its tabs. */
 function diluxone_users_screen_login(): void {
 	$tabs = array(
-		'registration' => __( 'Registration', 'diluxone-users' ),
-		'link'         => __( 'Sign in', 'diluxone-users' ),
-		'email'        => __( 'The email', 'diluxone-users' ),
-		'handle'       => __( 'Public name', 'diluxone-users' ),
-		'2fa'          => __( 'Two-step verification', 'diluxone-users' ),
-		'passkeys'     => __( 'Passkeys', 'diluxone-users' ),
+		'link'     => __( 'Getting in', 'diluxone-users' ),
+		'email'    => __( 'The email', 'diluxone-users' ),
+		'handle'   => __( 'Public name', 'diluxone-users' ),
+		'2fa'      => __( 'Two-step verification', 'diluxone-users' ),
+		'passkeys' => __( 'Passkeys', 'diluxone-users' ),
+		'look'     => __( 'How it looks', 'diluxone-users' ),
 	);
 
 	$current = diluxone_users_tab( $tabs );
@@ -25,16 +31,21 @@ function diluxone_users_screen_login(): void {
 		diluxone_users_notice( __( 'Settings saved.', 'diluxone-users' ) );
 	}
 
-	diluxone_users_screen_open( __( 'Registration and login', 'diluxone-users' ), 'diluxone-users-login', $tabs, $current );
+	diluxone_users_screen_open( __( 'Sign in', 'diluxone-users' ), 'diluxone-users-login', $tabs, $current );
+
+	// The preview is a form of its own, and a form inside a form is thrown
+	// away by the browser. That tab has nothing to save anyway.
+	if ( 'look' === $current ) {
+		diluxone_users_screen_login_look();
+		diluxone_users_screen_close();
+
+		return;
+	}
 
 	echo '<form method="post">';
 	wp_nonce_field( 'diluxone_users_options', 'diluxone_users_options_nonce' );
 
 	switch ( $current ) {
-		case 'registration':
-			diluxone_users_screen_login_registration();
-			break;
-
 		case 'email':
 			diluxone_users_screen_login_email();
 			break;
@@ -120,19 +131,6 @@ function diluxone_users_screen_login_save( string $tab ): void {
 		return;
 	}
 
-	if ( 'registration' === $tab ) {
-		diluxone_users_save_options(
-			array(
-				'diluxone_users_login_register'  => isset( $_POST['diluxone_users_login_register'] ) ? 1 : 0,
-				'diluxone_users_login_role'      => sanitize_key( wp_unslash( $_POST['diluxone_users_login_role'] ?? 'subscriber' ) ),
-				'diluxone_users_wp_registration' => sanitize_key( wp_unslash( $_POST['diluxone_users_wp_registration'] ?? 'site' ) ),
-				'diluxone_users_wp_profile'      => sanitize_key( wp_unslash( $_POST['diluxone_users_wp_profile'] ?? 'allow' ) ),
-			) + diluxone_users_scope_posted( 'diluxone_users_wp_profile' )
-		);
-
-		return;
-	}
-
 	diluxone_users_save_options(
 		array(
 			'diluxone_users_login_method'   => sanitize_key( wp_unslash( $_POST['diluxone_users_login_method'] ?? 'both' ) ),
@@ -142,6 +140,7 @@ function diluxone_users_screen_login_save( string $tab ): void {
 			// Lives on this tab because it is about what the sign-in box
 			// accepts, not about what a public name is.
 			'diluxone_users_handle_login'   => isset( $_POST['diluxone_users_handle_login'] ) ? 1 : 0,
+			'diluxone_users_sso_login'      => isset( $_POST['diluxone_users_sso_login'] ) ? 1 : 0,
 		)
 	);
 	// phpcs:enable
@@ -329,6 +328,17 @@ function diluxone_users_screen_login_link(): void {
 			</td>
 		</tr>
 		<tr>
+			<th scope="row"><?php esc_html_e( 'With a social account', 'diluxone-users' ); ?></th>
+			<td>
+				<label>
+					<input type="checkbox" name="diluxone_users_sso_login" value="1" <?php checked( diluxone_users_option( 'diluxone_users_sso_login' ), 1 ); ?>>
+					<?php esc_html_e( 'Show the buttons of the enabled providers on the form', 'diluxone-users' ); ?>
+				</label>
+				<?php diluxone_users_social_state(); ?>
+				<p class="description"><?php esc_html_e( 'Turned off, the buttons go from the form and the e-mail link is the only way in shown there. Whoever already linked an account keeps it, and can still unlink it from their own account area.', 'diluxone-users' ); ?></p>
+			</td>
+		</tr>
+		<tr>
 			<th scope="row"><?php esc_html_e( 'What can be typed in the box', 'diluxone-users' ); ?></th>
 			<td>
 				<label>
@@ -488,100 +498,6 @@ function diluxone_users_screen_login_handle(): void {
 			<td>
 				<textarea id="diluxone_users_handle_reserved" name="diluxone_users_handle_reserved" rows="3" class="large-text code"><?php echo esc_textarea( (string) diluxone_users_option( 'diluxone_users_handle_reserved' ) ); ?></textarea>
 				<p class="description"><?php esc_html_e( 'One per line, or separated by commas. The obvious ones —admin, support, api, login— are already blocked; these are yours to add.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-	</table>
-	<?php
-}
-
-/**
- * Registration: who can create an account here and with which role.
- *
- * It sits apart from sign-in because they are two different questions: one is
- * who gets into something that already exists and the other is who can start
- * existing.
- */
-function diluxone_users_screen_login_registration(): void {
-	diluxone_users_intro( __( 'Who gets an account on this site, and what that account can do. Everything else —how they get in afterwards— is on the next tab.', 'diluxone-users' ) );
-	?>
-	<table class="form-table" role="presentation">
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Create the account', 'diluxone-users' ); ?></th>
-			<td>
-				<label>
-					<input type="checkbox" name="diluxone_users_login_register" value="1" <?php checked( diluxone_users_option( 'diluxone_users_login_register' ), 1 ); ?>>
-					<?php esc_html_e( 'If the email does not exist, register it in the same step', 'diluxone-users' ); ?>
-				</label>
-				<p class="description"><?php esc_html_e( 'With this, signing in and signing up are the same thing and no separate registration form is needed.', 'diluxone-users' ); ?></p>
-				<p class="description"><?php esc_html_e( 'Turned off, only people who already have an account can get in — and somebody has to create the accounts from Users.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><label for="diluxone_users_login_role"><?php esc_html_e( 'Role for new accounts', 'diluxone-users' ); ?></label></th>
-			<td>
-				<select name="diluxone_users_login_role" id="diluxone_users_login_role">
-					<?php wp_dropdown_roles( (string) diluxone_users_option( 'diluxone_users_login_role' ) ); ?>
-				</select>
-				<p class="description"><?php esc_html_e( 'The same one for everybody, whether they come in by email or by a social network: a role per provider is a quiet way of handing out privileges.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'The WordPress registration form', 'diluxone-users' ); ?></th>
-			<td>
-				<?php
-				$registry = array(
-					'site' => __( 'Whatever Settings → General says', 'diluxone-users' ),
-					'on'   => __( 'Open, whatever that setting says', 'diluxone-users' ),
-					'off'  => __( 'Closed, whatever that setting says', 'diluxone-users' ),
-				);
-
-				foreach ( $registry as $key => $label ) :
-					?>
-					<label class="diluxone-users-roles__item">
-						<input type="radio" name="diluxone_users_wp_registration" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_wp_registration' ), $key ); ?>>
-						<?php echo esc_html( $label ); ?>
-					</label>
-				<?php endforeach; ?>
-				<p class="description"><?php esc_html_e( 'This is wp-login.php?action=register and wp-signup.php, the ones WordPress brings. They are decided here because this is where the accounts are administered; leaving that in another screen is how a site ends up with a registration form nobody remembers is open.', 'diluxone-users' ); ?></p>
-				<p class="description"><?php esc_html_e( 'With “only a link” as the way in, it stays closed no matter what: it would hand out accounts with a password through a door the site closed.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'The WordPress profile screen', 'diluxone-users' ); ?></th>
-			<td>
-				<?php
-				$profile = array(
-					'allow'    => __( 'Leave it alone', 'diluxone-users' ),
-					'redirect' => __( 'Send them to their account on the site', 'diluxone-users' ),
-					'block'    => __( 'Close it: their details are edited on the site', 'diluxone-users' ),
-				);
-
-				foreach ( $profile as $key => $label ) :
-					?>
-					<label class="diluxone-users-roles__item">
-						<input type="radio" name="diluxone_users_wp_profile" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_wp_profile' ), $key ); ?>>
-						<?php echo esc_html( $label ); ?>
-					</label>
-				<?php endforeach; ?>
-				<p class="description"><?php esc_html_e( 'A site that built its account area on the front does not want half the data edited on another screen, with another look and other rules: the edit limits and the required fields set up here do not apply there.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'And to whom', 'diluxone-users' ); ?></th>
-			<td>
-				<?php
-				diluxone_users_scope_control(
-					'diluxone_users_wp_profile',
-					__( 'Who the choice above reaches. Leaving somebody out means their dashboard profile keeps working as WordPress ships it.', 'diluxone-users' ),
-					__( 'Whoever can edit users is never reached by this, whatever is chosen: that is the person who has to be able to fix what broke, and the dashboard profile is where it gets fixed. On a network, the super admin.', 'diluxone-users' )
-				);
-				?>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'How the account ends up', 'diluxone-users' ); ?></th>
-			<td>
-				<p class="description"><?php esc_html_e( 'The email is the username and it never changes —WordPress does not allow it. There is no password at all, not even one nobody knows. The name shown comes from what the person writes, and the fields they are asked for are the ones on the User fields screen.', 'diluxone-users' ); ?></p>
 			</td>
 		</tr>
 	</table>
@@ -778,5 +694,63 @@ function diluxone_users_screen_login_passkeys(): void {
 			</td>
 		</tr>
 	</table>
+	<?php
+}
+
+/**
+ * The sign-in form as the site serves it.
+ *
+ * The shortcode answers with nothing to somebody who is already signed in,
+ * and in the dashboard everybody is, so the template is rendered the way the
+ * shortcode renders it. It is still the template — the theme's copy of it if
+ * there is one — and not a drawing of the template, which is the only way a
+ * preview is worth looking at.
+ */
+function diluxone_users_login_preview(): void {
+	?>
+	<div class="diluxone-users-preview" data-diluxone-users-preview-box>
+		<?php
+		// Inert and outside any settings form: the sign-in form is a form.
+		?>
+		<div class="diluxone-users-preview__frame" inert>
+			<div data-diluxone-users-preview-skin>
+				<?php
+				echo diluxone_users_render( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the template escapes its own output.
+					'login.php',
+					array(
+						'state'     => diluxone_users_state(),
+						'email'     => '',
+						'providers' => diluxone_users_sso_for_login(),
+						'minutes'   => diluxone_users_login_expiry(),
+						'title'     => false,
+					)
+				);
+				?>
+			</div>
+		</div>
+	</div>
+	<?php
+}
+
+/** What somebody signing in actually sees. */
+function diluxone_users_screen_login_look(): void {
+	$page = (int) diluxone_users_option( 'diluxone_users_login_page' );
+
+	diluxone_users_intro( __( 'The form as the site serves it, with everything chosen on the other tabs. It is the real template — your theme’s copy of it, if it has one — and not a drawing of it.', 'diluxone-users' ) );
+
+	diluxone_users_login_preview();
+
+	if ( 0 === $page ) {
+		diluxone_users_intro( __( 'There is no sign-in page chosen yet, so this form is not anywhere on the site: people still land on wp-login.php.', 'diluxone-users' ) );
+	}
+	?>
+	<p class="diluxone-users-panel__actions">
+		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-login' ) ); ?>"><?php esc_html_e( 'Getting in', 'diluxone-users' ); ?></a>
+		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-social' ) ); ?>"><?php esc_html_e( 'Social login', 'diluxone-users' ); ?></a>
+		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-account', array( 'tab' => 'appearance' ) ) ); ?>"><?php esc_html_e( 'Colours and corners', 'diluxone-users' ); ?></a>
+		<?php if ( $page > 0 ) : ?>
+			<a class="button" href="<?php echo esc_url( (string) get_permalink( $page ) ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Open the page', 'diluxone-users' ); ?></a>
+		<?php endif; ?>
+	</p>
 	<?php
 }

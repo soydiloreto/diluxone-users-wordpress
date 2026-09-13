@@ -50,6 +50,11 @@ function diluxone_users_option_defaults(): array {
 		'diluxone_users_sso_link_by_email'  => 1,
 		// Create a new account when the e-mail does not exist.
 		'diluxone_users_sso_register'       => 1,
+		// Whether the buttons show on the sign-in form at all. Separate from
+		// registering with them: a site can let the people who already linked
+		// an account keep using it while it stops handing out new ones, and a
+		// site can want the opposite.
+		'diluxone_users_sso_login'          => 1,
 		// Require the provider to say the e-mail is verified.
 		'diluxone_users_sso_verified_only'  => 0,
 		// Roles that cannot sign in with a social account. It goes as a list
