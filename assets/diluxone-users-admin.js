@@ -7,17 +7,21 @@
  *
  * Without JavaScript they are all visible, which is the worst that can
  * happen: the form still works and every row says which type it is for.
+ *
+ * It takes the piece of the page to work on, because the form is not always
+ * on the page from the start: the dialog drops it in later and has to be able
+ * to wire up the copy it just dropped.
  */
-( function () {
+function diluxoneUsersFieldTypes( root ) {
 	'use strict';
 
-	var type = document.getElementById( 'diluxone-users-type' );
+	var type = root.querySelector( '#diluxone-users-type' );
 
 	if ( ! type ) {
 		return;
 	}
 
-	var rows = document.querySelectorAll( '.diluxone-users-if-type' );
+	var rows = root.querySelectorAll( '.diluxone-users-if-type' );
 
 	function review() {
 		var chosen = type.value;
@@ -31,6 +35,115 @@
 
 	type.addEventListener( 'change', review );
 	review();
+}
+
+diluxoneUsersFieldTypes( document );
+
+/**
+ * A field is edited on top of its list, not on another screen.
+ *
+ * The form is not written twice: it is fetched from the screen that already
+ * draws it — the same address the link points at — and lifted out of the
+ * answer. So the link keeps working with JavaScript off or when the fetch
+ * fails, and there is no second copy of thirty settings to keep in step.
+ *
+ * Saving is a plain submit, the same one that screen does: the browser posts,
+ * WordPress saves and redirects back to the list with its notice. No parallel
+ * save path that validates a little differently from the real one.
+ */
+( function () {
+	'use strict';
+
+	var dialog = document.querySelector( '[data-diluxone-users-dialog]' );
+
+	// Without <dialog> the links are left alone and go to their screen.
+	if ( ! dialog || 'function' !== typeof dialog.showModal ) {
+		return;
+	}
+
+	var body    = dialog.querySelector( '[data-diluxone-users-dialog-body]' );
+	var heading = dialog.querySelector( '[data-diluxone-users-dialog-heading]' );
+	var loading = body.innerHTML;
+
+	document.addEventListener( 'click', function ( event ) {
+		var link = event.target.closest( '[data-diluxone-users-field-dialog]' );
+
+		// A modified click is somebody asking for a new tab. Let them have it.
+		if ( ! link || event.metaKey || event.ctrlKey || event.shiftKey || 0 !== event.button ) {
+			return;
+		}
+
+		event.preventDefault();
+		open( link );
+	} );
+
+	dialog.addEventListener( 'click', function ( event ) {
+		if ( event.target.closest( '[data-diluxone-users-dialog-close]' ) ) {
+			dialog.close();
+			return;
+		}
+
+		// A click on the backdrop lands on the dialog itself, outside its box.
+		if ( event.target === dialog ) {
+			dialog.close();
+		}
+	} );
+
+	function open( link ) {
+		heading.textContent = link.getAttribute( 'data-diluxone-users-dialog-title' ) || '';
+		body.innerHTML      = loading;
+
+		dialog.showModal();
+
+		window.fetch( link.href, { credentials: 'same-origin' } )
+			.then( function ( response ) {
+				return response.ok ? response.text() : Promise.reject( response.status );
+			} )
+			.then( function ( html ) {
+				var page = new window.DOMParser().parseFromString( html, 'text/html' );
+				var form = page.querySelector( 'form.diluxone-users-form-admin' );
+
+				if ( ! form ) {
+					return Promise.reject( 'no form' );
+				}
+
+				body.innerHTML = '';
+				body.appendChild( document.adoptNode( form ) );
+
+				diluxoneUsersFieldTypes( form );
+				addCancel( form );
+
+				var first = form.querySelector( 'input:not([type="hidden"]), select, textarea' );
+
+				if ( first ) {
+					first.focus();
+				}
+			} )
+			.catch( function () {
+				// Whatever went wrong, the screen behind the dialog still works.
+				dialog.close();
+				window.location.href = link.href;
+			} );
+	}
+
+	/** The way out that is not saving, next to the way out that is. */
+	function addCancel( form ) {
+		var submit = form.querySelector( 'p.submit' );
+
+		if ( ! submit || submit.querySelector( '[data-diluxone-users-dialog-close]' ) ) {
+			return;
+		}
+
+		var cancel = document.createElement( 'button' );
+
+		cancel.type      = 'button';
+		cancel.className = 'button';
+		cancel.textContent = dialog.getAttribute( 'data-diluxone-users-cancel' ) || 'Cancel';
+		cancel.setAttribute( 'data-diluxone-users-dialog-close', '' );
+
+		submit.appendChild( document.createTextNode( ' ' ) );
+		submit.appendChild( cancel );
+	}
 }() );
 
 /**

@@ -211,6 +211,14 @@ function diluxone_users_screen_fields(): void {
 	$done = isset( $_GET['diluxone_users_done'] ) ? sanitize_key( wp_unslash( $_GET['diluxone_users_done'] ) ) : '';
 
 	if ( '' !== $editing || isset( $_GET['diluxone_users_new'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		/*
+		 * The dialog opens this very screen in the background and lifts the
+		 * form out of it: there is no second copy of the form to keep in step,
+		 * and the address it fetches is the address the link already points
+		 * at — so with JavaScript off the link is still a link to a screen
+		 * that works.
+		 */
 		diluxone_users_screen_field_edit( $editing );
 		return;
 	}
@@ -248,34 +256,11 @@ function diluxone_users_screen_fields_list(): void {
 	$types  = diluxone_users_field_types();
 	$groups = diluxone_users_groups();
 	?>
-	<div class="diluxone-users-where">
-		<p><strong><?php esc_html_e( 'Where all this lives', 'diluxone-users' ); ?></strong></p>
-		<p>
-			<?php esc_html_e( 'What each field IS —its name, type and behaviour— is one WordPress option. What each PERSON answered is user meta: one row per person and per field, with the field key as the name. No extra tables.', 'diluxone-users' ); ?>
-		</p>
-		<?php
-		// The two names go on lines of their own and not inside the sentence
-		// above. A <code> chip is an atom the browser cannot break, so in the
-		// middle of a paragraph it jumps to the next line whole and leaves the
-		// previous one short — which reads as a line break that nobody typed.
-		?>
-		<ul class="diluxone-users-where__names">
-			<li>
-				<?php esc_html_e( 'The definition:', 'diluxone-users' ); ?>
-				<code>diluxone_users_fields</code>
-			</li>
-			<li>
-				<?php esc_html_e( 'The answers:', 'diluxone-users' ); ?>
-				<code><?php echo esc_html( $GLOBALS['wpdb']->usermeta ); ?></code>
-			</li>
-		</ul>
-		<p>
-			<?php esc_html_e( 'That is why the key cannot change once the field exists, and why deleting a field leaves the answers alone: they are two different things.', 'diluxone-users' ); ?>
-		</p>
-	</div>
-
 	<p class="diluxone-users-admin__actions">
-		<a class="button button-primary" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-fields', array( 'diluxone_users_new' => 1 ) ) ); ?>">
+		<a class="button button-primary"
+			href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-fields', array( 'diluxone_users_new' => 1 ) ) ); ?>"
+			data-diluxone-users-field-dialog
+			data-diluxone-users-dialog-title="<?php esc_attr_e( 'New field', 'diluxone-users' ); ?>">
 			<?php esc_html_e( 'Add field', 'diluxone-users' ); ?>
 		</a>
 	</p>
@@ -303,10 +288,10 @@ function diluxone_users_screen_fields_list(): void {
 				?>
 				<tr>
 					<td class="diluxone-users-list__name">
-						<strong><a href="<?php echo esc_url( $edit ); ?>"><?php echo esc_html( $field['label'] ); ?></a></strong>
+						<strong><a href="<?php echo esc_url( $edit ); ?>" data-diluxone-users-field-dialog data-diluxone-users-dialog-title="<?php echo esc_attr( $field['label'] ); ?>"><?php echo esc_html( $field['label'] ); ?></a></strong>
 						<code><?php echo esc_html( $field['key'] ); ?></code>
 						<div class="row-actions">
-							<span class="edit"><a href="<?php echo esc_url( $edit ); ?>"><?php esc_html_e( 'Edit', 'diluxone-users' ); ?></a></span>
+							<span class="edit"><a href="<?php echo esc_url( $edit ); ?>" data-diluxone-users-field-dialog data-diluxone-users-dialog-title="<?php echo esc_attr( $field['label'] ); ?>"><?php esc_html_e( 'Edit', 'diluxone-users' ); ?></a></span>
 
 							<?php
 							/*
@@ -402,6 +387,78 @@ function diluxone_users_screen_fields_list(): void {
 			<?php endforeach; ?>
 		</tbody>
 	</table>
+
+	<?php
+	diluxone_users_fields_where();
+	diluxone_users_field_dialog();
+}
+
+/**
+ * Where the definitions and the answers actually live.
+ *
+ * At the foot and not at the top: it is background, and background above the
+ * thing it is background for pushes the thing itself below the fold. It runs
+ * the full width of the screen because it is a note, not body copy — forcing
+ * it into a reading column here only made the two lines wrap into four with a
+ * desert to their right.
+ */
+function diluxone_users_fields_where(): void {
+	?>
+	<div class="diluxone-users-where">
+		<p class="diluxone-users-where__title">
+			<span class="dashicons dashicons-info-outline" aria-hidden="true"></span>
+			<strong><?php esc_html_e( 'Where all this lives', 'diluxone-users' ); ?></strong>
+		</p>
+		<p>
+			<?php esc_html_e( 'What each field IS —its name, type and behaviour— is one WordPress option. What each PERSON answered is user meta: one row per person and per field, with the field key as the name. No extra tables.', 'diluxone-users' ); ?>
+		</p>
+		<?php
+		// The two names go on lines of their own and not inside the sentence
+		// above. A <code> chip is an atom the browser cannot break, so in the
+		// middle of a paragraph it jumps to the next line whole and leaves the
+		// previous one short — which reads as a line break that nobody typed.
+		?>
+		<ul class="diluxone-users-where__names">
+			<li>
+				<?php esc_html_e( 'The definition:', 'diluxone-users' ); ?>
+				<code>diluxone_users_fields</code>
+			</li>
+			<li>
+				<?php esc_html_e( 'The answers:', 'diluxone-users' ); ?>
+				<code><?php echo esc_html( $GLOBALS['wpdb']->usermeta ); ?></code>
+			</li>
+		</ul>
+		<p>
+			<?php esc_html_e( 'That is why the key cannot change once the field exists, and why deleting a field leaves the answers alone: they are two different things.', 'diluxone-users' ); ?>
+		</p>
+	</div>
+	<?php
+}
+
+/**
+ * The dialog a field is edited in.
+ *
+ * It is empty markup: the form is fetched from the screen that already draws
+ * it and dropped in here (see diluxone-users-admin.js). A <dialog> and not a
+ * div with a z-index, because the browser already knows how to grey out what
+ * is behind it, keep the keyboard inside it and close it on Escape — three
+ * things that are easy to write badly by hand.
+ */
+function diluxone_users_field_dialog(): void {
+	?>
+	<dialog class="diluxone-users-dialog" data-diluxone-users-dialog
+		data-diluxone-users-cancel="<?php esc_attr_e( 'Cancel', 'diluxone-users' ); ?>"
+		aria-labelledby="diluxone-users-dialog-title">
+		<div class="diluxone-users-dialog__head">
+			<h2 id="diluxone-users-dialog-title" data-diluxone-users-dialog-heading></h2>
+			<button type="button" class="diluxone-users-dialog__close" data-diluxone-users-dialog-close aria-label="<?php esc_attr_e( 'Close', 'diluxone-users' ); ?>">
+				<span class="dashicons dashicons-no-alt" aria-hidden="true"></span>
+			</button>
+		</div>
+		<div class="diluxone-users-dialog__body" data-diluxone-users-dialog-body>
+			<p class="diluxone-users-dialog__loading"><?php esc_html_e( 'Loading…', 'diluxone-users' ); ?></p>
+		</div>
+	</dialog>
 	<?php
 }
 
