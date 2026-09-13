@@ -30,8 +30,8 @@ class TwoFactorPolicyTest extends TestCase {
 		$GLOBALS['_test_wp_options']   = array();
 		$GLOBALS['_test_wp_users']     = array();
 
-		$this->ajustes( array() );
-		$this->persona();
+		$this->settings( array() );
+		$this->make_person();
 	}
 
 	protected function tearDown(): void {
@@ -40,7 +40,7 @@ class TwoFactorPolicyTest extends TestCase {
 	}
 
 	/** Leaves the settings in a known state. */
-	private function ajustes( array $values ): void {
+	private function settings( array $values ): void {
 		$base = array(
 			'diluxone_users_2fa_mode'          => 'required',
 			'diluxone_users_2fa_methods'       => array( 'email' ),
@@ -55,12 +55,12 @@ class TwoFactorPolicyTest extends TestCase {
 	}
 
 	/** Somebody with whatever role is passed. */
-	private function persona( string $role = 'subscriber' ): void {
+	private function make_person( string $role = 'subscriber' ): void {
 		$GLOBALS['_test_wp_users'][ self::USER_ID ] = new \WP_User( self::USER_ID, array( $role ) );
 	}
 
 	public function test_off_never_asks(): void {
-		$this->ajustes( array( 'diluxone_users_2fa_mode' => 'off' ) );
+		$this->settings( array( 'diluxone_users_2fa_mode' => 'off' ) );
 
 		$this->assertFalse( diluxone_users_2fa_required( self::USER_ID, 'password' ) );
 	}
@@ -71,7 +71,7 @@ class TwoFactorPolicyTest extends TestCase {
 
 	public function test_with_no_methods_it_can_ask_for_nothing(): void {
 		// Requiring something the person cannot give would lock them out of the site.
-		$this->ajustes( array( 'diluxone_users_2fa_methods' => array() ) );
+		$this->settings( array( 'diluxone_users_2fa_methods' => array() ) );
 
 		$this->assertFalse( diluxone_users_2fa_required( self::USER_ID, 'password' ) );
 	}
@@ -83,33 +83,33 @@ class TwoFactorPolicyTest extends TestCase {
 	}
 
 	public function test_with_an_app_available_the_link_does_ask_for_it(): void {
-		$this->ajustes( array( 'diluxone_users_2fa_methods' => array( 'email', 'totp' ) ) );
+		$this->settings( array( 'diluxone_users_2fa_methods' => array( 'email', 'totp' ) ) );
 		update_user_meta( self::USER_ID, 'diluxone_users_totp', 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ' );
 
 		$this->assertTrue( diluxone_users_2fa_required( self::USER_ID, 'link' ) );
 	}
 
 	public function test_the_site_can_force_both_answers(): void {
-		$this->ajustes( array( 'diluxone_users_2fa_link' => 'always' ) );
+		$this->settings( array( 'diluxone_users_2fa_link' => 'always' ) );
 		$this->assertTrue( diluxone_users_2fa_required( self::USER_ID, 'link' ) );
 
-		$this->ajustes( array( 'diluxone_users_2fa_link' => 'never', 'diluxone_users_2fa_methods' => array( 'email', 'totp' ) ) );
+		$this->settings( array( 'diluxone_users_2fa_link' => 'never', 'diluxone_users_2fa_methods' => array( 'email', 'totp' ) ) );
 		update_user_meta( self::USER_ID, 'diluxone_users_totp', 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ' );
 		$this->assertFalse( diluxone_users_2fa_required( self::USER_ID, 'link' ) );
 	}
 
 	public function test_with_chosen_roles_only_those(): void {
-		$this->ajustes( array( 'diluxone_users_2fa_roles' => array( 'administrator' ) ) );
+		$this->settings( array( 'diluxone_users_2fa_roles' => array( 'administrator' ) ) );
 
-		$this->persona( 'subscriber' );
+		$this->make_person( 'subscriber' );
 		$this->assertFalse( diluxone_users_2fa_required( self::USER_ID, 'password' ) );
 
-		$this->persona( 'administrator' );
+		$this->make_person( 'administrator' );
 		$this->assertTrue( diluxone_users_2fa_required( self::USER_ID, 'password' ) );
 	}
 
 	public function test_optional_only_asks_whoever_turned_it_on(): void {
-		$this->ajustes( array( 'diluxone_users_2fa_mode' => 'optional' ) );
+		$this->settings( array( 'diluxone_users_2fa_mode' => 'optional' ) );
 
 		$this->assertFalse( diluxone_users_2fa_required( self::USER_ID, 'password' ) );
 
@@ -120,14 +120,14 @@ class TwoFactorPolicyTest extends TestCase {
 	public function test_with_the_link_as_the_only_door_it_is_asked_nowhere(): void {
 		// It is the case where the screen says "you are not being asked": it has
 		// to be true, and it only is when there is no other door.
-		$this->ajustes( array( 'diluxone_users_login_method' => 'link' ) );
+		$this->settings( array( 'diluxone_users_login_method' => 'link' ) );
 
 		$this->assertSame( array( 'link' ), array_keys( diluxone_users_2fa_ways( self::USER_ID ) ) );
 		$this->assertSame( array(), diluxone_users_2fa_ways_asked( self::USER_ID ) );
 	}
 
 	public function test_with_the_password_on_the_link_is_skipped_but_the_password_is_not(): void {
-		$this->ajustes( array( 'diluxone_users_login_method' => 'both' ) );
+		$this->settings( array( 'diluxone_users_login_method' => 'both' ) );
 
 		$ways = diluxone_users_2fa_ways( self::USER_ID );
 

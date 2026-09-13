@@ -194,16 +194,16 @@ function diluxone_users_forzado_aviso( string $key ): void {
 		return;
 	}
 
-	$who = diluxone_users_option_forced_by();
+	$filters = diluxone_users_option_forced_by();
 	?>
 	<div class="diluxone-users-forced">
 		<p><?php esc_html_e( 'This site fixes this from code: whatever is chosen here, it stays as it is.', 'diluxone-users' ); ?></p>
 
-		<?php if ( array() !== $who ) : ?>
+		<?php if ( array() !== $filters ) : ?>
 			<p><?php esc_html_e( 'It is filtered here — open the file to change it or take it out:', 'diluxone-users' ); ?></p>
 			<ul>
-				<?php foreach ( $who as $who ) : ?>
-					<li><code><?php echo esc_html( $who ); ?></code></li>
+				<?php foreach ( $filters as $filter ) : ?>
+					<li><code><?php echo esc_html( $filter ); ?></code></li>
 				<?php endforeach; ?>
 			</ul>
 		<?php endif; ?>

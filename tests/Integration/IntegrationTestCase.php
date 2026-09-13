@@ -39,7 +39,7 @@ class IntegrationTestCase extends TestCase {
 	}
 
 	/** A fresh person, with whatever role is passed. */
-	protected function alguien( string $role = 'subscriber' ): int {
+	protected function make_user( string $role = 'subscriber' ): int {
 		return (int) wp_insert_user(
 			array(
 				'user_login' => 'diluxone_users_' . wp_generate_password( 8, false ),

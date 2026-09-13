@@ -37,7 +37,7 @@ class PluginTest extends IntegrationTestCase {
 	public function test_with_no_social_networks_there_is_no_linked_accounts_section(): void {
 		// The rule that holds the plugin together: what is not configured does
 		// not show up, with nothing to turn off by hand.
-		wp_set_current_user( $this->alguien() );
+		wp_set_current_user( $this->make_user() );
 
 		$this->assertArrayNotHasKey( 'accounts', diluxone_users_sections() );
 	}

@@ -31,7 +31,17 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/** The mark saying the move has already been made on this site. */
+/**
+ * The mark saying the move has already been made on this site.
+ *
+ * It is written once, at the very end, and it is deliberately kept out of the
+ * rename below: the old mark is an option like any other, so a blind rename
+ * turns `users_dlx_plus_migrated` into `diluxone_users_migrated` in the first
+ * step — and from that moment on the site believes it has finished. A run that
+ * dies in the middle then never resumes and nobody is told. That is not a
+ * hypothesis: it happened, and it left a site with its options and its user
+ * meta moved but the shortcodes inside its pages still written the old way.
+ */
 const DILUXONE_USERS_MIGRATED = 'diluxone_users_migrated';
 
 /** The current prefix, written exactly once. */
@@ -101,16 +111,28 @@ function diluxone_users_migrate_prefix( string $old ): void {
 	// and fails ENTIRELY: it migrates none, and the site starts up empty
 	// without saying why. So the freshly seeded one is removed first: the one
 	// that counts is the old one, which holds what the site configured.
-	$old_names = $wpdb->get_col(
-		$wpdb->prepare( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s", $like )
+	// The migration marks of every era stay out of this: see the constant above.
+	$marks = array( 'usmw_migrated', 'upfw_migrated', 'users_plus_migrated', 'users_dlx_plus_migrated' );
+
+	$old_names = array_values(
+		array_diff(
+			(array) $wpdb->get_col(
+				$wpdb->prepare( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s", $like )
+			),
+			$marks
+		)
 	);
 
-	if ( array() === (array) $old_names ) {
-		return;
-	}
-
-	foreach ( (array) $old_names as $old ) {
-		delete_option( DILUXONE_USERS_PREFIX . substr( (string) $old, $length ) );
+	// No early return when there are no old options left: the options may have
+	// been moved by a run that then died before reaching the user meta, the
+	// field keys or the shortcodes. Each block below finds nothing and costs
+	// one query when there is nothing to do, which is the price of picking up
+	// a half-finished migration instead of leaving it half-finished for good.
+	//
+	// $old_name and not $old: $old is the prefix this whole function works on,
+	// and a foreach that borrows the name overwrites it for everything below.
+	foreach ( (array) $old_names as $old_name ) {
+		delete_option( DILUXONE_USERS_PREFIX . substr( (string) $old_name, $length ) );
 	}
 
 	// SUBSTRING from the prefix length and not REPLACE: REPLACE would also
@@ -120,10 +142,15 @@ function diluxone_users_migrate_prefix( string $old ): void {
 		$wpdb->prepare(
 			"UPDATE {$wpdb->options}
 			    SET option_name = CONCAT( %s, SUBSTRING( option_name, %d ) )
-			  WHERE option_name LIKE %s",
+			  WHERE option_name LIKE %s
+			    AND option_name NOT IN ( %s, %s, %s, %s )",
 			DILUXONE_USERS_PREFIX,
 			$from_pos,
-			$like
+			$like,
+			$marks[0],
+			$marks[1],
+			$marks[2],
+			$marks[3]
 		)
 	);
 
@@ -214,9 +241,18 @@ function diluxone_users_migrate_shortcodes( string $old ): void {
 	}
 }
 
-/** Runs the move once, from any earlier prefix. */
+/**
+ * Runs the move, once per plugin version.
+ *
+ * The mark holds the version that did the migrating, not a yes. Every step
+ * here is idempotent — it looks for data under an old prefix and finds none
+ * the second time — so re-checking costs one cheap query per prefix and buys
+ * something worth much more: a site whose migration was cut short half way,
+ * by a timeout or a fatal, is picked up and finished on the next release
+ * instead of staying broken in silence for good.
+ */
 function diluxone_users_migrate(): void {
-	if ( get_option( DILUXONE_USERS_MIGRATED ) ) {
+	if ( DILUXONE_USERS_VERSION === get_option( DILUXONE_USERS_MIGRATED ) ) {
 		return;
 	}
 
@@ -224,7 +260,7 @@ function diluxone_users_migrate(): void {
 		diluxone_users_migrate_prefix( $old );
 	}
 
-	update_option( DILUXONE_USERS_MIGRATED, 1 );
+	update_option( DILUXONE_USERS_MIGRATED, DILUXONE_USERS_VERSION );
 }
 add_action( 'admin_init', 'diluxone_users_migrate', 0 );
 add_action( 'wp_initialize_site', 'diluxone_users_migrate' );
