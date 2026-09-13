@@ -70,19 +70,6 @@ from CSS custom properties a site can redefine without copying a stylesheet.
 Yes. Configuration is per site; users are network-wide, so anything that
 grants access joins the person to the current site.
 
-== Screenshots ==
-
-1. Overview: how many accounts there are, how they get in, and what is still left to configure.
-2. User fields, with their own admin screen.
-3. One field in detail: type, edit policy and where it goes in the form.
-4. The account area: which sections exist, how they are ordered and where they live.
-5. Sign in: the way in, the page, the e-mail text and the public name.
-6. Social login: the provider grid, with its state per network.
-7. One provider in detail: step-by-step setup and the live test.
-8. Two-step verification and passkeys.
-9. Status: what is quietly broken today.
-10. The account area on the front end.
-
 == Changelog ==
 
 = 1.0.0 =

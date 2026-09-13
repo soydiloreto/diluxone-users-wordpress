@@ -212,29 +212,75 @@ add_action( 'admin_post_diluxone_users_sessions', 'diluxone_users_sessions_actio
 function diluxone_users_sessions_search( string $search = '', int $page = 1, int $per = 20 ): array {
 	global $wpdb;
 
-	$page  = max( 1, $page );
-	$per   = max( 1, min( 200, $per ) );
-	$where = "m.meta_key = 'session_tokens'";
-	$args  = array();
+	$page   = max( 1, $page );
+	$per    = max( 1, min( 200, $per ) );
+	$offset = ( $page - 1 ) * $per;
+	$search = trim( $search );
 
-	if ( '' !== trim( $search ) ) {
-		$like   = '%' . $wpdb->esc_like( trim( $search ) ) . '%';
-		$where .= ' AND ( u.user_email LIKE %s OR u.user_login LIKE %s OR u.display_name LIKE %s )';
-		$args   = array( $like, $like, $like );
+	// The sessions live in user meta and WordPress has no API that queries
+	// them, so this goes to the database directly. It is deliberately not
+	// cached: this is an admin screen opened to see the state right now.
+	//
+	// Each query is written out in full instead of being assembled from
+	// pieces. Building it in a variable and preparing that is just as safe,
+	// and it is what this used to do — but neither the static analysers nor a
+	// reviewer can follow a string that arrives from somewhere else, so what
+	// they see is a query of unknown origin. Written out, every one of them is
+	// verifiable where it stands. The repetition is the price.
+	// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- see above.
+	if ( '' === $search ) {
+		$total = (int) $wpdb->get_var(
+			"SELECT COUNT(*)
+			   FROM {$wpdb->usermeta} m
+			   INNER JOIN {$wpdb->users} u ON u.ID = m.user_id
+			  WHERE m.meta_key = 'session_tokens'"
+		);
+
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT u.ID, u.user_login, u.user_email, u.display_name, m.meta_value
+				   FROM {$wpdb->usermeta} m
+				   INNER JOIN {$wpdb->users} u ON u.ID = m.user_id
+				  WHERE m.meta_key = 'session_tokens'
+			   ORDER BY u.user_email ASC
+				  LIMIT %d OFFSET %d",
+				$per,
+				$offset
+			)
+		);
+	} else {
+		$like = '%' . $wpdb->esc_like( $search ) . '%';
+
+		$total = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*)
+				   FROM {$wpdb->usermeta} m
+				   INNER JOIN {$wpdb->users} u ON u.ID = m.user_id
+				  WHERE m.meta_key = 'session_tokens'
+				    AND ( u.user_email LIKE %s OR u.user_login LIKE %s OR u.display_name LIKE %s )",
+				$like,
+				$like,
+				$like
+			)
+		);
+
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT u.ID, u.user_login, u.user_email, u.display_name, m.meta_value
+				   FROM {$wpdb->usermeta} m
+				   INNER JOIN {$wpdb->users} u ON u.ID = m.user_id
+				  WHERE m.meta_key = 'session_tokens'
+				    AND ( u.user_email LIKE %s OR u.user_login LIKE %s OR u.display_name LIKE %s )
+			   ORDER BY u.user_email ASC
+				  LIMIT %d OFFSET %d",
+				$like,
+				$like,
+				$like,
+				$per,
+				$offset
+			)
+		);
 	}
-
-	$base = "FROM {$wpdb->usermeta} m INNER JOIN {$wpdb->users} u ON u.ID = m.user_id WHERE {$where}";
-
-	// The sessions table has no WordPress API to query it, so the meta is
-	// reached directly. It is deliberately not cached: this is an admin screen
-	// opened to see the state right now.
-	// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $where is built with placeholders and $args fills them.
-	$total = (int) ( $args
-		? $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) {$base}", $args ) )
-		: $wpdb->get_var( "SELECT COUNT(*) {$base}" ) );
-
-	$sql  = "SELECT u.ID, u.user_login, u.user_email, u.display_name, m.meta_value {$base} ORDER BY u.user_email ASC LIMIT %d OFFSET %d";
-	$rows = $wpdb->get_results( $wpdb->prepare( $sql, array_merge( $args, array( $per, ( $page - 1 ) * $per ) ) ) );
 	// phpcs:enable
 
 	$out = array();
