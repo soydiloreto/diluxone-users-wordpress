@@ -133,7 +133,7 @@ test-unit: ## Run only the unit-test suite (no WordPress runtime).
 
 .PHONY: test-integration
 test-integration: ## Run integration tests against the wp-env stack (must be `make env` first).
-	$(INTEG) ./vendor/bin/phpunit --testsuite integration
+	npx @wordpress/env run tests-cli --env-cwd=wp-content/plugins/$(REPO_DIR) ./vendor/bin/phpunit -c phpunit-integration.xml --testsuite integration
 
 # -- Distribution build ------------------------------------------------
 # The repo directory is diluxone-users-wordpress (GitHub), but the plugin
@@ -141,6 +141,8 @@ test-integration: ## Run integration tests against the wp-env stack (must be `ma
 # WordPress derives the text-domain check from the folder name. `make dist`
 # materialises exactly what ships, under the right name, applying .distignore
 # so the tree has no tests, tooling or repo metadata in it.
+REPO_DIR := $(notdir $(CURDIR))
+
 DIST_DIR := build/diluxone-users
 
 .PHONY: dist

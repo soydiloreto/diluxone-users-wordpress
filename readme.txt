@@ -70,6 +70,22 @@ from CSS custom properties a site can redefine without copying a stylesheet.
 Yes. Configuration is per site; users are network-wide, so anything that
 grants access joins the person to the current site.
 
+== Screenshots ==
+
+1. The sign-in page: a passkey, a social account, a link by email, or the WordPress password — whichever ones the site turned on.
+2. The account area on the front end, in the site's own theme.
+3. Security: passkeys, two-step verification and every browser that is signed in.
+4. The second step at sign-in, for whoever turned it on.
+5. Overview: how many accounts, how they get in, and the first steps until there are none left.
+6. Every way into the site in one table, read from the settings the other tabs write.
+7. Two-step verification: when it is asked for, with what, and to whom.
+8. Social login: twelve networks, each with its own credentials and a live test.
+9. User fields: what is asked of a person, where it shows and who can change it.
+10. How the account area looks, with a live preview of the real markup.
+11. Open sessions across the site, with the button to close them.
+12. The Access column WordPress's own Users list gains.
+13. Status: every check, including the ones that fail.
+
 == Changelog ==
 
 = 1.0.0 =
