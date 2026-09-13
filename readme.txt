@@ -93,7 +93,7 @@ First public release.
 
 * User fields with their own admin screen: text, email, phone, date, select, checkbox and country, plus WordPress's own first and last name.
 * Per-field edit policy — read only, editable, or editable a fixed number of times — and a switch to allow or block access to WordPress's own profile screen.
-* Front-end account area with default sections out of the box, in a horizontal or vertical layout, driven entirely by what is enabled in the admin.
+* Front-end account area with default sections out of the box, in one of two templates — a panel in the page or a full-width cover with the person on it — with the header, the menu and the content width chosen piece by piece.
 * Overridable templates and CSS custom properties, so a theme can restyle it without touching the plugin.
 * Passwordless sign-in by e-mail link, optionally alongside or instead of the password form.
 * Social login for twelve providers, with path-based callback URLs that every provider accepts.
