@@ -208,8 +208,9 @@ function diluxone_users_panel_actions( array $actions ): void {
  * numbers, and on paper it prints as the table it is.
  */
 function diluxone_users_panel_usage(): void {
-	$stats = diluxone_users_stats();
-	$total = (int) $stats['users'];
+	$screens = diluxone_users_screens();
+	$stats   = diluxone_users_stats();
+	$total   = (int) $stats['users'];
 
 	$rows = array(
 		array(
@@ -328,6 +329,7 @@ function diluxone_users_status_row( string $what, string $state, string $detail,
 
 /** Every door into the site, with the state each one is in. */
 function diluxone_users_panel_doors(): void {
+	$screens   = diluxone_users_screens();
 	$providers = diluxone_users_sso_providers();
 	$ready     = diluxone_users_sso_available();
 	$setup     = array_filter( array_keys( $providers ), 'diluxone_users_sso_configured' );
@@ -438,18 +440,19 @@ function diluxone_users_panel_doors(): void {
 	<?php
 	diluxone_users_panel_actions(
 		array(
-			__( 'Sign in', 'diluxone-users' )      => diluxone_users_admin_url( 'diluxone-users-login' ),
-			__( 'Registration', 'diluxone-users' ) => diluxone_users_admin_url( 'diluxone-users-register' ),
-			__( 'Social login', 'diluxone-users' ) => diluxone_users_admin_url( 'diluxone-users-social' ),
-			__( 'Sessions', 'diluxone-users' )     => diluxone_users_admin_url( 'diluxone-users-sessions' ),
+			$screens['diluxone-users-login']    => diluxone_users_admin_url( 'diluxone-users-login' ),
+			$screens['diluxone-users-register'] => diluxone_users_admin_url( 'diluxone-users-register' ),
+			$screens['diluxone-users-social']   => diluxone_users_admin_url( 'diluxone-users-social' ),
+			$screens['diluxone-users-sessions'] => diluxone_users_admin_url( 'diluxone-users-sessions' ),
 		)
 	);
 }
 
 /** The fields in use, grouped the way the account area groups them. */
 function diluxone_users_panel_asked(): void {
-	$fields = diluxone_users_fields( '', false );
-	$active = array_filter( $fields, static fn( array $f ): bool => (bool) $f['active'] );
+	$screens = diluxone_users_screens();
+	$fields  = diluxone_users_fields( '', false );
+	$active  = array_filter( $fields, static fn( array $f ): bool => (bool) $f['active'] );
 
 	diluxone_users_intro( __( 'Besides the e-mail address, which is the identity and is never optional, this is what the account area asks people for.', 'diluxone-users' ) );
 
@@ -479,14 +482,15 @@ function diluxone_users_panel_asked(): void {
 
 	diluxone_users_panel_actions(
 		array(
-			__( 'User fields', 'diluxone-users' )  => diluxone_users_admin_url( 'diluxone-users-fields' ),
-			__( 'Account area', 'diluxone-users' ) => diluxone_users_admin_url( 'diluxone-users-account' ),
+			$screens['diluxone-users-fields']  => diluxone_users_admin_url( 'diluxone-users-fields' ),
+			$screens['diluxone-users-account'] => diluxone_users_admin_url( 'diluxone-users-account' ),
 		)
 	);
 }
 
 /** The way back in when there is no way back in. */
 function diluxone_users_panel_lockout(): void {
+	$screens = diluxone_users_screens();
 	diluxone_users_intro( __( 'On a site without passwords and without outgoing email, an expired session leaves you outside. With access to the server:', 'diluxone-users' ) );
 	?>
 	<p><code>wp diluxone-users login <?php echo esc_html( wp_get_current_user()->user_email ); ?></code></p>
@@ -495,8 +499,8 @@ function diluxone_users_panel_lockout(): void {
 
 	diluxone_users_panel_actions(
 		array(
-			__( 'Sign in', 'diluxone-users' ) => diluxone_users_admin_url( 'diluxone-users-login' ),
-			__( 'Tools', 'diluxone-users' )   => diluxone_users_admin_url( 'diluxone-users-tools' ),
+			$screens['diluxone-users-login'] => diluxone_users_admin_url( 'diluxone-users-login' ),
+			$screens['diluxone-users-tools'] => diluxone_users_admin_url( 'diluxone-users-tools' ),
 		)
 	);
 }

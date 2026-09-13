@@ -69,7 +69,10 @@ function diluxone_users_screens(): array {
 		'diluxone-users-fields'   => __( 'User fields', 'diluxone-users' ),
 		'diluxone-users-account'  => __( 'Account area', 'diluxone-users' ),
 		'diluxone-users-register' => __( 'Registration', 'diluxone-users' ),
-		'diluxone-users-login'    => __( 'Sign in', 'diluxone-users' ),
+		// With a context of its own: the screen is a place, and in several
+		// languages the place and the "Sign in" on the button in front of a
+		// visitor are not the same word.
+		'diluxone-users-login'    => _x( 'Sign in', 'name of the dashboard screen', 'diluxone-users' ),
 		'diluxone-users-social'   => __( 'Social login', 'diluxone-users' ),
 		'diluxone-users-sessions' => __( 'User sessions', 'diluxone-users' ),
 		'diluxone-users-status'   => __( 'Status', 'diluxone-users' ),

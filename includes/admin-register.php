@@ -26,7 +26,7 @@ function diluxone_users_screen_register(): void {
 		diluxone_users_notice( __( 'Settings saved.', 'diluxone-users' ) );
 	}
 
-	diluxone_users_screen_open( __( 'Registration', 'diluxone-users' ), 'diluxone-users-register', $tabs, $current );
+	diluxone_users_screen_open( diluxone_users_screens()['diluxone-users-register'], 'diluxone-users-register', $tabs, $current );
 
 	if ( 'look' === $current ) {
 		diluxone_users_screen_register_look();
@@ -175,7 +175,7 @@ function diluxone_users_screen_register_look(): void {
 	diluxone_users_intro( __( 'The fields they are asked to fill in afterwards are the required ones on the User fields screen, and the buttons are the ones on Social login.', 'diluxone-users' ) );
 	?>
 	<p class="diluxone-users-panel__actions">
-		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-login' ) ); ?>"><?php esc_html_e( 'Sign in', 'diluxone-users' ); ?></a>
+		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-login' ) ); ?>"><?php echo esc_html( diluxone_users_screens()['diluxone-users-login'] ); ?></a>
 		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-fields' ) ); ?>"><?php esc_html_e( 'User fields', 'diluxone-users' ); ?></a>
 		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-social' ) ); ?>"><?php esc_html_e( 'Social login', 'diluxone-users' ); ?></a>
 	</p>

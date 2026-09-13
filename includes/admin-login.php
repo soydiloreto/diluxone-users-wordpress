@@ -31,7 +31,7 @@ function diluxone_users_screen_login(): void {
 		diluxone_users_notice( __( 'Settings saved.', 'diluxone-users' ) );
 	}
 
-	diluxone_users_screen_open( __( 'Sign in', 'diluxone-users' ), 'diluxone-users-login', $tabs, $current );
+	diluxone_users_screen_open( diluxone_users_screens()['diluxone-users-login'], 'diluxone-users-login', $tabs, $current );
 
 	// The preview is a form of its own, and a form inside a form is thrown
 	// away by the browser. That tab has nothing to save anyway.
@@ -745,7 +745,7 @@ function diluxone_users_screen_login_look(): void {
 	}
 	?>
 	<p class="diluxone-users-panel__actions">
-		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-login' ) ); ?>"><?php esc_html_e( 'Getting in', 'diluxone-users' ); ?></a>
+		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-login' ) ); ?>"><?php echo esc_html( diluxone_users_screens()['diluxone-users-login'] ); ?></a>
 		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-social' ) ); ?>"><?php esc_html_e( 'Social login', 'diluxone-users' ); ?></a>
 		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-account', array( 'tab' => 'appearance' ) ) ); ?>"><?php esc_html_e( 'Colours and corners', 'diluxone-users' ); ?></a>
 		<?php if ( $page > 0 ) : ?>
