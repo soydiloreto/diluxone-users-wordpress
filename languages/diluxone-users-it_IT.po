@@ -52,7 +52,7 @@ msgstr "Home"
 msgid "Your details"
 msgstr "I tuoi dati"
 
-#: includes/account-sections.php:39
+#: includes/account-sections.php:39 includes/admin-people.php:193
 msgid "Linked accounts"
 msgstr "Account collegati"
 
@@ -933,12 +933,12 @@ msgid "Required for everybody who can use it."
 msgstr "Obbligatoria per tutti quelli che possono usarla."
 
 #: includes/admin-home.php:317 includes/admin-login.php:17
-#: templates/account/security.php:178
+#: includes/admin-people.php:157 templates/account/security.php:178
 msgid "Two-step verification"
 msgstr "Verifica in due passaggi"
 
 #: includes/admin-home.php:323 includes/admin-login.php:18
-#: templates/account/security.php:73
+#: includes/admin-people.php:171 templates/account/security.php:73
 msgid "Passkeys"
 msgstr "Passkey"
 
@@ -1046,7 +1046,8 @@ msgstr "Accedi"
 msgid "The email"
 msgstr "L’e-mail"
 
-#: includes/admin-login.php:16 templates/account/handle-field.php:17
+#: includes/admin-login.php:16 includes/admin-people.php:125
+#: templates/account/handle-field.php:17
 msgid "Public name"
 msgstr "Nome pubblico"
 
@@ -2673,7 +2674,7 @@ msgstr "È stata aggiunta una passkey: %s."
 msgid "Passkey saved."
 msgstr "Passkey salvata."
 
-#: includes/auth-passkeys.php:473
+#: includes/admin-people.php:183 includes/auth-passkeys.php:473
 msgid "Passkey"
 msgstr "Passkey"
 
@@ -4799,6 +4800,91 @@ msgstr "I nomi pubblici sono disattivati, quindi questo non fa ancora niente."
 #: includes/admin-login.php:344
 msgid "Turn them on"
 msgstr "Attivarli"
+
+#: includes/admin-people.php:41
+msgid "Access"
+msgstr "Accesso"
+
+#: includes/admin-people.php:63
+msgid "2FA"
+msgstr "2FA"
+
+#: includes/admin-people.php:67
+msgid "App"
+msgstr "App"
+
+#. translators: %d: how many passkeys
+#: includes/admin-people.php:75
+#, php-format
+msgid "%d passkey"
+msgid_plural "%d passkeys"
+msgstr[0] "%d passkey"
+msgstr[1] "%d passkey"
+
+#: includes/admin-people.php:87
+msgid "Only the e-mail link"
+msgstr "Solo il link via e-mail"
+
+#: includes/admin-people.php:130
+msgid "None chosen"
+msgstr "Non ne ha scelto nessuno"
+
+#: includes/admin-people.php:135
+msgid "Last seen"
+msgstr "Ultima volta"
+
+#: includes/admin-people.php:138
+msgid "No open session."
+msgstr "Non ha nessuna sessione aperta."
+
+#. translators: 1: how long ago, 2: device and browser, 3: IP address
+#: includes/admin-people.php:143
+#, php-format
+msgid "%1$s ago, from %2$s (%3$s)"
+msgstr "%1$s fa, da %2$s (%3$s)"
+
+#: includes/admin-people.php:151
+msgid "See every session"
+msgstr "Vedi tutte le sue sessioni"
+
+#: includes/admin-people.php:160
+msgid "An authenticator app is set up."
+msgstr "Ha un’app di autenticazione configurata."
+
+#: includes/admin-people.php:163
+msgid ""
+"Remove the authenticator app — for somebody who lost the phone it lived on"
+msgstr ""
+"Togliere l’app di autenticazione — per chi ha perso il telefono su cui "
+"viveva"
+
+#: includes/admin-people.php:166
+msgid "No authenticator app."
+msgstr "Nessuna app di autenticazione."
+
+#: includes/admin-people.php:174 includes/admin-people.php:196
+msgid "None."
+msgstr "Nessuna."
+
+#. translators: 1: the name given to the passkey, 2: date it was added
+#: includes/admin-people.php:182
+#, php-format
+msgid "Remove “%1$s”, added on %2$s"
+msgstr "Togliere «%1$s», aggiunta il %2$s"
+
+#. translators: %s: name of the social network
+#: includes/admin-people.php:204
+#, php-format
+msgid "Unlink %s"
+msgstr "Scollega %s"
+
+#: includes/admin-people.php:210
+msgid ""
+"Unlinking does not delete anything: that network simply stops opening this "
+"account."
+msgstr ""
+"Scollegare non cancella niente: quel social semplicemente smette di aprire "
+"questo account."
 
 #~ msgid "Sign in with it"
 #~ msgstr "Usarlo per accedere"

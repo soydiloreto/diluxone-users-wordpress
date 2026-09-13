@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-13T21:33:05+00:00\n"
+"POT-Creation-Date: 2026-09-13T21:37:29+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: diluxone-users\n"
@@ -48,6 +48,7 @@ msgid "Your details"
 msgstr ""
 
 #: includes/account-sections.php:39
+#: includes/admin-people.php:193
 msgid "Linked accounts"
 msgstr ""
 
@@ -894,12 +895,14 @@ msgstr ""
 
 #: includes/admin-home.php:317
 #: includes/admin-login.php:17
+#: includes/admin-people.php:157
 #: templates/account/security.php:178
 msgid "Two-step verification"
 msgstr ""
 
 #: includes/admin-home.php:323
 #: includes/admin-login.php:18
+#: includes/admin-people.php:171
 #: templates/account/security.php:73
 msgid "Passkeys"
 msgstr ""
@@ -1001,6 +1004,7 @@ msgid "The email"
 msgstr ""
 
 #: includes/admin-login.php:16
+#: includes/admin-people.php:125
 #: templates/account/handle-field.php:17
 msgid "Public name"
 msgstr ""
@@ -1551,6 +1555,90 @@ msgstr ""
 
 #: includes/admin-login.php:777
 msgid "This is what makes a passkey count as two things at once: something they have and something they are. With it off, whoever is holding an unlocked device gets in, and the passkey is worth one factor."
+msgstr ""
+
+#: includes/admin-people.php:41
+msgid "Access"
+msgstr ""
+
+#: includes/admin-people.php:63
+msgid "2FA"
+msgstr ""
+
+#: includes/admin-people.php:67
+msgid "App"
+msgstr ""
+
+#. translators: %d: how many passkeys
+#: includes/admin-people.php:75
+#, php-format
+msgid "%d passkey"
+msgid_plural "%d passkeys"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/admin-people.php:87
+msgid "Only the e-mail link"
+msgstr ""
+
+#: includes/admin-people.php:130
+msgid "None chosen"
+msgstr ""
+
+#: includes/admin-people.php:135
+msgid "Last seen"
+msgstr ""
+
+#: includes/admin-people.php:138
+msgid "No open session."
+msgstr ""
+
+#. translators: 1: how long ago, 2: device and browser, 3: IP address
+#: includes/admin-people.php:143
+#, php-format
+msgid "%1$s ago, from %2$s (%3$s)"
+msgstr ""
+
+#: includes/admin-people.php:151
+msgid "See every session"
+msgstr ""
+
+#: includes/admin-people.php:160
+msgid "An authenticator app is set up."
+msgstr ""
+
+#: includes/admin-people.php:163
+msgid "Remove the authenticator app — for somebody who lost the phone it lived on"
+msgstr ""
+
+#: includes/admin-people.php:166
+msgid "No authenticator app."
+msgstr ""
+
+#: includes/admin-people.php:174
+#: includes/admin-people.php:196
+msgid "None."
+msgstr ""
+
+#. translators: 1: the name given to the passkey, 2: date it was added
+#: includes/admin-people.php:182
+#, php-format
+msgid "Remove “%1$s”, added on %2$s"
+msgstr ""
+
+#: includes/admin-people.php:183
+#: includes/auth-passkeys.php:473
+msgid "Passkey"
+msgstr ""
+
+#. translators: %s: name of the social network
+#: includes/admin-people.php:204
+#, php-format
+msgid "Unlink %s"
+msgstr ""
+
+#: includes/admin-people.php:210
+msgid "Unlinking does not delete anything: that network simply stops opening this account."
 msgstr ""
 
 #: includes/admin-sessions.php:18
@@ -2438,10 +2526,6 @@ msgstr ""
 
 #: includes/auth-passkeys.php:420
 msgid "Passkey saved."
-msgstr ""
-
-#: includes/auth-passkeys.php:473
-msgid "Passkey"
 msgstr ""
 
 #: includes/auth-passkeys.php:490
