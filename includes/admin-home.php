@@ -7,6 +7,16 @@
  * asked for, how they get in and what is left to configure. What you would
  * want to know before touching any other screen.
  *
+ * The screen has two halves and they answer different questions. The cards at
+ * the top are the headline numbers — four of them, glanced at, not read. What
+ * is under them is the detail, and it is split into four panels behind tabs
+ * because reading all four at once is reading none: nobody arrives here
+ * wanting to know at the same time what their people use, how they get in,
+ * what is asked of them and how to get back in after being locked out.
+ *
+ * None of the panels edits anything. They tell, and they carry the button to
+ * the screen where the thing is actually changed.
+ *
  * @package DiluxOneUsers
  */
 
@@ -50,15 +60,27 @@ function diluxone_users_home_numbers(): array {
 	return $numbers;
 }
 
-/** A tile with a number and its label. */
-function diluxone_users_tile( string $value, string $label, string $link = '', string $link_label = '' ): void {
+/**
+ * A headline card: an icon, a number, what the number is, and where to go.
+ *
+ * The icon is a dashicon and it is decorative — it repeats what the label
+ * already says, so it is hidden from screen readers rather than read out
+ * twice.
+ */
+function diluxone_users_card( string $icon, string $value, string $label, string $detail = '', string $link = '', string $link_label = '' ): void {
 	?>
-	<div class="diluxone-users-tile">
-		<b><?php echo esc_html( $value ); ?></b>
-		<span><?php echo esc_html( $label ); ?></span>
-		<?php if ( '' !== $link ) : ?>
-			<a href="<?php echo esc_url( $link ); ?>"><?php echo esc_html( $link_label ); ?> &rarr;</a>
-		<?php endif; ?>
+	<div class="diluxone-users-card">
+		<span class="diluxone-users-card__icon dashicons <?php echo esc_attr( $icon ); ?>" aria-hidden="true"></span>
+		<div class="diluxone-users-card__body">
+			<h3><?php echo esc_html( $label ); ?></h3>
+			<b class="diluxone-users-card__value"><?php echo esc_html( $value ); ?></b>
+			<?php if ( '' !== $detail ) : ?>
+				<p class="diluxone-users-card__detail"><?php echo esc_html( $detail ); ?></p>
+			<?php endif; ?>
+			<?php if ( '' !== $link ) : ?>
+				<a class="diluxone-users-card__link" href="<?php echo esc_url( $link ); ?>"><?php echo esc_html( $link_label ); ?> &rarr;</a>
+			<?php endif; ?>
+		</div>
 	</div>
 	<?php
 }
@@ -111,7 +133,7 @@ function diluxone_users_setup_steps(): array {
  *
  * The one still to do carries the button; the ones already done are ticked and
  * stay visible, because crossing something off is the point of a list like
- * this. Once the three are done the whole block goes and the numbers below
+ * this. Once the three are done the whole block goes and the panels below
  * take its place: a checklist of things already done is furniture.
  *
  * @param array<int, array{label: string, detail: string, done: bool, url: string, cta: string}> $steps
@@ -144,35 +166,128 @@ function diluxone_users_steps( array $steps ): void {
 }
 
 /**
- * What people are actually using, once the site is up.
+ * The four panels, in the order they are asked about.
  *
- * A bar per thing, drawn against the number of accounts. No chart library for
- * five numbers: it is a width in per cent, and it prints the same on a screen
- * reader as the table on the Status screen does.
+ * @return array<string, string>
  */
-function diluxone_users_usage_bars(): void {
+function diluxone_users_home_panels(): array {
+	return array(
+		'usage'   => __( 'What your people use', 'diluxone-users' ),
+		'doors'   => __( 'How your people get in', 'diluxone-users' ),
+		'asked'   => __( 'What is asked of them', 'diluxone-users' ),
+		'lockout' => __( 'If you get locked out', 'diluxone-users' ),
+	);
+}
+
+/** The buttons at the foot of a panel: where what it just showed gets changed. */
+function diluxone_users_panel_actions( array $actions ): void {
+	echo '<p class="diluxone-users-panel__actions">';
+
+	foreach ( $actions as $label => $url ) {
+		printf(
+			'<a class="button" href="%1$s">%2$s</a> ',
+			esc_url( (string) $url ),
+			esc_html( (string) $label )
+		);
+	}
+
+	echo '</p>';
+}
+
+/**
+ * What people actually chose, out of the people there are.
+ *
+ * This panel is the one that is not configuration: every row is a count of
+ * real accounts, and it is written as such — "40 of 120 accounts", not a bare
+ * number that could be read as a setting. The bar is the same number drawn,
+ * so the four rows can be compared with the eye; no chart library for four
+ * numbers, and on paper it prints as the table it is.
+ */
+function diluxone_users_panel_usage(): void {
 	$stats = diluxone_users_stats();
-	$total = max( 1, (int) $stats['users'] );
+	$total = (int) $stats['users'];
 
 	$rows = array(
-		__( 'With a public name', 'diluxone-users' ) => (int) $stats['handles'],
-		__( 'With a social account linked', 'diluxone-users' ) => (int) $stats['social'],
-		__( 'With an authenticator app', 'diluxone-users' ) => (int) $stats['totp'],
-		__( 'With a passkey', 'diluxone-users' )     => (int) $stats['passkeys'],
+		array(
+			'label'  => __( 'Have a public name', 'diluxone-users' ),
+			'detail' => __( 'The short name that goes in the address of their profile. Without one, the site falls back to their first and last name.', 'diluxone-users' ),
+			'value'  => (int) $stats['handles'],
+		),
+		array(
+			'label'  => __( 'Linked a social account', 'diluxone-users' ),
+			'detail' => __( 'They can get in with Google, Facebook or whichever provider is enabled, instead of waiting for the e-mail.', 'diluxone-users' ),
+			'value'  => (int) $stats['social'],
+		),
+		array(
+			'label'  => __( 'Set up an authenticator app', 'diluxone-users' ),
+			'detail' => __( 'The six-digit code as a second step, from an app on their phone.', 'diluxone-users' ),
+			'value'  => (int) $stats['totp'],
+		),
+		array(
+			'label'  => __( 'Registered a passkey', 'diluxone-users' ),
+			'detail' => __( 'Their fingerprint or their face instead of a password. It is the only way in that cannot be phished.', 'diluxone-users' ),
+			'value'  => (int) $stats['passkeys'],
+		),
 	);
 
-	echo '<ul class="diluxone-users-bars">';
+	diluxone_users_intro(
+		sprintf(
+			/* translators: %s: number of accounts on the site */
+			__( 'Out of the %s accounts on this site, how many chose each thing. These are people, not settings: nobody is counted here until they turn it on themselves.', 'diluxone-users' ),
+			number_format_i18n( $total )
+		)
+	);
 
-	foreach ( $rows as $label => $value ) {
+	if ( 0 === $total ) {
+		diluxone_users_intro( __( 'There are no accounts yet, so there is nothing to count.', 'diluxone-users' ) );
+
+		return;
+	}
+
+	echo '<ul class="diluxone-users-usage">';
+
+	foreach ( $rows as $row ) {
+		$share = round( $row['value'] / $total * 100 );
+
 		printf(
-			'<li><span class="diluxone-users-bars__label">%1$s</span><span class="diluxone-users-bars__track"><span class="diluxone-users-bars__fill" style="width:%2$s%%"></span></span><span class="diluxone-users-bars__value">%3$s</span></li>',
-			esc_html( (string) $label ),
-			esc_attr( (string) round( $value / $total * 100, 1 ) ),
-			esc_html( number_format_i18n( $value ) )
+			'<li class="diluxone-users-usage__row">
+				<div class="diluxone-users-usage__head">
+					<strong>%1$s</strong>
+					<span class="diluxone-users-usage__count">%2$s <span class="diluxone-users-usage__share">(%3$s)</span></span>
+				</div>
+				<span class="diluxone-users-usage__track"><span class="diluxone-users-usage__fill" style="width:%4$s%%"></span></span>
+				<p class="diluxone-users-usage__detail">%5$s</p>
+			</li>',
+			esc_html( (string) $row['label'] ),
+			esc_html(
+				sprintf(
+					/* translators: 1: how many people, 2: how many accounts in total */
+					__( '%1$s of %2$s', 'diluxone-users' ),
+					number_format_i18n( (int) $row['value'] ),
+					number_format_i18n( $total )
+				)
+			),
+			esc_html(
+				sprintf(
+					/* translators: %s: a percentage, already rounded */
+					__( '%s%%', 'diluxone-users' ),
+					number_format_i18n( $share )
+				)
+			),
+			esc_attr( (string) $share ),
+			esc_html( (string) $row['detail'] )
 		);
 	}
 
 	echo '</ul>';
+
+	diluxone_users_panel_actions(
+		array(
+			__( 'Social login', 'diluxone-users' )     => diluxone_users_admin_url( 'diluxone-users-social' ),
+			__( 'Sign in', 'diluxone-users' )          => diluxone_users_admin_url( 'diluxone-users-login' ),
+			__( 'See every person', 'diluxone-users' ) => admin_url( 'users.php' ),
+		)
+	);
 }
 
 /**
@@ -207,73 +322,15 @@ function diluxone_users_status_row( string $what, string $state, string $detail,
 	<?php
 }
 
-/** Screen home. */
-function diluxone_users_screen_home(): void {
-	$numbers   = diluxone_users_home_numbers();
-	$fields    = diluxone_users_fields( '', false );
-	$active    = array_filter( $fields, static fn( array $f ): bool => (bool) $f['active'] );
+/** Every door into the site, with the state each one is in. */
+function diluxone_users_panel_doors(): void {
 	$providers = diluxone_users_sso_providers();
 	$ready     = diluxone_users_sso_available();
 	$setup     = array_filter( array_keys( $providers ), 'diluxone_users_sso_configured' );
 	$page      = (int) diluxone_users_option( 'diluxone_users_login_page' );
 
-	diluxone_users_screen_open( diluxone_users_screens()[ DILUXONE_USERS_MENU ] );
-
-	$steps   = diluxone_users_setup_steps();
-	$pending = array_filter( $steps, static fn( array $step ): bool => ! $step['done'] );
+	diluxone_users_intro( __( 'Every way into this site and the state it is in. Nothing here is edited on this screen: the buttons underneath lead to where each one is changed.', 'diluxone-users' ) );
 	?>
-
-	<div class="diluxone-users-welcome">
-		<h2>
-			<?php
-			/* translators: %s: plugin name */
-			printf( esc_html__( 'Welcome to %s', 'diluxone-users' ), esc_html( diluxone_users_plugin_name() ) );
-			?>
-		</h2>
-		<p><?php esc_html_e( 'Who is in this site, what is asked of them and how they get in.', 'diluxone-users' ); ?></p>
-	</div>
-
-	<div class="diluxone-users-tiles">
-		<?php
-		diluxone_users_tile(
-			number_format_i18n( $numbers['users'] ),
-			__( 'accounts', 'diluxone-users' ),
-			admin_url( 'users.php' ),
-			__( 'All users', 'diluxone-users' )
-		);
-
-		diluxone_users_tile(
-			number_format_i18n( $numbers['sessions'] ),
-			__( 'with an open session', 'diluxone-users' ),
-			diluxone_users_admin_url( 'diluxone-users-sessions' ),
-			__( 'See who', 'diluxone-users' )
-		);
-
-		diluxone_users_tile(
-			number_format_i18n( count( $active ) ) . ' / ' . number_format_i18n( count( $fields ) ),
-			__( 'fields in use', 'diluxone-users' ),
-			diluxone_users_admin_url( 'diluxone-users-fields' ),
-			__( 'Manage them', 'diluxone-users' )
-		);
-
-		diluxone_users_tile(
-			number_format_i18n( count( $ready ) ) . ' / ' . number_format_i18n( count( $providers ) ),
-			__( 'social providers on', 'diluxone-users' ),
-			diluxone_users_admin_url( 'diluxone-users-social' ),
-			__( 'Set them up', 'diluxone-users' )
-		);
-		?>
-	</div>
-
-	<?php if ( array() !== $pending ) : ?>
-		<h2><?php esc_html_e( 'First steps', 'diluxone-users' ); ?></h2>
-		<?php diluxone_users_steps( $steps ); ?>
-	<?php else : ?>
-		<h2><?php esc_html_e( 'What your people are using', 'diluxone-users' ); ?></h2>
-		<?php diluxone_users_usage_bars(); ?>
-	<?php endif; ?>
-
-	<h2><?php esc_html_e( 'How people get in', 'diluxone-users' ); ?></h2>
 	<table class="widefat striped diluxone-users-state">
 		<tbody>
 			<?php
@@ -374,11 +431,28 @@ function diluxone_users_screen_home(): void {
 			?>
 		</tbody>
 	</table>
+	<?php
+	diluxone_users_panel_actions(
+		array(
+			__( 'Sign in', 'diluxone-users' )      => diluxone_users_admin_url( 'diluxone-users-login' ),
+			__( 'Registration', 'diluxone-users' ) => diluxone_users_admin_url( 'diluxone-users-register' ),
+			__( 'Social login', 'diluxone-users' ) => diluxone_users_admin_url( 'diluxone-users-social' ),
+			__( 'Sessions', 'diluxone-users' )     => diluxone_users_admin_url( 'diluxone-users-sessions' ),
+		)
+	);
+}
 
-	<h2><?php esc_html_e( 'What is asked of people', 'diluxone-users' ); ?></h2>
-	<?php if ( array() === $active ) : ?>
-		<p class="diluxone-users-admin__intro"><?php esc_html_e( 'Nothing beyond the email address.', 'diluxone-users' ); ?></p>
-	<?php else : ?>
+/** The fields in use, grouped the way the account area groups them. */
+function diluxone_users_panel_asked(): void {
+	$fields = diluxone_users_fields( '', false );
+	$active = array_filter( $fields, static fn( array $f ): bool => (bool) $f['active'] );
+
+	diluxone_users_intro( __( 'Besides the e-mail address, which is the identity and is never optional, this is what the account area asks people for.', 'diluxone-users' ) );
+
+	if ( array() === $active ) {
+		diluxone_users_intro( __( 'Nothing beyond the email address.', 'diluxone-users' ) );
+	} else {
+		?>
 		<table class="widefat striped diluxone-users-state">
 			<tbody>
 				<?php
@@ -396,13 +470,125 @@ function diluxone_users_screen_home(): void {
 				<?php endforeach; ?>
 			</tbody>
 		</table>
+		<?php
+	}
+
+	diluxone_users_panel_actions(
+		array(
+			__( 'User fields', 'diluxone-users' )  => diluxone_users_admin_url( 'diluxone-users-fields' ),
+			__( 'Account area', 'diluxone-users' ) => diluxone_users_admin_url( 'diluxone-users-account' ),
+		)
+	);
+}
+
+/** The way back in when there is no way back in. */
+function diluxone_users_panel_lockout(): void {
+	diluxone_users_intro( __( 'On a site without passwords and without outgoing email, an expired session leaves you outside. With access to the server:', 'diluxone-users' ) );
+	?>
+	<p><code>wp diluxone-users login <?php echo esc_html( wp_get_current_user()->user_email ); ?></code></p>
+	<?php
+	diluxone_users_intro( __( 'That prints a single-use link and does not need the e-mail to work. If there is no shell either, the emergency door for administrators is on the Sign in screen, along with the address it lives at.', 'diluxone-users' ) );
+
+	diluxone_users_panel_actions(
+		array(
+			__( 'Sign in', 'diluxone-users' ) => diluxone_users_admin_url( 'diluxone-users-login' ),
+			__( 'Tools', 'diluxone-users' )   => diluxone_users_admin_url( 'diluxone-users-tools' ),
+		)
+	);
+}
+
+/** Screen home. */
+function diluxone_users_screen_home(): void {
+	$numbers   = diluxone_users_home_numbers();
+	$fields    = diluxone_users_fields( '', false );
+	$active    = array_filter( $fields, static fn( array $f ): bool => (bool) $f['active'] );
+	$providers = diluxone_users_sso_providers();
+	$ready     = diluxone_users_sso_available();
+
+	$panels  = diluxone_users_home_panels();
+	$current = diluxone_users_tab( $panels );
+
+	diluxone_users_screen_open( diluxone_users_screens()[ DILUXONE_USERS_MENU ] );
+
+	$steps   = diluxone_users_setup_steps();
+	$pending = array_filter( $steps, static fn( array $step ): bool => ! $step['done'] );
+	?>
+
+	<div class="diluxone-users-welcome">
+		<h2>
+			<?php
+			/* translators: %s: plugin name */
+			printf( esc_html__( 'Welcome to %s', 'diluxone-users' ), esc_html( diluxone_users_plugin_name() ) );
+			?>
+		</h2>
+		<p><?php esc_html_e( 'Who is in this site, what is asked of them and how they get in.', 'diluxone-users' ); ?></p>
+	</div>
+
+	<div class="diluxone-users-cards">
+		<?php
+		diluxone_users_card(
+			'dashicons-groups',
+			number_format_i18n( $numbers['users'] ),
+			__( 'Accounts', 'diluxone-users' ),
+			__( 'People with an account on this site.', 'diluxone-users' ),
+			admin_url( 'users.php' ),
+			__( 'See them', 'diluxone-users' )
+		);
+
+		diluxone_users_card(
+			'dashicons-clock',
+			number_format_i18n( $numbers['sessions'] ),
+			__( 'Open sessions', 'diluxone-users' ),
+			__( 'Signed in right now, on at least one device.', 'diluxone-users' ),
+			diluxone_users_admin_url( 'diluxone-users-sessions' ),
+			__( 'See who', 'diluxone-users' )
+		);
+
+		diluxone_users_card(
+			'dashicons-forms',
+			number_format_i18n( count( $active ) ) . ' / ' . number_format_i18n( count( $fields ) ),
+			__( 'Fields in use', 'diluxone-users' ),
+			__( 'Of the ones defined, how many people are actually asked for.', 'diluxone-users' ),
+			diluxone_users_admin_url( 'diluxone-users-fields' ),
+			__( 'Manage them', 'diluxone-users' )
+		);
+
+		diluxone_users_card(
+			'dashicons-share',
+			number_format_i18n( count( $ready ) ) . ' / ' . number_format_i18n( count( $providers ) ),
+			__( 'Social providers', 'diluxone-users' ),
+			__( 'Verified and working, of the ones the plugin brings.', 'diluxone-users' ),
+			diluxone_users_admin_url( 'diluxone-users-social' ),
+			__( 'Set them up', 'diluxone-users' )
+		);
+		?>
+	</div>
+
+	<?php if ( array() !== $pending ) : ?>
+		<h2><?php esc_html_e( 'First steps', 'diluxone-users' ); ?></h2>
+		<?php diluxone_users_steps( $steps ); ?>
 	<?php endif; ?>
 
-	<h2><?php esc_html_e( 'If you get locked out', 'diluxone-users' ); ?></h2>
-	<p class="diluxone-users-admin__intro">
-		<?php esc_html_e( 'On a site without passwords and without outgoing email, an expired session leaves you outside. With access to the server:', 'diluxone-users' ); ?>
-	</p>
-	<p><code>wp diluxone-users login <?php echo esc_html( wp_get_current_user()->user_email ); ?></code></p>
+	<?php diluxone_users_tabs( DILUXONE_USERS_MENU, $panels, $current ); ?>
+
+	<div class="diluxone-users-panel">
+		<h2><?php echo esc_html( $panels[ $current ] ); ?></h2>
+		<?php
+		switch ( $current ) {
+			case 'doors':
+				diluxone_users_panel_doors();
+				break;
+			case 'asked':
+				diluxone_users_panel_asked();
+				break;
+			case 'lockout':
+				diluxone_users_panel_lockout();
+				break;
+			default:
+				diluxone_users_panel_usage();
+		}
+		?>
+	</div>
 	<?php
 
 	diluxone_users_screen_close();

@@ -105,20 +105,68 @@
 .diluxone-users-multi { min-width: 26ch; }
 
 /* ── Home ─────────────────────────────────────────────────────────── */
-.diluxone-users-tiles {
+/* The headline cards. The icon sits in its own column so the numbers line up
+   down the row whatever the icon is, and the title goes above the number
+   because the number on its own says nothing. */
+.diluxone-users-cards {
 	display: grid; gap: 16px; margin: 20px 0 28px;
-	grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
-.diluxone-users-tile {
+.diluxone-users-card {
+	display: flex; gap: 14px; align-items: flex-start;
 	background: #fff; border: 1px solid #dcdcde; border-radius: 4px;
-	padding: 18px 20px;
+	padding: 20px;
 }
-.diluxone-users-tile b {
-	display: block; font-size: 30px; line-height: 1.1; font-weight: 600;
+.diluxone-users-card__icon {
+	flex: 0 0 auto; width: 40px; height: 40px;
+	display: flex; align-items: center; justify-content: center;
+	border-radius: 50%; background: #f0f6fc;
+	color: var(--diluxone-users-accent, #2271b1);
+	font-size: 22px; line-height: 1;
+}
+.diluxone-users-card__icon::before { font-size: 22px; width: auto; height: auto; }
+.diluxone-users-card__body { min-width: 0; }
+.diluxone-users-card h3 {
+	margin: 0; font-size: 13px; font-weight: 600; line-height: 1.4;
+	text-transform: uppercase; letter-spacing: .02em; color: #646970;
+}
+.diluxone-users-card__value {
+	display: block; margin-top: 2px;
+	font-size: 32px; line-height: 1.1; font-weight: 600;
 	font-variant-numeric: tabular-nums; color: #1d2327;
 }
-.diluxone-users-tile span { display: block; margin-top: 4px; color: #646970; }
-.diluxone-users-tile a { display: inline-block; margin-top: 10px; }
+.diluxone-users-card__detail { margin: 6px 0 0; color: #50575e; }
+.diluxone-users-card__link { display: inline-block; margin-top: 10px; text-decoration: none; }
+
+/* The four panels under the cards: they tell, and the buttons at the foot
+   lead to the screen where the thing is actually changed. */
+.diluxone-users-panel { margin-top: 20px; }
+.diluxone-users-panel > h2 { margin-top: 0; }
+.diluxone-users-panel__actions { margin: 18px 0 0; }
+.diluxone-users-panel__actions .button { margin-right: 6px; }
+
+/* What people use: the label and the count on one line, the bar under them
+   at full width, and the explanation under that. Read top to bottom, each
+   row answers "how many" before it answers "of what". */
+.diluxone-users-usage { margin: 12px 0 0; padding: 0; list-style: none; max-width: 900px; }
+.diluxone-users-usage__row {
+	padding: 14px 0; border-bottom: 1px solid #f0f0f1;
+}
+.diluxone-users-usage__row:last-child { border-bottom: 0; }
+.diluxone-users-usage__head {
+	display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+}
+.diluxone-users-usage__head strong { font-size: 14px; }
+.diluxone-users-usage__count { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.diluxone-users-usage__share { color: #646970; }
+.diluxone-users-usage__track {
+	display: block; margin-top: 8px; height: 8px; border-radius: 4px;
+	background: #f0f0f1; overflow: hidden;
+}
+.diluxone-users-usage__fill {
+	display: block; height: 100%; background: var(--diluxone-users-accent, #2271b1);
+}
+.diluxone-users-usage__detail { margin: 8px 0 0; color: #50575e; max-width: 80ch; }
 
 .diluxone-users-state { max-width: 900px; }
 .diluxone-users-state th { width: 280px; text-align: left; }
@@ -168,19 +216,6 @@
 .diluxone-users-step__body strong { display: block; font-size: 14px; }
 .diluxone-users-step__body p { margin: 2px 0 8px; color: #50575e; max-width: 70ch; }
 .diluxone-users-step.is-done .diluxone-users-step__body strong { color: #50575e; }
-
-/* The bars: a width in per cent against the number of accounts. */
-.diluxone-users-bars { margin: 12px 0 24px; padding: 0; list-style: none; max-width: 720px; }
-.diluxone-users-bars li { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-.diluxone-users-bars__label { flex: 0 0 220px; }
-.diluxone-users-bars__track { flex: 1 1 auto; height: 10px; border-radius: 5px; background: #f0f0f1; overflow: hidden; }
-.diluxone-users-bars__fill  { display: block; height: 100%; background: var(--diluxone-users-accent, #2271b1); }
-.diluxone-users-bars__value { flex: 0 0 70px; text-align: right; font-variant-numeric: tabular-nums; }
-
-@media screen and (max-width: 782px) {
-	.diluxone-users-bars li { flex-wrap: wrap; }
-	.diluxone-users-bars__label { flex-basis: 100%; }
-}
 
 .diluxone-users-state-box { max-width: 900px; margin: 18px 0 24px; padding: 6px 14px; }
 
