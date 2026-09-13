@@ -65,15 +65,14 @@ add_filter( 'admin_title', 'diluxone_users_admin_title', 10, 2 );
  */
 function diluxone_users_screens(): array {
 	return array(
-		'diluxone-users'            => __( 'Overview', 'diluxone-users' ),
-		'diluxone-users-fields'     => __( 'User fields', 'diluxone-users' ),
-		'diluxone-users-account'    => __( 'Account area', 'diluxone-users' ),
-		'diluxone-users-login'      => __( 'Registration and login', 'diluxone-users' ),
-		'diluxone-users-social'     => __( 'Social login', 'diluxone-users' ),
-		'diluxone-users-sessions'   => __( 'User sessions', 'diluxone-users' ),
-		'diluxone-users-appearance' => __( 'Appearance', 'diluxone-users' ),
-		'diluxone-users-status'     => __( 'Status', 'diluxone-users' ),
-		'diluxone-users-tools'      => __( 'Tools', 'diluxone-users' ),
+		'diluxone-users'          => __( 'Overview', 'diluxone-users' ),
+		'diluxone-users-fields'   => __( 'User fields', 'diluxone-users' ),
+		'diluxone-users-account'  => __( 'Account area', 'diluxone-users' ),
+		'diluxone-users-login'    => __( 'Registration and login', 'diluxone-users' ),
+		'diluxone-users-social'   => __( 'Social login', 'diluxone-users' ),
+		'diluxone-users-sessions' => __( 'User sessions', 'diluxone-users' ),
+		'diluxone-users-status'   => __( 'Status', 'diluxone-users' ),
+		'diluxone-users-tools'    => __( 'Tools', 'diluxone-users' ),
 	);
 }
 
@@ -90,15 +89,14 @@ function diluxone_users_menu(): void {
 	);
 
 	$callbacks = array(
-		'diluxone-users'            => 'diluxone_users_screen_home',
-		'diluxone-users-fields'     => 'diluxone_users_screen_fields',
-		'diluxone-users-account'    => 'diluxone_users_screen_account',
-		'diluxone-users-login'      => 'diluxone_users_screen_login',
-		'diluxone-users-social'     => 'diluxone_users_screen_social',
-		'diluxone-users-sessions'   => 'diluxone_users_screen_sessions',
-		'diluxone-users-appearance' => 'diluxone_users_screen_appearance',
-		'diluxone-users-status'     => 'diluxone_users_screen_status',
-		'diluxone-users-tools'      => 'diluxone_users_screen_tools',
+		'diluxone-users'          => 'diluxone_users_screen_home',
+		'diluxone-users-fields'   => 'diluxone_users_screen_fields',
+		'diluxone-users-account'  => 'diluxone_users_screen_account',
+		'diluxone-users-login'    => 'diluxone_users_screen_login',
+		'diluxone-users-social'   => 'diluxone_users_screen_social',
+		'diluxone-users-sessions' => 'diluxone_users_screen_sessions',
+		'diluxone-users-status'   => 'diluxone_users_screen_status',
+		'diluxone-users-tools'    => 'diluxone_users_screen_tools',
 	);
 
 	foreach ( diluxone_users_screens() as $slug => $title ) {
@@ -297,5 +295,16 @@ function diluxone_users_admin_styles( string $hook ): void {
 	// The button preview uses the real stylesheet, the same one the site uses:
 	// previewing with another would be previewing something else.
 	diluxone_users_sso_enqueue_button_styles();
+
+	// And so does the account-area preview. It is loaded here whatever the
+	// setting says — the preview has to be able to show both answers without a
+	// reload, and the "off" one is drawn by stripping it back in the browser.
+	if ( false !== strpos( $hook, 'diluxone-users-account' ) ) {
+		if ( ! wp_style_is( 'diluxone-users', 'registered' ) ) {
+			wp_register_style( 'diluxone-users', DILUXONE_USERS_URL . 'assets/diluxone-users.css', array(), diluxone_users_asset_version( 'assets/diluxone-users.css' ) );
+		}
+
+		wp_enqueue_style( 'diluxone-users' );
+	}
 }
 add_action( 'admin_enqueue_scripts', 'diluxone_users_admin_styles' );

@@ -258,6 +258,25 @@
 	background: #fcf9e8; border-left: 3px solid #dba617;
 }
 
+/* ── How the account area looks ─────────────────────────────────────────
+   The presets are swatches with a name, and the preview under them is the
+   real markup: what is on screen is what the site will draw. */
+.diluxone-users-presets { display: flex; flex-wrap: wrap; gap: 8px; }
+.diluxone-users-presets__one { display: inline-flex !important; align-items: center; gap: 8px; height: auto !important; padding: 6px 12px !important; }
+.diluxone-users-presets__chip { width: 16px; height: 16px; border: 1px solid rgba(0, 0, 0, .2); }
+
+.diluxone-users-preview { margin: 24px 0 0; max-width: 720px; }
+.diluxone-users-preview__frame {
+	margin-top: 6px; padding: 24px; border: 1px solid #dcdcde; border-radius: 4px;
+	/* A page-ish ground, so the panels inside are seen against something
+	   other than the admin's own grey. */
+	background: #fff;
+}
+/* With the stylesheet off, the preview drops it too: the markup comes out as
+   the theme would receive it, which is the point of that choice. */
+.diluxone-users-preview.is-bare .diluxone-users-account,
+.diluxone-users-preview.is-bare .diluxone-users-account * { all: revert; }
+
 /* ── The account sections: list and detail ──────────────────────────── */
 
 /* Two panels and not a table: the order is taken in at a glance and dragged,

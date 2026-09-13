@@ -212,3 +212,78 @@
 		sync();
 	} );
 }() );
+
+/**
+ * The account-area preview follows the fields while they are being chosen.
+ *
+ * It changes the same custom properties the front end changes, on the real
+ * markup with the real classes — there is no copy of the design in here to
+ * drift from the site. Turning the stylesheet off strips the class that loads
+ * it, which is what the theme would see.
+ */
+( function () {
+	'use strict';
+
+	var box = document.querySelector( '[data-diluxone-users-preview-box]' );
+
+	if ( ! box ) {
+		return;
+	}
+
+	var skin   = box.querySelector( '[data-diluxone-users-preview-skin]' );
+	var bare   = box.querySelector( '[data-diluxone-users-preview-bare]' );
+	var accent = document.getElementById( 'diluxone_users_style_accent' );
+	var radius = document.getElementById( 'diluxone_users_style_radius' );
+	var styles = document.querySelector( 'input[name="diluxone_users_styles"]' );
+
+	function paint() {
+		if ( accent && accent.value ) {
+			skin.style.setProperty( '--diluxone-users-accent', accent.value );
+			skin.style.setProperty( '--diluxone-users-accent-bg', accent.value );
+		}
+
+		if ( radius ) {
+			var r = '' === radius.value ? '' : radius.value + 'px';
+
+			skin.style.setProperty( '--diluxone-users-radius', r );
+			skin.style.setProperty( '--diluxone-users-radius-sm', r );
+		}
+
+		var on = ! styles || styles.checked;
+
+		box.classList.toggle( 'is-bare', ! on );
+
+		if ( bare ) {
+			bare.hidden = on;
+		}
+	}
+
+	[ accent, radius, styles ].forEach( function ( field ) {
+		if ( field ) {
+			field.addEventListener( 'input', paint );
+			field.addEventListener( 'change', paint );
+		}
+	} );
+
+	// The presets do not save anything of their own: they fill in the three
+	// fields and let the preview and the Save button do the rest.
+	document.querySelectorAll( '[data-diluxone-users-preset]' ).forEach( function ( button ) {
+		button.addEventListener( 'click', function () {
+			if ( styles ) {
+				styles.checked = '1' === button.dataset.diluxoneUsersPresetStyles;
+			}
+
+			if ( accent && button.dataset.diluxoneUsersPresetAccent ) {
+				accent.value = button.dataset.diluxoneUsersPresetAccent;
+			}
+
+			if ( radius ) {
+				radius.value = button.dataset.diluxoneUsersPresetRadius;
+			}
+
+			paint();
+		} );
+	} );
+
+	paint();
+}() );

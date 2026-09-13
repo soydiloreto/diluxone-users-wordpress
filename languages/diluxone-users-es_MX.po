@@ -18,11 +18,11 @@ msgstr ""
 msgid "Pablo Ariel Di Loreto"
 msgstr "Pablo Ariel Di Loreto"
 
-#: includes/account-sections.php:20
+#: includes/account-sections.php:20 includes/admin-appearance.php:117
 msgid "Home"
 msgstr "Inicio"
 
-#: includes/account-sections.php:29
+#: includes/account-sections.php:29 includes/admin-appearance.php:118
 msgid "Your details"
 msgstr "Datos personales"
 
@@ -34,7 +34,7 @@ msgstr "Cuentas vinculadas"
 msgid "There is no social network turned on, so there is nothing to link."
 msgstr "No hay ninguna red social activada, así que no hay nada que vincular."
 
-#: includes/account-sections.php:51
+#: includes/account-sections.php:51 includes/admin-appearance.php:119
 msgid "Security"
 msgstr "Seguridad"
 
@@ -144,31 +144,31 @@ msgstr "Secciones"
 msgid "Where it lives"
 msgstr "Dónde vive"
 
-#: includes/admin-account.php:172 includes/admin.php:70
+#: includes/admin-account.php:174 includes/admin.php:70
 msgid "Account area"
 msgstr "Área de cuenta"
 
-#: includes/admin-account.php:258
+#: includes/admin-account.php:286
 msgid "New order saved."
 msgstr "Listo, ese es el orden nuevo."
 
-#: includes/admin-account.php:259
+#: includes/admin-account.php:287
 msgid "Section saved."
 msgstr "Sección guardada."
 
-#: includes/admin-account.php:260
+#: includes/admin-account.php:288
 msgid "Section removed."
 msgstr "Sección eliminada."
 
-#: includes/admin-account.php:261
+#: includes/admin-account.php:289
 msgid "That section needs a name, and an address that is not taken."
 msgstr "Esa sección necesita un nombre, y una dirección que no esté ocupada."
 
-#: includes/admin-account.php:287
+#: includes/admin-account.php:315
 msgid "There is no account page yet"
 msgstr "Todavía no hay página de cuenta"
 
-#: includes/admin-account.php:288
+#: includes/admin-account.php:316
 msgid ""
 "Pick the page that has the [diluxone_users_account] shortcode, under “Where "
 "it lives”. Until then the links below go nowhere."
@@ -176,64 +176,64 @@ msgstr ""
 "Elige la página que tiene el shortcode [diluxone_users_account], en \"Dónde "
 "vive\". Hasta entonces los enlaces de aquí abajo no llevan a ninguna parte."
 
-#: includes/admin-account.php:294
+#: includes/admin-account.php:322
 msgid "The sections of “my account”"
 msgstr "Las secciones de \"mi cuenta\""
 
-#: includes/admin-account.php:295 includes/admin-account.php:536
+#: includes/admin-account.php:323 includes/admin-account.php:564
 msgid "Add section"
 msgstr "Agregar sección"
 
-#: includes/admin-account.php:320
+#: includes/admin-account.php:348
 msgid "Save the order"
 msgstr "Guardar el orden"
 
-#: includes/admin-account.php:381
+#: includes/admin-account.php:409
 msgid "New section"
 msgstr "Sección nueva"
 
-#: includes/admin-account.php:402
+#: includes/admin-account.php:430
 msgid "Showing"
 msgstr "Se muestra"
 
-#: includes/admin-account.php:402 includes/admin-fields.php:363
+#: includes/admin-account.php:430 includes/admin-fields.php:363
 msgid "Hidden"
 msgstr "Oculto"
 
-#: includes/admin-account.php:423
+#: includes/admin-account.php:451
 msgid "Delete this section?"
 msgstr "¿Borrar esta sección?"
 
-#: includes/admin-account.php:424
+#: includes/admin-account.php:452
 msgid "Remove"
 msgstr "Quitar"
 
-#: includes/admin-account.php:432
+#: includes/admin-account.php:460
 msgid "It is on, but it is not showing"
 msgstr "Está activada, pero no se está mostrando"
 
-#: includes/admin-account.php:439 includes/admin-fields.php:286
+#: includes/admin-account.php:467 includes/admin-fields.php:286
 #: includes/admin-fields.php:439
 msgid "Name"
 msgstr "Nombre"
 
-#: includes/admin-account.php:442
+#: includes/admin-account.php:470
 msgid "What people read in the menu, and the title of the section."
 msgstr "Lo que se lee en el menú, y el título de la sección."
 
-#: includes/admin-account.php:446
+#: includes/admin-account.php:474
 msgid "Address"
 msgstr "Dirección"
 
-#: includes/admin-account.php:448
+#: includes/admin-account.php:476
 msgid "made from the name"
 msgstr "sale del nombre"
 
-#: includes/admin-account.php:457
+#: includes/admin-account.php:485
 msgid "Who sees it"
 msgstr "Quién la ve"
 
-#: includes/admin-account.php:466
+#: includes/admin-account.php:494
 msgid ""
 "Tick nothing and everybody with an account sees it. Tick roles and only "
 "those do."
@@ -241,23 +241,23 @@ msgstr ""
 "Sin marcar nada la ve cualquiera que tenga cuenta. Marcando roles, solo "
 "esos."
 
-#: includes/admin-account.php:472
+#: includes/admin-account.php:500
 msgid "Where your content goes"
 msgstr "Dónde va lo tuyo"
 
-#: includes/admin-account.php:477
+#: includes/admin-account.php:505
 msgid "After what the plugin shows"
 msgstr "Después de lo que muestra el plugin"
 
-#: includes/admin-account.php:478
+#: includes/admin-account.php:506
 msgid "Before what the plugin shows"
 msgstr "Antes de lo que muestra el plugin"
 
-#: includes/admin-account.php:479
+#: includes/admin-account.php:507
 msgid "Instead of it — your content replaces the section"
 msgstr "En lugar de eso — lo tuyo reemplaza la sección"
 
-#: includes/admin-account.php:492
+#: includes/admin-account.php:520
 msgid ""
 "This section is drawn by code. What you write below is added to it — unless "
 "you say it replaces it."
@@ -265,11 +265,11 @@ msgstr ""
 "Esta sección la pinta el código. Lo que escribas abajo se le suma, salvo que"
 " digas que lo reemplaza."
 
-#: includes/admin-account.php:500
+#: includes/admin-account.php:528
 msgid "Your content"
 msgstr "Lo tuyo"
 
-#: includes/admin-account.php:516
+#: includes/admin-account.php:544
 msgid ""
 "Text, HTML, or the shortcode of another plugin. Leave it empty and the "
 "section stays as the plugin draws it."
@@ -277,7 +277,7 @@ msgstr ""
 "Texto, HTML, o el shortcode de otro plugin. Si lo dejas vacío, la sección "
 "queda como la dibuja el plugin."
 
-#: includes/admin-account.php:517
+#: includes/admin-account.php:545
 msgid ""
 "Text, HTML, or the shortcode of another plugin — a course plugin, a "
 "membership, a support desk. This is the whole section."
@@ -285,11 +285,11 @@ msgstr ""
 "Texto, HTML, o el shortcode de otro plugin: uno de cursos, uno de "
 "membresías, uno de soporte. Esto es toda la sección."
 
-#: includes/admin-account.php:525
+#: includes/admin-account.php:553
 msgid "Comes from"
 msgstr "Viene de"
 
-#: includes/admin-account.php:529
+#: includes/admin-account.php:557
 msgid ""
 "It comes from code, so it cannot be deleted —the code that draws it is still"
 " there and it would come back— but it can be hidden."
@@ -297,26 +297,26 @@ msgstr ""
 "Viene del código, así que no se puede borrar —el código que la pinta sigue "
 "estando y volvería— pero sí esconder."
 
-#: includes/admin-account.php:536
+#: includes/admin-account.php:564
 msgid "Save section"
 msgstr "Guardar la sección"
 
-#: includes/admin-account.php:543
+#: includes/admin-account.php:571
 msgid "Which page is “my account”, and how people move between its sections."
 msgstr ""
 "Cuál es la página de \"mi cuenta\", y cómo se mueve la gente entre sus "
 "secciones."
 
-#: includes/admin-account.php:549
+#: includes/admin-account.php:577
 msgid "The account page"
 msgstr "La página de la cuenta"
 
-#: includes/admin-account.php:563
+#: includes/admin-account.php:591
 msgid "— none —"
 msgstr "— ninguna —"
 
 #. translators: %s: the shortcode, literal
-#: includes/admin-account.php:574
+#: includes/admin-account.php:602
 #, php-format
 msgid ""
 "The page with %s in it. Declaring it here is what lets everything else —a "
@@ -326,7 +326,7 @@ msgstr ""
 "demás —un certificado, un curso, un foro— lleve a la gente al lugar "
 "correcto."
 
-#: includes/admin-account.php:580
+#: includes/admin-account.php:608
 msgid ""
 "With plain permalinks the sections go as ?seccion=…; turn on pretty "
 "permalinks in Settings → Permalinks and they become /page/section/ on their "
@@ -336,64 +336,48 @@ msgstr ""
 "los enlaces bonitos en Ajustes → Enlaces permanentes y pasan a ser "
 "/pagina/seccion/ solas."
 
-#: includes/admin-account.php:585
+#: includes/admin-account.php:613
 msgid "The menu"
 msgstr "El menú"
 
-#: includes/admin-account.php:591
+#: includes/admin-account.php:619
 msgid "Tabs across the top"
 msgstr "Pestañas arriba"
 
-#: includes/admin-account.php:592
+#: includes/admin-account.php:620
 msgid "A menu down the side"
 msgstr "Un menú al costado"
 
-#: includes/admin-account.php:593
+#: includes/admin-account.php:621
 msgid "No menu — the site places it with [diluxone_users_account_nav]"
 msgstr "Sin menú — lo pone el sitio con [diluxone_users_account_nav]"
 
-#: includes/admin-account.php:606
+#: includes/admin-account.php:634
 msgid "The header"
 msgstr "La cabecera"
 
-#: includes/admin-account.php:610
+#: includes/admin-account.php:638
 msgid "Show the name and the initials at the top"
 msgstr "Mostrar el nombre y las iniciales arriba"
 
-#: includes/admin-appearance.php:18 includes/admin-appearance.php:72
+#: includes/admin-appearance.php:172
 msgid "Styles"
 msgstr "Estilos"
 
-#: includes/admin-appearance.php:19
+#: includes/admin-account.php:168
 msgid "Profile photo"
 msgstr "Foto de perfil"
 
-#: includes/admin-appearance.php:46 templates/account/notifications.php:16
+#: includes/admin-account.php:188 templates/account/notifications.php:16
 #: templates/fields.php:30
 msgid "Saved."
 msgstr "Listo, guardado."
 
-#: includes/admin-appearance.php:49 includes/admin.php:74
-msgid "Appearance"
-msgstr "Apariencia"
-
-#: includes/admin-appearance.php:68
-msgid ""
-"Everything the plugin draws —panels, forms, lists, buttons— takes its "
-"colours and its corners from a handful of CSS properties. Change those two "
-"below and everything follows; a site with its own design can point them at "
-"its own tokens from its stylesheet, without copying anything from here."
-msgstr ""
-"Todo lo que el plugin dibuja —paneles, formularios, listas, botones— saca "
-"sus colores y sus esquinas de un puñado de propiedades CSS. Cambia esas dos "
-"de aquí abajo y el resto va detrás; un sitio con diseño propio puede "
-"apuntarlas a sus propios tokens desde su hoja, sin copiar nada de aquí."
-
-#: includes/admin-appearance.php:76
+#: includes/admin-appearance.php:176
 msgid "Load the plugin stylesheet"
 msgstr "Cargar la hoja de estilos del plugin"
 
-#: includes/admin-appearance.php:78
+#: includes/admin-appearance.php:178
 msgid ""
 "Only turn it off if the site is going to style every diluxone-users-* class "
 "itself. Turned off, its panels and buttons come out bare and the site has to"
@@ -405,11 +389,11 @@ msgstr ""
 " que dibujar el sitio; reapuntar las propiedades basta casi siempre, y "
 "sobrevive a que el plugin añada un componente nuevo."
 
-#: includes/admin-appearance.php:83
+#: includes/admin-appearance.php:183
 msgid "Dark mode"
 msgstr "Modo oscuro"
 
-#: includes/admin-appearance.php:85
+#: includes/admin-appearance.php:185
 msgid ""
 "There is none here, on purpose. Dark mode belongs to the site: a light site "
 "seen from a dark system used to end up with a light page and black panels. "
@@ -420,28 +404,28 @@ msgstr ""
 "negro. Si el sitio tiene modo oscuro, cambian sus tokens y esto va con "
 "ellos."
 
-#: includes/admin-appearance.php:89
+#: includes/admin-appearance.php:189
 msgid "Accent colour"
 msgstr "Color de acento"
 
-#: includes/admin-appearance.php:92
+#: includes/admin-appearance.php:192
 msgid "Buttons, the open tab, links and the drawn avatars."
 msgstr ""
 "Los botones, la pestaña abierta, los enlaces y los avatares dibujados."
 
-#: includes/admin-appearance.php:96
+#: includes/admin-appearance.php:196
 msgid "Corners"
 msgstr "Esquinas"
 
-#: includes/admin-appearance.php:99
+#: includes/admin-appearance.php:199
 msgid "pixels — empty for the default"
 msgstr "píxeles — vacío para el valor por defecto"
 
-#: includes/admin-appearance.php:103
+#: includes/admin-appearance.php:203
 msgid "Templates"
 msgstr "Plantillas"
 
-#: includes/admin-appearance.php:105
+#: includes/admin-appearance.php:205
 msgid ""
 "Copy any file from the plugin’s templates/ folder to your theme and edit it "
 "there:"
@@ -449,7 +433,7 @@ msgstr ""
 "Copia cualquier archivo de la carpeta templates/ del plugin a tu tema y "
 "edítalo ahí:"
 
-#: includes/admin-appearance.php:116
+#: includes/admin-appearance.php:217
 msgid ""
 "Three layers, in this order: the photo the person uploaded, then Gravatar, "
 "then their initials drawn on the accent colour. Turn off the ones you do not"
@@ -459,23 +443,23 @@ msgstr ""
 "después sus iniciales dibujadas sobre el color de acento. Desactiva las que "
 "no quieras."
 
-#: includes/admin-appearance.php:120
+#: includes/admin-appearance.php:221
 msgid "Where it comes from"
 msgstr "De dónde sale"
 
-#: includes/admin-appearance.php:124
+#: includes/admin-appearance.php:225
 msgid "Let people upload their own"
 msgstr "Dejar que cada uno suba la suya"
 
-#: includes/admin-appearance.php:128
+#: includes/admin-appearance.php:229
 msgid "Fall back to Gravatar when there is none"
 msgstr "Si no hay ninguna, ir a buscarla a Gravatar"
 
-#: includes/admin-appearance.php:132
+#: includes/admin-appearance.php:233
 msgid "Otherwise, draw their initials"
 msgstr "Y si tampoco, dibujar sus iniciales"
 
-#: includes/admin-appearance.php:134
+#: includes/admin-appearance.php:235
 msgid ""
 "Gravatar means sending a hash of every visitor’s email address to a third "
 "party. With it off and initials on, nothing leaves the site."
@@ -483,7 +467,7 @@ msgstr ""
 "Gravatar significa enviar a un tercero un hash del correo de cada visitante."
 " Con esto desactivado y las iniciales activadas, no sale nada del sitio."
 
-#: includes/admin-appearance.php:138
+#: includes/admin-appearance.php:239
 msgid "Largest photo accepted"
 msgstr "Foto más grande que se acepta"
 
@@ -542,7 +526,7 @@ msgstr "Obligatorio"
 
 #: includes/admin-fields.php:290 includes/admin-sessions.php:156
 #: includes/admin-social.php:399 includes/admin-status.php:350
-#: includes/admin.php:75 templates/account/privacy.php:29
+#: includes/admin.php:74 templates/account/privacy.php:29
 msgid "Status"
 msgstr "Estado"
 
@@ -2439,7 +2423,7 @@ msgid_plural "%d settings restored."
 msgstr[0] "Se restauró %d ajuste."
 msgstr[1] "Se restauraron %d ajustes."
 
-#: includes/admin-tools.php:356 includes/admin.php:76
+#: includes/admin-tools.php:356 includes/admin.php:75
 msgid "Tools"
 msgstr "Herramientas"
 
@@ -2565,14 +2549,14 @@ msgstr "Restaurarla"
 msgid "Overview"
 msgstr "Resumen"
 
-#: includes/admin.php:269
+#: includes/admin.php:267
 msgid ""
 "This site fixes this from code: whatever is chosen here, it stays as it is."
 msgstr ""
 "Este sitio lo fija desde el código: se elija lo que se elija aquí, queda "
 "como está."
 
-#: includes/admin.php:272
+#: includes/admin.php:270
 msgid "It is filtered here — open the file to change it or take it out:"
 msgstr "Se filtra aquí — abre el archivo para cambiarlo o quitarlo:"
 
@@ -2751,7 +2735,7 @@ msgstr "Texto con sugerencias"
 msgid "Yes / no"
 msgstr "Sí / no"
 
-#: includes/fields.php:98
+#: includes/admin-appearance.php:124 includes/fields.php:98
 msgid "First name"
 msgstr "Nombre"
 
@@ -3816,8 +3800,9 @@ msgstr "Tu foto"
 msgid "Choose a photo"
 msgstr "Elegir una foto"
 
-#: templates/account/avatar.php:32 templates/account/handle.php:29
-#: templates/account/notifications.php:43 templates/fields.php:64
+#: includes/admin-appearance.php:127 templates/account/avatar.php:32
+#: templates/account/handle.php:29 templates/account/notifications.php:43
+#: templates/fields.php:64
 msgid "Save"
 msgstr "Guardar"
 
@@ -4611,11 +4596,11 @@ msgstr ""
 "Pedírselo solo a los roles que pueden cambiar cosas es el término medio de "
 "siempre: el segundo paso donde la fricción vale la pena."
 
-#: includes/admin.php:195
+#: includes/admin.php:193
 msgid "To everybody"
 msgstr "A todos"
 
-#: includes/admin.php:200
+#: includes/admin.php:198
 msgid "Only to some roles"
 msgstr "Solo a algunos roles"
 
@@ -4891,6 +4876,113 @@ msgid ""
 "account."
 msgstr ""
 "Desvincular no borra nada: esa red simplemente deja de abrir esta cuenta."
+
+#: includes/admin-account.php:167
+msgid "How it looks"
+msgstr "Cómo se ve"
+
+#: includes/admin-appearance.php:59
+msgid "As it comes"
+msgstr "Como viene"
+
+#: includes/admin-appearance.php:60
+msgid ""
+"The plugin stylesheet, untouched. A sober grey-and-blue that sits quietly in"
+" most themes."
+msgstr ""
+"La hoja del plugin, sin tocar. Un gris y azul sobrio que no desentona en "
+"casi ningún tema."
+
+#: includes/admin-appearance.php:70
+msgid "Rounded"
+msgstr "Redondeado"
+
+#: includes/admin-appearance.php:71
+msgid ""
+"Your colour, with bigger corners — for a site whose own cards and buttons "
+"are round."
+msgstr ""
+"Tu color, con las esquinas más redondeadas — para un sitio cuyas tarjetas y "
+"botones son redondos."
+
+#: includes/admin-appearance.php:77
+msgid "Square"
+msgstr "Recto"
+
+#: includes/admin-appearance.php:78
+msgid "Your colour, with no corners at all — for a site with straight edges."
+msgstr "Tu color, sin esquinas redondeadas — para un sitio de bordes rectos."
+
+#: includes/admin-appearance.php:84
+msgid "Leave it to the theme"
+msgstr "Que lo haga el tema"
+
+#: includes/admin-appearance.php:85
+msgid ""
+"The stylesheet is not loaded at all. The markup comes out bare and your "
+"theme dresses it — the most work, and the only way to match a design "
+"exactly."
+msgstr ""
+"La hoja no se carga. El marcado sale pelado y lo viste tu tema: es el que "
+"más trabajo da, y el único que calza exacto con un diseño."
+
+#: includes/admin-appearance.php:104
+msgid "Your account area, with what is chosen above:"
+msgstr "Tu área de cuenta, con lo que está elegido arriba:"
+
+#: includes/admin-appearance.php:112
+msgid "Member since March 2026"
+msgstr "Miembro desde marzo de 2026"
+
+#: includes/admin-appearance.php:133
+msgid ""
+"With the stylesheet off this is what your theme receives: plain markup with "
+"the diluxone-users-* classes on it, and nothing else."
+msgstr ""
+"Con la hoja desactivada, esto es lo que recibe tu tema: marcado pelado con "
+"las clases diluxone-users-* puestas, y nada más."
+
+#: includes/admin-appearance.php:141
+msgid ""
+"Everything the plugin draws —panels, forms, lists, buttons— takes its "
+"colours and its corners from a handful of CSS properties. Change those and "
+"everything follows; a site with its own design can point them at its own "
+"tokens from its stylesheet, without copying anything from here. It reaches "
+"further than this screen: the sign-in form and the fields follow the same "
+"properties."
+msgstr ""
+"Todo lo que el plugin dibuja —paneles, formularios, listas, botones— saca "
+"sus colores y sus esquinas de un puñado de propiedades CSS. Cambia esas y el"
+" resto va detrás; un sitio con diseño propio puede apuntarlas a sus propios "
+"tokens desde su hoja, sin copiar nada de aquí. Llega más lejos que esta "
+"pantalla: el formulario de acceso y los campos siguen las mismas "
+"propiedades."
+
+#: includes/admin-appearance.php:145
+msgid "Start from"
+msgstr "Empezar desde"
+
+#: includes/admin-appearance.php:168
+msgid ""
+"A starting point, not a setting: pressing one fills in the three below, and "
+"from there everything is yours to change."
+msgstr ""
+"Un punto de partida, no un ajuste: presionar uno completa los tres de abajo,"
+" y de ahí en más todo es tuyo para cambiar."
+
+#~ msgid "Appearance"
+#~ msgstr "Apariencia"
+
+#~ msgid ""
+#~ "Everything the plugin draws —panels, forms, lists, buttons— takes its "
+#~ "colours and its corners from a handful of CSS properties. Change those two "
+#~ "below and everything follows; a site with its own design can point them at "
+#~ "its own tokens from its stylesheet, without copying anything from here."
+#~ msgstr ""
+#~ "Todo lo que el plugin dibuja —paneles, formularios, listas, botones— saca "
+#~ "sus colores y sus esquinas de un puñado de propiedades CSS. Cambia esas dos "
+#~ "de aquí abajo y el resto va detrás; un sitio con diseño propio puede "
+#~ "apuntarlas a sus propios tokens desde su hoja, sin copiar nada de aquí."
 
 #~ msgid "Sign in with it"
 #~ msgstr "Entrar con él"
