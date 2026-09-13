@@ -73,7 +73,7 @@ class ClientIpTest extends TestCase {
 	public function test_a_junk_header_breaks_nothing(): void {
 		$this->assertSame( '10.0.0.5', diluxone_users_client_ip( array(
 			'REMOTE_ADDR'          => '10.0.0.5',
-			'HTTP_X_FORWARDED_FOR' => 'no-soy-una-ip',
+			'HTTP_X_FORWARDED_FOR' => 'not-an-ip-at-all',
 		) ) );
 	}
 

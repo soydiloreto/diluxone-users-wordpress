@@ -39,7 +39,7 @@ function diluxone_users_ip_headers(): array {
 			'HTTP_CF_CONNECTING_IP', // Cloudflare.
 			'HTTP_TRUE_CLIENT_IP',   // Akamai, Cloudflare Enterprise.
 			'HTTP_X_REAL_IP',        // nginx.
-			'HTTP_X_FORWARDED_FOR',  // El estándar de hecho.
+			'HTTP_X_FORWARDED_FOR',  // The de facto standard.
 		)
 	);
 }

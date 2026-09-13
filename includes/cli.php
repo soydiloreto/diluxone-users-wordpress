@@ -41,13 +41,13 @@ function diluxone_users_cli_login( array $args, array $options = array() ): void
 	$email = sanitize_email( $args[0] ?? '' );
 
 	if ( '' === $email || ! is_email( $email ) ) {
-		WP_CLI::error( 'Hace falta un correo válido.' );
+		WP_CLI::error( 'A valid e-mail address is needed.' );
 	}
 
 	$user = get_user_by( 'email', $email );
 
 	if ( ! $user ) {
-		WP_CLI::error( sprintf( 'No existe ninguna cuenta con el correo %s.', $email ) );
+		WP_CLI::error( sprintf( 'There is no account with the e-mail %s.', $email ) );
 	}
 
 	$token = diluxone_users_token_create( (int) $user->ID );
@@ -55,11 +55,11 @@ function diluxone_users_cli_login( array $args, array $options = array() ): void
 
 	if ( ! empty( $options['send'] ) ) {
 		$sent = diluxone_users_login_send( (int) $user->ID, $email, $token );
-		WP_CLI::log( $sent ? 'Correo enviado.' : 'No se pudo enviar el correo.' );
+		WP_CLI::log( $sent ? 'E-mail sent.' : 'The e-mail could not be sent.' );
 	}
 
 	WP_CLI::log( $url );
-	WP_CLI::log( sprintf( 'Vence en %d minutos y sirve una sola vez.', diluxone_users_login_expiry() ) );
+	WP_CLI::log( sprintf( 'It expires in %d minutes and works once.', diluxone_users_login_expiry() ) );
 }
 
 WP_CLI::add_command( 'diluxone-users login', 'diluxone_users_cli_login' );

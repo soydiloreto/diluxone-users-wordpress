@@ -179,26 +179,26 @@ if (!function_exists('sanitize_key')) {
 //
 // Enough to exercise the sign-in token logic with no database.
 
-if (!isset($GLOBALS['cst_test_user_meta'])) {
-	$GLOBALS['cst_test_user_meta'] = [];
+if (!isset($GLOBALS['diluxone_users_test_user_meta'])) {
+	$GLOBALS['diluxone_users_test_user_meta'] = [];
 }
 
 if (!function_exists('get_user_meta')) {
 	function get_user_meta(int $user_id, string $key, bool $single = false) {
-		return $GLOBALS['cst_test_user_meta'][$user_id][$key] ?? '';
+		return $GLOBALS['diluxone_users_test_user_meta'][$user_id][$key] ?? '';
 	}
 }
 
 if (!function_exists('update_user_meta')) {
 	function update_user_meta(int $user_id, string $key, $value): bool {
-		$GLOBALS['cst_test_user_meta'][$user_id][$key] = $value;
+		$GLOBALS['diluxone_users_test_user_meta'][$user_id][$key] = $value;
 		return true;
 	}
 }
 
 if (!function_exists('delete_user_meta')) {
 	function delete_user_meta(int $user_id, string $key): bool {
-		unset($GLOBALS['cst_test_user_meta'][$user_id][$key]);
+		unset($GLOBALS['diluxone_users_test_user_meta'][$user_id][$key]);
 		return true;
 	}
 }

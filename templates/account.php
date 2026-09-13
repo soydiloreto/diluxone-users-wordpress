@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 
 	<?php if ( $header ) : ?>
 		<div class="diluxone-users-account__header">
-			<span class="diluxone-users-account__avatar"><?php echo get_avatar( $user->ID, 64 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado de WordPress. ?></span>
+			<span class="diluxone-users-account__avatar"><?php echo get_avatar( $user->ID, 64 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WordPress markup. ?></span>
 			<div>
 				<h1 class="diluxone-users-account__name"><?php echo esc_html( diluxone_users_display_name( $user ) ); ?></h1>
 				<p class="diluxone-users-account__since">
@@ -37,7 +37,7 @@ defined( 'ABSPATH' ) || exit;
 
 	<div class="diluxone-users-account__body">
 		<?php if ( 'none' !== $layout ) : ?>
-			<?php echo diluxone_users_account_nav( $sections, $current ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado. ?>
+			<?php echo diluxone_users_account_nav( $sections, $current ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own markup, already escaped. ?>
 		<?php endif; ?>
 
 		<div class="diluxone-users-account__section">

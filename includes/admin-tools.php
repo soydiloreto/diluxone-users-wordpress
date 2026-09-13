@@ -230,7 +230,7 @@ function diluxone_users_tool_import(): void {
 		diluxone_users_tool_done( __( 'No file uploaded.', 'diluxone-users' ), 'error' );
 	}
 
-	$raw  = (string) file_get_contents( $uploaded ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- es un archivo local recién subido, no una URL.
+	$raw  = (string) file_get_contents( $uploaded ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- a local file that was just uploaded, not a URL.
 	$json = json_decode( $raw, true );
 
 	if ( ! is_array( $json ) || ! isset( $json['settings'] ) || ! is_array( $json['settings'] ) ) {

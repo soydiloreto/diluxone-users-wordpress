@@ -24,7 +24,7 @@ class NotificationsTest extends TestCase {
 		require_once DILUXONE_USERS_DIR . 'includes/notify.php';
 		require_once DILUXONE_USERS_DIR . 'includes/account-sections.php';
 
-		$GLOBALS['cst_test_user_meta'] = array();
+		$GLOBALS['diluxone_users_test_user_meta'] = array();
 		$GLOBALS['_test_wp_options']   = array();
 	}
 

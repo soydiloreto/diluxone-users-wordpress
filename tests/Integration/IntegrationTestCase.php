@@ -43,7 +43,7 @@ class IntegrationTestCase extends TestCase {
 		return (int) wp_insert_user(
 			array(
 				'user_login' => 'diluxone_users_' . wp_generate_password( 8, false ),
-				'user_email' => wp_generate_password( 8, false ) . '@ejemplo.test',
+				'user_email' => wp_generate_password( 8, false ) . '@example.test',
 				'user_pass'  => wp_generate_password( 16 ),
 				'role'       => $role,
 			)

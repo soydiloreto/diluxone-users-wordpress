@@ -40,8 +40,8 @@ function diluxone_users_option_defaults(): array {
 		'diluxone_users_login_body'         => '',
 
 		// ── Session length ────────────────────────────────────────────
-		'diluxone_users_session_long_days'  => 30,  // Con "recordarme".
-		'diluxone_users_session_short_days' => 2,   // Sin "recordarme".
+		'diluxone_users_session_long_days'  => 30,  // With "remember me".
+		'diluxone_users_session_short_days' => 2,   // Without "remember me".
 
 		// ── Social login ──────────────────────────────────────────────
 		// If the e-mail the network returns already exists on the site, that
@@ -243,9 +243,8 @@ function diluxone_users_option( string $key, $fallback = null ) {
 /**
  * Is this setting being forced from code by the site?
  *
- * A plugin such as cst-core can pin a value through the
- * `diluxone_users_option` filter — because on that site it is not an option
- * but how things work. When that happens, the admin control saves and changes
+ * A site's own plugin can pin a value through the `diluxone_users_option`
+ * filter — because there it is not an option but how things work. When that happens, the admin control saves and changes
  * nothing, which is exactly the kind of lie to avoid on a settings screen.
  * With this it can be shown next to the control.
  */

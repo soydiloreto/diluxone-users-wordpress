@@ -33,17 +33,17 @@ class PasswordlessTest extends TestCase {
 	public function test_password_actions_are_redirected(string $action): void {
 		$this->assertTrue(
 			diluxone_users_should_redirect($action),
-			"La acción '{$action}' tendría que ir a la página de acceso"
+			"The action '{$action}' should go to the sign-in page"
 		);
 	}
 
 	public static function actionsThatAreClosed(): array {
 		return [
-			'login por defecto'   => [''],
-			'login explícito'     => ['login'],
-			'registro nativo'     => ['register'],
-			'olvidé mi clave'     => ['lostpassword'],
-			'acción desconocida'  => ['algo-que-no-existe'],
+			'default login'         => [''],
+			'explicit login'        => ['login'],
+			'native registration'   => ['register'],
+			'I forgot my password'  => ['lostpassword'],
+			'unknown action'        => ['something-that-does-not-exist'],
 		];
 	}
 
@@ -53,24 +53,24 @@ class PasswordlessTest extends TestCase {
 	public function test_flows_that_are_not_login_keep_working(string $action): void {
 		$this->assertFalse(
 			diluxone_users_should_redirect($action),
-			"La acción '{$action}' no puede redirigirse: rompe un flujo que WordPress necesita"
+			"The action '{$action}' cannot be redirected: it breaks a flow WordPress needs"
 		);
 	}
 
 	public static function actionsThatStayOpen(): array {
 		return [
-			'cerrar sesión'            => ['logout'],
-			'contraseña de entrada'    => ['postpass'],
-			'reseteo iniciado por admin' => ['rp'],
-			'reseteo, segundo paso'    => ['resetpass'],
-			'confirmación RGPD'        => ['confirmaction'],
+			'signing out'               => ['logout'],
+			'post password'             => ['postpass'],
+			'reset started by an admin' => ['rp'],
+			'reset, second step'        => ['resetpass'],
+			'GDPR confirmation'         => ['confirmaction'],
 		];
 	}
 
 	public function test_the_escape_hatch_shows_the_native_form(): void {
 		$this->assertFalse(
 			diluxone_users_should_redirect('login', ['diluxone-users-admin' => '1']),
-			'Sin esta salida, un fallo del correo o del proveedor social deja a todos afuera del sitio'
+			'Without this way out, a mail or social-provider failure locks everybody out of the site'
 		);
 	}
 
@@ -89,7 +89,7 @@ class PasswordlessTest extends TestCase {
 		// `diluxone-users-admin` one.
 		$this->assertFalse(
 			diluxone_users_should_redirect('register', ['diluxone-users-admin' => '1']),
-			'El flujo de emergencia muestra el formulario nativo; el registro nativo está apagado por option_users_can_register'
+			'The escape hatch shows the native form; native registration stays off through option_users_can_register'
 		);
 	}
 }

@@ -26,7 +26,7 @@ class TwoFactorPolicyTest extends TestCase {
 		require_once DILUXONE_USERS_DIR . 'includes/auth.php';
 		require_once DILUXONE_USERS_DIR . 'includes/login.php';
 
-		$GLOBALS['cst_test_user_meta'] = array();
+		$GLOBALS['diluxone_users_test_user_meta'] = array();
 		$GLOBALS['_test_wp_options']   = array();
 		$GLOBALS['_test_wp_users']     = array();
 
@@ -146,7 +146,7 @@ class TwoFactorPolicyTest extends TestCase {
 		$this->assertCount( 4, $codes );
 		$this->assertSame( 4, diluxone_users_backup_left( self::USER_ID ) );
 
-		foreach ( $GLOBALS['cst_test_user_meta'][ self::USER_ID ]['diluxone_users_backup_codes'] as $saved ) {
+		foreach ( $GLOBALS['diluxone_users_test_user_meta'][ self::USER_ID ]['diluxone_users_backup_codes'] as $saved ) {
 			$this->assertNotContains( $saved, $codes );
 		}
 	}

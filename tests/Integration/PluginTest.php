@@ -30,7 +30,7 @@ class PluginTest extends IntegrationTestCase {
 		$sections = diluxone_users_sections( true );
 
 		foreach ( array( 'home', 'details', 'accounts', 'security', 'privacy', 'notifications' ) as $id ) {
-			$this->assertArrayHasKey( $id, $sections, "falta la sección $id" );
+			$this->assertArrayHasKey( $id, $sections, "the section $id is missing" );
 		}
 	}
 

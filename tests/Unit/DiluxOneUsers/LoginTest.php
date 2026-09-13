@@ -19,7 +19,7 @@ class LoginTest extends TestCase {
 		Monkey\setUp();
 		require_once DILUXONE_USERS_DIR . 'includes/options.php';
 		require_once DILUXONE_USERS_DIR . 'includes/login.php';
-		$GLOBALS['cst_test_user_meta'] = array();
+		$GLOBALS['diluxone_users_test_user_meta'] = array();
 	}
 
 	protected function tearDown(): void {
@@ -40,15 +40,15 @@ class LoginTest extends TestCase {
 
 		$this->assertNotSame(
 			$token,
-			$GLOBALS['cst_test_user_meta'][ self::USER_ID ][ DILUXONE_USERS_META_HASH ],
-			'En la base tiene que quedar el hash, nunca el token'
+			$GLOBALS['diluxone_users_test_user_meta'][ self::USER_ID ][ DILUXONE_USERS_META_HASH ],
+			'What is stored must be the hash, never the token'
 		);
 	}
 
 	public function test_a_token_belonging_to_someone_else_is_no_good(): void {
 		diluxone_users_token_create( self::USER_ID );
 
-		$this->assertFalse( diluxone_users_token_valid( self::USER_ID, 'token-inventado' ) );
+		$this->assertFalse( diluxone_users_token_valid( self::USER_ID, 'made-up-token' ) );
 	}
 
 	public function test_somebody_elses_token_is_no_good(): void {
@@ -57,7 +57,7 @@ class LoginTest extends TestCase {
 
 		$this->assertFalse(
 			diluxone_users_token_valid( 9999, $mine ),
-			'Un enlace válido no puede servir para entrar a otra cuenta'
+			'A valid link cannot let anybody into a different account'
 		);
 	}
 
@@ -65,7 +65,7 @@ class LoginTest extends TestCase {
 		$token = diluxone_users_token_create( self::USER_ID );
 
 		// The clock is moved forward by putting the expiry in the past.
-		$GLOBALS['cst_test_user_meta'][ self::USER_ID ][ DILUXONE_USERS_META_EXPIRES ] = time() - 1;
+		$GLOBALS['diluxone_users_test_user_meta'][ self::USER_ID ][ DILUXONE_USERS_META_EXPIRES ] = time() - 1;
 
 		$this->assertFalse( diluxone_users_token_valid( self::USER_ID, $token ) );
 	}
@@ -78,13 +78,13 @@ class LoginTest extends TestCase {
 
 		$this->assertFalse(
 			diluxone_users_token_valid( self::USER_ID, $token ),
-			'Un enlace reenviado o filtrado no puede volver a abrir la sesión'
+			'A forwarded or leaked link cannot open the session again'
 		);
 	}
 
 	public function test_with_no_stored_token_nothing_validates(): void {
 		// The case of somebody who never asked for a link: there is no hash to compare against.
-		$this->assertFalse( diluxone_users_token_valid( self::USER_ID, 'cualquier-cosa' ) );
+		$this->assertFalse( diluxone_users_token_valid( self::USER_ID, 'anything-at-all' ) );
 	}
 
 	public function test_every_token_is_different(): void {
@@ -94,7 +94,7 @@ class LoginTest extends TestCase {
 		$this->assertNotSame( $a, $b );
 		$this->assertFalse(
 			diluxone_users_token_valid( self::USER_ID, $a ),
-			'Pedir un enlace nuevo tiene que invalidar el anterior'
+			'Asking for a new link must invalidate the previous one'
 		);
 	}
 }

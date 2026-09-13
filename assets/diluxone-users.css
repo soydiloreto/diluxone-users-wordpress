@@ -299,7 +299,7 @@ details.diluxone-users-panel[open] > .diluxone-users-panel__head .diluxone-users
 .diluxone-users-table td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--diluxone-users-border); }
 .diluxone-users-table th { font-size: 0.85em; text-transform: uppercase; letter-spacing: .05em; color: var(--diluxone-users-muted); }
 
-/* ── Listas de filas (sesiones, redes vinculadas) ───────────────────── */
+/* ── Row lists (sessions, linked networks) ──────────────────────────── */
 
 .diluxone-users-linked,
 .diluxone-users-sessions__list {

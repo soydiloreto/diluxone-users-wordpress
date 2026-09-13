@@ -11,7 +11,7 @@
 defined( 'ABSPATH' ) || exit;
 ?>
 
-<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- sólo elige el mensaje. ?>
+<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- it only picks which message to show. ?>
 <?php if ( isset( $_GET['diluxone-users'] ) && 'saved' === sanitize_key( wp_unslash( $_GET['diluxone-users'] ) ) ) : ?>
 	<p class="diluxone-users-notice diluxone-users-notice--ok"><?php esc_html_e( 'Saved.', 'diluxone-users' ); ?></p>
 <?php endif; ?>
