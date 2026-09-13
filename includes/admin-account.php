@@ -100,13 +100,16 @@ function diluxone_users_section_save( array $input ): string {
 	}
 
 	$config = array(
-		'label'     => $label,
-		'slug'      => $slug,
-		'content'   => wp_kses_post( (string) ( $input['content'] ?? '' ) ),
-		'placement' => in_array( $input['placement'] ?? '', array( 'before', 'after', 'replace' ), true )
+		'label'      => $label,
+		'slug'       => $slug,
+		'content'    => wp_kses_post( (string) ( $input['content'] ?? '' ) ),
+		'placement'  => in_array( $input['placement'] ?? '', array( 'before', 'after', 'replace' ), true )
 			? (string) $input['placement']
 			: 'after',
-		'roles'     => array_values( array_filter( array_map( 'sanitize_key', (array) ( $input['roles'] ?? array() ) ) ) ),
+		'roles'      => array_values( array_filter( array_map( 'sanitize_key', (array) ( $input['roles'] ?? array() ) ) ) ),
+		// Kept even when it is shown to everybody: switching to "only some"
+		// and back should not throw away what was ticked.
+		'visibility' => 'some' === ( $input['visibility'] ?? '' ) ? 'some' : 'all',
 	);
 
 	if ( $fresh ) {
@@ -484,14 +487,17 @@ function diluxone_users_screen_account_section( string $id, array $sections, int
 			<tr>
 				<th scope="row"><?php esc_html_e( 'Who sees it', 'diluxone-users' ); ?></th>
 				<td>
-					<?php $roles = (array) ( $section['roles'] ?? array() ); ?>
-					<?php foreach ( wp_roles()->get_names() as $role => $label ) : ?>
-						<label class="diluxone-users-roles__item">
-							<input type="checkbox" name="diluxone_users_seccion[roles][]" value="<?php echo esc_attr( $role ); ?>" <?php checked( in_array( $role, $roles, true ) ); ?>>
-							<?php echo esc_html( translate_user_role( $label ) ); ?>
-						</label>
-					<?php endforeach; ?>
-					<p class="description"><?php esc_html_e( 'Tick nothing and everybody with an account sees it. Tick roles and only those do.', 'diluxone-users' ); ?></p>
+					<?php
+					$roles = (array) ( $section['roles'] ?? array() );
+
+					diluxone_users_roles_picker(
+						'diluxone_users_seccion[visibility]',
+						'diluxone_users_seccion[roles][]',
+						diluxone_users_section_visibility( $section ),
+						$roles,
+						__( 'Everybody with an account, or only the roles ticked. Nobody who is not signed in reaches the account area at all.', 'diluxone-users' )
+					);
+					?>
 				</td>
 			</tr>
 

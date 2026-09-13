@@ -138,6 +138,10 @@ function diluxone_users_sections( bool $all = false ): array {
 			$sections[ $id ]['roles'] = array_values( array_filter( array_map( 'sanitize_key', (array) $config['roles'] ) ) );
 		}
 
+		if ( isset( $config['visibility'] ) ) {
+			$sections[ $id ]['visibility'] = 'some' === $config['visibility'] ? 'some' : 'all';
+		}
+
 		if ( isset( $config['slug'] ) && '' !== $config['slug'] ) {
 			$sections[ $id ]['slug'] = sanitize_title( (string) $config['slug'] );
 		}
@@ -183,19 +187,47 @@ function diluxone_users_section_available( array $section ): bool {
 }
 
 /**
+ * Everybody, or only some roles?
+ *
+ * Sections saved before the question was asked out loud have no answer stored,
+ * so it is read back out of what they do have: roles ticked meant "only
+ * those", none ticked meant "everybody". The same rule the rest of the plugin
+ * follows for settings that gained the question later.
+ *
+ * @param array<string, mixed> $section
+ */
+function diluxone_users_section_visibility( array $section ): string {
+	$stored = (string) ( $section['visibility'] ?? '' );
+
+	if ( 'all' === $stored || 'some' === $stored ) {
+		return $stored;
+	}
+
+	return array() === (array) ( $section['roles'] ?? array() ) ? 'all' : 'some';
+}
+
+/**
  * Is the role of whoever is looking enough to see this section?
  *
- * The empty list means "anybody with a session sees it": that is right for
- * almost everything in an account — your details, your security — and it
- * makes choosing roles a decision rather than a setup chore.
+ * "Everybody" means anybody with a session: that is right for almost
+ * everything in an account — your details, your security — and it makes
+ * choosing roles a decision rather than a setup chore.
+ *
+ * "Only some roles" with nothing ticked reaches nobody. That is the literal
+ * reading of what the screen says, and it is what the rest of the plugin does
+ * with the same answer.
  *
  * @param array<string, mixed> $section
  */
 function diluxone_users_section_role_ok( array $section ): bool {
+	if ( 'all' === diluxone_users_section_visibility( $section ) ) {
+		return true;
+	}
+
 	$roles = (array) ( $section['roles'] ?? array() );
 
 	if ( array() === $roles ) {
-		return true;
+		return false;
 	}
 
 	$user = wp_get_current_user();

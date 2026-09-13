@@ -172,50 +172,108 @@ function diluxone_users_screen_close(): void {
 }
 
 /**
- * The "to everybody / to some roles" control.
+ * The roles that can edit other people.
  *
- * One control written once and used by every setting that needs it: the
- * second factor, the dashboard profile, and whatever comes next. The list of
- * roles is always drawn — without JavaScript there is nothing to reveal it —
- * and the radio above is what rules when the form is saved.
+ * Some settings are never applied to them, whatever is chosen — locking the
+ * dashboard profile of the person who has to unlock everybody else's is how a
+ * site ends with nobody able to fix it. Those settings do not offer these
+ * roles as a choice either: a tick box that is quietly ignored is worse than
+ * no tick box, and this screen used to have four of them.
+ *
+ * It is asked of the role and not of the person, because the list being drawn
+ * is a list of roles.
+ *
+ * @return array<int, string>
+ */
+function diluxone_users_roles_that_edit_users(): array {
+	$spared = array();
+
+	foreach ( wp_roles()->role_objects as $slug => $role ) {
+		if ( ! empty( $role->capabilities['edit_users'] ) ) {
+			$spared[] = (string) $slug;
+		}
+	}
+
+	return $spared;
+}
+
+/**
+ * The "everybody / only some roles" control.
+ *
+ * One control written once and used by everything that has to answer that
+ * question: the second factor, the dashboard profile, who sees a section of
+ * the account area. The list of roles hangs under the second answer and is
+ * hidden while the first one is chosen (see diluxone-users-admin.js) — with
+ * JavaScript off it is simply always visible, and the radio is what the
+ * server reads either way.
+ *
+ * The names are passed in rather than built from a prefix because not every
+ * caller has one: a section of the account area is one row of an array, not
+ * two options of its own.
+ *
+ * @param string            $scope_name Name of the radio input.
+ * @param string            $roles_name Name of the checkboxes, brackets included.
+ * @param string            $scope      'all' or 'some'.
+ * @param array<int,string> $chosen     Roles already ticked.
+ * @param string            $help       A line under the control, or '' for none.
+ * @param string            $spared     Who this can never reach, or '' when it can reach anybody.
+ * @param array<int,string> $exclude    Roles not offered at all.
+ */
+function diluxone_users_roles_picker( string $scope_name, string $roles_name, string $scope, array $chosen, string $help = '', string $spared = '', array $exclude = array() ): void {
+	?>
+	<fieldset data-diluxone-users-scope>
+		<label>
+			<input type="radio" name="<?php echo esc_attr( $scope_name ); ?>" value="all" <?php checked( 'all', $scope ); ?>>
+			<?php esc_html_e( 'Everybody', 'diluxone-users' ); ?>
+		</label>
+		<br>
+		<label>
+			<input type="radio" name="<?php echo esc_attr( $scope_name ); ?>" value="some" <?php checked( 'some', $scope ); ?>>
+			<?php esc_html_e( 'Only some roles', 'diluxone-users' ); ?>
+		</label>
+
+		<div class="diluxone-users-scope__roles" data-diluxone-users-scope-roles>
+			<?php foreach ( wp_roles()->get_names() as $role => $label ) : ?>
+				<?php if ( in_array( (string) $role, $exclude, true ) ) : ?>
+					<?php continue; ?>
+				<?php endif; ?>
+				<label class="diluxone-users-roles__item">
+					<input type="checkbox" name="<?php echo esc_attr( $roles_name ); ?>" value="<?php echo esc_attr( $role ); ?>" <?php checked( in_array( $role, $chosen, true ) ); ?>>
+					<?php echo esc_html( translate_user_role( $label ) ); ?>
+				</label>
+			<?php endforeach; ?>
+
+			<?php if ( '' !== $spared ) : ?>
+				<p class="description"><?php echo esc_html( $spared ); ?></p>
+			<?php endif; ?>
+		</div>
+
+		<?php if ( '' !== $help ) : ?>
+			<p class="description"><?php echo esc_html( $help ); ?></p>
+		<?php endif; ?>
+	</fieldset>
+	<?php
+}
+
+/**
+ * The same control, for a setting that lives in two options of its own.
  *
  * @param string $prefix Option prefix, e.g. 'diluxone_users_2fa'.
  * @param string $help   A line under the control, or '' for none.
  * @param string $spared Who this can never reach, or '' when it can reach anybody.
  */
 function diluxone_users_scope_control( string $prefix, string $help = '', string $spared = '' ): void {
-	$scope = diluxone_users_scope( $prefix );
-	$roles = (array) diluxone_users_option( $prefix . '_roles' );
-	?>
-	<fieldset data-diluxone-users-scope="<?php echo esc_attr( $prefix ); ?>">
-		<label>
-			<input type="radio" name="<?php echo esc_attr( $prefix ); ?>_scope" value="all" <?php checked( 'all', $scope ); ?>>
-			<?php esc_html_e( 'To everybody', 'diluxone-users' ); ?>
-		</label>
-		<br>
-		<label>
-			<input type="radio" name="<?php echo esc_attr( $prefix ); ?>_scope" value="some" <?php checked( 'some', $scope ); ?>>
-			<?php esc_html_e( 'Only to some roles', 'diluxone-users' ); ?>
-		</label>
+	$exclude = '' === $spared ? array() : diluxone_users_roles_that_edit_users();
 
-		<div class="diluxone-users-scope__roles" data-diluxone-users-scope-roles>
-			<?php foreach ( wp_roles()->get_names() as $role => $label ) : ?>
-				<label class="diluxone-users-roles__item">
-					<input type="checkbox" name="<?php echo esc_attr( $prefix ); ?>_roles[]" value="<?php echo esc_attr( $role ); ?>" <?php checked( in_array( $role, $roles, true ) ); ?>>
-					<?php echo esc_html( translate_user_role( $label ) ); ?>
-				</label>
-			<?php endforeach; ?>
-		</div>
-
-		<?php if ( '' !== $help ) : ?>
-			<p class="description"><?php echo esc_html( $help ); ?></p>
-		<?php endif; ?>
-
-		<?php if ( '' !== $spared ) : ?>
-			<p class="description"><strong><?php echo esc_html( $spared ); ?></strong></p>
-		<?php endif; ?>
-	</fieldset>
-	<?php
+	diluxone_users_roles_picker(
+		$prefix . '_scope',
+		$prefix . '_roles[]',
+		diluxone_users_scope( $prefix ),
+		(array) diluxone_users_option( $prefix . '_roles' ),
+		$help,
+		$spared,
+		$exclude
+	);
 }
 
 /**
