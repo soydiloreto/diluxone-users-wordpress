@@ -179,7 +179,11 @@ function diluxone_users_home_panels(): array {
 	);
 }
 
-/** The buttons at the foot of a panel: where what it just showed gets changed. */
+/**
+ * The buttons at the foot of a panel: where what it just showed gets changed.
+ *
+ * @param array<string, string> $actions Label => URL.
+ */
 function diluxone_users_panel_actions( array $actions ): void {
 	echo '<p class="diluxone-users-panel__actions">';
 

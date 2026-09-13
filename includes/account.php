@@ -506,6 +506,39 @@ function diluxone_users_account_nav( ?array $sections = null, string $current = 
 	);
 }
 
+/**
+ * The shape of the account area: a panel in the page, or a cover.
+ *
+ * Anything that is not one of the two answers is the plain one. A template
+ * name arriving from a filter that no longer exists should come out as the
+ * area that works everywhere, not as a class nothing has styles for.
+ */
+function diluxone_users_account_template(): string {
+	$template = (string) diluxone_users_option( 'diluxone_users_account_template' );
+
+	return 'cover' === $template ? 'cover' : 'plain';
+}
+
+/** How wide the content runs. */
+function diluxone_users_account_width(): string {
+	$width = (string) diluxone_users_option( 'diluxone_users_account_width' );
+
+	return 'full' === $width ? 'full' : 'contained';
+}
+
+/**
+ * The colour behind the cover.
+ *
+ * Empty means the accent colour, and it is left empty rather than copied into
+ * the option: a site that later changes its accent gets a cover that follows
+ * instead of a second colour, set once, drifting from the first.
+ */
+function diluxone_users_account_cover(): string {
+	$cover = (string) diluxone_users_option( 'diluxone_users_account_cover' );
+
+	return '' === $cover ? '' : (string) sanitize_hex_color( $cover );
+}
+
 /** The whole account area. Shortcode: [diluxone_users_account] */
 function diluxone_users_shortcode_account(): string {
 	if ( ! is_user_logged_in() ) {
@@ -530,6 +563,12 @@ function diluxone_users_shortcode_account(): string {
 			'current'  => $current,
 			'layout'   => (string) diluxone_users_option( 'diluxone_users_account_layout' ),
 			'header'   => (bool) diluxone_users_option( 'diluxone_users_account_header' ),
+			'template' => diluxone_users_account_template(),
+			'avatar'   => (bool) diluxone_users_option( 'diluxone_users_account_avatar' ),
+			'since'    => (bool) diluxone_users_option( 'diluxone_users_account_since' ),
+			'action'   => (bool) diluxone_users_option( 'diluxone_users_account_action' ),
+			'cover'    => diluxone_users_account_cover(),
+			'width'    => diluxone_users_account_width(),
 		)
 	);
 }

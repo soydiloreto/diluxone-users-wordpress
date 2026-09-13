@@ -329,10 +329,12 @@ diluxoneUsersFieldTypes( document );
 /**
  * The account-area preview follows the fields while they are being chosen.
  *
- * It changes the same custom properties the front end changes, on the real
- * markup with the real classes — there is no copy of the design in here to
- * drift from the site. Turning the stylesheet off strips the class that loads
- * it, which is what the theme would see.
+ * What is inside the frame came from the server and is the real account area,
+ * so nothing in here draws anything: it changes the same custom properties
+ * and the same classes the front end changes, on the markup the site serves.
+ * Turning the stylesheet off strips the class that loads it, which is what
+ * the theme would see; ticking off a piece of the header hides the piece the
+ * template would not have printed.
  */
 ( function () {
 	'use strict';
@@ -343,11 +345,37 @@ diluxoneUsersFieldTypes( document );
 		return;
 	}
 
-	var skin   = box.querySelector( '[data-diluxone-users-preview-skin]' );
-	var bare   = box.querySelector( '[data-diluxone-users-preview-bare]' );
-	var accent = document.getElementById( 'diluxone_users_style_accent' );
-	var radius = document.getElementById( 'diluxone_users_style_radius' );
-	var styles = document.querySelector( 'input[name="diluxone_users_styles"]' );
+	var skin    = box.querySelector( '[data-diluxone-users-preview-skin]' );
+	var area    = skin ? skin.querySelector( '.diluxone-users-account' ) : null;
+	var bare    = box.querySelector( '[data-diluxone-users-preview-bare]' );
+	var accent  = document.getElementById( 'diluxone_users_style_accent' );
+	var radius  = document.getElementById( 'diluxone_users_style_radius' );
+	var styles  = document.querySelector( 'input[name="diluxone_users_styles"]' );
+	var cover   = document.getElementById( 'diluxone_users_account_cover' );
+
+	function piece( name ) {
+		return document.querySelector( '[data-diluxone-users-piece="' + name + '"]' );
+	}
+
+	function chosen( name ) {
+		var inputs = document.querySelectorAll( '[data-diluxone-users-piece="' + name + '"]' );
+		var value  = '';
+
+		inputs.forEach( function ( input ) {
+			if ( input.checked ) {
+				value = input.value;
+			}
+		} );
+
+		return value;
+	}
+
+	/** One class out of a set of them, so the old one never lingers. */
+	function only( element, prefix, value, all ) {
+		all.forEach( function ( one ) {
+			element.classList.toggle( prefix + one, one === value );
+		} );
+	}
 
 	function paint() {
 		if ( accent && accent.value ) {
@@ -369,13 +397,75 @@ diluxoneUsersFieldTypes( document );
 		if ( bare ) {
 			bare.hidden = on;
 		}
+
+		shape();
 	}
 
-	[ accent, radius, styles ].forEach( function ( field ) {
+	/** The shape of the area: the template, the menu, the width, the pieces. */
+	function shape() {
+		if ( ! area ) {
+			return;
+		}
+
+		var picked   = document.querySelector( '[data-diluxone-users-template]:checked' );
+		var template = picked ? picked.value : '';
+		var layout   = chosen( 'layout' );
+		var width    = chosen( 'width' );
+
+		if ( template ) {
+			only( area, 'diluxone-users-account--', template, [ 'plain', 'cover' ] );
+		}
+
+		if ( layout ) {
+			only( area, 'diluxone-users-account--', layout, [ 'tabs', 'side', 'none' ] );
+		}
+
+		if ( width ) {
+			only( area, 'diluxone-users-account--', width, [ 'contained', 'full' ] );
+		}
+
+		if ( cover && cover.value ) {
+			area.style.setProperty( '--diluxone-users-cover', cover.value );
+		}
+
+		// The menu is markup the server already sent: moving it between the
+		// bar and the body is not something to fake, so what changes is
+		// whether each place shows what it holds.
+		hide( '.diluxone-users-account__bar', 'tabs' !== layout );
+		hide( '.diluxone-users-account__body > .diluxone-users-account__nav', 'side' !== layout );
+
+		var header = piece( 'header' );
+
+		hide( '.diluxone-users-account__header', header && ! header.checked );
+		hide( '.diluxone-users-account__avatar', ticked( 'avatar' ) );
+		hide( '.diluxone-users-account__since', ticked( 'since' ) );
+		hide( '.diluxone-users-account__action', ticked( 'action' ) );
+	}
+
+	/** A piece is off when its box exists and is not ticked. */
+	function ticked( name ) {
+		var input = piece( name );
+
+		return !! input && ! input.checked;
+	}
+
+	function hide( selector, off ) {
+		var element = area.querySelector( selector );
+
+		if ( element ) {
+			element.hidden = !! off;
+		}
+	}
+
+	[ accent, radius, styles, cover ].forEach( function ( field ) {
 		if ( field ) {
 			field.addEventListener( 'input', paint );
 			field.addEventListener( 'change', paint );
 		}
+	} );
+
+	document.querySelectorAll( '[data-diluxone-users-piece]' ).forEach( function ( field ) {
+		field.addEventListener( 'change', shape );
 	} );
 
 	// The presets do not save anything of their own: they fill in the three
@@ -393,6 +483,51 @@ diluxoneUsersFieldTypes( document );
 			if ( radius ) {
 				radius.value = button.dataset.diluxoneUsersPresetRadius;
 			}
+
+			paint();
+		} );
+	} );
+
+	/**
+	 * A template fills in the pieces underneath it, and stops there.
+	 *
+	 * It is a starting point and not a lid: every piece it just filled in can
+	 * be changed straight afterwards, and changing one does not knock the
+	 * template back out — the shape chosen is a decision of its own.
+	 */
+	document.querySelectorAll( '[data-diluxone-users-template]' ).forEach( function ( radioButton ) {
+		radioButton.addEventListener( 'change', function () {
+			var pieces = {};
+
+			try {
+				pieces = JSON.parse( radioButton.dataset.diluxoneUsersTemplatePieces || '{}' );
+			} catch ( error ) {
+				pieces = {};
+			}
+
+			[ 'header', 'avatar', 'since', 'action' ].forEach( function ( name ) {
+				var input = piece( name );
+
+				if ( input && undefined !== pieces[ name ] ) {
+					input.checked = !! Number( pieces[ name ] );
+				}
+			} );
+
+			[ 'layout', 'width' ].forEach( function ( name ) {
+				if ( undefined === pieces[ name ] ) {
+					return;
+				}
+
+				var input = document.querySelector( '[data-diluxone-users-piece="' + name + '"][value="' + pieces[ name ] + '"]' );
+
+				if ( input ) {
+					input.checked = true;
+				}
+			} );
+
+			document.querySelectorAll( '.diluxone-users-templates__one' ).forEach( function ( label ) {
+				label.classList.toggle( 'is-chosen', label.contains( radioButton ) );
+			} );
 
 			paint();
 		} );

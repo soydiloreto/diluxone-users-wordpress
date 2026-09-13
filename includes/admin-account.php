@@ -202,6 +202,13 @@ function diluxone_users_screen_account(): void {
 
 			submit_button();
 			echo '</form>';
+
+			// Outside the form: the account area has forms of its own, and a
+			// form inside a form is thrown away by the browser.
+			if ( 'photo' !== $current ) {
+				diluxone_users_style_preview();
+			}
+
 			break;
 
 		default:
@@ -247,9 +254,7 @@ function diluxone_users_account_post(): void {
 	if ( isset( $_POST['diluxone_users_layout_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['diluxone_users_layout_nonce'] ) ), 'diluxone_users_layout' ) ) {
 		diluxone_users_save_options(
 			array(
-				'diluxone_users_account_page'   => absint( wp_unslash( $_POST['diluxone_users_account_page'] ?? 0 ) ),
-				'diluxone_users_account_layout' => sanitize_key( wp_unslash( $_POST['diluxone_users_account_layout'] ?? 'tabs' ) ),
-				'diluxone_users_account_header' => isset( $_POST['diluxone_users_account_header'] ) ? 1 : 0,
+				'diluxone_users_account_page' => absint( wp_unslash( $_POST['diluxone_users_account_page'] ?? 0 ) ),
 			)
 		);
 
@@ -613,36 +618,6 @@ function diluxone_users_screen_account_layout(): void {
 					<?php if ( '' === (string) get_option( 'permalink_structure' ) ) : ?>
 						<p class="description"><?php esc_html_e( 'With plain permalinks the sections go as ?seccion=…; turn on pretty permalinks in Settings → Permalinks and they become /page/section/ on their own.', 'diluxone-users' ); ?></p>
 					<?php endif; ?>
-				</td>
-			</tr>
-			<tr>
-				<th scope="row"><?php esc_html_e( 'The menu', 'diluxone-users' ); ?></th>
-				<td>
-					<?php diluxone_users_forzado_aviso( 'diluxone_users_account_layout' ); ?>
-
-					<?php
-					$layouts = array(
-						'tabs' => __( 'Tabs across the top', 'diluxone-users' ),
-						'side' => __( 'A menu down the side', 'diluxone-users' ),
-						'none' => __( 'No menu — the site places it with [diluxone_users_account_nav]', 'diluxone-users' ),
-					);
-
-					foreach ( $layouts as $key => $label ) :
-						?>
-						<label class="diluxone-users-roles__item">
-							<input type="radio" name="diluxone_users_account_layout" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_account_layout' ), $key ); ?>>
-							<?php echo esc_html( $label ); ?>
-						</label>
-					<?php endforeach; ?>
-				</td>
-			</tr>
-			<tr>
-				<th scope="row"><?php esc_html_e( 'The header', 'diluxone-users' ); ?></th>
-				<td>
-					<label>
-						<input type="checkbox" name="diluxone_users_account_header" value="1" <?php checked( diluxone_users_option( 'diluxone_users_account_header' ), 1 ); ?>>
-						<?php esc_html_e( 'Show the name and the initials at the top', 'diluxone-users' ); ?>
-					</label>
 				</td>
 			</tr>
 		</table>

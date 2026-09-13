@@ -234,13 +234,12 @@ function diluxone_users_roles_picker( string $scope_name, string $roles_name, st
 
 		<div class="diluxone-users-scope__roles" data-diluxone-users-scope-roles>
 			<?php foreach ( wp_roles()->get_names() as $role => $label ) : ?>
-				<?php if ( in_array( (string) $role, $exclude, true ) ) : ?>
-					<?php continue; ?>
+				<?php if ( ! in_array( (string) $role, $exclude, true ) ) : ?>
+					<label class="diluxone-users-roles__item">
+						<input type="checkbox" name="<?php echo esc_attr( $roles_name ); ?>" value="<?php echo esc_attr( $role ); ?>" <?php checked( in_array( $role, $chosen, true ) ); ?>>
+						<?php echo esc_html( translate_user_role( $label ) ); ?>
+					</label>
 				<?php endif; ?>
-				<label class="diluxone-users-roles__item">
-					<input type="checkbox" name="<?php echo esc_attr( $roles_name ); ?>" value="<?php echo esc_attr( $role ); ?>" <?php checked( in_array( $role, $chosen, true ) ); ?>>
-					<?php echo esc_html( translate_user_role( $label ) ); ?>
-				</label>
 			<?php endforeach; ?>
 
 			<?php if ( '' !== $spared ) : ?>

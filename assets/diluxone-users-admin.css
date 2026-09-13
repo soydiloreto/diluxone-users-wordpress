@@ -344,9 +344,59 @@
 .diluxone-users-presets__one { display: inline-flex !important; align-items: center; gap: 8px; height: auto !important; padding: 6px 12px !important; }
 .diluxone-users-presets__chip { width: 16px; height: 16px; border: 1px solid rgba(0, 0, 0, .2); }
 
-.diluxone-users-preview { margin: 24px 0 0; max-width: 720px; }
+/* The template cards: the shape is chosen by looking at it, so each one
+   carries a small drawing of itself above its name. */
+.diluxone-users-templates {
+	display: grid; gap: 12px;
+	grid-template-columns: repeat(auto-fit, minmax(230px, 260px));
+}
+.diluxone-users-templates__one {
+	display: block; padding: 12px; cursor: pointer;
+	background: #fff; border: 1px solid #dcdcde; border-radius: 4px;
+}
+.diluxone-users-templates__one.is-chosen {
+	border-color: var(--diluxone-users-accent, #2271b1);
+	box-shadow: 0 0 0 1px var(--diluxone-users-accent, #2271b1);
+}
+.diluxone-users-templates__one input { margin: 0 6px 0 0; }
+.diluxone-users-templates__name { font-weight: 600; }
+.diluxone-users-templates__help { display: block; margin-top: 4px; color: #646970; }
+/* The drawing: a header band, a menu strip and a body, in the proportions the
+   template actually has. Two gradients rather than two more elements. */
+.diluxone-users-templates__art {
+	display: block; height: 72px; margin-bottom: 10px; border-radius: 3px;
+	border: 1px solid #dcdcde; background: #fff;
+}
+.diluxone-users-templates__art--plain {
+	background:
+		linear-gradient(#f0f0f1 0 18px, transparent 18px 20px),
+		linear-gradient(90deg, var(--diluxone-users-accent, #2271b1) 0 34px, #f0f0f1 34px 62px, #f0f0f1 68px 96px);
+	background-position: 0 8px, 8px 30px;
+	background-size: 100% 20px, calc(100% - 16px) 10px;
+	background-repeat: no-repeat;
+}
+.diluxone-users-templates__art--cover {
+	background:
+		linear-gradient(var(--diluxone-users-accent, #2271b1) 0 30px, transparent 30px),
+		linear-gradient(90deg, var(--diluxone-users-accent, #2271b1) 0 34px, #f0f0f1 34px 62px, #f0f0f1 68px 96px);
+	background-position: 0 0, 8px 40px;
+	background-size: 100% 30px, calc(100% - 16px) 10px;
+	background-repeat: no-repeat;
+}
+
+/* The pieces a header is made of hang under the box that turns it on. */
+.diluxone-users-pieces { margin: 6px 0 0 22px; }
+
+.diluxone-users-preview { margin: 24px 0 0; }
 .diluxone-users-preview__frame {
 	margin-top: 6px; padding: 24px; border: 1px solid #dcdcde; border-radius: 4px;
+	/* The real account area is in here and it is not to be used from here.
+	   `inert` does the work; this is for browsers that do not have it yet. */
+	pointer-events: none;
+	/* A cover breaks out to the width of the window with a negative margin.
+	   Inside a preview box that would run off the screen, so the box is the
+	   window as far as it is concerned. */
+	overflow: hidden;
 	/* A page-ish ground, so the panels inside are seen against something
 	   other than the admin's own grey. */
 	background: #fff;

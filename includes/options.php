@@ -69,11 +69,32 @@ function diluxone_users_option_defaults(): array {
 		// declared in a single place, everyone who needs to send somebody to
 		// "my account" — LifterLMS, bbPress, a certificate — points right.
 		'diluxone_users_account_page'       => 0,
+		// The account area's starting point. 'plain' is the area as a panel in
+		// the page, the way a settings screen looks; 'cover' is the header as
+		// a band the full width of the window with the person on it and the
+		// menu in a bar of its own underneath, the way a profile looks. It is
+		// a starting point and not a lid: every piece below can still be
+		// changed afterwards.
+		'diluxone_users_account_template'   => 'plain',
 		// Where the navigation goes: on top, down the side, or nowhere at all
 		// because the site places it with [diluxone_users_account_nav].
 		'diluxone_users_account_layout'     => 'tabs',
 		// The front page with avatar, name and member-since date.
 		'diluxone_users_account_header'     => 1,
+		// And what that header is made of. They are separate options and not
+		// one "style" because a site wanting the big cover without the join
+		// date should not have to copy a template to get it.
+		'diluxone_users_account_avatar'     => 1,
+		'diluxone_users_account_since'      => 1,
+		// The button on the far side of the header, to their own details.
+		'diluxone_users_account_action'     => 0,
+		// The colour behind the cover. Empty means the accent colour, so a
+		// site that only changes its accent gets a cover that matches without
+		// setting a second colour that would then drift from the first.
+		'diluxone_users_account_cover'      => '',
+		// How wide the content runs: held to a reading column, or the whole
+		// width the theme gives it.
+		'diluxone_users_account_width'      => 'contained',
 		// The configuration of each section: whether it is on, what it is
 		// called, what order it goes in, and the site's own added sections. It
 		// is a list because the saving treats it separately.

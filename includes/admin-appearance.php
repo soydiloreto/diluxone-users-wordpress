@@ -35,9 +35,17 @@ function diluxone_users_screen_appearance_save( string $tab ): void {
 
 	diluxone_users_save_options(
 		array(
-			'diluxone_users_styles'       => isset( $_POST['diluxone_users_styles'] ) ? 1 : 0,
-			'diluxone_users_style_accent' => sanitize_hex_color( wp_unslash( $_POST['diluxone_users_style_accent'] ?? '' ) ) ?? '',
-			'diluxone_users_style_radius' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_style_radius'] ?? '' ) ),
+			'diluxone_users_styles'           => isset( $_POST['diluxone_users_styles'] ) ? 1 : 0,
+			'diluxone_users_style_accent'     => sanitize_hex_color( wp_unslash( $_POST['diluxone_users_style_accent'] ?? '' ) ) ?? '',
+			'diluxone_users_style_radius'     => sanitize_text_field( wp_unslash( $_POST['diluxone_users_style_radius'] ?? '' ) ),
+			'diluxone_users_account_template' => 'cover' === sanitize_key( wp_unslash( $_POST['diluxone_users_account_template'] ?? '' ) ) ? 'cover' : 'plain',
+			'diluxone_users_account_layout'   => sanitize_key( wp_unslash( $_POST['diluxone_users_account_layout'] ?? 'tabs' ) ),
+			'diluxone_users_account_width'    => 'full' === sanitize_key( wp_unslash( $_POST['diluxone_users_account_width'] ?? '' ) ) ? 'full' : 'contained',
+			'diluxone_users_account_header'   => isset( $_POST['diluxone_users_account_header'] ) ? 1 : 0,
+			'diluxone_users_account_avatar'   => isset( $_POST['diluxone_users_account_avatar'] ) ? 1 : 0,
+			'diluxone_users_account_since'    => isset( $_POST['diluxone_users_account_since'] ) ? 1 : 0,
+			'diluxone_users_account_action'   => isset( $_POST['diluxone_users_account_action'] ) ? 1 : 0,
+			'diluxone_users_account_cover'    => sanitize_hex_color( wp_unslash( $_POST['diluxone_users_account_cover'] ?? '' ) ) ?? '',
 		)
 	);
 	// phpcs:enable
@@ -93,51 +101,44 @@ function diluxone_users_style_presets(): array {
 /**
  * What the account area looks like with the values on this screen.
  *
- * The real markup and the real classes, so the preview cannot drift from the
- * thing it previews — the same rule the social buttons preview follows. The
- * colours travel as inline custom properties, which is exactly how they travel
- * on the front end, and the admin script rewrites them as the fields change.
+ * It is not a drawing of the account area: it is the account area. The same
+ * shortcode the page runs is run here, so what is on this screen is what the
+ * site serves — including a template the theme has replaced, which is the
+ * thing a drawing could never show. A site that has put its own account.php
+ * in its theme sees its own account.php here, and does not spend an evening
+ * wondering why the site and this screen disagree.
+ *
+ * The colours travel as inline custom properties, exactly how they travel on
+ * the front end, and the admin script rewrites them — and the shape classes —
+ * as the fields change.
  */
 function diluxone_users_style_preview(): void {
 	?>
 	<div class="diluxone-users-preview" data-diluxone-users-preview-box>
-		<p class="description"><?php esc_html_e( 'Your account area, with what is chosen above:', 'diluxone-users' ); ?></p>
+		<p class="description"><?php esc_html_e( 'Your account area, as the site serves it right now:', 'diluxone-users' ); ?></p>
 
-		<div class="diluxone-users-preview__frame">
-			<div class="diluxone-users-account" data-diluxone-users-preview-skin>
-				<div class="diluxone-users-account__header">
-					<div class="diluxone-users-account__avatar" aria-hidden="true"><?php echo esc_html( diluxone_users_avatar_initials( get_current_user_id() ) ); ?></div>
-					<div>
-						<div class="diluxone-users-account__name"><?php echo esc_html( diluxone_users_display_name( wp_get_current_user() ) ); ?></div>
-						<div class="diluxone-users-account__since">
-							<?php
-							echo esc_html(
-								sprintf(
-									/* translators: %s: month and year they joined */
-									__( 'Member since %s', 'diluxone-users' ),
-									wp_date( 'F Y', (int) strtotime( wp_get_current_user()->user_registered ) )
-								)
-							);
-							?>
-						</div>
-					</div>
-				</div>
-
-				<div class="diluxone-users-account__nav">
-					<span class="diluxone-users-account__tab is-current"><?php esc_html_e( 'Home', 'diluxone-users' ); ?></span>
-					<span class="diluxone-users-account__tab"><?php esc_html_e( 'Your details', 'diluxone-users' ); ?></span>
-					<span class="diluxone-users-account__tab"><?php esc_html_e( 'Security', 'diluxone-users' ); ?></span>
-				</div>
-
-				<div class="diluxone-users-account__body">
-					<div class="diluxone-users-field">
-						<label class="diluxone-users-label"><?php esc_html_e( 'First name', 'diluxone-users' ); ?></label>
-						<input type="text" value="<?php echo esc_attr( wp_get_current_user()->first_name ); ?>" readonly>
-					</div>
-					<p><button type="button" class="diluxone-users-button"><?php esc_html_e( 'Save', 'diluxone-users' ); ?></button></p>
-				</div>
+		<?php
+		// Inert, and not only because a preview should not be clickable: the
+		// account area has forms of its own, and a form inside the settings
+		// form would be thrown away by the browser and its fields posted with
+		// the settings. Outside the form and inert, it is a picture that
+		// happens to be the real thing.
+		?>
+		<div class="diluxone-users-preview__frame" inert>
+			<div data-diluxone-users-preview-skin>
+				<?php
+				// The shortcode, not a copy of it. It renders for whoever is
+				// looking — the sections they can see, their own name and
+				// picture — because an account area shown with somebody else's
+				// data would be a different kind of lie.
+				echo do_shortcode( '[diluxone_users_account]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the shortcode escapes its own output.
+				?>
 			</div>
 		</div>
+
+		<p class="description">
+			<?php esc_html_e( 'It is the real thing and not a drawing, so a template your theme has replaced shows up here as it does on the site. It cannot be used from here: open the account page for that.', 'diluxone-users' ); ?>
+		</p>
 
 		<p class="description" data-diluxone-users-preview-bare hidden>
 			<?php esc_html_e( 'With the stylesheet off this is what your theme receives: plain markup with the diluxone-users-* classes on it, and nothing else.', 'diluxone-users' ); ?>
@@ -146,8 +147,149 @@ function diluxone_users_style_preview(): void {
 	<?php
 }
 
-/** The stylesheet, the colour and the corners. */
+/**
+ * The two shapes the account area comes in.
+ *
+ * Like the style presets, a template is a starting point and not a lid:
+ * pressing one fills in the pieces underneath and from there every one of
+ * them is yours to change. Unlike the style presets, which of the two was
+ * chosen IS stored — the shape is not the sum of its pieces, it is the
+ * difference between a panel in the page and a band across the window.
+ *
+ * @return array<string, array{label: string, help: string, layout: string, header: int, avatar: int, since: int, action: int, width: string}>
+ */
+function diluxone_users_account_templates(): array {
+	return array(
+		'plain' => array(
+			'label'  => __( 'Simple', 'diluxone-users' ),
+			'help'   => __( 'A panel in the page, the way a settings screen looks. It sits quietly inside whatever the theme already draws.', 'diluxone-users' ),
+			'layout' => 'tabs',
+			'header' => 1,
+			'avatar' => 1,
+			'since'  => 1,
+			'action' => 0,
+			'width'  => 'contained',
+		),
+		'cover' => array(
+			'label'  => __( 'With a cover', 'diluxone-users' ),
+			'help'   => __( 'The person on a coloured band the full width of the window, with the menu in a bar of its own underneath. The way a profile looks.', 'diluxone-users' ),
+			'layout' => 'tabs',
+			'header' => 1,
+			'avatar' => 1,
+			'since'  => 1,
+			'action' => 1,
+			'width'  => 'contained',
+		),
+	);
+}
+
+/** The shape of the account area, and the pieces that shape is made of. */
+function diluxone_users_screen_appearance_template(): void {
+	$template = diluxone_users_account_template();
+	?>
+	<h2><?php esc_html_e( 'The account area', 'diluxone-users' ); ?></h2>
+	<?php
+	diluxone_users_intro( __( 'What the account area is shaped like, and what it is made of. The shape is a starting point: press one and the pieces underneath fill in, and from there each of them is yours.', 'diluxone-users' ) );
+	?>
+	<table class="form-table" role="presentation">
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Template', 'diluxone-users' ); ?></th>
+			<td>
+				<div class="diluxone-users-templates">
+					<?php foreach ( diluxone_users_account_templates() as $id => $preset ) : ?>
+						<label class="diluxone-users-templates__one <?php echo $id === $template ? 'is-chosen' : ''; ?>">
+							<input type="radio" name="diluxone_users_account_template" value="<?php echo esc_attr( $id ); ?>" <?php checked( $id, $template ); ?>
+								data-diluxone-users-template
+								data-diluxone-users-template-pieces="<?php echo esc_attr( (string) wp_json_encode( $preset ) ); ?>">
+							<span class="diluxone-users-templates__art diluxone-users-templates__art--<?php echo esc_attr( $id ); ?>" aria-hidden="true"></span>
+							<span class="diluxone-users-templates__name"><?php echo esc_html( $preset['label'] ); ?></span>
+							<span class="diluxone-users-templates__help"><?php echo esc_html( $preset['help'] ); ?></span>
+						</label>
+					<?php endforeach; ?>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'The header', 'diluxone-users' ); ?></th>
+			<td>
+				<label>
+					<input type="checkbox" name="diluxone_users_account_header" value="1" <?php checked( diluxone_users_option( 'diluxone_users_account_header' ), 1 ); ?> data-diluxone-users-piece="header">
+					<?php esc_html_e( 'Show it', 'diluxone-users' ); ?>
+				</label>
+				<div class="diluxone-users-pieces" data-diluxone-users-pieces>
+					<label class="diluxone-users-roles__item">
+						<input type="checkbox" name="diluxone_users_account_avatar" value="1" <?php checked( diluxone_users_option( 'diluxone_users_account_avatar' ), 1 ); ?> data-diluxone-users-piece="avatar">
+						<?php esc_html_e( 'Their picture', 'diluxone-users' ); ?>
+					</label>
+					<label class="diluxone-users-roles__item">
+						<input type="checkbox" name="diluxone_users_account_since" value="1" <?php checked( diluxone_users_option( 'diluxone_users_account_since' ), 1 ); ?> data-diluxone-users-piece="since">
+						<?php esc_html_e( 'The month they joined', 'diluxone-users' ); ?>
+					</label>
+					<label class="diluxone-users-roles__item">
+						<input type="checkbox" name="diluxone_users_account_action" value="1" <?php checked( diluxone_users_option( 'diluxone_users_account_action' ), 1 ); ?> data-diluxone-users-piece="action">
+						<?php esc_html_e( 'A button to their details', 'diluxone-users' ); ?>
+					</label>
+				</div>
+				<p class="description"><?php esc_html_e( 'The name is always there: a header without it is a coloured band with a picture on it.', 'diluxone-users' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><label for="diluxone_users_account_cover"><?php esc_html_e( 'The cover colour', 'diluxone-users' ); ?></label></th>
+			<td>
+				<input type="color" id="diluxone_users_account_cover" name="diluxone_users_account_cover" value="<?php echo esc_attr( '' !== diluxone_users_account_cover() ? diluxone_users_account_cover() : diluxone_users_style_accent() ); ?>">
+				<p class="description"><?php esc_html_e( 'Only the template with a cover uses it. Left as the accent colour it follows the accent, instead of becoming a second colour that drifts from the first.', 'diluxone-users' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'The menu', 'diluxone-users' ); ?></th>
+			<td>
+				<?php diluxone_users_forzado_aviso( 'diluxone_users_account_layout' ); ?>
+
+				<?php
+				$layouts = array(
+					'tabs' => __( 'Tabs across the top', 'diluxone-users' ),
+					'side' => __( 'A menu down the side', 'diluxone-users' ),
+					'none' => __( 'No menu — the site places it with [diluxone_users_account_nav]', 'diluxone-users' ),
+				);
+
+				foreach ( $layouts as $key => $label ) :
+					?>
+					<label class="diluxone-users-roles__item">
+						<input type="radio" name="diluxone_users_account_layout" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_account_layout' ), $key ); ?> data-diluxone-users-piece="layout">
+						<?php echo esc_html( $label ); ?>
+					</label>
+				<?php endforeach; ?>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'The content', 'diluxone-users' ); ?></th>
+			<td>
+				<?php
+				$widths = array(
+					'contained' => __( 'Held to a reading column', 'diluxone-users' ),
+					'full'      => __( 'As wide as the theme allows', 'diluxone-users' ),
+				);
+
+				foreach ( $widths as $key => $label ) :
+					?>
+					<label class="diluxone-users-roles__item">
+						<input type="radio" name="diluxone_users_account_width" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_account_width(), $key ); ?> data-diluxone-users-piece="width">
+						<?php echo esc_html( $label ); ?>
+					</label>
+				<?php endforeach; ?>
+				<p class="description"><?php esc_html_e( 'Forms are hard to read at full width; a list of courses is not. This holds the content only — a cover always runs edge to edge.', 'diluxone-users' ); ?></p>
+			</td>
+		</tr>
+	</table>
+	<?php
+}
+
+/** The whole "How it looks" tab: the shape, then the colours and corners. */
 function diluxone_users_screen_appearance_styles(): void {
+	diluxone_users_screen_appearance_template();
+
+	echo '<h2>' . esc_html__( 'Colours and corners', 'diluxone-users' ) . '</h2>';
+
 	diluxone_users_intro( __( 'Everything the plugin draws —panels, forms, lists, buttons— takes its colours and its corners from a handful of CSS properties. Change those and everything follows; a site with its own design can point them at its own tokens from its stylesheet, without copying anything from here. It reaches further than this screen: the sign-in form and the fields follow the same properties.', 'diluxone-users' ) );
 	?>
 	<table class="form-table" role="presentation">
@@ -219,7 +361,6 @@ function diluxone_users_screen_appearance_styles(): void {
 		</tr>
 	</table>
 	<?php
-	diluxone_users_style_preview();
 }
 
 /** The three layers of the profile picture. */
