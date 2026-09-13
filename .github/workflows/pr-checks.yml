@@ -122,7 +122,7 @@ jobs:
           fi
           echo "All required readme.txt headers present."
 
-      - name: Verify Stable tag matches PHP Version header (modulo -dev/-alpha/-rc suffix)
+      - name: Verify Stable tag matches the Version header
         run: |
           set -e
           stable_tag=$(grep -oP '^Stable tag:\s*\K\S+' readme.txt)
