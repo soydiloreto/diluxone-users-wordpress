@@ -1,138 +1,139 @@
 <?php
 /**
- * Lo que hay que arreglar cuando el plugin cambia de versión.
+ * What has to be fixed when the plugin changes version.
  *
- * Por ahora hay una sola cosa, y es el prefijo. El plugin se llamó «User &
- * Subscription Manager» con `usmw_`, después «Users Plus for WordPress» con
- * `upfw_` y «Users Plus» con `users_plus_`, antes de quedar en «Users+» con
- * `users_dlx_plus_`. Los datos guardados llevan el prefijo de su época —las
- * options del sitio y la user meta de cada persona— y renombrar el código sin
- * renombrar los datos deja un sitio que arranca vacío: sin campos, sin passkeys, sin segundo factor y sin
- * las redes vinculadas de nadie.
+ * There is only one thing so far, and it is the prefix. The plugin was called
+ * "User & Subscription Manager" with `usmw_`, then "Users Plus for WordPress"
+ * with `upfw_`, then "Users Plus" with `users_plus_`, then "Users+" with
+ * `users_dlx_plus_`, before settling on "DiluxOne Users+" with
+ * `diluxone_users_`. Stored data carries the prefix of its era — the site
+ * options and each person's user meta — and renaming the code without
+ * renaming the data leaves a site that starts up empty: no fields, no
+ * passkeys, no second factor and nobody's linked networks.
  *
- * Así que se renombran los datos también, de cualquiera de los prefijos
- * viejos al de ahora, y se anota que ya se hizo. Corre en `admin_init` y no
- * en la activación porque una actualización por FTP o por git no dispara la
- * activación.
+ * So the data is renamed too, from any of the old prefixes to the current
+ * one, and it is recorded as done. It runs on `admin_init` and not on
+ * activation because an update over FTP or over git fires no activation.
  *
- * Todo el archivo habla con la base directamente y sin caché, y tiene que ser
- * así: es una migración que corre una sola vez, sin entrada de nadie, y suelta
- * del caché de objetos lo suyo al terminar. Las anotaciones van acá arriba y no
- * repartidas por las funciones porque un `phpcs:enable` adentro de un `return`
- * temprano vale desde esa línea en adelante —PHPCS lee el archivo de arriba a
- * abajo, no sigue el flujo— y deja sin tapar todo lo que viene después.
+ * The whole file talks to the database directly and without caching, and it
+ * has to: it is a migration that runs once, with nobody's input, and it drops
+ * what is its own from the object cache when it finishes. The annotations go
+ * up here and not spread over the functions because a `phpcs:enable` inside
+ * an early `return` applies from that line onwards — PHPCS reads the file top
+ * to bottom, it does not follow the flow — and leaves everything after it
+ * uncovered.
  *
  * phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
  * phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/** La marca de que la mudanza ya se hizo en este sitio. */
-const USERS_DLX_PLUS_MIGRATED = 'users_dlx_plus_migrated';
+/** The mark saying the move has already been made on this site. */
+const DILUXONE_USERS_MIGRATED = 'diluxone_users_migrated';
 
-/** El prefijo actual, escrito una sola vez. */
-const USERS_DLX_PLUS_PREFIJO = 'users_dlx_plus_';
+/** The current prefix, written exactly once. */
+const DILUXONE_USERS_PREFIX = 'diluxone_users_';
 
 /**
- * Los prefijos que este plugin usó antes, del más viejo al más nuevo.
+ * The prefixes this plugin used before, oldest to newest.
  *
- * Un sitio puede venir de cualquiera de los dos: del original, o de la vuelta
- * intermedia. Los dos casos son el mismo trabajo.
+ * A site can come from any of them: from the original, or from one of the
+ * intermediate rounds. Every case is the same work.
  *
  * @return array<int, string>
  */
-function users_dlx_plus_old_prefixes(): array {
-	return array( 'usmw_', 'upfw_', 'users_plus_' );
+function diluxone_users_old_prefixes(): array {
+	return array( 'usmw_', 'upfw_', 'users_plus_', 'users_dlx_plus_' );
 }
 
 /**
- * Suelta del caché sólo lo que la migración tocó.
+ * Drops from the cache only what the migration touched.
  *
- * `wp_cache_flush()` sería una línea y vacía el caché de TODO el sitio: los
- * transients de los demás plugins incluidos. Uno de ellos guarda ahí que su
- * licencia está validada, y al perderlo volvió a pedir la clave. Un plugin no
- * tiene por qué tirar abajo el caché de un sitio entero para arreglar lo suyo.
+ * `wp_cache_flush()` would be one line and empties the cache of the WHOLE
+ * site: the other plugins' transients included. One of them keeps its licence
+ * validation in there, and on losing it asked for the key again. A plugin has
+ * no business tearing down a whole site's cache to fix its own.
  *
- * @param array<int, string> $options  Las options viejas, con su nombre anterior.
- * @param array<int, string> $usuarios Los ids cuya meta se renombró.
- * @param string             $viejo    El prefijo del que se viene.
+ * @param array<int, string> $options  The old options, under their former names.
+ * @param array<int, string> $user_ids The ids whose meta was renamed.
+ * @param string             $old      The prefix being moved from.
  */
-function users_dlx_plus_migration_forget_cache( array $options, array $usuarios, string $viejo ): void {
-	// La lista completa de options la cachea WordPress en un solo bulto.
+function diluxone_users_migration_forget_cache( array $options, array $user_ids, string $old ): void {
+	// WordPress caches the full options list in a single lump.
 	wp_cache_delete( 'alloptions', 'options' );
 	wp_cache_delete( 'notoptions', 'options' );
 
-	foreach ( $options as $vieja ) {
-		wp_cache_delete( (string) $vieja, 'options' );
-		wp_cache_delete( USERS_DLX_PLUS_PREFIJO . substr( (string) $vieja, strlen( $viejo ) ), 'options' );
+	foreach ( $options as $old ) {
+		wp_cache_delete( (string) $old, 'options' );
+		wp_cache_delete( DILUXONE_USERS_PREFIX . substr( (string) $old, strlen( $old ) ), 'options' );
 	}
 
-	foreach ( $usuarios as $user_id ) {
+	foreach ( $user_ids as $user_id ) {
 		wp_cache_delete( (int) $user_id, 'user_meta' );
 	}
 }
 
 /**
- * Renombra los datos que quedaron con un prefijo viejo.
+ * Renames the data left under an old prefix.
  *
- * Se hace con SQL y no con la API de options y meta por una razón práctica:
- * hay una fila por persona y por clave, son 25.000 personas en el sitio que
- * originó esto, y leer y reescribir cada una de a una tarda minutos y se
- * corta a la mitad.
+ * It is done in SQL and not through the options and meta APIs for a practical
+ * reason: there is one row per person and per key, that is 25,000 people on
+ * the site this came from, and reading and rewriting them one by one takes
+ * minutes and breaks off halfway.
  */
-function users_dlx_plus_migrate_prefix( string $viejo ): void {
+function diluxone_users_migrate_prefix( string $old ): void {
 	global $wpdb;
 
-	$largo = strlen( $viejo );
-	$desde = $largo + 1;
-	$like  = str_replace( '_', '\\_', $viejo ) . '%';
+	$length   = strlen( $old );
+	$from_pos = $length + 1;
+	$like     = str_replace( '_', '\\_', $old ) . '%';
 
-	// Cuánto ocupa el prefijo actual, para recortar por él en SQL. Sale de la
-	// constante y no de un número escrito a mano: el prefijo ya cambió tres
-	// veces y un largo hardcodeado sobrevive callado a la siguiente.
-	$desde_nuevo = strlen( USERS_DLX_PLUS_PREFIJO ) + 1;
+	// How much room the current prefix takes, so SQL can cut by it. It comes
+	// from the constant and not from a hand-written number: the prefix has
+	// changed four times and a hardcoded length survives the next one in silence.
+	$from_new = strlen( DILUXONE_USERS_PREFIX ) + 1;
 
-	// Las options tienen la clave única. Si el plugin ya sembró la suya —al
-	// activarse, que pasa antes de esto— el UPDATE choca con esa fila y falla
-	// ENTERO: no migra ninguna, y el sitio arranca vacío sin decir por qué.
-	// Así que primero se saca la recién sembrada: la que vale es la vieja,
-	// que tiene lo que el sitio configuró.
-	$viejas = $wpdb->get_col(
+	// Options have a unique key. If the plugin already seeded its own — on
+	// activation, which happens before this — the UPDATE collides with that row
+	// and fails ENTIRELY: it migrates none, and the site starts up empty
+	// without saying why. So the freshly seeded one is removed first: the one
+	// that counts is the old one, which holds what the site configured.
+	$old_names = $wpdb->get_col(
 		$wpdb->prepare( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s", $like )
 	);
 
-	if ( array() === (array) $viejas ) {
+	if ( array() === (array) $old_names ) {
 		return;
 	}
 
-	foreach ( (array) $viejas as $vieja ) {
-		delete_option( USERS_DLX_PLUS_PREFIJO . substr( (string) $vieja, $largo ) );
+	foreach ( (array) $old_names as $old ) {
+		delete_option( DILUXONE_USERS_PREFIX . substr( (string) $old, $length ) );
 	}
 
-	// SUBSTRING desde el largo del prefijo y no REPLACE: REPLACE cambiaría
-	// también un `usmw_` que apareciera en el medio de la clave, y acá lo que
-	// se muda es el prefijo, no todas las apariciones.
+	// SUBSTRING from the prefix length and not REPLACE: REPLACE would also
+	// change a `usmw_` appearing in the middle of the key, and what moves here
+	// is the prefix, not every occurrence.
 	$wpdb->query(
 		$wpdb->prepare(
 			"UPDATE {$wpdb->options}
 			    SET option_name = CONCAT( %s, SUBSTRING( option_name, %d ) )
 			  WHERE option_name LIKE %s",
-			USERS_DLX_PLUS_PREFIJO,
-			$desde,
+			DILUXONE_USERS_PREFIX,
+			$from_pos,
 			$like
 		)
 	);
 
-	$afectados = $wpdb->get_col(
+	$affected = $wpdb->get_col(
 		$wpdb->prepare( "SELECT DISTINCT user_id FROM {$wpdb->usermeta} WHERE meta_key LIKE %s", $like )
 	);
 
-	// La user meta no tiene clave única, pero el problema es el mismo: una
-	// persona podría quedar con la vieja y la nueva, y `get_user_meta()`
-	// devolvería cualquiera de las dos.
+	// User meta has no unique key, but the problem is the same: one person
+	// could end up with both the old and the new one, and `get_user_meta()`
+	// would return either.
 	$wpdb->query(
 		$wpdb->prepare(
 			"DELETE nueva FROM {$wpdb->usermeta} nueva
@@ -140,9 +141,9 @@ function users_dlx_plus_migrate_prefix( string $viejo ): void {
 			           ON vieja.user_id = nueva.user_id
 			          AND vieja.meta_key = CONCAT( %s, SUBSTRING( nueva.meta_key, %d ) )
 			        WHERE nueva.meta_key LIKE %s",
-			$viejo,
-			$desde_nuevo,
-			$wpdb->esc_like( USERS_DLX_PLUS_PREFIJO ) . '%'
+			$old,
+			$from_new,
+			$wpdb->esc_like( DILUXONE_USERS_PREFIX ) . '%'
 		)
 	);
 
@@ -151,44 +152,44 @@ function users_dlx_plus_migrate_prefix( string $viejo ): void {
 			"UPDATE {$wpdb->usermeta}
 			    SET meta_key = CONCAT( %s, SUBSTRING( meta_key, %d ) )
 			  WHERE meta_key LIKE %s",
-			USERS_DLX_PLUS_PREFIJO,
-			$desde,
+			DILUXONE_USERS_PREFIX,
+			$from_pos,
 			$like
 		)
 	);
 
-	users_dlx_plus_migration_forget_cache( (array) $viejas, (array) $afectados, $viejo );
+	diluxone_users_migration_forget_cache( (array) $old_names, (array) $affected, $old );
 
-	// Las claves de los campos viajan además adentro de la definición, y son
-	// las mismas con las que se guardó el valor de cada persona: si no se
-	// mudan las dos, los campos quedan mirando a una meta que ya no existe.
-	$fields = get_option( 'users_dlx_plus_fields', false );
+	// The field keys also travel inside the definition, and they are the same
+	// ones each person's value was stored under: if both are not moved, the
+	// fields end up looking at a meta that no longer exists.
+	$fields = get_option( 'diluxone_users_fields', false );
 
 	if ( is_array( $fields ) ) {
 		foreach ( $fields as $i => $field ) {
-			if ( isset( $field['key'] ) && 0 === strpos( (string) $field['key'], $viejo ) ) {
-				$fields[ $i ]['key'] = USERS_DLX_PLUS_PREFIJO . substr( (string) $field['key'], $largo );
+			if ( isset( $field['key'] ) && 0 === strpos( (string) $field['key'], $old ) ) {
+				$fields[ $i ]['key'] = DILUXONE_USERS_PREFIX . substr( (string) $field['key'], $length );
 			}
 		}
 
-		update_option( 'users_dlx_plus_fields', $fields );
+		update_option( 'diluxone_users_fields', $fields );
 	}
 
-	// Y los shortcodes escritos adentro de las páginas.
-	users_dlx_plus_migrate_shortcodes( $viejo );
+	// And the shortcodes written inside pages.
+	diluxone_users_migrate_shortcodes( $old );
 }
 
 /**
- * Los shortcodes que quedaron escritos en el contenido de una página.
+ * The shortcodes left written in a page's content.
  *
- * `[usmw_account]` no lo pinta nadie después del renombre: sale el texto tal
- * cual, y quien mira la página de su cuenta ve el corchete.
+ * Nobody draws `[usmw_account]` after the rename: the text comes out as it
+ * is, and whoever looks at their account page sees the bracket.
  */
-function users_dlx_plus_migrate_shortcodes( string $viejo ): void {
+function diluxone_users_migrate_shortcodes( string $old ): void {
 	global $wpdb;
 
 	$ids = $wpdb->get_col(
-		$wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_content LIKE %s", '%[' . $wpdb->esc_like( $viejo ) . '%' )
+		$wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_content LIKE %s", '%[' . $wpdb->esc_like( $old ) . '%' )
 	);
 
 	if ( array() === (array) $ids ) {
@@ -200,30 +201,30 @@ function users_dlx_plus_migrate_shortcodes( string $viejo ): void {
 			"UPDATE {$wpdb->posts}
 			    SET post_content = REPLACE( post_content, %s, %s )
 			  WHERE post_content LIKE %s",
-			'[' . $viejo,
-			'[' . USERS_DLX_PLUS_PREFIJO,
-			'%[' . $wpdb->esc_like( $viejo ) . '%'
+			'[' . $old,
+			'[' . DILUXONE_USERS_PREFIX,
+			'%[' . $wpdb->esc_like( $old ) . '%'
 		)
 	);
 
-	// Sin esto WordPress sigue sirviendo el contenido viejo desde el caché de
-	// objetos, y la página muestra el shortcode escrito en vez de la cuenta.
+	// Without this WordPress keeps serving the old content from the object
+	// cache, and the page shows the written shortcode instead of the account.
 	foreach ( (array) $ids as $id ) {
 		clean_post_cache( (int) $id );
 	}
 }
 
-/** Corre la mudanza una sola vez, desde cualquier prefijo anterior. */
-function users_dlx_plus_migrate(): void {
-	if ( get_option( USERS_DLX_PLUS_MIGRATED ) ) {
+/** Runs the move once, from any earlier prefix. */
+function diluxone_users_migrate(): void {
+	if ( get_option( DILUXONE_USERS_MIGRATED ) ) {
 		return;
 	}
 
-	foreach ( users_dlx_plus_old_prefixes() as $viejo ) {
-		users_dlx_plus_migrate_prefix( $viejo );
+	foreach ( diluxone_users_old_prefixes() as $old ) {
+		diluxone_users_migrate_prefix( $old );
 	}
 
-	update_option( USERS_DLX_PLUS_MIGRATED, 1 );
+	update_option( DILUXONE_USERS_MIGRATED, 1 );
 }
-add_action( 'admin_init', 'users_dlx_plus_migrate', 0 );
-add_action( 'wp_initialize_site', 'users_dlx_plus_migrate' );
+add_action( 'admin_init', 'diluxone_users_migrate', 0 );
+add_action( 'wp_initialize_site', 'diluxone_users_migrate' );

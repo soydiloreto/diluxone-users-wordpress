@@ -1,8 +1,12 @@
 {
-  "name": "users-dlx-plus",
+  "name": "diluxone-users-dev",
   "private": true,
-  "description": "Development tooling for the Users+ plugin. Not shipped.",
+  "description": "Local development environment scripts for the DiluxOne Users+ WordPress plugin. Not published to npm — only used to pin @wordpress/env for contributors.",
   "license": "GPL-2.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/soydiloreto/diluxone-users-wordpress.git"
+  },
   "engines": {
     "node": ">=18"
   },

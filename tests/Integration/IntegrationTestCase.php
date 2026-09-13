@@ -1,9 +1,9 @@
 <?php
 /**
- * Base de los tests que necesitan un WordPress de verdad cargado.
+ * Base for the tests that need a real WordPress loaded.
  *
- * El plugin no tiene tablas propias —sus datos son options y user meta— así
- * que lo único que hay que aislar entre tests son esas dos cosas.
+ * The plugin has no tables of its own — its data is options and user meta —
+ * so the only things to isolate between tests are those two.
  */
 
 namespace Tests\Integration;
@@ -13,21 +13,21 @@ use PHPUnit\Framework\TestCase;
 class IntegrationTestCase extends TestCase {
 
 	/**
-	 * Las options del plugin que se limpian entre tests.
+	 * The plugin options cleaned up between tests.
 	 *
-	 * Si mañana se agrega una, va acá: si no, un test ve lo que dejó el
-	 * anterior y pasa —o falla— por el motivo equivocado.
+	 * If one is added tomorrow, it goes here: otherwise a test sees what the
+	 * previous one left behind and passes — or fails — for the wrong reason.
 	 *
 	 * @var array<int, string>
 	 */
 	protected static array $options = array(
-		'users_dlx_plus_fields',
-		'users_dlx_plus_account_sections',
-		'users_dlx_plus_sso',
-		'users_dlx_plus_mail_last',
-		'users_dlx_plus_login_method',
-		'users_dlx_plus_2fa_mode',
-		'users_dlx_plus_passkey_enabled',
+		'diluxone_users_fields',
+		'diluxone_users_account_sections',
+		'diluxone_users_sso',
+		'diluxone_users_mail_last',
+		'diluxone_users_login_method',
+		'diluxone_users_2fa_mode',
+		'diluxone_users_passkey_enabled',
 	);
 
 	protected function setUp(): void {
@@ -38,14 +38,14 @@ class IntegrationTestCase extends TestCase {
 		}
 	}
 
-	/** Una persona nueva, con el rol que se le pase. */
-	protected function alguien( string $rol = 'subscriber' ): int {
+	/** A fresh person, with whatever role is passed. */
+	protected function alguien( string $role = 'subscriber' ): int {
 		return (int) wp_insert_user(
 			array(
-				'user_login' => 'users_dlx_plus_' . wp_generate_password( 8, false ),
+				'user_login' => 'diluxone_users_' . wp_generate_password( 8, false ),
 				'user_email' => wp_generate_password( 8, false ) . '@ejemplo.test',
 				'user_pass'  => wp_generate_password( 16 ),
-				'role'       => $rol,
+				'role'       => $role,
 			)
 		);
 	}

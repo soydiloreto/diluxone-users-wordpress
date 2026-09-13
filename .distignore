@@ -54,6 +54,7 @@ phpunit-integration.xml
 phpunit-integration.xml.dist
 tests
 .phpunit.result.cache
+.phpunit.result.cache.*
 .phpunit.cache
 coverage
 coverage.xml
@@ -70,6 +71,7 @@ scripts
 .vscode
 
 # Build artifacts and logs
+build
 phpcs.json
 *.zip
 *.log

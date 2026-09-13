@@ -1,5 +1,5 @@
-=== Users+ ===
-Contributors: soydiloreto
+=== DiluxOne Users+ – Registration, Login, Passwordless, Social Login, 2FA, Passkeys & Front-End Account Area ===
+Contributors: pablodiloreto
 Tags: users, login, passwordless, two-factor, passkeys
 Requires at least: 6.0
 Tested up to: 7.1
@@ -8,7 +8,7 @@ Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Users Plus for WordPress: user fields, an account area, passwordless sign-in, social login, two-step verification, passkeys and session control.
+Users Plus for WordPress: custom fields, a front-end account area, passwordless sign-in, social login, 2FA, passkeys and session control.
 
 == Description ==
 
@@ -52,21 +52,36 @@ deletion allowed there is no "Privacy" section.
 
 1. Upload the plugin folder to `/wp-content/plugins/`.
 2. Activate it from the Plugins screen.
-3. Go to **Users+ → Account area** and pick the page that holds the
-   `[users_dlx_plus_account]` shortcode.
+3. Go to **DiluxOne Users+ → Account area** and pick the page that holds the
+   `[diluxone_users_account]` shortcode.
+4. Go to **DiluxOne Users+ → Sign in** and pick the page that holds the
+   `[diluxone_users_login]` shortcode.
 
 == Frequently Asked Questions ==
 
 = Does it work with any theme? =
 
 Yes. It ships its own styles, its templates can be overridden from the theme
-at `wp-content/themes/<theme>/users-dlx-plus/`, and its colours come
+at `wp-content/themes/<theme>/diluxone-users/`, and its colours come
 from CSS custom properties a site can redefine without copying a stylesheet.
 
 = Does it work on multisite? =
 
 Yes. Configuration is per site; users are network-wide, so anything that
 grants access joins the person to the current site.
+
+== Screenshots ==
+
+1. Overview: how many accounts there are, how they get in, and what is still left to configure.
+2. User fields, with their own admin screen.
+3. One field in detail: type, edit policy and where it goes in the form.
+4. The account area: which sections exist, how they are ordered and where they live.
+5. Sign in: the way in, the page, the e-mail text and the public name.
+6. Social login: the provider grid, with its state per network.
+7. One provider in detail: step-by-step setup and the live test.
+8. Two-step verification and passkeys.
+9. Status: what is quietly broken today.
+10. The account area on the front end.
 
 == Changelog ==
 
@@ -86,4 +101,9 @@ First public release.
 * Avatars: uploaded photo, Gravatar or generated initials, each one switchable.
 * Data export and account deletion from the front end, each one switchable.
 * Multisite aware.
-* Spanish translation included.
+* Translations included for es_AR, es_ES, es_MX, pt_BR, pt_PT, fr_FR, de_DE and it_IT.
+
+== Upgrade Notice ==
+
+= 1.0.0 =
+First public release.

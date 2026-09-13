@@ -1,51 +1,51 @@
 <?php
 /**
- * La foto de perfil.
+ * The profile picture.
  *
  * @var string  $error
  * @var bool    $has
  * @var WP_User $user
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<?php users_dlx_plus_panel_open( __( 'Your photo', 'users-dlx-plus' ), true, 'users-dlx-plus-avatar' ); ?>
+<?php diluxone_users_panel_open( __( 'Your photo', 'diluxone-users' ), true, 'diluxone-users-avatar' ); ?>
 
 	<?php if ( '' !== $error ) : ?>
-		<p class="users-dlx-plus-notice users-dlx-plus-notice--error"><?php echo esc_html( $error ); ?></p>
+		<p class="diluxone-users-notice diluxone-users-notice--error"><?php echo esc_html( $error ); ?></p>
 	<?php endif; ?>
 
-	<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="users-dlx-plus-avatar__form">
-		<input type="hidden" name="action" value="users_dlx_plus_avatar">
-		<?php wp_nonce_field( 'users_dlx_plus_avatar' ); ?>
+	<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="diluxone-users-avatar__form">
+		<input type="hidden" name="action" value="diluxone_users_avatar">
+		<?php wp_nonce_field( 'diluxone_users_avatar' ); ?>
 
-		<span class="users-dlx-plus-avatar__ahora"><?php echo get_avatar( $user->ID, 88 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado de WordPress. ?></span>
+		<span class="diluxone-users-avatar__current"><?php echo get_avatar( $user->ID, 88 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado de WordPress. ?></span>
 
-		<div class="users-dlx-plus-avatar__acciones">
-			<label class="users-dlx-plus-button users-dlx-plus-button--soft" for="users-dlx-plus-avatar-file">
-				<?php esc_html_e( 'Choose a photo', 'users-dlx-plus' ); ?>
-				<input type="file" id="users-dlx-plus-avatar-file" name="users_dlx_plus_avatar_file" accept="image/jpeg,image/png,image/gif,image/webp">
+		<div class="diluxone-users-avatar__actions">
+			<label class="diluxone-users-button diluxone-users-button--soft" for="diluxone-users-avatar-file">
+				<?php esc_html_e( 'Choose a photo', 'diluxone-users' ); ?>
+				<input type="file" id="diluxone-users-avatar-file" name="diluxone_users_avatar_file" accept="image/jpeg,image/png,image/gif,image/webp">
 			</label>
 
-			<button type="submit" class="users-dlx-plus-button"><?php esc_html_e( 'Save', 'users-dlx-plus' ); ?></button>
+			<button type="submit" class="diluxone-users-button"><?php esc_html_e( 'Save', 'diluxone-users' ); ?></button>
 
 			<?php if ( $has ) : ?>
-				<button type="submit" name="users_dlx_plus_avatar_remove" value="1" class="users-dlx-plus-button users-dlx-plus-button--soft"><?php esc_html_e( 'Remove it', 'users-dlx-plus' ); ?></button>
+				<button type="submit" name="diluxone_users_avatar_remove" value="1" class="diluxone-users-button diluxone-users-button--soft"><?php esc_html_e( 'Remove it', 'diluxone-users' ); ?></button>
 			<?php endif; ?>
 		</div>
 
-		<p class="users-dlx-plus-note">
+		<p class="diluxone-users-note">
 			<?php
 			echo esc_html(
 				sprintf(
-				/* translators: %s: tamaño máximo ya formateado */
-					__( 'JPG, PNG, GIF or WebP, up to %s.', 'users-dlx-plus' ),
-					size_format( max( 1, (int) users_dlx_plus_option( 'users_dlx_plus_avatar_max_kb' ) ) * KB_IN_BYTES )
+				/* translators: %s: maximum size, already formatted */
+					__( 'JPG, PNG, GIF or WebP, up to %s.', 'diluxone-users' ),
+					size_format( max( 1, (int) diluxone_users_option( 'diluxone_users_avatar_max_kb' ) ) * KB_IN_BYTES )
 				)
 			);
 			?>
 		</p>
 	</form>
-<?php users_dlx_plus_panel_close(); ?>
+<?php diluxone_users_panel_close(); ?>

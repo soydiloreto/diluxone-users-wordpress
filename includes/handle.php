@@ -1,28 +1,31 @@
 <?php
 /**
- * El nombre público.
+ * The public name.
  *
- * Son tres cosas distintas que WordPress mezcla y conviene separar:
+ * They are three different things WordPress mixes together and that are worth
+ * keeping apart:
  *
- *   - `user_login` es el correo, es la identidad, y WordPress no deja
- *     cambiarlo nunca. No se elige ni se muestra.
- *   - `user_nicename` es lo que va en la URL del perfil.
- *   - `display_name` es el nombre con el que aparece la persona.
+ *   - `user_login` is the e-mail, it is the identity, and WordPress never
+ *     lets it be changed. It is neither chosen nor shown.
+ *   - `user_nicename` is what goes in the profile URL.
+ *   - `display_name` is the name a person appears under.
  *
- * El nombre público de acá es el segundo, y de paso se guarda como `nickname`.
- * Así alguien puede elegir cómo lo ven y con qué dirección lo encuentran, sin
- * que eso toque cómo entra: el enlace siempre sale al correo de la cuenta.
+ * The public name here is the second one, and it is stored as `nickname`
+ * along the way. That way somebody can choose how they are seen and at which
+ * address they are found, without any of it touching how they get in: the
+ * link always goes to the account's e-mail.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/** Nombres que no se pueden pedir: se confunden con partes del sitio. */
 /**
+ * Names that cannot be asked for: they would be mistaken for parts of the site.
+ *
  * @return array<int, string>
  */
-function users_dlx_plus_handle_reserved(): array {
+function diluxone_users_handle_reserved(): array {
 	$base = array(
 		'admin', 'administrator', 'administrador', 'root', 'sistema', 'system',
 		'soporte', 'support', 'ayuda', 'help', 'api', 'wp-admin', 'wp-login',
@@ -30,88 +33,87 @@ function users_dlx_plus_handle_reserved(): array {
 		'profile', 'usuario', 'user', 'usuarios', 'users', 'null', 'undefined',
 	);
 
-	$extra = preg_split( '/[\s,]+/', (string) users_dlx_plus_option( 'users_dlx_plus_handle_reserved' ), -1, PREG_SPLIT_NO_EMPTY );
+	$extra = preg_split( '/[\s,]+/', (string) diluxone_users_option( 'diluxone_users_handle_reserved' ), -1, PREG_SPLIT_NO_EMPTY );
 
 	return array_values( array_unique( array_map( 'sanitize_title', array_merge( $base, is_array( $extra ) ? $extra : array() ) ) ) );
 }
 
 /**
- * Cómo queda un nombre después de pasarlo por las reglas.
+ * What a name looks like after being put through the rules.
  *
- * Es la misma función con la que WordPress arma un `user_nicename`, así que lo
- * que devuelve es exactamente lo que va a quedar en la dirección. Se usa para
- * mostrarlo antes de guardar: nadie tiene que adivinar en qué se convierte lo
- * que escribió.
+ * It is the same function WordPress builds a `user_nicename` with, so what it
+ * returns is exactly what will end up in the address. It is used to show it
+ * before saving: nobody should have to guess what their typing turns into.
  */
-function users_dlx_plus_handle_clean( string $handle ): string {
-	return 'unicode' === users_dlx_plus_option( 'users_dlx_plus_handle_charset' )
+function diluxone_users_handle_clean( string $handle ): string {
+	return 'unicode' === diluxone_users_option( 'diluxone_users_handle_charset' )
 		? sanitize_title( $handle, '', 'save' )
 		: sanitize_title( remove_accents( $handle ) );
 }
 
-/** El nombre público de alguien. Vacío si nunca eligió uno. */
-function users_dlx_plus_handle( int $user_id ): string {
-	return (string) get_user_meta( $user_id, 'users_dlx_plus_handle', true );
+/** Somebody's public name. Empty when they never chose one. */
+function diluxone_users_handle( int $user_id ): string {
+	return (string) get_user_meta( $user_id, 'diluxone_users_handle', true );
 }
 
-/** Cuándo lo cambió por última vez. 0 si nunca. */
-function users_dlx_plus_handle_changed( int $user_id ): int {
-	return (int) get_user_meta( $user_id, 'users_dlx_plus_handle_changed', true );
+/** When they last changed it. 0 when never. */
+function diluxone_users_handle_changed( int $user_id ): int {
+	return (int) get_user_meta( $user_id, 'diluxone_users_handle_changed', true );
 }
 
-/** ¿Puede cambiarlo hoy, o todavía está esperando? */
-function users_dlx_plus_handle_can_change( int $user_id ): bool {
-	$dias   = (int) users_dlx_plus_option( 'users_dlx_plus_handle_cooldown' );
-	$ultimo = users_dlx_plus_handle_changed( $user_id );
+/** Can they change it today, or are they still waiting? */
+function diluxone_users_handle_can_change( int $user_id ): bool {
+	$days = (int) diluxone_users_option( 'diluxone_users_handle_cooldown' );
+	$last = diluxone_users_handle_changed( $user_id );
 
-	return $dias <= 0 || 0 === $ultimo || ( time() - $ultimo ) >= $dias * DAY_IN_SECONDS;
+	return $days <= 0 || 0 === $last || ( time() - $last ) >= $days * DAY_IN_SECONDS;
 }
 
-/** Cuándo va a poder cambiarlo. 0 si ya puede. */
-function users_dlx_plus_handle_next_change( int $user_id ): int {
-	if ( users_dlx_plus_handle_can_change( $user_id ) ) {
+/** When they will be able to change it. 0 when they already can. */
+function diluxone_users_handle_next_change( int $user_id ): int {
+	if ( diluxone_users_handle_can_change( $user_id ) ) {
 		return 0;
 	}
 
-	return users_dlx_plus_handle_changed( $user_id ) + (int) users_dlx_plus_option( 'users_dlx_plus_handle_cooldown' ) * DAY_IN_SECONDS;
+	return diluxone_users_handle_changed( $user_id ) + (int) diluxone_users_option( 'diluxone_users_handle_cooldown' ) * DAY_IN_SECONDS;
 }
 
 /**
- * Revisa un nombre público.
+ * Checks a public name.
  *
- * Devuelve el nombre saneado, o un WP_Error con el motivo. Los motivos se
- * cuentan en castellano de a uno: «no sirve» no le dice a nadie qué arreglar.
+ * Returns the sanitised name, or a WP_Error with the reason. The reasons are
+ * told one at a time and in words: "that will not do" tells nobody what to fix.
  *
  * @return string|WP_Error
  */
-function users_dlx_plus_handle_validate( string $handle, int $user_id ) {
+function diluxone_users_handle_validate( string $handle, int $user_id ) {
 	$handle = trim( $handle );
-	$min    = max( 1, (int) users_dlx_plus_option( 'users_dlx_plus_handle_min' ) );
-	$max    = max( $min, (int) users_dlx_plus_option( 'users_dlx_plus_handle_max' ) );
+	$min    = max( 1, (int) diluxone_users_option( 'diluxone_users_handle_min' ) );
+	$max    = max( $min, (int) diluxone_users_option( 'diluxone_users_handle_max' ) );
 
-	$clean = users_dlx_plus_handle_clean( $handle );
+	$clean = diluxone_users_handle_clean( $handle );
 
 	if ( '' === $clean ) {
-		return new WP_Error( 'users_dlx_plus_handle_empty', __( 'You have to write something.', 'users-dlx-plus' ) );
+		return new WP_Error( 'diluxone_users_handle_empty', __( 'You have to write something.', 'diluxone-users' ) );
 	}
 
-	// Los espacios no pueden quedar: una dirección no los tiene. O se cambian
-	// por guiones sin decir nada —que es lo que espera casi todo el mundo— o
-	// se avisa, para que nadie se quede con un nombre que no escribió.
-	if ( 'reject' === users_dlx_plus_option( 'users_dlx_plus_handle_spaces' ) && preg_match( '/\s/', $handle ) ) {
-		return new WP_Error( 'users_dlx_plus_handle_spaces', __( 'It cannot have spaces: this goes in a web address.', 'users-dlx-plus' ) );
+	// Spaces cannot stay: an address does not have them. Either they are
+	// turned into hyphens without a word — which is what nearly everybody
+	// expects — or it says so, so nobody ends up with a name they did not type.
+	if ( 'reject' === diluxone_users_option( 'diluxone_users_handle_spaces' ) && preg_match( '/\s/', $handle ) ) {
+		return new WP_Error( 'diluxone_users_handle_spaces', __( 'It cannot have spaces: this goes in a web address.', 'diluxone-users' ) );
 	}
 
 	if ( is_email( $handle ) ) {
-		return new WP_Error( 'users_dlx_plus_handle_email', __( 'It cannot be an email address: that is how you sign in, not how people see you.', 'users-dlx-plus' ) );
+		return new WP_Error( 'diluxone_users_handle_email', __( 'It cannot be an email address: that is how you sign in, not how people see you.', 'diluxone-users' ) );
 	}
 
 	if ( mb_strlen( $clean ) < $min ) {
 		return new WP_Error(
-			'users_dlx_plus_handle_short',
+			'diluxone_users_handle_short',
 			sprintf(
-				/* translators: %d: cantidad mínima de caracteres */
-				__( 'It is too short: at least %d characters.', 'users-dlx-plus' ),
+					/* translators: %d: minimum number of characters */
+				__( 'It is too short: at least %d characters.', 'diluxone-users' ),
 				$min
 			)
 		);
@@ -119,39 +121,39 @@ function users_dlx_plus_handle_validate( string $handle, int $user_id ) {
 
 	if ( mb_strlen( $clean ) > $max ) {
 		return new WP_Error(
-			'users_dlx_plus_handle_long',
+			'diluxone_users_handle_long',
 			sprintf(
-				/* translators: %d: cantidad máxima de caracteres */
-				__( 'It is too long: at most %d characters.', 'users-dlx-plus' ),
+					/* translators: %d: maximum number of characters */
+				__( 'It is too long: at most %d characters.', 'diluxone-users' ),
 				$max
 			)
 		);
 	}
 
-	if ( in_array( $clean, users_dlx_plus_handle_reserved(), true ) ) {
-		return new WP_Error( 'users_dlx_plus_handle_reserved', __( 'That one is taken by the site itself. Pick another.', 'users-dlx-plus' ) );
+	if ( in_array( $clean, diluxone_users_handle_reserved(), true ) ) {
+		return new WP_Error( 'diluxone_users_handle_reserved', __( 'That one is taken by the site itself. Pick another.', 'diluxone-users' ) );
 	}
 
-	if ( users_dlx_plus_handle_taken( $clean, $user_id ) ) {
-		return new WP_Error( 'users_dlx_plus_handle_taken', __( 'Somebody already has that one.', 'users-dlx-plus' ) );
+	if ( diluxone_users_handle_taken( $clean, $user_id ) ) {
+		return new WP_Error( 'diluxone_users_handle_taken', __( 'Somebody already has that one.', 'diluxone-users' ) );
 	}
 
 	return $clean;
 }
 
 /**
- * ¿Ya lo tiene alguien?
+ * Does somebody already have it?
  *
- * Se mira contra `user_nicename` y también contra `user_login`. Lo segundo
- * parece de más y no lo es: las cuentas que vienen de la migración tienen un
- * user_login que es un nombre de persona, y si además se puede entrar
- * escribiendo el nombre público, dos personas distintas respondiendo al mismo
- * texto hace que el enlace de acceso salga a la cuenta equivocada.
+ * The lookup is against `user_nicename` and also against `user_login`. The
+ * second one looks superfluous and is not: accounts coming from the migration
+ * have a user_login that is a person's name, and if signing in by typing the
+ * public name is also allowed, two different people answering to the same
+ * text makes the sign-in link go to the wrong account.
  */
-function users_dlx_plus_handle_taken( string $handle, int $user_id ): bool {
+function diluxone_users_handle_taken( string $handle, int $user_id ): bool {
 	global $wpdb;
 
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- no hay API para buscar contra dos columnas de wp_users, y una respuesta cacheada acá diría que un nombre está libre cuando ya no lo está.
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- there is no API for searching against two columns of wp_users, and a cached answer here would say a name is free when it no longer is.
 	$found = $wpdb->get_var(
 		$wpdb->prepare(
 			"SELECT ID FROM {$wpdb->users} WHERE ( user_nicename = %s OR user_login = %s ) AND ID <> %d LIMIT 1",
@@ -165,27 +167,27 @@ function users_dlx_plus_handle_taken( string $handle, int $user_id ): bool {
 }
 
 /**
- * Guarda el nombre público.
+ * Saves the public name.
  *
  * @return true|WP_Error
  */
-function users_dlx_plus_handle_save( int $user_id, string $handle ) {
-	if ( users_dlx_plus_handle( $user_id ) === $handle ) {
+function diluxone_users_handle_save( int $user_id, string $handle ) {
+	if ( diluxone_users_handle( $user_id ) === $handle ) {
 		return true;
 	}
 
-	if ( ! users_dlx_plus_handle_can_change( $user_id ) ) {
+	if ( ! diluxone_users_handle_can_change( $user_id ) ) {
 		return new WP_Error(
-			'users_dlx_plus_handle_cooldown',
+			'diluxone_users_handle_cooldown',
 			sprintf(
-				/* translators: %s: fecha a partir de la cual se puede cambiar */
-				__( 'You can change it again on %s.', 'users-dlx-plus' ),
-				wp_date( 'j M Y', users_dlx_plus_handle_next_change( $user_id ) )
+					/* translators: %s: date from which it can be changed */
+				__( 'You can change it again on %s.', 'diluxone-users' ),
+				wp_date( 'j M Y', diluxone_users_handle_next_change( $user_id ) )
 			)
 		);
 	}
 
-	$clean = users_dlx_plus_handle_validate( $handle, $user_id );
+	$clean = diluxone_users_handle_validate( $handle, $user_id );
 
 	if ( is_wp_error( $clean ) ) {
 		return $clean;
@@ -203,14 +205,14 @@ function users_dlx_plus_handle_save( int $user_id, string $handle ) {
 		return $updated;
 	}
 
-	update_user_meta( $user_id, 'users_dlx_plus_handle', $clean );
-	update_user_meta( $user_id, 'users_dlx_plus_handle_changed', time() );
+	update_user_meta( $user_id, 'diluxone_users_handle', $clean );
+	update_user_meta( $user_id, 'diluxone_users_handle_changed', time() );
 
 	return true;
 }
 
-/** Quién responde a este nombre público. 0 si nadie. */
-function users_dlx_plus_handle_user( string $handle ): int {
+/** Who answers to this public name. 0 when nobody. */
+function diluxone_users_handle_user( string $handle ): int {
 	global $wpdb;
 
 	$clean = sanitize_title( remove_accents( $handle ) );
@@ -219,7 +221,7 @@ function users_dlx_plus_handle_user( string $handle ): int {
 		return 0;
 	}
 
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- ídem: dos columnas, y es la consulta que decide a quién sale un enlace de acceso.
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- same again: two columns, and it is the query that decides who a sign-in link goes to.
 	return (int) $wpdb->get_var(
 		$wpdb->prepare(
 			"SELECT ID FROM {$wpdb->users} WHERE user_nicename = %s OR user_login = %s LIMIT 1",
@@ -232,90 +234,90 @@ function users_dlx_plus_handle_user( string $handle ): int {
 /* ── El formulario ─────────────────────────────────────────────────── */
 
 /**
- * Sólo el campo, sin formulario.
+ * The field alone, with no form.
  *
- * Un sitio que ya tiene un formulario de datos personales no quiere otro
- * formulario al lado con su propio botón: quiere el campo adentro del suyo y
- * un solo «Guardar». Eso es esto.
+ * A site that already has a personal-details form does not want another form
+ * beside it with a button of its own: it wants the field inside its form and
+ * a single "Save". That is this.
  */
-function users_dlx_plus_handle_field( ?int $user_id = null ): string {
+function diluxone_users_handle_field( ?int $user_id = null ): string {
 	$user_id = $user_id ?? get_current_user_id();
 
-	if ( $user_id <= 0 || ! users_dlx_plus_option( 'users_dlx_plus_handle_enabled' ) ) {
+	if ( $user_id <= 0 || ! diluxone_users_option( 'diluxone_users_handle_enabled' ) ) {
 		return '';
 	}
 
-	users_dlx_plus_handle_enqueue();
+	diluxone_users_handle_enqueue();
 
 	$user = get_userdata( $user_id );
 
-	return users_dlx_plus_render(
+	return diluxone_users_render(
 		'account/handle-field',
 		array(
-			'handle' => '' !== users_dlx_plus_handle( $user_id ) ? users_dlx_plus_handle( $user_id ) : ( $user instanceof WP_User ? $user->user_nicename : '' ),
-			'can'    => users_dlx_plus_handle_can_change( $user_id ),
-			'next'   => users_dlx_plus_handle_next_change( $user_id ),
+			'handle' => '' !== diluxone_users_handle( $user_id ) ? diluxone_users_handle( $user_id ) : ( $user instanceof WP_User ? $user->user_nicename : '' ),
+			'can'    => diluxone_users_handle_can_change( $user_id ),
+			'next'   => diluxone_users_handle_next_change( $user_id ),
 		)
 	);
 }
 
-/** El campo del nombre público. Shortcode: [users_dlx_plus_handle] */
-function users_dlx_plus_shortcode_handle(): string {
-	if ( ! is_user_logged_in() || ! users_dlx_plus_option( 'users_dlx_plus_handle_enabled' ) ) {
+/** The public-name field. Shortcode: [diluxone_users_handle] */
+function diluxone_users_shortcode_handle(): string {
+	if ( ! is_user_logged_in() || ! diluxone_users_option( 'diluxone_users_handle_enabled' ) ) {
 		return '';
 	}
 
 	$user = wp_get_current_user();
 
-	users_dlx_plus_handle_enqueue();
+	diluxone_users_handle_enqueue();
 
-	return users_dlx_plus_render(
+	return diluxone_users_render(
 		'account/handle',
 		array(
 			'user'   => $user,
-			'handle' => '' !== users_dlx_plus_handle( $user->ID ) ? users_dlx_plus_handle( $user->ID ) : $user->user_nicename,
-			'can'    => users_dlx_plus_handle_can_change( $user->ID ),
-			'next'   => users_dlx_plus_handle_next_change( $user->ID ),
-			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- sólo elige el mensaje.
-			'error'  => isset( $_GET['users_dlx_plus_handle'] ) ? sanitize_text_field( wp_unslash( $_GET['users_dlx_plus_handle'] ) ) : '',
+			'handle' => '' !== diluxone_users_handle( $user->ID ) ? diluxone_users_handle( $user->ID ) : $user->user_nicename,
+			'can'    => diluxone_users_handle_can_change( $user->ID ),
+			'next'   => diluxone_users_handle_next_change( $user->ID ),
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- it only picks the message.
+			'error'  => isset( $_GET['diluxone_users_handle'] ) ? sanitize_text_field( wp_unslash( $_GET['diluxone_users_handle'] ) ) : '',
 		)
 	);
 }
-add_shortcode( 'users_dlx_plus_handle', 'users_dlx_plus_shortcode_handle' );
+add_shortcode( 'diluxone_users_handle', 'diluxone_users_shortcode_handle' );
 
-/** Guarda el nombre público desde el front. */
-function users_dlx_plus_handle_submit(): void {
+/** Saves the public name from the front end. */
+function diluxone_users_handle_submit(): void {
 	if ( ! is_user_logged_in() ) {
-		wp_safe_redirect( users_dlx_plus_login_url() );
+		wp_safe_redirect( diluxone_users_login_url() );
 		exit;
 	}
 
-	check_admin_referer( 'users_dlx_plus_handle' );
+	check_admin_referer( 'diluxone_users_handle' );
 
-	$destino = users_dlx_plus_account_url( 'details' );
+	$target = diluxone_users_account_url( 'details' );
 	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verificado arriba.
-	$result = users_dlx_plus_handle_save( get_current_user_id(), sanitize_text_field( wp_unslash( $_POST['users_dlx_plus_handle'] ?? '' ) ) );
+	$result = diluxone_users_handle_save( get_current_user_id(), sanitize_text_field( wp_unslash( $_POST['diluxone_users_handle'] ?? '' ) ) );
 
 	if ( is_wp_error( $result ) ) {
-		wp_safe_redirect( add_query_arg( 'users_dlx_plus_handle', rawurlencode( $result->get_error_message() ), $destino ) );
+		wp_safe_redirect( add_query_arg( 'diluxone_users_handle', rawurlencode( $result->get_error_message() ), $target ) );
 		exit;
 	}
 
-	wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'saved', $destino ) );
+	wp_safe_redirect( add_query_arg( 'diluxone-users', 'saved', $target ) );
 	exit;
 }
-add_action( 'admin_post_users_dlx_plus_handle', 'users_dlx_plus_handle_submit' );
+add_action( 'admin_post_diluxone_users_handle', 'diluxone_users_handle_submit' );
 
 /**
- * ¿Está libre este nombre?
+ * Is this name free?
  *
- * Responde la misma validación que corre al guardar —no hay dos juegos de
- * reglas— así que lo que se lee acá es exactamente lo que va a pasar después.
- * Se contesta sólo a quien tiene sesión: si no, esto sería una forma cómoda de
- * averiguar qué nombres existen en el sitio.
+ * The same validation that runs on save answers here — there are not two sets
+ * of rules — so what is read here is exactly what will happen afterwards. It
+ * only answers to somebody with a session: otherwise this would be a
+ * convenient way of finding out which names exist on the site.
  */
-function users_dlx_plus_handle_check(): void {
-	check_ajax_referer( 'users_dlx_plus_handle_check', 'nonce' );
+function diluxone_users_handle_check(): void {
+	check_ajax_referer( 'diluxone_users_handle_check', 'nonce' );
 
 	$user_id = get_current_user_id();
 
@@ -324,13 +326,13 @@ function users_dlx_plus_handle_check(): void {
 	}
 
 	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verificado arriba.
-	$clean = users_dlx_plus_handle_validate( sanitize_text_field( wp_unslash( $_POST['handle'] ?? '' ) ), $user_id );
+	$clean = diluxone_users_handle_validate( sanitize_text_field( wp_unslash( $_POST['handle'] ?? '' ) ), $user_id );
 
 	if ( is_wp_error( $clean ) ) {
 		wp_send_json_success(
 			array(
 				'free'   => false,
-				'motivo' => $clean->get_error_message(),
+				'reason' => $clean->get_error_message(),
 			)
 		);
 	}
@@ -338,29 +340,29 @@ function users_dlx_plus_handle_check(): void {
 	wp_send_json_success(
 		array(
 			'free'   => true,
-			'url'    => users_dlx_plus_handle_base_url() . $clean . '/',
-			'motivo' => users_dlx_plus_handle( $user_id ) === $clean
-				? __( 'This is the one you have now.', 'users-dlx-plus' )
-				: __( 'Nobody is using it: it is yours when you save.', 'users-dlx-plus' ),
+			'url'    => diluxone_users_handle_base_url() . $clean . '/',
+			'reason' => diluxone_users_handle( $user_id ) === $clean
+				? __( 'This is the one you have now.', 'diluxone-users' )
+				: __( 'Nobody is using it: it is yours when you save.', 'diluxone-users' ),
 		)
 	);
 }
-add_action( 'wp_ajax_users_dlx_plus_handle_check', 'users_dlx_plus_handle_check' );
+add_action( 'wp_ajax_diluxone_users_handle_check', 'diluxone_users_handle_check' );
 
 /**
- * Entrar escribiendo el nombre público.
+ * Signing in by typing the public name.
  *
- * El formulario de acceso pide un correo; si lo que llegó no lo es y esto está
- * prendido, se busca a quién corresponde y se sigue con SU correo. El enlace
- * nunca sale a una dirección que la persona haya escrito en ese momento: sale
- * a la de la cuenta, que es lo que hace que esto no abra una puerta nueva.
+ * The sign-in form asks for an e-mail; if what arrived is not one and this is
+ * turned on, who it belongs to is looked up and it goes on with THEIR e-mail.
+ * The link never goes to an address the person typed at that moment: it goes
+ * to the account's, which is what stops this from opening a new door.
  */
-function users_dlx_plus_handle_login_email( string $typed ): string {
-	if ( is_email( $typed ) || ! users_dlx_plus_option( 'users_dlx_plus_handle_login' ) ) {
+function diluxone_users_handle_login_email( string $typed ): string {
+	if ( is_email( $typed ) || ! diluxone_users_option( 'diluxone_users_handle_login' ) ) {
 		return $typed;
 	}
 
-	$user_id = users_dlx_plus_handle_user( $typed );
+	$user_id = diluxone_users_handle_user( $typed );
 
 	if ( $user_id <= 0 ) {
 		return $typed;
@@ -372,44 +374,45 @@ function users_dlx_plus_handle_login_email( string $typed ): string {
 }
 
 /**
- * El script que muestra en qué se convierte lo que se escribe.
+ * The script that shows what the typing turns into.
  *
- * No valida nada —eso lo hace el servidor— sólo evita la sorpresa de escribir
- * «Pablo Di Loreto» y descubrir después que quedó «pablo-di-loreto».
+ * It validates nothing — the server does that — it only avoids the surprise
+ * of typing "Pablo Di Loreto" and finding out afterwards that it came out as
+ * "pablo-di-loreto".
  */
-function users_dlx_plus_handle_enqueue(): void {
-	if ( wp_script_is( 'users-dlx-plus-handle', 'enqueued' ) ) {
+function diluxone_users_handle_enqueue(): void {
+	if ( wp_script_is( 'diluxone-users-handle', 'enqueued' ) ) {
 		return;
 	}
 
-	wp_enqueue_script( 'users-dlx-plus-handle', USERS_DLX_PLUS_URL . 'assets/users-dlx-plus-handle.js', array(), users_dlx_plus_asset_version( 'assets/users-dlx-plus-handle.js' ), true );
+	wp_enqueue_script( 'diluxone-users-handle', DILUXONE_USERS_URL . 'assets/diluxone-users-handle.js', array(), diluxone_users_asset_version( 'assets/diluxone-users-handle.js' ), true );
 
 	wp_localize_script(
-		'users-dlx-plus-handle',
-		'usersDlxPlusHandle',
+		'diluxone-users-handle',
+		'diluxOneUsersHandle',
 		array(
-			'base'     => users_dlx_plus_handle_base_url(),
-			'unicode'  => (bool) ( 'unicode' === users_dlx_plus_option( 'users_dlx_plus_handle_charset' ) ),
+			'base'     => diluxone_users_handle_base_url(),
+			'unicode'  => (bool) ( 'unicode' === diluxone_users_option( 'diluxone_users_handle_charset' ) ),
 			'ajax'     => admin_url( 'admin-ajax.php' ),
-			'nonce'    => wp_create_nonce( 'users_dlx_plus_handle_check' ),
-			'checking' => __( 'Checking…', 'users-dlx-plus' ),
-			'error'    => __( 'We could not check it right now.', 'users-dlx-plus' ),
+			'nonce'    => wp_create_nonce( 'diluxone_users_handle_check' ),
+			'checking' => __( 'Checking…', 'diluxone-users' ),
+			'error'    => __( 'We could not check it right now.', 'diluxone-users' ),
 		)
 	);
 }
 
 /**
- * La dirección donde se ve el perfil público de alguien.
+ * The address where somebody's public profile is seen.
  *
- * Con bbPress instalado es la de sus foros, que es la que la gente comparte;
- * si no, la de autor que trae WordPress.
+ * With bbPress installed it is their forum profile, which is the one people
+ * share; otherwise the author page WordPress brings.
  */
-function users_dlx_plus_handle_base_url(): string {
+function diluxone_users_handle_base_url(): string {
 	$base = function_exists( 'bbp_get_user_profile_url' )
 		? (string) bbp_get_user_profile_url( get_current_user_id() )
 		: (string) get_author_posts_url( get_current_user_id() );
 
-	// Se le saca el último tramo, que es justamente el nombre.
+	// The last segment is taken off, which is precisely the name.
 	$base = untrailingslashit( $base );
 
 	return trailingslashit( substr( $base, 0, (int) strrpos( $base, '/' ) ) );

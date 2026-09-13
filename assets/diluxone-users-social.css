@@ -1,0 +1,95 @@
+/* ============================================================================
+   Social network buttons.
+   Each brand colour arrives as --diluxone-users-brand on the button itself, so
+   a new network needs no new rule here.
+   ========================================================================= */
+
+.diluxone-users-socials {
+	display: grid;
+	gap: 10px;
+	margin: 0 0 20px;
+}
+
+.diluxone-users-socials--cols-1 { grid-template-columns: minmax(0, 1fr); }
+.diluxone-users-socials--cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.diluxone-users-socials--cols-0 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+/* Logo only: the buttons stop being bars and become little squares that
+   arrange themselves, whatever number of columns the setting asks for. */
+.diluxone-users-socials--icon { grid-template-columns: repeat(auto-fit, 52px); }
+
+/* A single button does not sit half a box wide staring at a gap. */
+.diluxone-users-socials--cols-2 > .diluxone-users-social:only-child { grid-column: 1 / -1; }
+
+@media (max-width: 480px) {
+	.diluxone-users-socials--cols-2 { grid-template-columns: minmax(0, 1fr); }
+}
+
+.diluxone-users-social {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	min-height: 48px;
+	padding: 0 16px;
+	border: 1.5px solid transparent;
+	border-radius: 10px;
+	font: 600 15px/1.2 inherit;
+	text-align: center;
+	text-decoration: none;
+	transition: filter .15s ease, background-color .15s ease, border-color .15s ease;
+}
+
+.diluxone-users-social:focus-visible { outline: 2px solid var(--diluxone-users-brand); outline-offset: 2px; }
+
+.diluxone-users-social__logo { flex: 0 0 auto; }
+
+/* ── Acabados ───────────────────────────────────────────────────────────── */
+
+.diluxone-users-socials--brand .diluxone-users-social { background: var(--diluxone-users-brand); color: #fff; }
+.diluxone-users-socials--brand .diluxone-users-social:hover { filter: brightness(0.92); color: #fff; }
+/* Google asks for its button to be white with the logo in colour: it is the
+   only brand whose guidelines require it, and the multicolour logo on red
+   cannot be read either. */
+.diluxone-users-socials--brand .diluxone-users-social--google,
+.diluxone-users-socials--brand .diluxone-users-social--microsoft {
+	background: #fff;
+	border-color: #dadce0;
+	color: #3c4043;
+}
+.diluxone-users-socials--brand .diluxone-users-social--google:hover,
+.diluxone-users-socials--brand .diluxone-users-social--microsoft:hover { background: #f7f8f8; color: #3c4043; }
+
+.diluxone-users-socials--light .diluxone-users-social {
+	background: #fff;
+	border-color: #d8dae0;
+	color: #1d2129;
+}
+.diluxone-users-socials--light .diluxone-users-social:hover { border-color: var(--diluxone-users-brand); color: #1d2129; }
+
+.diluxone-users-socials--dark .diluxone-users-social {
+	background: #16181d;
+	border-color: #2b2f38;
+	color: #fff;
+}
+.diluxone-users-socials--dark .diluxone-users-social:hover { background: #1f2229; color: #fff; }
+
+/* ── Formas ─────────────────────────────────────────────────────────────── */
+
+.diluxone-users-socials--pill .diluxone-users-social { border-radius: 999px; }
+.diluxone-users-socials--square .diluxone-users-social { border-radius: 0; }
+
+/* ── Logo only ──────────────────────────────────────────────────────────── */
+
+.diluxone-users-socials--icon .diluxone-users-social { width: 52px; min-height: 52px; padding: 0; }
+.diluxone-users-socials--icon .diluxone-users-social__text {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+	border: 0;
+}

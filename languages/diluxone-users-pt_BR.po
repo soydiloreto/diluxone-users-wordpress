@@ -1,0 +1,4518 @@
+# Copyright (C) 2026 Pablo Ariel Di Loreto
+# This file is distributed under the GPLv2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: DiluxOne Users+ 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/diluxone-users\n"
+"PO-Revision-Date: 2026-09-13 19:46+0000\n"
+"Last-Translator: Pablo Ariel Di Loreto\n"
+"Language-Team: Portuguese (Brazil)\n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: diluxone-users\n"
+"X-Generator: WP-CLI 2.12.0\n"
+
+#. Plugin Name of the plugin
+#: diluxone-users.php
+msgid ""
+"DiluxOne Users+ – Registration, Login, Passwordless, Social Login, 2FA, "
+"Passkeys & Front-End Account Area"
+msgstr ""
+"DiluxOne Users+ – Cadastro, login, acesso sem senha, login social, 2FA, "
+"passkeys e área de conta no site"
+
+#. Plugin URI of the plugin
+#: diluxone-users.php
+msgid "https://github.com/soydiloreto/diluxone-users-wordpress"
+msgstr "https://github.com/soydiloreto/diluxone-users-wordpress"
+
+#. Description of the plugin
+#: diluxone-users.php
+msgid ""
+"Everything about the people who use your site, in one plugin: custom user "
+"fields, a front-end account area, passwordless sign-in, social login with "
+"twelve providers, two-step verification, passkeys and session control. "
+"Shortcodes and overridable templates so it fits any design."
+msgstr ""
+"Tudo sobre as pessoas que usam o seu site, em um único plugin: campos de "
+"usuário personalizados, uma área de conta no site, acesso sem senha, login "
+"social com doze provedores, verificação em duas etapas, passkeys e controle "
+"de sessões. Shortcodes e modelos substituíveis para encaixar em qualquer "
+"design."
+
+#. Author of the plugin
+#: diluxone-users.php
+msgid "Pablo Ariel Di Loreto"
+msgstr "Pablo Ariel Di Loreto"
+
+#. Author URI of the plugin
+#: diluxone-users.php
+msgid "https://diluxone.com/plugins-wordpress"
+msgstr "https://diluxone.com/plugins-wordpress"
+
+#: includes/account-sections.php:20
+msgid "Home"
+msgstr "Início"
+
+#: includes/account-sections.php:29
+msgid "Your details"
+msgstr "Seus dados"
+
+#: includes/account-sections.php:39
+msgid "Linked accounts"
+msgstr "Contas vinculadas"
+
+#: includes/account-sections.php:44
+msgid "There is no social network turned on, so there is nothing to link."
+msgstr "Não há nenhuma rede social ativada, então não há nada para vincular."
+
+#: includes/account-sections.php:51
+msgid "Security"
+msgstr "Segurança"
+
+#: includes/account-sections.php:61
+msgid "Notifications"
+msgstr "Notificações"
+
+#: includes/account-sections.php:65
+msgid "There is nothing to turn on or off: no notification is registered."
+msgstr "Não há nada para ativar ou desativar: nenhum aviso foi registrado."
+
+#: includes/account-sections.php:72
+msgid "Your data"
+msgstr "Seus dados"
+
+#: includes/account-sections.php:76
+msgid ""
+"Neither downloading your data nor deleting your account is allowed, so there"
+" is nothing to do here."
+msgstr ""
+"Nem baixar seus dados nem excluir sua conta são permitidos, então não há "
+"nada a fazer aqui."
+
+#: includes/account-sections.php:129
+msgid "Open"
+msgstr "Abrir"
+
+#. translators: %s: first name
+#: includes/account-sections.php:152
+#, php-format
+msgid "Hello, %s"
+msgstr "Olá, %s"
+
+#: includes/account-sections.php:201
+msgid "fields filled in"
+msgstr "campos preenchidos"
+
+#: includes/account-sections.php:202 includes/admin-fields.php:297
+msgid "Edit"
+msgstr "Editar"
+
+#: includes/account-sections.php:226
+msgid "network linked"
+msgid_plural "networks linked"
+msgstr[0] "rede vinculada"
+msgstr[1] "redes vinculadas"
+
+#: includes/account-sections.php:227
+msgid "Manage"
+msgstr "Gerenciar"
+
+#: includes/account-sections.php:247
+msgid "open session"
+msgid_plural "open sessions"
+msgstr[0] "sessão aberta"
+msgstr[1] "sessões abertas"
+
+#: includes/account-sections.php:248
+msgid "Review"
+msgstr "Revisar"
+
+#: includes/account-sections.php:386
+msgid "Waiting for you to confirm by email"
+msgstr "Esperando você confirmar por e-mail"
+
+#: includes/account-sections.php:387
+msgid "Confirmed — we are preparing it"
+msgstr "Confirmado — estamos preparando"
+
+#: includes/account-sections.php:388 includes/admin-home.php:78
+msgid "Ready"
+msgstr "Pronto"
+
+#: includes/account-sections.php:389
+msgid "Failed"
+msgstr "Falhou"
+
+#: includes/account-security.php:69
+msgid "Two-step verification was turned on."
+msgstr "A verificação em duas etapas foi ativada."
+
+#: includes/account-security.php:87
+msgid "Two-step verification was turned off."
+msgstr "A verificação em duas etapas foi desativada."
+
+#: includes/account-security.php:101
+msgid "An authenticator app was set up."
+msgstr "Um aplicativo autenticador foi configurado."
+
+#: includes/account-security.php:112 templates/account/security.php:32
+msgid "The authenticator app was removed."
+msgstr "O aplicativo autenticador foi removido."
+
+#: includes/account.php:46
+msgid "System"
+msgstr "Do sistema"
+
+#: includes/account.php:108
+msgid "Yours"
+msgstr "Sua"
+
+#: includes/admin-account.php:165
+msgid "Sections"
+msgstr "Seções"
+
+#: includes/admin-account.php:166
+msgid "Where it lives"
+msgstr "Onde fica"
+
+#: includes/admin-account.php:172 includes/admin.php:70
+msgid "Account area"
+msgstr "Área de conta"
+
+#: includes/admin-account.php:258
+msgid "New order saved."
+msgstr "Nova ordem salva."
+
+#: includes/admin-account.php:259
+msgid "Section saved."
+msgstr "Seção salva."
+
+#: includes/admin-account.php:260
+msgid "Section removed."
+msgstr "Seção removida."
+
+#: includes/admin-account.php:261
+msgid "That section needs a name, and an address that is not taken."
+msgstr "Essa seção precisa de um nome e de um endereço que não esteja em uso."
+
+#: includes/admin-account.php:287
+msgid "There is no account page yet"
+msgstr "Ainda não há página de conta"
+
+#: includes/admin-account.php:288
+msgid ""
+"Pick the page that has the [diluxone_users_account] shortcode, under “Where "
+"it lives”. Until then the links below go nowhere."
+msgstr ""
+"Escolha a página que tem o shortcode [diluxone_users_account], em “Onde "
+"fica”. Até lá, os links abaixo não levam a lugar nenhum."
+
+#: includes/admin-account.php:294
+msgid "The sections of “my account”"
+msgstr "As seções de “minha conta”"
+
+#: includes/admin-account.php:295 includes/admin-account.php:536
+msgid "Add section"
+msgstr "Adicionar seção"
+
+#: includes/admin-account.php:320
+msgid "Save the order"
+msgstr "Salvar a ordem"
+
+#: includes/admin-account.php:381
+msgid "New section"
+msgstr "Nova seção"
+
+#: includes/admin-account.php:402
+msgid "Showing"
+msgstr "Aparecendo"
+
+#: includes/admin-account.php:402 includes/admin-fields.php:352
+msgid "Hidden"
+msgstr "Oculta"
+
+#: includes/admin-account.php:423
+msgid "Delete this section?"
+msgstr "Excluir esta seção?"
+
+#: includes/admin-account.php:424
+msgid "Remove"
+msgstr "Remover"
+
+#: includes/admin-account.php:432
+msgid "It is on, but it is not showing"
+msgstr "Está ativada, mas não está aparecendo"
+
+#: includes/admin-account.php:439 includes/admin-fields.php:275
+#: includes/admin-fields.php:428
+msgid "Name"
+msgstr "Nome"
+
+#: includes/admin-account.php:442
+msgid "What people read in the menu, and the title of the section."
+msgstr "O que as pessoas leem no menu, e o título da seção."
+
+#: includes/admin-account.php:446
+msgid "Address"
+msgstr "Endereço"
+
+#: includes/admin-account.php:448
+msgid "made from the name"
+msgstr "feito a partir do nome"
+
+#: includes/admin-account.php:457
+msgid "Who sees it"
+msgstr "Quem vê"
+
+#: includes/admin-account.php:466
+msgid ""
+"Tick nothing and everybody with an account sees it. Tick roles and only "
+"those do."
+msgstr ""
+"Sem marcar nada, qualquer pessoa com conta vê. Marcando funções, só essas."
+
+#: includes/admin-account.php:472
+msgid "Where your content goes"
+msgstr "Onde vai o seu conteúdo"
+
+#: includes/admin-account.php:477
+msgid "After what the plugin shows"
+msgstr "Depois do que o plugin mostra"
+
+#: includes/admin-account.php:478
+msgid "Before what the plugin shows"
+msgstr "Antes do que o plugin mostra"
+
+#: includes/admin-account.php:479
+msgid "Instead of it — your content replaces the section"
+msgstr "No lugar dele — o seu conteúdo substitui a seção"
+
+#: includes/admin-account.php:492
+msgid ""
+"This section is drawn by code. What you write below is added to it — unless "
+"you say it replaces it."
+msgstr ""
+"Esta seção é desenhada por código. O que você escrever abaixo é somado a ela"
+" — a menos que diga que a substitui."
+
+#: includes/admin-account.php:500
+msgid "Your content"
+msgstr "Seu conteúdo"
+
+#: includes/admin-account.php:516
+msgid ""
+"Text, HTML, or the shortcode of another plugin. Leave it empty and the "
+"section stays as the plugin draws it."
+msgstr ""
+"Texto, HTML, ou o shortcode de outro plugin. Deixe vazio e a seção fica como"
+" o plugin a desenha."
+
+#: includes/admin-account.php:517
+msgid ""
+"Text, HTML, or the shortcode of another plugin — a course plugin, a "
+"membership, a support desk. This is the whole section."
+msgstr ""
+"Texto, HTML, ou o shortcode de outro plugin — um plugin de cursos, uma "
+"assinatura, um suporte. Isto é a seção inteira."
+
+#: includes/admin-account.php:525
+msgid "Comes from"
+msgstr "Vem de"
+
+#: includes/admin-account.php:529
+msgid ""
+"It comes from code, so it cannot be deleted —the code that draws it is still"
+" there and it would come back— but it can be hidden."
+msgstr ""
+"Vem do código, então não pode ser excluída —o código que a desenha continua "
+"ali e ela voltaria— mas pode ser ocultada."
+
+#: includes/admin-account.php:536
+msgid "Save section"
+msgstr "Salvar seção"
+
+#: includes/admin-account.php:543
+msgid "Which page is “my account”, and how people move between its sections."
+msgstr ""
+"Qual página é “minha conta”, e como as pessoas se movem entre suas seções."
+
+#: includes/admin-account.php:549
+msgid "The account page"
+msgstr "A página da conta"
+
+#: includes/admin-account.php:563
+msgid "— none —"
+msgstr "— nenhuma —"
+
+#. translators: %s: the shortcode, literal
+#: includes/admin-account.php:574
+#, php-format
+msgid ""
+"The page with %s in it. Declaring it here is what lets everything else —a "
+"certificate, a course, a forum— send people to the right place."
+msgstr ""
+"A página que tem %s dentro. Declará-la aqui é o que faz com que todo o resto"
+" —um certificado, um curso, um fórum— leve as pessoas ao lugar certo."
+
+#: includes/admin-account.php:580
+msgid ""
+"With plain permalinks the sections go as ?seccion=…; turn on pretty "
+"permalinks in Settings → Permalinks and they become /page/section/ on their "
+"own."
+msgstr ""
+"Com links permanentes simples as seções vão como ?seccion=…; ative os links "
+"bonitos em Configurações → Links permanentes e elas passam a ser "
+"/pagina/secao/ sozinhas."
+
+#: includes/admin-account.php:585
+msgid "The menu"
+msgstr "O menu"
+
+#: includes/admin-account.php:591
+msgid "Tabs across the top"
+msgstr "Abas no topo"
+
+#: includes/admin-account.php:592
+msgid "A menu down the side"
+msgstr "Um menu na lateral"
+
+#: includes/admin-account.php:593
+msgid "No menu — the site places it with [diluxone_users_account_nav]"
+msgstr "Sem menu — o site o coloca com [diluxone_users_account_nav]"
+
+#: includes/admin-account.php:606
+msgid "The header"
+msgstr "O cabeçalho"
+
+#: includes/admin-account.php:610
+msgid "Show the name and the initials at the top"
+msgstr "Mostrar o nome e as iniciais no topo"
+
+#: includes/admin-appearance.php:18 includes/admin-appearance.php:72
+msgid "Styles"
+msgstr "Estilos"
+
+#: includes/admin-appearance.php:19
+msgid "Profile photo"
+msgstr "Foto de perfil"
+
+#: includes/admin-appearance.php:46 templates/account/notifications.php:16
+#: templates/fields.php:30
+msgid "Saved."
+msgstr "Salvo."
+
+#: includes/admin-appearance.php:49 includes/admin.php:74
+msgid "Appearance"
+msgstr "Aparência"
+
+#: includes/admin-appearance.php:68
+msgid ""
+"Everything the plugin draws —panels, forms, lists, buttons— takes its "
+"colours and its corners from a handful of CSS properties. Change those two "
+"below and everything follows; a site with its own design can point them at "
+"its own tokens from its stylesheet, without copying anything from here."
+msgstr ""
+"Tudo o que o plugin desenha —painéis, formulários, listas, botões— tira suas"
+" cores e seus cantos de um punhado de propriedades CSS. Mude essas duas aqui"
+" embaixo e o resto acompanha; um site com design próprio pode apontá-las "
+"para os seus próprios tokens a partir da sua folha de estilos, sem copiar "
+"nada daqui."
+
+#: includes/admin-appearance.php:76
+msgid "Load the plugin stylesheet"
+msgstr "Carregar a folha de estilos do plugin"
+
+#: includes/admin-appearance.php:78
+msgid ""
+"Only turn it off if the site is going to style every diluxone-users-* class "
+"itself. Turned off, its panels and buttons come out bare and the site has to"
+" draw them; re-pointing the properties is almost always enough, and it "
+"survives the plugin adding a new component."
+msgstr ""
+"Só desative se o site for estilizar cada classe diluxone-users-* por conta "
+"própria. Desativada, os painéis e botões saem sem estilo e o site precisa "
+"desenhá-los; reapontar as propriedades basta quase sempre, e sobrevive ao "
+"plugin adicionar um componente novo."
+
+#: includes/admin-appearance.php:83
+msgid "Dark mode"
+msgstr "Modo escuro"
+
+#: includes/admin-appearance.php:85
+msgid ""
+"There is none here, on purpose. Dark mode belongs to the site: a light site "
+"seen from a dark system used to end up with a light page and black panels. "
+"If the site has a dark mode, its own tokens change and these follow."
+msgstr ""
+"Aqui não há, de propósito. O modo escuro é do site: um site claro visto de "
+"um sistema escuro acabava com a página clara e os painéis pretos. Se o site "
+"tem modo escuro, os tokens dele mudam e estes acompanham."
+
+#: includes/admin-appearance.php:89
+msgid "Accent colour"
+msgstr "Cor de destaque"
+
+#: includes/admin-appearance.php:92
+msgid "Buttons, the open tab, links and the drawn avatars."
+msgstr "Os botões, a aba aberta, os links e os avatares desenhados."
+
+#: includes/admin-appearance.php:96
+msgid "Corners"
+msgstr "Cantos"
+
+#: includes/admin-appearance.php:99
+msgid "pixels — empty for the default"
+msgstr "pixels — vazio para o padrão"
+
+#: includes/admin-appearance.php:103
+msgid "Templates"
+msgstr "Modelos"
+
+#: includes/admin-appearance.php:105
+msgid ""
+"Copy any file from the plugin’s templates/ folder to your theme and edit it "
+"there:"
+msgstr ""
+"Copie qualquer arquivo da pasta templates/ do plugin para o seu tema e "
+"edite-o ali:"
+
+#: includes/admin-appearance.php:116
+msgid ""
+"Three layers, in this order: the photo the person uploaded, then Gravatar, "
+"then their initials drawn on the accent colour. Turn off the ones you do not"
+" want."
+msgstr ""
+"Três camadas, nesta ordem: a foto que a pessoa enviou, depois o Gravatar, "
+"depois as iniciais dela desenhadas sobre a cor de destaque. Desative as que "
+"não quiser."
+
+#: includes/admin-appearance.php:120
+msgid "Where it comes from"
+msgstr "De onde vem"
+
+#: includes/admin-appearance.php:124
+msgid "Let people upload their own"
+msgstr "Deixar as pessoas enviarem a sua"
+
+#: includes/admin-appearance.php:128
+msgid "Fall back to Gravatar when there is none"
+msgstr "Recorrer ao Gravatar quando não houver nenhuma"
+
+#: includes/admin-appearance.php:132
+msgid "Otherwise, draw their initials"
+msgstr "Caso contrário, desenhar as iniciais"
+
+#: includes/admin-appearance.php:134
+msgid ""
+"Gravatar means sending a hash of every visitor’s email address to a third "
+"party. With it off and initials on, nothing leaves the site."
+msgstr ""
+"Gravatar significa enviar a um terceiro um hash do e-mail de cada visitante."
+" Com isto desativado e as iniciais ativadas, nada sai do site."
+
+#: includes/admin-appearance.php:138
+msgid "Largest photo accepted"
+msgstr "Maior foto aceita"
+
+#: includes/admin-fields.php:219
+msgid "Fields"
+msgstr "Campos"
+
+#: includes/admin-fields.php:220
+msgid "How to use them"
+msgstr "Como usá-los"
+
+#: includes/admin-fields.php:224 includes/admin-fields.php:406
+#: includes/admin.php:69
+msgid "User fields"
+msgstr "Campos de usuário"
+
+#: includes/admin-fields.php:227
+msgid "Field saved."
+msgstr "Campo salvo."
+
+#: includes/admin-fields.php:228
+msgid "Field deleted. The data already stored was left alone."
+msgstr "Campo excluído. Os dados já armazenados ficaram intactos."
+
+#: includes/admin-fields.php:229
+msgid "A field needs a name."
+msgstr "Um campo precisa de um nome."
+
+#: includes/admin-fields.php:252
+msgid "Where all this lives"
+msgstr "Onde tudo isto fica"
+
+#. translators: 1: option name, 2: table name
+#: includes/admin-fields.php:257
+#, php-format
+msgid ""
+"What each field IS —its name, type and behaviour— is one WordPress option, "
+"%1$s. What each PERSON answered is user meta: one row per person and per "
+"field in %2$s, with the field key as the name. No extra tables."
+msgstr ""
+"O que cada campo É —seu nome, tipo e comportamento— é uma opção do "
+"WordPress, %1$s. O que cada PESSOA respondeu é user meta: uma linha por "
+"pessoa e por campo em %2$s, com a chave do campo como nome. Sem tabelas "
+"extras."
+
+#: includes/admin-fields.php:262
+msgid ""
+"That is why the key cannot change once the field exists, and why deleting a "
+"field leaves the answers alone: they are two different things."
+msgstr ""
+"É por isso que a chave não pode mudar depois que o campo existe, e por isso "
+"excluir um campo deixa as respostas intactas: são duas coisas diferentes."
+
+#: includes/admin-fields.php:268 includes/admin-fields.php:566
+msgid "Add field"
+msgstr "Adicionar campo"
+
+#: includes/admin-fields.php:276 includes/admin-fields.php:439
+msgid "Type"
+msgstr "Tipo"
+
+#: includes/admin-fields.php:277
+msgid "Where"
+msgstr "Onde"
+
+#: includes/admin-fields.php:278 includes/admin-fields.php:560
+msgid "Required"
+msgstr "Obrigatório"
+
+#: includes/admin-fields.php:279 includes/admin-sessions.php:156
+#: includes/admin-social.php:399 includes/admin-status.php:331
+#: includes/admin.php:75 templates/account/privacy.php:29
+msgid "Status"
+msgstr "Estado"
+
+#: includes/admin-fields.php:280
+msgid "Order"
+msgstr "Ordem"
+
+#: includes/admin-fields.php:285
+msgid "No fields yet."
+msgstr "Ainda não há campos."
+
+#: includes/admin-fields.php:325
+msgid "Delete this field? The data already stored is kept."
+msgstr "Excluir este campo? Os dados já armazenados são mantidos."
+
+#: includes/admin-fields.php:326
+msgid "Delete"
+msgstr "Excluir"
+
+#: includes/admin-fields.php:334
+msgid "Yes"
+msgstr "Sim"
+
+#: includes/admin-fields.php:338
+msgid "Read only"
+msgstr "Somente leitura"
+
+#. translators: %d: how many times it can be changed
+#: includes/admin-fields.php:342
+#, php-format
+msgid "%d time"
+msgid_plural "%d times"
+msgstr[0] "%d vez"
+msgstr[1] "%d vezes"
+
+#: includes/admin-fields.php:352 includes/admin-sessions.php:181
+#: includes/admin-social.php:152
+msgid "Active"
+msgstr "Ativo"
+
+#: includes/admin-fields.php:371
+msgid "Move up"
+msgstr "Mover para cima"
+
+#: includes/admin-fields.php:387
+msgid "Move down"
+msgstr "Mover para baixo"
+
+#: includes/admin-fields.php:407
+msgid "That field does not exist."
+msgstr "Esse campo não existe."
+
+#: includes/admin-fields.php:416
+msgid "New field"
+msgstr "Campo novo"
+
+#. translators: %s: field name
+#: includes/admin-fields.php:417
+#, php-format
+msgid "Field: %s"
+msgstr "Campo: %s"
+
+#: includes/admin-fields.php:420
+msgid "Back to the list"
+msgstr "Voltar à lista"
+
+#: includes/admin-fields.php:432
+msgid "Key:"
+msgstr "Chave:"
+
+#: includes/admin-fields.php:432
+msgid "it cannot change: it is the name the data is stored under."
+msgstr "não pode mudar: é o nome sob o qual os dados ficam armazenados."
+
+#: includes/admin-fields.php:434
+msgid "The key is generated from the name."
+msgstr "A chave é gerada a partir do nome."
+
+#: includes/admin-fields.php:455
+msgid ""
+"This one is WordPress’s own: it can be renamed, reordered, made required or "
+"hidden, but it keeps its type and cannot be deleted."
+msgstr ""
+"Este é do próprio WordPress: pode ser renomeado, reordenado, tornado "
+"obrigatório ou ocultado, mas mantém o tipo e não pode ser excluído."
+
+#: includes/admin-fields.php:457
+msgid ""
+"“Country” shows the full list with its dial codes; “Phone with country code”"
+" splits the number in two and stores it in international format."
+msgstr ""
+"“País” mostra a lista completa com os códigos de discagem; “Telefone com "
+"código do país” divide o número em dois e o armazena em formato "
+"internacional."
+
+#: includes/admin-fields.php:462
+msgid "Who can change it"
+msgstr "Quem pode alterá-lo"
+
+#: includes/admin-fields.php:466
+msgid "Whenever they want"
+msgstr "Quando quiser"
+
+#: includes/admin-fields.php:467
+msgid "Only a few times, and then no more"
+msgstr "Só algumas vezes, e depois não mais"
+
+#: includes/admin-fields.php:468
+msgid "Never — they can see it, only an administrator changes it"
+msgstr "Nunca — a pessoa vê, só um administrador altera"
+
+#: includes/admin-fields.php:480
+msgid "How many times"
+msgstr "Quantas vezes"
+
+#: includes/admin-fields.php:484
+msgid ""
+"This is about the person who owns the data. An administrator can always "
+"change it, from the user’s profile: otherwise a one-change field turns into "
+"a typo nobody can fix."
+msgstr ""
+"Isto é sobre a pessoa dona dos dados. Um administrador sempre pode alterá-"
+"lo, pelo perfil do usuário: caso contrário, um campo de uma única alteração "
+"vira um erro de digitação que ninguém consegue corrigir."
+
+#: includes/admin-fields.php:488
+msgid "Where it goes"
+msgstr "Onde vai"
+
+#: includes/admin-fields.php:495
+msgid ""
+"The profile form shows two blocks: the essentials first, and underneath the "
+"optional ones with their own explanation. This decides which one the field "
+"lands in."
+msgstr ""
+"O formulário de perfil mostra dois blocos: o essencial primeiro, e embaixo "
+"os opcionais com a sua própria explicação. Isto decide em qual deles o campo"
+" cai."
+
+#: includes/admin-fields.php:499
+msgid "Help text"
+msgstr "Texto de ajuda"
+
+#: includes/admin-fields.php:502
+msgid "Why we are asking. Shown under the field."
+msgstr "Por que estamos perguntando. Mostrado abaixo do campo."
+
+#: includes/admin-fields.php:506
+msgid "Placeholder text"
+msgstr "Texto de exemplo"
+
+#: includes/admin-fields.php:509
+msgid "Shown in grey inside the empty field."
+msgstr "Mostrado em cinza dentro do campo vazio."
+
+#: includes/admin-fields.php:513
+msgid "Values"
+msgstr "Valores"
+
+#: includes/admin-fields.php:516
+msgid ""
+"One per line. In a fixed list they are the only accepted values; in text "
+"with suggestions they are just hints and the person can write something "
+"else."
+msgstr ""
+"Um por linha. Em uma lista fixa são os únicos valores aceitos; em texto com "
+"sugestões são apenas dicas e a pessoa pode escrever outra coisa."
+
+#: includes/admin-fields.php:521
+msgid "Countries shown first"
+msgstr "Países mostrados primeiro"
+
+#. translators: %d: number of countries
+#: includes/admin-fields.php:534
+#, php-format
+msgid ""
+"Optional. The list of %d countries comes with the plugin — there is nothing "
+"to load. These ones go on top, separated from the rest, so nobody has to "
+"scroll to find the one next door."
+msgstr ""
+"Opcional. A lista de %d países vem com o plugin — não há nada para carregar."
+" Estes ficam no topo, separados do resto, para ninguém ter que rolar até "
+"achar o do lado."
+
+#: includes/admin-fields.php:543
+msgid "Country selected by default"
+msgstr "País selecionado por padrão"
+
+#: includes/admin-fields.php:546
+msgid "— None —"
+msgstr "— Nenhum —"
+
+#: includes/admin-fields.php:553
+msgid ""
+"The dial code the field comes with. The person can change it: the full list "
+"is always there."
+msgstr ""
+"O código de discagem que o campo já traz. A pessoa pode mudar: a lista "
+"completa está sempre ali."
+
+#: includes/admin-fields.php:558
+msgid "Behaviour"
+msgstr "Comportamento"
+
+#: includes/admin-fields.php:561
+msgid "Active: show it in the forms"
+msgstr "Ativo: mostrar nos formulários"
+
+#: includes/admin-fields.php:566
+msgid "Save field"
+msgstr "Salvar campo"
+
+#: includes/admin-fields.php:574
+msgid ""
+"The fields show up on their own in the dashboard profile, when adding a user"
+" and in the WordPress registration form. On the front end you place them "
+"with a shortcode."
+msgstr ""
+"Os campos aparecem sozinhos no perfil do painel, no cadastro de um usuário e"
+" no formulário de registro do WordPress. No site você os coloca com um "
+"shortcode."
+
+#: includes/admin-fields.php:578
+msgid "Every field, for the person to edit."
+msgstr "Todos os campos, para a pessoa editar."
+
+#: includes/admin-fields.php:579
+msgid "Only the basic ones. With group=\"optional\", only the others."
+msgstr "Só os básicos. Com group=\"optional\", só os outros."
+
+#: includes/admin-fields.php:580 includes/admin-social.php:416
+msgid "The email sign-in form and the social buttons."
+msgstr "O formulário de acesso por e-mail e os botões sociais."
+
+#: includes/admin-fields.php:581 includes/admin-social.php:417
+msgid "Linked providers, to link or unlink."
+msgstr "Provedores vinculados, para vincular ou desvincular."
+
+#: includes/admin-fields.php:582
+msgid "Open sessions, with the button to close them."
+msgstr "Sessões abertas, com o botão de fechá-las."
+
+#: includes/admin-fields.php:586
+msgid "Fitting them into your design"
+msgstr "Encaixando no seu design"
+
+#: includes/admin-fields.php:588
+msgid ""
+"Copy any file from the plugin’s templates/ folder into your theme, inside a "
+"diluxone-users/ folder, and edit it there. The plugin will use yours. You "
+"can also turn off its stylesheet in Sign in → Presentation."
+msgstr ""
+"Copie qualquer arquivo da pasta templates/ do plugin para o seu tema, dentro"
+" de uma pasta diluxone-users/, e edite-o ali. O plugin usará o seu. Você "
+"também pode desativar a folha de estilos dele em Entrar → Apresentação."
+
+#: includes/admin-home.php:79
+msgid "Pending"
+msgstr "Pendente"
+
+#: includes/admin-home.php:80
+msgid "Cannot tell"
+msgstr "Não dá para saber"
+
+#: includes/admin-home.php:110
+msgid "Who is in this site, what is asked of them and how they get in."
+msgstr ""
+"Quem está neste site, o que é pedido a essas pessoas e como elas entram."
+
+#: includes/admin-home.php:117
+msgid "accounts"
+msgstr "contas"
+
+#: includes/admin-home.php:119
+msgid "All users"
+msgstr "Todos os usuários"
+
+#: includes/admin-home.php:124
+msgid "with an open session"
+msgstr "com sessão aberta"
+
+#: includes/admin-home.php:126
+msgid "See who"
+msgstr "Ver quem"
+
+#: includes/admin-home.php:131
+msgid "fields in use"
+msgstr "campos em uso"
+
+#: includes/admin-home.php:133
+msgid "Manage them"
+msgstr "Gerenciar"
+
+#: includes/admin-home.php:138
+msgid "social providers on"
+msgstr "provedores sociais ativos"
+
+#: includes/admin-home.php:140
+msgid "Set them up"
+msgstr "Configurá-los"
+
+#: includes/admin-home.php:145 includes/admin-home.php:174
+#: includes/admin-login.php:169
+msgid "How people get in"
+msgstr "Como as pessoas entram"
+
+#: includes/admin-home.php:150 includes/admin-login.php:151
+#: includes/admin-status.php:99
+msgid "Sign-in page"
+msgstr "Página de acesso"
+
+#: includes/admin-home.php:154
+msgid "Not chosen yet: wp-login.php is doing the job."
+msgstr "Ainda não escolhida: quem faz o trabalho é o wp-login.php."
+
+#: includes/admin-home.php:156
+msgid "Choose it"
+msgstr "Escolher"
+
+#: includes/admin-home.php:160
+msgid "Link by email"
+msgstr "Link por e-mail"
+
+#: includes/admin-home.php:163
+msgid ""
+"On. If the email does not exist, the account is created in the same step."
+msgstr "Ativado. Se o e-mail não existir, a conta é criada na mesma etapa."
+
+#: includes/admin-home.php:164
+msgid ""
+"On, for accounts that already exist. New ones are not created from here."
+msgstr "Ativado, para contas que já existem. Novas não são criadas por aqui."
+
+#: includes/admin-home.php:168
+msgid "Only the email link: wp-login.php sends people to the sign-in page."
+msgstr ""
+"Só o link por e-mail: o wp-login.php manda as pessoas para a página de "
+"acesso."
+
+#: includes/admin-home.php:169
+msgid "Only username and password, the WordPress one."
+msgstr "Só usuário e senha, o do WordPress."
+
+#: includes/admin-home.php:170
+msgid "The email link and the password, both."
+msgstr "O link por e-mail e a senha, os dois."
+
+#: includes/admin-home.php:180
+msgid "Off: nobody is asked for a second step."
+msgstr "Desativado: ninguém precisa de uma segunda etapa."
+
+#: includes/admin-home.php:181
+msgid "Optional: whoever wants it turns it on from their profile."
+msgstr "Opcional: quem quiser ativa no seu perfil."
+
+#: includes/admin-home.php:182
+msgid "Required for everybody who can use it."
+msgstr "Obrigatório para todo mundo que puder usar."
+
+#: includes/admin-home.php:186 includes/admin-login.php:17
+#: templates/account/security.php:178
+msgid "Two-step verification"
+msgstr "Verificação em duas etapas"
+
+#: includes/admin-home.php:192 includes/admin-login.php:18
+#: templates/account/security.php:73
+msgid "Passkeys"
+msgstr "Passkeys"
+
+#. translators: %s: the domain they end up tied to
+#: includes/admin-home.php:197
+#, php-format
+msgid "On, tied to %s."
+msgstr "Ativadas, presas a %s."
+
+#: includes/admin-home.php:200
+msgid "Off. It is the only way in that cannot be phished."
+msgstr "Desativadas. É a única forma de entrar que não dá para phishing."
+
+#: includes/admin-home.php:204 includes/admin-social.php:83
+#: includes/admin-status.php:261 includes/admin-status.php:272
+#: includes/admin.php:72
+msgid "Social login"
+msgstr "Login social"
+
+#. translators: %s: list of providers
+#: includes/admin-home.php:208
+#, php-format
+msgid "Working: %s"
+msgstr "Funcionando: %s"
+
+#: includes/admin-home.php:211
+msgid ""
+"There are providers with credentials, but none is verified and enabled yet."
+msgstr "Há provedores com credenciais, mas nenhum verificado e ativado ainda."
+
+#: includes/admin-home.php:212
+msgid "No provider set up yet: only the email link works."
+msgstr "Nenhum provedor configurado ainda: só funciona o link por e-mail."
+
+#: includes/admin-home.php:215 includes/admin-social.php:45
+msgid "Providers"
+msgstr "Provedores"
+
+#: includes/admin-home.php:224
+msgid "Outgoing email"
+msgstr "E-mail de saída"
+
+#: includes/admin-home.php:227
+msgid ""
+"Something is hooked into delivery, but whether mail actually leaves cannot "
+"be known from here. Send yourself a link to find out."
+msgstr ""
+"Há algo conectado ao envio, mas se o e-mail sai de verdade não dá para saber"
+" daqui. Mande um link para você mesmo e descubra."
+
+#: includes/admin-home.php:228
+msgid ""
+"Nothing is hooked into delivery: WordPress will try the server’s mail() and "
+"that usually fails. Without email there is no sign-in link."
+msgstr ""
+"Não há nada conectado ao envio: o WordPress vai tentar o mail() do servidor,"
+" e isso costuma falhar. Sem e-mail não há link de acesso."
+
+#: includes/admin-home.php:232
+msgid "Session length"
+msgstr "Duração da sessão"
+
+#. translators: 1: days with remember-me, 2: days without remember-me
+#: includes/admin-home.php:236
+#, php-format
+msgid "%1$d days with “remember me”, %2$d without."
+msgstr "%1$d dias com “lembrar de mim”, %2$d sem."
+
+#: includes/admin-home.php:241
+msgid "Change it"
+msgstr "Alterar"
+
+#: includes/admin-home.php:247
+msgid "What is asked of people"
+msgstr "O que é pedido às pessoas"
+
+#: includes/admin-home.php:249
+msgid "Nothing beyond the email address."
+msgstr "Nada além do endereço de e-mail."
+
+#: includes/admin-home.php:270
+msgid "If you get locked out"
+msgstr "Se você ficar de fora"
+
+#: includes/admin-home.php:272
+msgid ""
+"On a site without passwords and without outgoing email, an expired session "
+"leaves you outside. With access to the server:"
+msgstr ""
+"Em um site sem senhas e sem e-mail de saída, uma sessão expirada deixa você "
+"do lado de fora. Com acesso ao servidor:"
+
+#: includes/admin-login.php:13
+msgid "Registration"
+msgstr "Cadastro"
+
+#: includes/admin-login.php:14 includes/passwordless.php:92
+#: templates/account-guest.php:15 templates/login.php:38
+#: templates/login.php:99
+msgid "Sign in"
+msgstr "Entrar"
+
+#: includes/admin-login.php:15
+msgid "The email"
+msgstr "O e-mail"
+
+#: includes/admin-login.php:16 templates/account/handle-field.php:17
+msgid "Public name"
+msgstr "Nome público"
+
+#: includes/admin-login.php:25 includes/admin-sessions.php:35
+#: includes/admin-social.php:64
+msgid "Settings saved."
+msgstr "Configurações salvas."
+
+#: includes/admin-login.php:28 includes/admin-social.php:338
+#: includes/admin.php:71
+msgid "Registration and login"
+msgstr "Cadastro e acesso"
+
+#: includes/admin-login.php:147
+msgid ""
+"The person types their email and gets a single-use link. There is no "
+"password to choose, to remember or to steal. Put the [diluxone_users_login] "
+"shortcode on the page you pick below."
+msgstr ""
+"A pessoa escreve o seu e-mail e recebe um link de uso único. Não há senha "
+"para escolher, para lembrar nem para roubar. Coloque o shortcode "
+"[diluxone_users_login] na página que você escolher abaixo."
+
+#: includes/admin-login.php:158
+msgid "— Use wp-login.php —"
+msgstr "— Usar wp-login.php —"
+
+#: includes/admin-login.php:165
+msgid ""
+"The page holding the form. Without it, passwordless mode is not applied: it "
+"would leave the site with no way in."
+msgstr ""
+"A página com o formulário. Sem ela, o modo sem senha não é aplicado: "
+"deixaria o site sem porta de entrada."
+
+#: includes/admin-login.php:175
+msgid "Both: the link, and username and password underneath"
+msgstr "Os dois: o link, e usuário e senha embaixo"
+
+#: includes/admin-login.php:176
+msgid "Only a link sent to their email — no passwords on this site"
+msgstr "Só um link enviado para o e-mail — sem senhas neste site"
+
+#: includes/admin-login.php:177
+msgid "Only the WordPress username and password"
+msgstr "Só o usuário e a senha do WordPress"
+
+#: includes/admin-login.php:188
+msgid ""
+"Only the first option closes anything: with “only a link”, wp-login.php "
+"stops showing its form and the native registration is switched off, because "
+"otherwise both would still be there and the choice would be a decoration."
+msgstr ""
+"Só a primeira opção fecha alguma coisa: com “só um link”, o wp-login.php "
+"deixa de mostrar o seu formulário e o registro nativo é desligado, porque "
+"senão as duas portas continuariam abertas e a escolha seria enfeite."
+
+#. translators: %s: URL of the escape hatch
+#: includes/admin-login.php:193
+#, php-format
+msgid "Even then there is an emergency way in for administrators: %s"
+msgstr "Mesmo assim existe uma saída de emergência para administradores: %s"
+
+#: includes/admin-login.php:201
+msgid "The link expires after"
+msgstr "O link expira em"
+
+#: includes/admin-login.php:204
+msgid "minutes"
+msgstr "minutos"
+
+#: includes/admin-login.php:208
+msgid "Wait between requests"
+msgstr "Espera entre pedidos"
+
+#: includes/admin-login.php:211
+msgid "seconds, for the same email address"
+msgstr "segundos, para o mesmo endereço de e-mail"
+
+#: includes/admin-login.php:212
+msgid "Stops the form being used as a machine for emailing third parties."
+msgstr ""
+"Evita que o formulário vire uma máquina de mandar e-mail para terceiros."
+
+#: includes/admin-login.php:221
+msgid ""
+"This is what lands in the inbox. Leave it empty to use the text the plugin "
+"ships with."
+msgstr ""
+"É isto que chega na caixa de entrada. Deixe vazio para usar o texto que vem "
+"com o plugin."
+
+#: includes/admin-login.php:225
+msgid "Subject"
+msgstr "Assunto"
+
+#: includes/admin-login.php:229
+msgid "Message"
+msgstr "Mensagem"
+
+#. translators: 1 and 2: placeholders that get replaced
+#: includes/admin-login.php:236
+#, php-format
+msgid "%1$s and %2$s are replaced. Empty uses the text above."
+msgstr "%1$s e %2$s são substituídos. Vazio usa o texto acima."
+
+#: includes/admin-login.php:254
+msgid ""
+"The email is the identity and nobody chooses it. This is the short name "
+"people see, the one that goes in the address of their profile."
+msgstr ""
+"O e-mail é a identidade e ninguém o escolhe. Este é o nome curto que as "
+"pessoas veem, o que vai no endereço do perfil."
+
+#: includes/admin-login.php:258
+msgid "Offer it"
+msgstr "Oferecer"
+
+#: includes/admin-login.php:262
+msgid "Let people choose their public name"
+msgstr "Deixar as pessoas escolherem o seu nome público"
+
+#: includes/admin-login.php:264
+msgid ""
+"Turned off, the name comes from what they wrote as their first and last "
+"name, and the profile address is made from that."
+msgstr ""
+"Desativado, o nome sai do que escreveram como nome e sobrenome, e o endereço"
+" do perfil é montado com isso."
+
+#: includes/admin-login.php:268
+msgid "Sign in with it"
+msgstr "Entrar com ele"
+
+#: includes/admin-login.php:272
+msgid "Accept the public name in the sign-in box, as well as the email"
+msgstr "Aceitar o nome público na caixa de acesso, além do e-mail"
+
+#: includes/admin-login.php:274
+msgid ""
+"The link still goes to the email on the account, never to something typed at"
+" that moment: this opens no new door, it only saves people from remembering "
+"which address they used."
+msgstr ""
+"O link continua indo para o e-mail da conta, nunca para algo digitado na "
+"hora: isto não abre nenhuma porta nova, só evita que a pessoa tenha que "
+"lembrar qual endereço usou."
+
+#: includes/admin-login.php:278
+msgid "Length"
+msgstr "Comprimento"
+
+#: includes/admin-login.php:281
+msgid "to"
+msgstr "a"
+
+#: includes/admin-login.php:283
+msgid "characters"
+msgstr "caracteres"
+
+#: includes/admin-login.php:287
+msgid "Letters"
+msgstr "Letras"
+
+#: includes/admin-login.php:291
+msgid "Plain: a–z, digits, dot, dash and underscore"
+msgstr "Simples: a–z, dígitos, ponto, hífen e sublinhado"
+
+#: includes/admin-login.php:292
+msgid "Also accents and ñ"
+msgstr "Também acentos e ñ"
+
+#: includes/admin-login.php:302
+msgid ""
+"Whatever is typed is turned into the same thing WordPress would put in a "
+"URL, so what passes here is exactly what ends up in the address. Anything "
+"that does not fit —punctuation, symbols, emoji— is dropped, and the person "
+"sees what it turned into before saving."
+msgstr ""
+"O que for digitado vira a mesma coisa que o WordPress colocaria em uma URL, "
+"então o que passa aqui é exatamente o que fica no endereço. Tudo o que não "
+"couber —pontuação, símbolos, emoji— cai, e a pessoa vê no que virou antes de"
+" salvar."
+
+#: includes/admin-login.php:306
+msgid "Spaces"
+msgstr "Espaços"
+
+#: includes/admin-login.php:310
+msgid "Turn them into dashes: “Ana Gómez” becomes ana-gomez"
+msgstr "Transformá-los em hifens: “Ana Gómez” vira ana-gomez"
+
+#: includes/admin-login.php:311
+msgid "Refuse them and say so"
+msgstr "Recusá-los e avisar"
+
+#: includes/admin-login.php:321
+msgid ""
+"A web address cannot have spaces, so one of the two has to happen. The first"
+" is what almost everybody expects; the second is for a site that would "
+"rather nobody ends up with a name they did not type."
+msgstr ""
+"Um endereço da web não pode ter espaços, então uma das duas coisas tem que "
+"acontecer. A primeira é o que quase todo mundo espera; a segunda é para um "
+"site que prefere que ninguém fique com um nome que não digitou."
+
+#: includes/admin-login.php:325
+msgid "Taken names"
+msgstr "Nomes em uso"
+
+#. translators: 1: user_nicename, 2: user_login
+#: includes/admin-login.php:331
+#, php-format
+msgid ""
+"Always checked, and against two things: the public names already in use "
+"(%1$s) and the usernames that came with the accounts (%2$s). The second one "
+"matters because a site that lets people sign in by public name would "
+"otherwise have two people answering to the same text, and the link would go "
+"to the wrong account."
+msgstr ""
+"Sempre verificado, e contra duas coisas: os nomes públicos já em uso (%1$s) "
+"e os nomes de usuário que vieram com as contas (%2$s). O segundo importa "
+"porque, em um site que deixa entrar pelo nome público, haveria duas pessoas "
+"respondendo pelo mesmo texto e o link iria para a conta errada."
+
+#: includes/admin-login.php:340
+msgid "How often it can change"
+msgstr "Com que frequência pode mudar"
+
+#: includes/admin-login.php:343
+msgid "days between one change and the next"
+msgstr "dias entre uma mudança e a seguinte"
+
+#: includes/admin-login.php:344
+msgid ""
+"0 means whenever they like. A name that changes every day does not identify "
+"anybody, and the old address stops working each time."
+msgstr ""
+"0 significa quando quiserem. Um nome que muda todo dia não identifica "
+"ninguém, e o endereço antigo deixa de funcionar a cada vez."
+
+#: includes/admin-login.php:348
+msgid "Names nobody can take"
+msgstr "Nomes que ninguém pode usar"
+
+#: includes/admin-login.php:351
+msgid ""
+"One per line, or separated by commas. The obvious ones —admin, support, api,"
+" login— are already blocked; these are yours to add."
+msgstr ""
+"Um por linha, ou separados por vírgulas. Os óbvios —admin, suporte, api, "
+"login— já estão bloqueados; estes são os seus."
+
+#: includes/admin-login.php:366
+msgid ""
+"Who gets an account on this site, and what that account can do. Everything "
+"else —how they get in afterwards— is on the next tab."
+msgstr ""
+"Quem tem conta neste site, e o que essa conta pode fazer. Todo o resto —como"
+" a pessoa entra depois— está na aba seguinte."
+
+#: includes/admin-login.php:370
+msgid "Create the account"
+msgstr "Criar a conta"
+
+#: includes/admin-login.php:374
+msgid "If the email does not exist, register it in the same step"
+msgstr "Se o e-mail não existir, cadastrá-lo na mesma etapa"
+
+#: includes/admin-login.php:376
+msgid ""
+"With this, signing in and signing up are the same thing and no separate "
+"registration form is needed."
+msgstr ""
+"Com isto, entrar e se cadastrar são a mesma coisa e não é preciso um "
+"formulário de registro separado."
+
+#: includes/admin-login.php:377
+msgid ""
+"Turned off, only people who already have an account can get in — and "
+"somebody has to create the accounts from Users."
+msgstr ""
+"Desativado, só entra quem já tem conta — e alguém precisa criar as contas em"
+" Usuários."
+
+#: includes/admin-login.php:381
+msgid "Role for new accounts"
+msgstr "Função das contas novas"
+
+#: includes/admin-login.php:386
+msgid ""
+"The same one for everybody, whether they come in by email or by a social "
+"network: a role per provider is a quiet way of handing out privileges."
+msgstr ""
+"A mesma para todo mundo, venha por e-mail ou por uma rede social: uma função"
+" por provedor é um jeito silencioso de distribuir privilégios."
+
+#: includes/admin-login.php:390
+msgid "The WordPress registration form"
+msgstr "O formulário de registro do WordPress"
+
+#: includes/admin-login.php:394
+msgid "Whatever Settings → General says"
+msgstr "O que disser Configurações → Geral"
+
+#: includes/admin-login.php:395
+msgid "Open, whatever that setting says"
+msgstr "Aberto, independentemente dessa configuração"
+
+#: includes/admin-login.php:396
+msgid "Closed, whatever that setting says"
+msgstr "Fechado, independentemente dessa configuração"
+
+#: includes/admin-login.php:406
+msgid ""
+"This is wp-login.php?action=register and wp-signup.php, the ones WordPress "
+"brings. They are decided here because this is where the accounts are "
+"administered; leaving that in another screen is how a site ends up with a "
+"registration form nobody remembers is open."
+msgstr ""
+"São o wp-login.php?action=register e o wp-signup.php, os que o WordPress "
+"traz. São decididos aqui porque é aqui que as contas são administradas; "
+"deixar isso em outra tela é como um site acaba com um formulário de registro"
+" aberto de que ninguém se lembra."
+
+#: includes/admin-login.php:407
+msgid ""
+"With “only a link” as the way in, it stays closed no matter what: it would "
+"hand out accounts with a password through a door the site closed."
+msgstr ""
+"Com “só um link” como forma de entrar, ele fica fechado de qualquer jeito: "
+"entregaria contas com senha por uma porta que o site fechou."
+
+#: includes/admin-login.php:411
+msgid "The WordPress profile screen"
+msgstr "A tela de perfil do WordPress"
+
+#: includes/admin-login.php:415
+msgid "Leave it alone"
+msgstr "Deixar como está"
+
+#: includes/admin-login.php:416
+msgid "Send them to their account on the site"
+msgstr "Mandar a pessoa para a sua conta no site"
+
+#: includes/admin-login.php:417
+msgid "Close it: their details are edited on the site"
+msgstr "Fechar: os dados são editados no site"
+
+#: includes/admin-login.php:427
+msgid ""
+"A site that built its account area on the front does not want half the data "
+"edited on another screen, with another look and other rules: the edit limits"
+" and the required fields set up here do not apply there."
+msgstr ""
+"Um site que montou a sua área de conta no site não quer que metade dos dados"
+" seja editada em outra tela, com outra cara e outras regras: os limites de "
+"edição e os campos obrigatórios configurados aqui não valem lá."
+
+#: includes/admin-login.php:428
+msgid ""
+"It never applies to whoever administers: that is the person who has to be "
+"able to fix what broke, and the desktop profile is where it gets fixed."
+msgstr ""
+"Nunca vale para quem administra: é a pessoa que precisa poder consertar o "
+"que quebrou, e o perfil do painel é onde se conserta."
+
+#: includes/admin-login.php:432
+msgid "How the account ends up"
+msgstr "Como a conta fica"
+
+#: includes/admin-login.php:434
+msgid ""
+"The email is the username and it never changes —WordPress does not allow it."
+" There is no password at all, not even one nobody knows. The name shown "
+"comes from what the person writes, and the fields they are asked for are the"
+" ones on the User fields screen."
+msgstr ""
+"O e-mail é o nome de usuário e nunca muda —o WordPress não permite. Não há "
+"senha nenhuma, nem uma que ninguém saiba. O nome mostrado vem do que a "
+"pessoa escreve, e os campos pedidos são os da tela Campos de usuário."
+
+#: includes/admin-login.php:448
+msgid ""
+"One more thing after the password or the link: a code that only that person "
+"has. Whoever gets hold of an email still does not get in."
+msgstr ""
+"Mais uma coisa depois da senha ou do link: um código que só aquela pessoa "
+"tem. Quem se apoderar de um e-mail ainda assim não entra."
+
+#: includes/admin-login.php:455 includes/auth.php:59
+msgid "A code by email"
+msgstr "Um código por e-mail"
+
+#: includes/admin-login.php:456 includes/auth.php:68
+msgid "An authenticator app"
+msgstr "Um aplicativo autenticador"
+
+#: includes/admin-login.php:464
+msgid "When it is asked for"
+msgstr "Quando é pedido"
+
+#: includes/admin-login.php:468
+msgid "Optional: whoever wants it turns it on from their profile"
+msgstr "Opcional: quem quiser ativa no seu perfil"
+
+#: includes/admin-login.php:469
+msgid "Required: everybody who can use it has to"
+msgstr "Obrigatório: todo mundo que puder usar tem que usar"
+
+#: includes/admin-login.php:470
+msgid "Off: it is not offered at all"
+msgstr "Desativado: não é oferecido"
+
+#: includes/admin-login.php:483
+msgid "With what"
+msgstr "Com o quê"
+
+#: includes/admin-login.php:491
+msgid ""
+"The app is the stronger one: the code never travels. The email is the one "
+"people actually turn on, because there is nothing to install."
+msgstr ""
+"O aplicativo é o mais forte: o código não viaja. O e-mail é o que as pessoas"
+" realmente ativam, porque não há nada para instalar."
+
+#: includes/admin-login.php:495
+msgid "To whom"
+msgstr "Para quem"
+
+#: includes/admin-login.php:503
+msgid ""
+"None ticked means everybody. Ticking only the roles that can change things "
+"is the usual middle ground: the second step where it is worth the friction."
+msgstr ""
+"Nenhuma marcada significa todo mundo. Marcar só as funções que podem mudar "
+"coisas é o meio-termo de sempre: a segunda etapa onde o atrito vale a pena."
+
+#: includes/admin-login.php:507
+msgid "Coming in by email link"
+msgstr "Entrando pelo link por e-mail"
+
+#: includes/admin-login.php:511
+msgid "Work it out: ask, unless the second step is another email"
+msgstr "Decidir: pedir, a menos que a segunda etapa seja outro e-mail"
+
+#: includes/admin-login.php:512
+msgid "Always ask"
+msgstr "Pedir sempre"
+
+#: includes/admin-login.php:513
+msgid "Never ask"
+msgstr "Nunca pedir"
+
+#: includes/admin-login.php:523
+msgid ""
+"A code sent to the same inbox the person just opened to follow the link does"
+" not prove anything the link did not prove already. An authenticator app "
+"does. That is the whole rule, and it is why the first option exists: it asks"
+" when asking is worth something."
+msgstr ""
+"Um código enviado para a mesma caixa de entrada que a pessoa acabou de abrir"
+" para seguir o link não prova nada que o link já não tenha provado. Um "
+"aplicativo autenticador prova. Essa é a regra inteira, e é por isso que a "
+"primeira opção existe: ela pede quando pedir vale alguma coisa."
+
+#: includes/admin-login.php:527
+msgid "Remember the browser"
+msgstr "Lembrar o navegador"
+
+#: includes/admin-login.php:530
+msgid "days — 0 to ask every time"
+msgstr "dias — 0 para pedir sempre"
+
+#: includes/admin-login.php:531
+msgid ""
+"A signed cookie, no more: it does not let anybody in, it only saves "
+"repeating the step on a browser that already passed it."
+msgstr ""
+"Um cookie assinado, nada mais: não deixa ninguém entrar, só evita repetir a "
+"etapa em um navegador que já passou por ela."
+
+#: includes/admin-login.php:547
+msgid ""
+"What each person can do with their own data from the site, without asking "
+"anybody."
+msgstr ""
+"O que cada pessoa pode fazer com os seus dados a partir do site, sem pedir a"
+" ninguém."
+
+#: includes/admin-login.php:551
+msgid "Their data"
+msgstr "Os dados dela"
+
+#: includes/admin-login.php:555
+msgid "They can ask for a copy of everything and download it"
+msgstr "Pode pedir uma cópia de tudo e baixá-la"
+
+#: includes/admin-login.php:557
+msgid ""
+"It is the export WordPress already knows how to make: it asks for "
+"confirmation by email and leaves the file ready."
+msgstr ""
+"É a exportação que o WordPress já sabe fazer: pede confirmação por e-mail e "
+"deixa o arquivo pronto."
+
+#: includes/admin-login.php:561
+msgid "Their account"
+msgstr "A conta dela"
+
+#: includes/admin-login.php:565
+msgid "They can ask for their account to be deleted"
+msgstr "Pode pedir que a sua conta seja excluída"
+
+#: includes/admin-login.php:567
+msgid ""
+"Also confirmed by email, and never for an account that administers the site:"
+" it would leave the site with nobody in charge."
+msgstr ""
+"Também confirmado por e-mail, e nunca para uma conta que administra o site: "
+"deixaria o site sem ninguém no comando."
+
+#: includes/admin-login.php:572
+msgid ""
+"With both off, the “Your data” section stops showing: an empty section is "
+"worse than no section."
+msgstr ""
+"Com os dois desativados, a seção “Seus dados” deixa de aparecer: uma seção "
+"vazia é pior do que nenhuma seção."
+
+#: includes/admin-login.php:578
+msgid ""
+"A passkey is a private key that lives on the person’s device or keychain and"
+" never leaves it. There is nothing on this side worth stealing, nothing to "
+"reuse on another site, and it cannot be phished: the browser refuses to sign"
+" for a domain that is not the one it was made for."
+msgstr ""
+"Uma passkey é uma chave privada que fica no dispositivo ou no chaveiro da "
+"pessoa e nunca sai dali. Não há nada deste lado que valha a pena roubar, "
+"nada para reutilizar em outro site, e não dá para phishing: o navegador se "
+"recusa a assinar para um domínio que não seja aquele para o qual ela foi "
+"criada."
+
+#: includes/admin-login.php:582
+msgid "Offer them"
+msgstr "Oferecê-las"
+
+#: includes/admin-login.php:586
+msgid "People can add passkeys and sign in with them"
+msgstr "As pessoas podem adicionar passkeys e entrar com elas"
+
+#. translators: %s: the domain the passkeys end up tied to
+#: includes/admin-login.php:592
+#, php-format
+msgid ""
+"They get tied to %s. If the site moves to another domain, the passkeys made "
+"here stop working and have to be added again — there is no way around that, "
+"and it is exactly what makes them unphishable."
+msgstr ""
+"Elas ficam presas a %s. Se o site mudar de domínio, as passkeys criadas aqui"
+" deixam de funcionar e têm que ser adicionadas de novo — não há como evitar "
+"isso, e é justamente o que as torna imunes a phishing."
+
+#: includes/admin-login.php:598
+msgid "This site is not on HTTPS. Browsers will refuse passkeys until it is."
+msgstr ""
+"Este site não está em HTTPS. Os navegadores vão recusar as passkeys enquanto"
+" não estiver."
+
+#: includes/admin-login.php:603
+msgid "Which ones"
+msgstr "Quais"
+
+#: includes/admin-login.php:607
+msgid "Any: the device being used, a USB key, or another phone"
+msgstr "Qualquer uma: o dispositivo em uso, uma chave USB, ou outro telefone"
+
+#: includes/admin-login.php:608
+msgid "Only the device being used"
+msgstr "Só o dispositivo em uso"
+
+#: includes/admin-login.php:618
+msgid ""
+"The first one lets somebody register from their laptop using their phone, "
+"and lets a hardware key work. The second keeps everything on the machine in "
+"front of them, which some organisations require and everybody else finds "
+"annoying."
+msgstr ""
+"A primeira deixa alguém se cadastrar do computador usando o telefone, e "
+"deixa uma chave de hardware funcionar. A segunda mantém tudo na máquina que "
+"a pessoa tem na frente, que é o que algumas organizações exigem e o que o "
+"resto acha incômodo."
+
+#: includes/admin-login.php:622
+msgid "Ask who they are"
+msgstr "Perguntar quem é"
+
+#: includes/admin-login.php:626
+msgid "Require the fingerprint, the face or the PIN"
+msgstr "Exigir a impressão digital, o rosto ou o PIN"
+
+#: includes/admin-login.php:628
+msgid ""
+"This is what makes a passkey count as two things at once: something they "
+"have and something they are. With it off, whoever is holding an unlocked "
+"device gets in, and the passkey is worth one factor."
+msgstr ""
+"É isto que faz uma passkey valer por duas coisas ao mesmo tempo: algo que a "
+"pessoa tem e algo que a pessoa é. Sem isso, quem estiver com um dispositivo "
+"desbloqueado entra, e a passkey vale por um fator."
+
+#: includes/admin-sessions.php:18
+msgid "Open sessions"
+msgstr "Sessões abertas"
+
+#: includes/admin-sessions.php:19 includes/admin-social.php:130
+#: includes/admin-social.php:354
+msgid "Settings"
+msgstr "Configurações"
+
+#: includes/admin-sessions.php:40
+msgid "Sessions closed."
+msgstr "Sessões fechadas."
+
+#: includes/admin-sessions.php:43 includes/admin.php:73
+msgid "User sessions"
+msgstr "Sessões de usuário"
+
+#: includes/admin-sessions.php:56
+msgid ""
+"By default WordPress ends the session after 2 days, or 14 with “remember "
+"me”. On a passwordless site that means going through the email again and "
+"again."
+msgstr ""
+"Por padrão o WordPress encerra a sessão depois de 2 dias, ou 14 com “lembrar"
+" de mim”. Em um site sem senhas isso significa passar pelo e-mail de novo e "
+"de novo."
+
+#: includes/admin-sessions.php:62
+msgid "With “remember me”"
+msgstr "Com “lembrar de mim”"
+
+#: includes/admin-sessions.php:65 includes/admin-sessions.php:73
+msgid "days"
+msgstr "dias"
+
+#: includes/admin-sessions.php:66
+msgid ""
+"The sign-in link always counts as “remember me”: there is no password to "
+"type again."
+msgstr ""
+"O link de acesso sempre conta como “lembrar de mim”: não há senha para "
+"digitar outra vez."
+
+#: includes/admin-sessions.php:70
+msgid "Without “remember me”"
+msgstr "Sem “lembrar de mim”"
+
+#: includes/admin-sessions.php:77
+msgid "In their account"
+msgstr "Na conta dela"
+
+#: includes/admin-sessions.php:81
+msgid "Each person sees where they have a session open, and can close them"
+msgstr "Cada pessoa vê onde tem uma sessão aberta, e pode fechá-las"
+
+#: includes/admin-sessions.php:83
+msgid ""
+"It shows up under Security. With this off, that box is not there —and "
+"closing sessions stays an administrator job, from here."
+msgstr ""
+"Aparece em Segurança. Com isto desativado, essa caixa não existe — e fechar "
+"sessões continua sendo tarefa de quem administra, a partir daqui."
+
+#: includes/admin-sessions.php:106 includes/admin-sessions.php:108
+msgid "Search"
+msgstr "Buscar"
+
+#: includes/admin-sessions.php:107
+msgid "Email, username or name…"
+msgstr "E-mail, usuário ou nome…"
+
+#: includes/admin-sessions.php:110
+msgid "Clear"
+msgstr "Limpar"
+
+#: includes/admin-sessions.php:113
+msgid "Show"
+msgstr "Mostrar"
+
+#: includes/admin-sessions.php:119
+msgid "per page"
+msgstr "por página"
+
+#: includes/admin-sessions.php:134
+msgid "Refresh"
+msgstr "Atualizar"
+
+#. translators: 1: number of people, 2: current page, 3: total pages
+#: includes/admin-sessions.php:141
+#, php-format
+msgid "%1$s people with an open session · page %2$d of %3$d"
+msgstr "%1$s pessoas com sessão aberta · página %2$d de %3$d"
+
+#: includes/admin-sessions.php:153
+msgid "Person"
+msgstr "Pessoa"
+
+#: includes/admin-sessions.php:154
+msgid "Last sign-in"
+msgstr "Último acesso"
+
+#: includes/admin-sessions.php:155
+msgid "Expires"
+msgstr "Expira"
+
+#: includes/admin-sessions.php:157
+msgid "IP"
+msgstr "IP"
+
+#: includes/admin-sessions.php:158
+msgid "Device"
+msgstr "Dispositivo"
+
+#: includes/admin-sessions.php:159
+msgid "Sessions"
+msgstr "Sessões"
+
+#: includes/admin-sessions.php:160
+msgid "Actions"
+msgstr "Ações"
+
+#: includes/admin-sessions.php:165
+msgid "Nobody matches that."
+msgstr "Ninguém corresponde a isso."
+
+#: includes/admin-sessions.php:181
+msgid "Expired"
+msgstr "Expirada"
+
+#: includes/admin-sessions.php:192 includes/admin-tools.php:343
+msgid "Close sessions"
+msgstr "Fechar sessões"
+
+#: includes/admin-social.php:46
+msgid "Buttons"
+msgstr "Botões"
+
+#: includes/admin-social.php:47
+msgid "Global settings"
+msgstr "Configurações globais"
+
+#: includes/admin-social.php:80
+msgid "Buttons saved."
+msgstr "Botões salvos."
+
+#: includes/admin-social.php:97
+msgid ""
+"One app per network: create it in the provider’s developer console, paste "
+"the client ID and the secret, and copy the redirect URL that each card "
+"shows. Then run the live test — a provider cannot be enabled until the round"
+" trip actually works."
+msgstr ""
+"Um aplicativo por rede: crie-o no console de desenvolvedores do provedor, "
+"cole o ID de cliente e o segredo, e copie a URL de retorno que cada cartão "
+"mostra. Depois execute o teste ao vivo — um provedor não pode ser ativado "
+"enquanto o ida e volta não funcionar de verdade."
+
+#: includes/admin-social.php:125 includes/admin-social.php:619
+msgid "Disable"
+msgstr "Desativar"
+
+#: includes/admin-social.php:125 includes/admin-social.php:619
+msgid "Enable"
+msgstr "Ativar"
+
+#: includes/admin-social.php:130
+msgid "Get started"
+msgstr "Começar"
+
+#: includes/admin-social.php:138
+msgid "Not included, on purpose"
+msgstr "Não incluídos, de propósito"
+
+#: includes/admin-social.php:140
+msgid ""
+"Apple signs its client secret with a JWT that has to be regenerated every "
+"six months and answers by POST; Steam does not use OAuth 2 at all and never "
+"returns an email address. Both need their own flow, so they are not here "
+"yet: a button that does not work is worse than no button."
+msgstr ""
+"A Apple assina o seu segredo de cliente com um JWT que precisa ser gerado de"
+" novo a cada seis meses e responde por POST; o Steam não usa OAuth 2 e nunca"
+" devolve um endereço de e-mail. Os dois precisam do seu próprio fluxo, então"
+" ainda não estão aqui: um botão que não funciona é pior do que nenhum botão."
+
+#: includes/admin-social.php:149
+msgid "Not set up"
+msgstr "Não configurado"
+
+#: includes/admin-social.php:150
+msgid "Needs testing"
+msgstr "Precisa ser testado"
+
+#: includes/admin-social.php:151
+msgid "Disabled"
+msgstr "Desativado"
+
+#: includes/admin-social.php:170
+msgid ""
+"How the buttons look on the sign-in page. It is the same markup and the same"
+" stylesheet the site uses, so the preview is the real thing."
+msgstr ""
+"Como os botões ficam na página de acesso. É a mesma marcação e a mesma folha"
+" de estilos que o site usa, então a prévia é a coisa real."
+
+#: includes/admin-social.php:182
+msgid "Finish"
+msgstr "Acabamento"
+
+#: includes/admin-social.php:189
+msgid ""
+"Google and Microsoft always stay white with their own logo: their brand "
+"guidelines ask for it, and a four-colour logo on a coloured background does "
+"not read."
+msgstr ""
+"Google e Microsoft ficam sempre brancos com o seu próprio logo: as "
+"diretrizes de marca deles pedem isso, e um logo de quatro cores sobre fundo "
+"colorido não se lê."
+
+#: includes/admin-social.php:193
+msgid "Shape"
+msgstr "Formato"
+
+#: includes/admin-social.php:203
+msgid "What it shows"
+msgstr "O que mostra"
+
+#: includes/admin-social.php:210
+msgid "With logo only, the name is still there for screen readers."
+msgstr "Com só o logo, o nome continua ali para os leitores de tela."
+
+#: includes/admin-social.php:214
+msgid "Layout"
+msgstr "Disposição"
+
+#: includes/admin-social.php:224 includes/fields.php:22
+msgid "Text"
+msgstr "Texto"
+
+#. translators: %s: name of the social network
+#: includes/admin-social.php:229 includes/sso-buttons.php:80
+#, php-format
+msgid "Continue with %s"
+msgstr "Continuar com %s"
+
+#. translators: %s: the %s placeholder, literal
+#: includes/admin-social.php:234
+#, php-format
+msgid ""
+"Where %s goes, the name of the network goes. Leave it empty to use the "
+"default, which is already translated."
+msgstr ""
+"Onde vai %s, vai o nome da rede. Deixe vazio para usar o padrão, que já vem "
+"traduzido."
+
+#: includes/admin-social.php:247
+msgid "Preview"
+msgstr "Prévia"
+
+#: includes/admin-social.php:250
+msgid "On white"
+msgstr "Sobre branco"
+
+#: includes/admin-social.php:251
+msgid "On dark"
+msgstr "Sobre escuro"
+
+#: includes/admin-social.php:257
+msgid "These buttons do nothing: they are here to be looked at."
+msgstr "Estes botões não fazem nada: estão aqui para serem olhados."
+
+#: includes/admin-social.php:265
+msgid ""
+"These apply to every provider. They decide what happens when someone comes "
+"back from a social network."
+msgstr ""
+"Isto vale para todos os provedores. Decide o que acontece quando alguém "
+"volta de uma rede social."
+
+#: includes/admin-social.php:271
+msgid "Recognise people by email"
+msgstr "Reconhecer as pessoas pelo e-mail"
+
+#: includes/admin-social.php:275
+msgid "If the email already exists, link the network to that account"
+msgstr "Se o e-mail já existir, vincular a rede a essa conta"
+
+#: includes/admin-social.php:278
+msgid ""
+"This is what makes signing in with Google today and with GitHub tomorrow "
+"land on the same account instead of creating two. Each network the person "
+"uses gets added to their account, and any of them works from then on."
+msgstr ""
+"É isto que faz entrar com o Google hoje e com o GitHub amanhã cair na mesma "
+"conta em vez de criar duas. Cada rede que a pessoa usa é somada à conta "
+"dela, e a partir daí qualquer uma funciona."
+
+#: includes/admin-social.php:281
+msgid ""
+"Turned off, someone whose email is already registered simply cannot get in "
+"with a social network. Only turn it off if you do not trust the provider to "
+"verify its own users’ email addresses."
+msgstr ""
+"Desativado, alguém cujo e-mail já está cadastrado simplesmente não consegue "
+"entrar com uma rede social. Só desative se você não confiar que o provedor "
+"verifique o e-mail da sua própria gente."
+
+#: includes/admin-social.php:286
+msgid "Create accounts"
+msgstr "Criar contas"
+
+#: includes/admin-social.php:290
+msgid "If the email does not exist yet, create the account"
+msgstr "Se o e-mail ainda não existir, criar a conta"
+
+#: includes/admin-social.php:292
+msgid ""
+"Turned off, only people who already have an account can use the social "
+"buttons."
+msgstr "Desativado, só quem já tem conta pode usar os botões sociais."
+
+#: includes/admin-social.php:296
+msgid "Verified email only"
+msgstr "Só e-mail verificado"
+
+#: includes/admin-social.php:300
+msgid ""
+"Refuse the sign-in when the provider does not say the email is verified"
+msgstr ""
+"Recusar o acesso quando o provedor não disser que o e-mail está verificado"
+
+#: includes/admin-social.php:302
+msgid ""
+"Stricter, and a few providers never send that flag: with this on, those stop"
+" working."
+msgstr ""
+"Mais rigoroso, e alguns provedores nunca mandam esse dado: com isto ativado,"
+" esses deixam de funcionar."
+
+#: includes/admin-social.php:306
+msgid "Roles that cannot use it"
+msgstr "Funções que não podem usar"
+
+#: includes/admin-social.php:319
+msgid ""
+"People with one of these roles have to use the email link. It is the account"
+" with the most power that is worth protecting: an administrator who signs in"
+" with Google depends on that Google account never being taken over."
+msgstr ""
+"Quem tiver uma destas funções tem que usar o link por e-mail. É a conta com "
+"mais poder que vale a pena proteger: um administrador que entra com o Google"
+" depende de essa conta do Google nunca ser tomada."
+
+#: includes/admin-social.php:322
+msgid "Nobody is locked out by this: the email link is always there."
+msgstr ""
+"Ninguém fica de fora por causa disto: o link por e-mail está sempre ali."
+
+#: includes/admin-social.php:331
+msgid ""
+"How an account ends up, and how one person ends up with several networks"
+msgstr "Como uma conta fica, e como uma pessoa acaba com várias redes"
+
+#. translators: 1: name of the role accounts are created with, 2: name of the
+#. screen where it is chosen
+#: includes/admin-social.php:336
+#, php-format
+msgid ""
+"There is nothing to choose here, and that is on purpose: a new account gets "
+"the email address as its username, no password at all —not even one nobody "
+"knows how to use— and the role %1$s, which is set once for the whole site on"
+" the %2$s screen, because a role per provider would be a quiet way of "
+"handing out privileges. The name comes from the provider and only fills in "
+"what the person has not written themselves. Each linked network is stored on"
+" the person, so anybody can add a second and a third from their profile and "
+"unlink them again, and from then on any of them opens the same account."
+msgstr ""
+"Aqui não há nada para escolher, e é de propósito: uma conta nova recebe o "
+"endereço de e-mail como nome de usuário, nenhuma senha —nem mesmo uma que "
+"ninguém saiba usar— e a função %1$s, definida uma vez para o site inteiro na"
+" tela %2$s, porque uma função por provedor seria um jeito silencioso de "
+"distribuir privilégios. O nome vem do provedor e só preenche o que a pessoa "
+"não escreveu. Cada rede vinculada fica guardada na pessoa, então qualquer um"
+" pode adicionar uma segunda e uma terceira no seu perfil e desvinculá-las, e"
+" a partir daí qualquer uma abre a mesma conta."
+
+#: includes/admin-social.php:353 includes/admin-social.php:446
+msgid "Getting started"
+msgstr "Começar"
+
+#: includes/admin-social.php:355
+msgid "Usage"
+msgstr "Uso"
+
+#: includes/admin-social.php:372
+msgid "Provider saved."
+msgstr "Provedor salvo."
+
+#: includes/admin-social.php:380
+msgid "Back to all providers"
+msgstr "Voltar a todos os provedores"
+
+#: includes/admin-social.php:391
+msgid "Client ID"
+msgstr "ID de cliente"
+
+#: includes/admin-social.php:395
+msgid "Secret"
+msgstr "Segredo"
+
+#: includes/admin-social.php:403
+msgid "Show the button"
+msgstr "Mostrar o botão"
+
+#: includes/admin-social.php:412
+msgid ""
+"The buttons are drawn by the sign-in shortcode, together with the email "
+"form. There is nothing else to place."
+msgstr ""
+"Os botões são desenhados pelo shortcode de acesso, junto com o formulário de"
+" e-mail. Não há mais nada para colocar."
+
+#. translators: %s: provider name
+#: includes/admin-social.php:424
+#, php-format
+msgid "A direct link to sign in with %s, if you want it somewhere else:"
+msgstr "Um link direto para entrar com %s, se você quiser em outro lugar:"
+
+#. translators: %s: provider name
+#: includes/admin-social.php:451
+#, php-format
+msgid ""
+"To let people sign in with their %s account you have to create an app there."
+" Below is the whole thing, click by click."
+msgstr ""
+"Para que as pessoas possam entrar com a conta %s é preciso criar um "
+"aplicativo lá. Aqui está tudo, clique a clique."
+
+#: includes/admin-social.php:458
+msgid "The URL they are going to ask you for"
+msgstr "A URL que vão pedir para você"
+
+#: includes/admin-social.php:459
+msgid ""
+"Keep it at hand: one of the steps below asks for it, and it has to be pasted"
+" exactly as it is."
+msgstr ""
+"Deixe à mão: uma das etapas abaixo pede por ela, e tem que ser colada "
+"exatamente como está."
+
+#: includes/admin-social.php:461
+msgid ""
+"Depending on the provider it is called redirect URI, callback URL, return "
+"URL or authorized redirect URL."
+msgstr ""
+"Dependendo do provedor ela se chama redirect URI, callback URL, return URL "
+"ou authorized redirect URL."
+
+#. translators: %s: provider name
+#: includes/admin-social.php:468
+#, php-format
+msgid "Step by step in %s"
+msgstr "Passo a passo no %s"
+
+#: includes/admin-social.php:476
+msgid "Open the console"
+msgstr "Abrir o console"
+
+#: includes/admin-social.php:490
+msgid "Watch out:"
+msgstr "Atenção:"
+
+#: includes/admin-social.php:496
+msgid "The provider’s own documentation:"
+msgstr "A documentação do próprio provedor:"
+
+#: includes/admin-social.php:500
+msgid "And then, here"
+msgstr "E depois, aqui"
+
+#: includes/admin-social.php:501
+msgid ""
+"Paste the client ID and the secret in Settings, run the live test, and turn "
+"the button on."
+msgstr ""
+"Cole o ID de cliente e o segredo em Configurações, execute o teste ao vivo e"
+" ative o botão."
+
+#: includes/admin-social.php:513
+msgid "I already created the app"
+msgstr "Já criei o aplicativo"
+
+#: includes/admin-social.php:517
+msgid "What this provider asks for"
+msgstr "O que este provedor pede"
+
+#: includes/admin-social.php:520
+msgid "Permissions requested"
+msgstr "Permissões solicitadas"
+
+#: includes/admin-social.php:521
+msgid "Authorization URL"
+msgstr "URL de autorização"
+
+#: includes/admin-social.php:524
+msgid "PKCE"
+msgstr "PKCE"
+
+#: includes/admin-social.php:525
+msgid ""
+"Required by this provider. The plugin handles it; nothing to configure."
+msgstr ""
+"Exigido por este provedor. O plugin cuida disso; não há nada para "
+"configurar."
+
+#: includes/admin-social.php:550
+msgid "Run the live test"
+msgstr "Executar o teste ao vivo"
+
+#: includes/admin-social.php:551
+msgid "Test it again"
+msgstr "Testar de novo"
+
+#: includes/admin-social.php:571
+msgid "Nothing loaded yet"
+msgstr "Nada carregado ainda"
+
+#: includes/admin-social.php:572
+msgid ""
+"Create the app, load the redirect URL and paste the client ID and the secret"
+" in Settings."
+msgstr ""
+"Crie o aplicativo, carregue a URL de retorno e cole o ID de cliente e o "
+"segredo em Configurações."
+
+#: includes/admin-social.php:581
+msgid "This needs to be tested"
+msgstr "Isto precisa ser testado"
+
+#. translators: %s: provider name
+#: includes/admin-social.php:586
+#, php-format
+msgid ""
+"A window opens, %s asks you to authorise, and it comes back here. Nobody is "
+"signed in and nothing is saved to your account — it only checks that the "
+"round trip works. Until it does, the button cannot be enabled."
+msgstr ""
+"Uma janela se abre, o %s pede autorização, e volta para cá. Ninguém entra e "
+"nada é salvo na sua conta — só se verifica que o ida e volta funciona. "
+"Enquanto não funcionar, o botão não pode ser ativado."
+
+#: includes/admin-social.php:599
+msgid "Tested and working"
+msgstr "Testado e funcionando"
+
+#: includes/admin-social.php:602
+msgid "the button is showing on the sign-in page."
+msgstr "o botão está aparecendo na página de acesso."
+
+#: includes/admin-social.php:603
+msgid "the button is not showing: it is disabled."
+msgstr "o botão não está aparecendo: está desativado."
+
+#: includes/admin-status.php:53
+msgid "No page chosen yet."
+msgstr "Nenhuma página escolhida ainda."
+
+#: includes/admin-status.php:59
+msgid "The chosen page no longer exists."
+msgstr "A página escolhida não existe mais."
+
+#. translators: %s: title of the page
+#: includes/admin-status.php:68
+#, php-format
+msgid "“%s” is not published, so nobody can reach it."
+msgstr "“%s” não está publicada, então ninguém consegue chegar até ela."
+
+#. translators: 1: title of the page, 2: the shortcode that is missing
+#: includes/admin-status.php:80
+#, php-format
+msgid "“%1$s” does not contain %2$s, so the page renders empty."
+msgstr "“%1$s” não contém %2$s, então a página fica vazia."
+
+#: includes/admin-status.php:98
+msgid "Account page"
+msgstr "Página da conta"
+
+#: includes/admin-status.php:106 includes/admin-status.php:114
+#: includes/admin-status.php:124
+msgid "Outgoing mail"
+msgstr "E-mail de saída"
+
+#: includes/admin-status.php:110
+msgid "The last message could not be sent."
+msgstr "A última mensagem não pôde ser enviada."
+
+#. translators: %s: how long ago, e.g. "2 hours"
+#: includes/admin-status.php:118
+#, php-format
+msgid "Last message sent %s ago."
+msgstr "Última mensagem enviada há %s."
+
+#: includes/admin-status.php:126
+msgid "Nothing sent yet. Send a test from Tools."
+msgstr "Nada enviado ainda. Mande um teste em Ferramentas."
+
+#: includes/admin-status.php:140
+msgid "The site is served over HTTPS."
+msgstr "O site é servido por HTTPS."
+
+#: includes/admin-status.php:146
+msgid ""
+"Passkeys are on, but WebAuthn does not work outside HTTPS: nobody can "
+"register or use one."
+msgstr ""
+"As passkeys estão ativadas, mas o WebAuthn não funciona fora de HTTPS: "
+"ninguém consegue registrar nem usar uma."
+
+#: includes/admin-status.php:147
+msgid ""
+"The site is not served over HTTPS. Passkeys will not work if you turn them "
+"on."
+msgstr ""
+"O site não é servido por HTTPS. As passkeys não vão funcionar se você ativá-"
+"las."
+
+#: includes/admin-status.php:156 includes/admin-status.php:160
+msgid "Permalinks"
+msgstr "Links permanentes"
+
+#: includes/admin-status.php:158
+msgid ""
+"Set to “Plain”. The account area needs pretty permalinks to route its "
+"sections."
+msgstr ""
+"Definidos como “Simples”. A área de conta precisa de links bonitos para "
+"rotear as suas seções."
+
+#: includes/admin-status.php:164 includes/admin-status.php:166
+msgid "Rewrite rules"
+msgstr "Regras de reescrita"
+
+#: includes/admin-status.php:164
+msgid "Up to date."
+msgstr "Em dia."
+
+#: includes/admin-status.php:168
+msgid ""
+"Not rewritten for this version yet. Flush them from Tools if a section 404s."
+msgstr ""
+"Ainda não foram reescritas para esta versão. Recarregue-as em Ferramentas se"
+" uma seção der 404."
+
+#: includes/admin-status.php:198
+msgid "password"
+msgstr "senha"
+
+#: includes/admin-status.php:202 includes/admin-status.php:217
+msgid "e-mail link"
+msgstr "link por e-mail"
+
+#: includes/admin-status.php:206
+msgid "social login"
+msgstr "login social"
+
+#: includes/admin-status.php:211 includes/admin-status.php:221
+#: includes/admin-status.php:227
+msgid "Ways in"
+msgstr "Formas de entrar"
+
+#: includes/admin-status.php:213
+msgid "No sign-in method is enabled at all."
+msgstr "Nenhum método de acesso está ativado."
+
+#: includes/admin-status.php:223
+msgid ""
+"The e-mail link is the only way in, and mail is failing. Nobody can sign in."
+msgstr ""
+"O link por e-mail é a única forma de entrar, e o e-mail está falhando. "
+"Ninguém consegue entrar."
+
+#. translators: %d: number of providers
+#: includes/admin-status.php:265
+#, php-format
+msgid "%d provider configured and enabled."
+msgid_plural "%d providers configured and enabled."
+msgstr[0] "%d provedor configurado e ativado."
+msgstr[1] "%d provedores configurados e ativados."
+
+#. translators: %s: comma-separated provider names
+#: includes/admin-status.php:276
+#, php-format
+msgid "Credentials are saved but the provider is off, so no button shows: %s."
+msgstr ""
+"As credenciais estão salvas mas o provedor está desativado, então nenhum "
+"botão aparece: %s."
+
+#: includes/admin-status.php:319
+msgid "Plugin version"
+msgstr "Versão do plugin"
+
+#: includes/admin-status.php:320
+msgid "WordPress"
+msgstr "WordPress"
+
+#: includes/admin-status.php:322
+msgid "Site language"
+msgstr "Idioma do site"
+
+#: includes/admin-status.php:323
+msgid "Multisite"
+msgstr "Multisite"
+
+#: includes/admin-status.php:323
+msgid "yes"
+msgstr "sim"
+
+#: includes/admin-status.php:323
+msgid "no"
+msgstr "não"
+
+#: includes/admin-status.php:324
+msgid "Object cache"
+msgstr "Cache de objetos"
+
+#: includes/admin-status.php:324
+msgid "external"
+msgstr "externo"
+
+#: includes/admin-status.php:324
+msgid "none"
+msgstr "nenhum"
+
+#: includes/admin-status.php:325
+msgid "WordPress profile"
+msgstr "Perfil do WordPress"
+
+#: includes/admin-status.php:332
+msgid ""
+"Nothing here changes anything: it looks and it counts. What needs fixing "
+"gets fixed in Tools."
+msgstr ""
+"Nada aqui muda nada: olha e conta. O que precisar de conserto se conserta em"
+" Ferramentas."
+
+#: includes/admin-status.php:344
+msgid "Everything checks out."
+msgstr "Está tudo certo."
+
+#. translators: %d: number of failing checks
+#: includes/admin-status.php:349
+#, php-format
+msgid "%d thing needs attention."
+msgid_plural "%d things need attention."
+msgstr[0] "%d coisa precisa de atenção."
+msgstr[1] "%d coisas precisam de atenção."
+
+#: includes/admin-status.php:379
+msgid "How much of it is being used"
+msgstr "Quanto disto está em uso"
+
+#: includes/admin-status.php:383
+msgid "Accounts"
+msgstr "Contas"
+
+#: includes/admin-status.php:384
+msgid "With an authenticator app"
+msgstr "Com um aplicativo autenticador"
+
+#: includes/admin-status.php:385
+msgid "With a passkey"
+msgstr "Com uma passkey"
+
+#: includes/admin-status.php:386
+msgid "With a social account linked"
+msgstr "Com uma conta social vinculada"
+
+#: includes/admin-status.php:387
+msgid "With a public name"
+msgstr "Com um nome público"
+
+#: includes/admin-status.php:400
+msgid "Environment"
+msgstr "Ambiente"
+
+#: includes/admin-status.php:401
+msgid ""
+"Copy this into a support message and half the back-and-forth disappears."
+msgstr ""
+"Cole isto em um pedido de suporte e metade das idas e voltas desaparece."
+
+#: includes/admin-tools.php:53 includes/mail.php:90 includes/sessions.php:279
+msgid "You are not allowed to do this."
+msgstr "Você não tem permissão para fazer isto."
+
+#: includes/admin-tools.php:73
+msgid "Nothing to do."
+msgstr "Nada a fazer."
+
+#: includes/admin-tools.php:91
+msgid "Rewrite rules rebuilt."
+msgstr "Regras de reescrita refeitas."
+
+#: includes/admin-tools.php:111 includes/admin-tools.php:153
+msgid "No account with that e-mail address."
+msgstr "Nenhuma conta com esse endereço de e-mail."
+
+#. translators: %s: e-mail address
+#: includes/admin-tools.php:120
+#, php-format
+msgid "A fresh code is on its way to %s."
+msgstr "Um código novo está a caminho de %s."
+
+#: includes/admin-tools.php:123
+msgid "The code could not be sent. Check outgoing mail in Status."
+msgstr "Não foi possível enviar o código. Veja o e-mail de saída em Estado."
+
+#: includes/admin-tools.php:147
+msgid ""
+"Every session on the site is closed. Everyone signs in again, you included."
+msgstr ""
+"Todas as sessões do site foram fechadas. Todo mundo entra de novo, você "
+"inclusive."
+
+#. translators: %s: e-mail address
+#: includes/admin-tools.php:161
+#, php-format
+msgid "Every session for %s is closed."
+msgstr "Todas as sessões de %s foram fechadas."
+
+#: includes/admin-tools.php:230
+msgid "No file uploaded."
+msgstr "Nenhum arquivo enviado."
+
+#: includes/admin-tools.php:237
+msgid "That file is not a DiluxOne Users+ export."
+msgstr "Esse arquivo não é uma exportação do DiluxOne Users+."
+
+#. translators: %d: number of settings written
+#: includes/admin-tools.php:261
+#, php-format
+msgid "%d setting restored."
+msgid_plural "%d settings restored."
+msgstr[0] "%d configuração restaurada."
+msgstr[1] "%d configurações restauradas."
+
+#: includes/admin-tools.php:299 includes/admin.php:76
+msgid "Tools"
+msgstr "Ferramentas"
+
+#: includes/admin-tools.php:308
+msgid ""
+"Five buttons for when something went wrong and somebody is waiting on the "
+"other side."
+msgstr ""
+"Cinco botões para quando algo deu errado e alguém está esperando do outro "
+"lado."
+
+#: includes/admin-tools.php:311
+msgid "Rebuild the rewrite rules"
+msgstr "Refazer as regras de reescrita"
+
+#: includes/admin-tools.php:312
+msgid ""
+"Use this when a section of the account area returns a 404. The account area "
+"routes its sections through rewrite rules, and those go stale when "
+"permalinks change or another plugin rewrites them."
+msgstr ""
+"Use isto quando uma seção da área de conta devolver 404. A área de conta "
+"roteia as suas seções por regras de reescrita, e elas ficam desatualizadas "
+"quando os links permanentes mudam ou outro plugin as reescreve."
+
+#: includes/admin-tools.php:315
+msgid "Rebuild"
+msgstr "Refazer"
+
+#: includes/admin-tools.php:320
+msgid "Send a test message"
+msgstr "Enviar uma mensagem de teste"
+
+#: includes/admin-tools.php:321
+msgid ""
+"It goes to your own address. If it does not arrive, the sign-in links and "
+"the second-step codes are not arriving either."
+msgstr ""
+"Vai para o seu próprio endereço. Se não chegar, os links de acesso e os "
+"códigos da segunda etapa também não estão chegando."
+
+#: includes/admin-tools.php:323
+msgid "Send it"
+msgstr "Enviar"
+
+#: includes/admin-tools.php:330
+msgid "Send someone a fresh code"
+msgstr "Enviar um código novo para alguém"
+
+#: includes/admin-tools.php:331
+msgid ""
+"For when a person says the second-step code never arrived. It sends a new "
+"one and voids the previous one. You never get to see it — the code is stored"
+" hashed, which is the point."
+msgstr ""
+"Para quando uma pessoa diz que o código da segunda etapa nunca chegou. Envia"
+" um novo e anula o anterior. Você nunca chega a vê-lo — o código fica "
+"guardado com hash, que é justamente o ponto."
+
+#: includes/admin-tools.php:336 includes/admin-tools.php:351
+msgid "their e-mail address"
+msgstr "o endereço de e-mail dela"
+
+#: includes/admin-tools.php:338
+msgid "Send the code"
+msgstr "Enviar o código"
+
+#: includes/admin-tools.php:344
+msgid ""
+"Closing every session on the site signs you out too. That is on purpose: if "
+"you are doing this, the session you are least sure about might be your own."
+msgstr ""
+"Fechar todas as sessões do site desconecta você também. É de propósito: se "
+"você está fazendo isto, a sessão da qual você menos tem certeza pode ser a "
+"sua."
+
+#: includes/admin-tools.php:348
+msgid "Just this person:"
+msgstr "Só esta pessoa:"
+
+#: includes/admin-tools.php:354
+msgid "Everyone on the site, me included"
+msgstr "Todo mundo no site, eu inclusive"
+
+#: includes/admin-tools.php:356
+msgid "Close them"
+msgstr "Fechá-las"
+
+#: includes/admin-tools.php:361
+msgid "Settings as a file"
+msgstr "Configurações como arquivo"
+
+#: includes/admin-tools.php:362
+msgid ""
+"Take the settings and the user fields from one site to another — staging to "
+"production, or a site you set up once and want to repeat. Social login "
+"credentials are deliberately left out: those are secrets, and a JSON file "
+"that travels by e-mail is no place for one."
+msgstr ""
+"Leve as configurações e os campos de usuário de um site para outro — de "
+"staging para produção, ou para um site que você montou uma vez e quer "
+"repetir. As credenciais do login social ficam de fora de propósito: são "
+"segredos, e um arquivo JSON que viaja por e-mail não é lugar para isso."
+
+#: includes/admin-tools.php:366
+msgid "Download them"
+msgstr "Baixar"
+
+#: includes/admin-tools.php:373
+msgid ""
+"Restoring overwrites what is set right now. Only keys this plugin knows are "
+"read, so a file from somewhere else cannot write settings that are not ours."
+msgstr ""
+"Restaurar sobrescreve o que está definido agora. Só são lidas as chaves que "
+"este plugin conhece, então um arquivo de outro lugar não pode escrever "
+"configurações que não são nossas."
+
+#: includes/admin-tools.php:378
+msgid "Restore them"
+msgstr "Restaurar"
+
+#: includes/admin.php:25
+msgid "DiluxOne Users+"
+msgstr "DiluxOne Users+"
+
+#: includes/admin.php:68
+msgid "Overview"
+msgstr "Visão geral"
+
+#: includes/admin.php:200
+msgid ""
+"This site fixes this from code: whatever is chosen here, it stays as it is."
+msgstr ""
+"Este site fixa isto pelo código: seja o que for escolhido aqui, fica como "
+"está."
+
+#: includes/admin.php:203
+msgid "It is filtered here — open the file to change it or take it out:"
+msgstr "É filtrado aqui — abra o arquivo para mudar ou tirar:"
+
+#. translators: %s: site name
+#: includes/auth-email.php:43
+#, php-format
+msgid "Your code for %s"
+msgstr "Seu código para %s"
+
+#. translators: 1: the code, 2: how many minutes it lasts
+#: includes/auth-email.php:49
+#, php-format
+msgid ""
+"Your sign-in code is:\n"
+"\n"
+"%1$s\n"
+"\n"
+"It is good for %2$d minutes. If you did not ask for it, ignore this message: without the code nobody gets in."
+msgstr ""
+"Seu código de acesso é:\n"
+"\n"
+"%1$s\n"
+"\n"
+"Vale por %2$d minutos. Se você não pediu, ignore esta mensagem: sem o código ninguém entra."
+
+#: includes/auth-passkeys.php:325
+msgid "This site does not use passkeys."
+msgstr "Este site não usa passkeys."
+
+#: includes/auth-passkeys.php:332
+msgid "Session expired. Reload the page."
+msgstr "A sessão expirou. Recarregue a página."
+
+#: includes/auth-passkeys.php:354
+msgid "Unknown step."
+msgstr "Etapa desconhecida."
+
+#: includes/auth-passkeys.php:375
+msgid "That did not check out. Try again."
+msgstr "Isso não conferiu. Tente de novo."
+
+#: includes/auth-passkeys.php:382
+msgid "That key is of a kind this site cannot verify."
+msgstr "Essa chave é de um tipo que este site não consegue verificar."
+
+#: includes/auth-passkeys.php:392
+msgid "That one was already here."
+msgstr "Essa já estava aqui."
+
+#. translators: %s: the name given to the passkey
+#: includes/auth-passkeys.php:413
+#, php-format
+msgid "A passkey was added: %s."
+msgstr "Uma passkey foi adicionada: %s."
+
+#: includes/auth-passkeys.php:420
+msgid "Passkey saved."
+msgstr "Passkey salva."
+
+#: includes/auth-passkeys.php:473
+msgid "Passkey"
+msgstr "Passkey"
+
+#: includes/auth-passkeys.php:490
+msgid "That passkey did not check out."
+msgstr "Essa passkey não conferiu."
+
+#: includes/auth-passkeys.php:578
+msgid "That did not work. Try again."
+msgstr "Não funcionou. Tente de novo."
+
+#: includes/auth-passkeys.php:579
+msgid "This browser is too old for passkeys."
+msgstr "Este navegador é antigo demais para passkeys."
+
+#: includes/auth-passkeys.php:606
+msgid "A passkey was removed."
+msgstr "Uma passkey foi removida."
+
+#: includes/auth.php:60
+msgid ""
+"We send a six-digit code to the address on the account. Nothing to install."
+msgstr ""
+"Enviamos um código de seis dígitos para o endereço da conta. Nada para "
+"instalar."
+
+#: includes/auth.php:69
+msgid ""
+"The six-digit code that changes every thirty seconds, from Google "
+"Authenticator, 1Password, Aegis or whichever one you use."
+msgstr ""
+"O código de seis dígitos que muda a cada trinta segundos, do Google "
+"Authenticator, 1Password, Aegis ou o que você usar."
+
+#: includes/auth.php:212
+msgid "the link we email you"
+msgstr "o link que enviamos por e-mail"
+
+#: includes/auth.php:216 includes/notify.php:177
+msgid "your password"
+msgstr "sua senha"
+
+#: includes/auth.php:220 includes/notify.php:178
+msgid "a social account"
+msgstr "uma conta social"
+
+#: includes/avatar.php:177
+msgid "This site does not accept profile photos."
+msgstr "Este site não aceita fotos de perfil."
+
+#: includes/avatar.php:181
+msgid "No file arrived."
+msgstr "Nenhum arquivo chegou."
+
+#. translators: %s: maximum size, already formatted
+#: includes/avatar.php:191
+#, php-format
+msgid "The photo is too heavy: at most %s."
+msgstr "A foto é pesada demais: no máximo %s."
+
+#: includes/avatar.php:202
+msgid "That is not a photo. It has to be a JPG, PNG, GIF or WebP."
+msgstr "Isso não é uma foto. Tem que ser JPG, PNG, GIF ou WebP."
+
+#: includes/fields-forms.php:77 includes/fields-forms.php:103
+msgid "— Choose —"
+msgstr "— Escolher —"
+
+#: includes/fields-forms.php:240 includes/fields-forms.php:273
+msgid "Additional details"
+msgstr "Dados adicionais"
+
+#. translators: %s: field name
+#: includes/fields-forms.php:329
+#, php-format
+msgid "Error: “%s” is required."
+msgstr "Erro: “%s” é obrigatório."
+
+#: includes/fields.php:23
+msgid "Long text"
+msgstr "Texto longo"
+
+#: includes/fields.php:24 templates/login.php:76
+msgid "Email address"
+msgstr "Endereço de e-mail"
+
+#: includes/fields.php:25
+msgid "Phone with country code"
+msgstr "Telefone com código do país"
+
+#: includes/fields.php:26 includes/fields.php:118
+msgid "Country"
+msgstr "País"
+
+#: includes/fields.php:27
+msgid "Web address"
+msgstr "Endereço web"
+
+#: includes/fields.php:28
+msgid "Number"
+msgstr "Número"
+
+#: includes/fields.php:29
+msgid "Date"
+msgstr "Data"
+
+#: includes/fields.php:30
+msgid "Fixed list"
+msgstr "Lista fixa"
+
+#: includes/fields.php:31
+msgid "Text with suggestions"
+msgstr "Texto com sugestões"
+
+#: includes/fields.php:32
+msgid "Yes / no"
+msgstr "Sim / não"
+
+#: includes/fields.php:98
+msgid "First name"
+msgstr "Nome"
+
+#: includes/fields.php:108
+msgid "Last name"
+msgstr "Sobrenome"
+
+#: includes/fields.php:130
+msgid "Date of birth"
+msgstr "Data de nascimento"
+
+#: includes/fields.php:132
+msgid "So we can wish you a happy birthday."
+msgstr "Para podermos desejar feliz aniversário."
+
+#: includes/fields.php:140
+msgid "Gender"
+msgstr "Gênero"
+
+#: includes/fields.php:142
+msgid "However you identify. Write anything you like, or leave it empty."
+msgstr "Como você se identifica. Escreva o que quiser, ou deixe vazio."
+
+#: includes/fields.php:144
+msgid "Woman"
+msgstr "Mulher"
+
+#: includes/fields.php:145
+msgid "Man"
+msgstr "Homem"
+
+#: includes/fields.php:146
+msgid "Non-binary"
+msgstr "Não binário"
+
+#: includes/fields.php:147
+msgid "Prefer not to say"
+msgstr "Prefiro não dizer"
+
+#: includes/fields.php:155
+msgid "Mobile (WhatsApp)"
+msgstr "Celular (WhatsApp)"
+
+#: includes/fields.php:157
+msgid "With country code. Only for notifications you ask for."
+msgstr "Com código do país. Só para avisos que você pedir."
+
+#: includes/fields.php:190
+msgid "Main block — what the site needs"
+msgstr "Bloco principal — o que o site precisa"
+
+#: includes/fields.php:191
+msgid "Extra block — “if you like, tell us more”"
+msgstr "Bloco extra — “se quiser, conte um pouco mais”"
+
+#: includes/fields.php:395
+msgid "This one cannot be changed from here. Write to us if it is wrong."
+msgstr ""
+"Este não pode ser alterado por aqui. Escreva para nós se estiver errado."
+
+#: includes/fields.php:405
+msgid ""
+"You already used up the changes for this one. Write to us if it is wrong."
+msgstr "Você já usou as alterações deste. Escreva para nós se estiver errado."
+
+#. translators: %d: how many more times they can change it
+#: includes/fields.php:410
+#, php-format
+msgid "You can change this one %d more time."
+msgid_plural "You can change this one %d more times."
+msgstr[0] "Você pode alterar este %d vez a mais."
+msgstr[1] "Você pode alterar este %d vezes a mais."
+
+#: includes/handle.php:97
+msgid "You have to write something."
+msgstr "Você tem que escrever alguma coisa."
+
+#: includes/handle.php:104
+msgid "It cannot have spaces: this goes in a web address."
+msgstr "Não pode ter espaços: isto vai em um endereço web."
+
+#: includes/handle.php:108
+msgid ""
+"It cannot be an email address: that is how you sign in, not how people see "
+"you."
+msgstr ""
+"Não pode ser um endereço de e-mail: é assim que você entra, não como as "
+"pessoas veem você."
+
+#. translators: %d: minimum number of characters
+#: includes/handle.php:116
+#, php-format
+msgid "It is too short: at least %d characters."
+msgstr "É curto demais: pelo menos %d caracteres."
+
+#. translators: %d: maximum number of characters
+#: includes/handle.php:127
+#, php-format
+msgid "It is too long: at most %d characters."
+msgstr "É longo demais: no máximo %d caracteres."
+
+#: includes/handle.php:134
+msgid "That one is taken by the site itself. Pick another."
+msgstr "Esse é usado pelo próprio site. Escolha outro."
+
+#: includes/handle.php:138
+msgid "Somebody already has that one."
+msgstr "Alguém já tem esse."
+
+#. translators: %s: date from which it can be changed
+#: includes/handle.php:184
+#, php-format
+msgid "You can change it again on %s."
+msgstr "Você pode alterar de novo em %s."
+
+#: includes/handle.php:345
+msgid "This is the one you have now."
+msgstr "É o que você tem agora."
+
+#: includes/handle.php:346
+msgid "Nobody is using it: it is yours when you save."
+msgstr "Ninguém está usando: é seu quando você salvar."
+
+#: includes/handle.php:398
+msgid "Checking…"
+msgstr "Verificando…"
+
+#: includes/handle.php:399
+msgid "We could not check it right now."
+msgstr "Não conseguimos verificar agora."
+
+#: includes/login.php:174
+msgid "Someone"
+msgstr "Alguém"
+
+#. translators: %s: site name
+#: includes/login.php:183
+#, php-format
+msgid "Your sign-in link for %s"
+msgstr "Seu link de acesso para %s"
+
+#: includes/login.php:196
+msgid ""
+"Click here to sign in:\n"
+"\n"
+"{link}\n"
+"\n"
+"The link expires in {minutes} minutes and works once.\n"
+"\n"
+"If you did not ask for it, ignore this message: nobody can get into your account without it."
+msgstr ""
+"Clique aqui para entrar:\n"
+"\n"
+"{link}\n"
+"\n"
+"O link expira em {minutes} minutos e serve uma única vez.\n"
+"\n"
+"Se você não pediu, ignore esta mensagem: ninguém entra na sua conta sem ele."
+
+#. translators: %s: site name
+#: includes/mail.php:101
+#, php-format
+msgid "Test from %s"
+msgstr "Teste de %s"
+
+#: includes/mail.php:104
+msgid ""
+"If this arrived, the site can send the sign-in links, the second-step codes "
+"and the data requests. If it did not, none of those work either."
+msgstr ""
+"Se isto chegou, o site consegue enviar os links de acesso, os códigos da "
+"segunda etapa e os pedidos de dados. Se não chegou, nada disso funciona."
+
+#: includes/mail.php:111
+msgid "wp_mail() returned false and said nothing else."
+msgstr "wp_mail() devolveu false e não disse mais nada."
+
+#: includes/notify.php:35
+msgid "When somebody signs in to my account from a new device"
+msgstr "Quando alguém entra na minha conta de um dispositivo novo"
+
+#: includes/notify.php:36
+msgid ""
+"The first time a browser or a phone gets in. From then on, that one is "
+"quiet."
+msgstr ""
+"A primeira vez que um navegador ou um telefone entra. Daí em diante, esse "
+"fica quieto."
+
+#: includes/notify.php:41
+msgid "When something in my security changes"
+msgstr "Quando algo muda na minha segurança"
+
+#: includes/notify.php:42
+msgid ""
+"A passkey added or removed, two-step verification turned on or off, a social"
+" account linked or unlinked."
+msgstr ""
+"Uma passkey adicionada ou removida, a verificação em duas etapas ativada ou "
+"desativada, uma conta social vinculada ou desvinculada."
+
+#. translators: %s: site name
+#: includes/notify.php:158
+#, php-format
+msgid "New sign-in to your account on %s"
+msgstr "Novo acesso à sua conta em %s"
+
+#. translators: 1: device and browser, 2: date and time, 3: how they signed
+#. in, 4: address of the account area
+#: includes/notify.php:163
+#, php-format
+msgid ""
+"Somebody just signed in to your account.\n"
+"\n"
+"%1$s\n"
+"%2$s\n"
+"Way in: %3$s\n"
+"\n"
+"If it was you, there is nothing to do. If it was not, close that session and review your security here:\n"
+"%4$s"
+msgstr ""
+"Alguém acabou de entrar na sua conta.\n"
+"\n"
+"%1$s\n"
+"%2$s\n"
+"Entrou com: %3$s\n"
+"\n"
+"Se foi você, não há nada a fazer. Se não foi, feche essa sessão e revise a sua segurança aqui:\n"
+"%4$s"
+
+#: includes/notify.php:176
+msgid "a link sent to your email"
+msgstr "um link enviado para o seu e-mail"
+
+#: includes/notify.php:179
+msgid "a passkey"
+msgstr "uma passkey"
+
+#. translators: %s: site name
+#: includes/notify.php:201
+#, php-format
+msgid "Your security on %s changed"
+msgstr "Sua segurança em %s mudou"
+
+#. translators: 1: what changed, 2: date and time, 3: address of the account
+#. area
+#: includes/notify.php:206
+#, php-format
+msgid ""
+"This changed in your account:\n"
+"\n"
+"%1$s\n"
+"%2$s\n"
+"\n"
+"If it was you, there is nothing to do. If it was not, review your security here:\n"
+"%3$s"
+msgstr ""
+"Isto mudou na sua conta:\n"
+"\n"
+"%1$s\n"
+"%2$s\n"
+"\n"
+"Se foi você, não há nada a fazer. Se não foi, revise a sua segurança aqui:\n"
+"%3$s"
+
+#: includes/passwordless.php:91
+msgid ""
+"This site signs you in without a password: with your email or with a social "
+"account."
+msgstr ""
+"Este site deixa você entrar sem senha: com o seu e-mail ou com uma conta "
+"social."
+
+#: includes/passwordless.php:163
+msgid "Your details are edited from your account on the site, not from here."
+msgstr "Seus dados são editados na sua conta no site, não por aqui."
+
+#: includes/passwordless.php:164
+msgid "Not from here"
+msgstr "Por aqui não"
+
+#: includes/sessions.php:40
+msgid "Unknown browser"
+msgstr "Navegador desconhecido"
+
+#: includes/sessions.php:81
+msgid "Phone"
+msgstr "Telefone"
+
+#: includes/sessions.php:82
+msgid "Computer"
+msgstr "Computador"
+
+#: includes/sessions.php:175 includes/shortcodes.php:134
+msgid "You have to sign in first."
+msgstr "Você precisa entrar primeiro."
+
+#: includes/sso-buttons.php:27
+msgid "Each brand’s colour"
+msgstr "A cor de cada marca"
+
+#: includes/sso-buttons.php:28
+msgid "White with a border"
+msgstr "Branco com borda"
+
+#: includes/sso-buttons.php:29
+msgid "Dark"
+msgstr "Escuro"
+
+#: includes/sso-buttons.php:39
+msgid "Rounded corners"
+msgstr "Cantos arredondados"
+
+#: includes/sso-buttons.php:40
+msgid "Pill"
+msgstr "Pílula"
+
+#: includes/sso-buttons.php:41
+msgid "Square corners"
+msgstr "Cantos retos"
+
+#: includes/sso-buttons.php:52
+msgid "Logo and text"
+msgstr "Logo e texto"
+
+#: includes/sso-buttons.php:53
+msgid "Logo only"
+msgstr "Só o logo"
+
+#: includes/sso-buttons.php:64
+msgid "One per row"
+msgstr "Um por linha"
+
+#: includes/sso-buttons.php:65
+msgid "Two per row"
+msgstr "Dois por linha"
+
+#: includes/sso-buttons.php:66
+msgid "As many as fit"
+msgstr "Quantos couberem"
+
+#: includes/sso-guides.php:49
+msgid ""
+"Open the Google Cloud console and pick a project in the selector at the top,"
+" or create one. Everything below happens inside that project."
+msgstr ""
+"Entre no console do Google Cloud e escolha um projeto no seletor de cima, ou"
+" crie um. Tudo o que vem abaixo acontece dentro desse projeto."
+
+#: includes/sso-guides.php:50
+msgid ""
+"Go to “APIs & Services” → “OAuth consent screen”. Choose user type "
+"“External”, and fill in the app name, the support email and the developer "
+"contact email. Save."
+msgstr ""
+"Vá em “APIs e serviços” → “Tela de consentimento OAuth”. Tipo de usuário: "
+"“Externo”. Preencha o nome do aplicativo, o e-mail de suporte e o e-mail de "
+"contato do desenvolvedor. Salve."
+
+#: includes/sso-guides.php:51
+msgid ""
+"Still on the consent screen, under “Audience”, either add your own account "
+"under “Test users” or press “Publish app”. While the app is in testing, only"
+" the test users can sign in."
+msgstr ""
+"Nessa mesma tela, em “Público”, adicione a sua conta em “Usuários de teste” "
+"ou clique em “Publicar app”. Enquanto o aplicativo estiver em teste, só "
+"entram os usuários de teste."
+
+#: includes/sso-guides.php:52
+msgid ""
+"Go to “APIs & Services” → “Credentials” → “Create credentials” → “OAuth "
+"client ID”."
+msgstr ""
+"Vá em “APIs e serviços” → “Credenciais” → “Criar credenciais” → “ID do "
+"cliente OAuth”."
+
+#: includes/sso-guides.php:53
+msgid ""
+"Application type: “Web application”. Give it a name — this one is only for "
+"you."
+msgstr ""
+"Tipo de aplicativo: “Aplicativo da Web”. Dê um nome — esse é só para você."
+
+#: includes/sso-guides.php:54
+msgid ""
+"Under “Authorized redirect URIs” press “Add URI” and paste the redirect URL "
+"from above. Under “Authorized JavaScript origins” put just the domain, with "
+"no path."
+msgstr ""
+"Em “URIs de redirecionamento autorizados” clique em “Adicionar URI” e cole a"
+" URL de retorno de cima. Em “Origens JavaScript autorizadas” coloque só o "
+"domínio, sem caminho."
+
+#: includes/sso-guides.php:55
+msgid ""
+"Press “Create”. Google shows the client ID and the client secret in a dialog"
+" — copy both before closing it."
+msgstr ""
+"Clique em “Criar”. O Google mostra o ID de cliente e o segredo em uma caixa:"
+" copie os dois antes de fechá-la."
+
+#: includes/sso-guides.php:57
+msgid ""
+"A brand new project needs no API enabled: sign-in works with the OAuth "
+"client alone. What does stop it is leaving the app in “Testing” and "
+"forgetting to add the person as a test user — they get “access blocked”."
+msgstr ""
+"Um projeto novo não precisa habilitar nenhuma API: o acesso funciona só com "
+"o cliente OAuth. O que trava mesmo é deixar o aplicativo em “Teste” e "
+"esquecer de adicionar a pessoa como usuário de teste: aparece “acesso "
+"bloqueado”."
+
+#: includes/sso-guides.php:62
+msgid ""
+"Open the Microsoft Entra admin center and go to “Identity” → “Applications” "
+"→ “App registrations” → “New registration”."
+msgstr ""
+"Entre no centro de administração do Microsoft Entra e vá em “Identidade” → "
+"“Aplicativos” → “Registros de aplicativo” → “Novo registro”."
+
+#: includes/sso-guides.php:63
+msgid "Give it a name — this is what people see on the consent screen."
+msgstr "Dê um nome — é o que as pessoas veem na tela de consentimento."
+
+#: includes/sso-guides.php:64
+msgid ""
+"Supported account types: “Accounts in any organizational directory and "
+"personal Microsoft accounts”. Any narrower option locks out @outlook.com and"
+" @hotmail.com addresses."
+msgstr ""
+"Tipos de conta com suporte: “Contas em qualquer diretório organizacional e "
+"contas pessoais da Microsoft”. Qualquer opção mais restrita deixa de fora os"
+" endereços @outlook.com e @hotmail.com."
+
+#: includes/sso-guides.php:65
+msgid ""
+"Under “Redirect URI” pick the platform “Web” and paste the redirect URL from"
+" above. Then press “Register”."
+msgstr ""
+"Em “URI de redirecionamento” escolha a plataforma “Web” e cole a URL de "
+"retorno de cima. Depois clique em “Registrar”."
+
+#: includes/sso-guides.php:66
+msgid "On the overview page copy the “Application (client) ID”."
+msgstr "Na página de visão geral copie o “ID do aplicativo (cliente)”."
+
+#: includes/sso-guides.php:67
+msgid ""
+"Go to “Certificates & secrets” → “New client secret”, set an expiry, and "
+"press “Add”."
+msgstr ""
+"Vá em “Certificados e segredos” → “Novo segredo do cliente”, escolha uma "
+"validade e clique em “Adicionar”."
+
+#: includes/sso-guides.php:68
+msgid ""
+"Copy the secret’s “Value”, not its “Secret ID”. The value is shown once and "
+"never again."
+msgstr ""
+"Copie o “Valor” do segredo, não o “ID do segredo”. O valor é mostrado uma "
+"única vez e nunca mais."
+
+#: includes/sso-guides.php:70
+msgid ""
+"The openid, email and profile permissions are already there by default — you"
+" do not have to add anything under “API permissions”."
+msgstr ""
+"As permissões openid, email e profile já vêm por padrão — não é preciso "
+"adicionar nada em “Permissões de API”."
+
+#: includes/sso-guides.php:75
+msgid "Open the LinkedIn developer portal and press “Create app”."
+msgstr ""
+"Entre no portal de desenvolvedores do LinkedIn e clique em “Create app”."
+
+#: includes/sso-guides.php:76
+msgid ""
+"LinkedIn asks for a company page: paste the page URL and press “Verify”. It "
+"opens a link that an admin of that page has to confirm. Without a verified "
+"page the app cannot be created."
+msgstr ""
+"O LinkedIn pede uma página de empresa: cole a URL da página e clique em "
+"“Verify”. Abre um link que um administrador dessa página tem que confirmar. "
+"Sem uma página verificada não dá para criar o aplicativo."
+
+#: includes/sso-guides.php:77
+msgid ""
+"Go to the “Products” tab and request “Sign In with LinkedIn using OpenID "
+"Connect”. It is granted automatically, but it takes a minute to show as "
+"added."
+msgstr ""
+"Vá na aba “Products” e peça “Sign In with LinkedIn using OpenID Connect”. É "
+"aprovado sozinho, mas demora um minuto para aparecer como adicionado."
+
+#: includes/sso-guides.php:78
+msgid ""
+"Go to the “Auth” tab. Under “OAuth 2.0 settings” → “Authorized redirect URLs"
+" for your app” press the pencil, then “Add redirect URL”, and paste the "
+"redirect URL from above."
+msgstr ""
+"Vá na aba “Auth”. Em “OAuth 2.0 settings” → “Authorized redirect URLs for "
+"your app” clique no lápis, depois em “Add redirect URL”, e cole a URL de "
+"retorno de cima."
+
+#: includes/sso-guides.php:79
+msgid ""
+"On that same tab copy the “Client ID” and press “Generate” next to “Primary "
+"Client Secret” to reveal it."
+msgstr ""
+"Nessa mesma aba copie o “Client ID” e clique em “Generate” ao lado de "
+"“Primary Client Secret” para vê-lo."
+
+#: includes/sso-guides.php:81
+msgid ""
+"Until the OpenID Connect product shows as added, the sign-in fails with "
+"“unauthorized_scope_error”. Check the “Auth” tab: the scopes openid, profile"
+" and email have to be listed."
+msgstr ""
+"Enquanto o produto OpenID Connect não aparecer como adicionado, o acesso "
+"falha com “unauthorized_scope_error”. Veja na aba “Auth”: os scopes openid, "
+"profile e email têm que estar listados."
+
+#: includes/sso-guides.php:86
+msgid ""
+"Open the X developer portal. If you have never used it, it asks you to sign "
+"up for the free tier first: answer what you are building and accept the "
+"terms."
+msgstr ""
+"Entre no portal de desenvolvedores do X. Se você nunca usou, ele pede para "
+"você se cadastrar no plano gratuito primeiro: responda o que está "
+"construindo e aceite os termos."
+
+#: includes/sso-guides.php:87
+msgid ""
+"Create a project, and inside it an app. The app name has to be unique across"
+" all of X."
+msgstr ""
+"Crie um projeto e dentro dele um aplicativo. O nome do aplicativo tem que "
+"ser único em todo o X."
+
+#: includes/sso-guides.php:88
+msgid "In the app, go to “User authentication settings” and press “Set up”."
+msgstr ""
+"No aplicativo, vá em “User authentication settings” e clique em “Set up”."
+
+#: includes/sso-guides.php:89
+msgid "App permissions: “Read”. That is enough to sign people in."
+msgstr "App permissions: “Read”. Isso basta para as pessoas entrarem."
+
+#: includes/sso-guides.php:90
+msgid ""
+"Type of App: “Web App, Automated App or Bot”. This is the one that issues a "
+"client secret; the other types do not."
+msgstr ""
+"Type of App: “Web App, Automated App or Bot”. É esse que emite um segredo de"
+" cliente; os outros tipos não."
+
+#: includes/sso-guides.php:91
+msgid ""
+"Under “App info” paste the redirect URL from above into “Callback URI / "
+"Redirect URL”, and your site’s address into “Website URL”. Save."
+msgstr ""
+"Em “App info” cole a URL de retorno de cima em “Callback URI / Redirect "
+"URL”, e o endereço do seu site em “Website URL”. Salve."
+
+#: includes/sso-guides.php:92
+msgid ""
+"X shows the “OAuth 2.0 Client ID” and “Client Secret” once — copy both. They"
+" are NOT the “API Key” and “API Key Secret”, which belong to the old OAuth "
+"1.1."
+msgstr ""
+"O X mostra o “OAuth 2.0 Client ID” e o “Client Secret” uma única vez — copie"
+" os dois. NÃO são a “API Key” nem a “API Key Secret”, que são do antigo "
+"OAuth 1.1."
+
+#: includes/sso-guides.php:94
+msgid ""
+"X never gives out the email address. Whoever signs in with X gets an account"
+" built from their username, and the site asks for a real address afterwards."
+" If you want the email up front, this is not the network for it."
+msgstr ""
+"O X nunca entrega o endereço de e-mail. Quem entra com o X recebe uma conta "
+"montada a partir do nome de usuário, e o site pede um endereço de verdade "
+"depois. Se você quer o e-mail logo de cara, esta não é a rede para isso."
+
+#: includes/sso-guides.php:99
+msgid "Open the Meta developer console and press “Create app”."
+msgstr "Entre no console de desenvolvedores da Meta e clique em “Criar app”."
+
+#: includes/sso-guides.php:100
+msgid ""
+"Use case: “Authenticate and request data from users with Facebook Login”. "
+"Then pick or create the business portfolio it belongs to."
+msgstr ""
+"Caso de uso: “Autenticar e solicitar dados dos usuários com o Login do "
+"Facebook”. Depois escolha ou crie o portfólio empresarial ao qual ele "
+"pertence."
+
+#: includes/sso-guides.php:101
+msgid "In the app, go to “Facebook Login” → “Settings” in the left menu."
+msgstr ""
+"No aplicativo, vá em “Login do Facebook” → “Configurações”, no menu da "
+"esquerda."
+
+#: includes/sso-guides.php:102
+msgid ""
+"Paste the redirect URL from above into “Valid OAuth Redirect URIs” and save."
+" Leave “Client OAuth login” and “Web OAuth login” on."
+msgstr ""
+"Cole a URL de retorno de cima em “URIs de redirecionamento OAuth válidos” e "
+"salve. Deixe ativados “Login do OAuth do cliente” e “Login do OAuth da Web”."
+
+#: includes/sso-guides.php:103
+msgid ""
+"Go to “App settings” → “Basic” and copy the “App ID” and the “App secret” "
+"(press “Show”)."
+msgstr ""
+"Vá em “Configurações do app” → “Básico” e copie o “ID do app” e a “Chave "
+"secreta do app” (clique em “Mostrar”)."
+
+#: includes/sso-guides.php:104
+msgid ""
+"On that same page fill in the “Privacy Policy URL”: Facebook will not let "
+"the app go live without it."
+msgstr ""
+"Nessa mesma página preencha a “URL da política de privacidade”: o Facebook "
+"não deixa publicar o aplicativo sem ela."
+
+#: includes/sso-guides.php:105
+msgid "Switch the toggle at the top from “Development” to “Live”."
+msgstr "Passe o botão de cima de “Desenvolvimento” para “Ativo”."
+
+#: includes/sso-guides.php:107
+msgid ""
+"While the app is in “Development”, only people listed in “App roles” can "
+"sign in — everyone else gets an error page. The live test below works with "
+"your own account before you flip it."
+msgstr ""
+"Enquanto o aplicativo estiver em “Desenvolvimento”, só entram as pessoas "
+"listadas em “Funções do app”; o resto vê uma página de erro. O teste ao vivo"
+" aqui embaixo funciona com a sua própria conta antes de publicar."
+
+#: includes/sso-guides.php:112
+msgid ""
+"Open GitHub’s developer settings and go to “OAuth Apps” → “New OAuth App”. "
+"(The other list, “GitHub Apps”, is for something else.)"
+msgstr ""
+"Entre nas configurações de desenvolvedor do GitHub e vá em “OAuth Apps” → "
+"“New OAuth App”. (A outra lista, “GitHub Apps”, é para outra coisa.)"
+
+#: includes/sso-guides.php:113
+msgid ""
+"Application name: what people see when they authorise. Homepage URL: your "
+"site’s address."
+msgstr ""
+"Application name: o que as pessoas veem ao autorizar. Homepage URL: o "
+"endereço do seu site."
+
+#: includes/sso-guides.php:114
+msgid "Paste the redirect URL from above into “Authorization callback URL”."
+msgstr "Cole a URL de retorno de cima em “Authorization callback URL”."
+
+#: includes/sso-guides.php:115
+msgid "Press “Register application”. The client ID is on the page."
+msgstr ""
+"Clique em “Register application”. O ID de cliente fica visível na página."
+
+#: includes/sso-guides.php:116
+msgid ""
+"Press “Generate a new client secret” and copy it right away — GitHub hides "
+"it as soon as you leave the page."
+msgstr ""
+"Clique em “Generate a new client secret” e copie na hora — o GitHub o "
+"esconde assim que você sai da página."
+
+#: includes/sso-guides.php:118
+msgid ""
+"GitHub hides the email of anyone who turned on “Keep my email address "
+"private”. The plugin asks for the user:email scope, which returns the "
+"verified address anyway."
+msgstr ""
+"O GitHub esconde o e-mail de quem tiver ativado “Keep my email address "
+"private”. O plugin pede o scope user:email, que devolve o endereço "
+"verificado mesmo assim."
+
+#: includes/sso-guides.php:123
+msgid ""
+"Open the WordPress.com developer console and press “Create New Application”."
+" It signs you in with your WordPress.com account."
+msgstr ""
+"Entre no console de desenvolvedores do WordPress.com e clique em “Create New"
+" Application”. Ele faz você entrar com a sua conta do WordPress.com."
+
+#: includes/sso-guides.php:124
+msgid "Fill in the name, a short description and the website URL."
+msgstr "Preencha o nome, uma descrição curta e a URL do site."
+
+#: includes/sso-guides.php:125
+msgid "Paste the redirect URL from above into “Redirect URL”."
+msgstr "Cole a URL de retorno de cima em “Redirect URL”."
+
+#: includes/sso-guides.php:126
+msgid "Type: “Web Client”."
+msgstr "Type: “Web Client”."
+
+#: includes/sso-guides.php:127
+msgid ""
+"Save, then open the app again to copy the “Client ID” and the “Client "
+"Secret”."
+msgstr ""
+"Salve e abra o aplicativo de novo para copiar o “Client ID” e o “Client "
+"Secret”."
+
+#: includes/sso-guides.php:129
+msgid ""
+"The redirect URL has to match character for character. WordPress.com rejects"
+" anything that differs, even a trailing slash."
+msgstr ""
+"A URL de retorno tem que bater caractere por caractere. O WordPress.com "
+"recusa qualquer diferença, até uma barra no final."
+
+#: includes/sso-guides.php:134
+msgid ""
+"Open the Yahoo developer console and press “Create an App”, signing in with "
+"a Yahoo account."
+msgstr ""
+"Entre no console de desenvolvedores do Yahoo e clique em “Create an App”, "
+"com uma conta Yahoo."
+
+#: includes/sso-guides.php:135
+msgid "Application Name: what people see when they authorise."
+msgstr "Application Name: o que as pessoas veem ao autorizar."
+
+#: includes/sso-guides.php:136
+msgid "Application Type: “Web Application”."
+msgstr "Application Type: “Web Application”."
+
+#: includes/sso-guides.php:137
+msgid ""
+"Paste the redirect URL from above into “Redirect URI(s)”. Yahoo only takes "
+"https, and refuses localhost."
+msgstr ""
+"Cole a URL de retorno de cima em “Redirect URI(s)”. O Yahoo só aceita https,"
+" e recusa localhost."
+
+#: includes/sso-guides.php:138
+msgid ""
+"API Permissions: tick “Profiles (Social Directory)” with “Read Public”, and "
+"under “OpenID Connect Permissions” tick “email” and “profile”."
+msgstr ""
+"API Permissions: marque “Profiles (Social Directory)” com “Read Public”, e "
+"em “OpenID Connect Permissions” marque “email” e “profile”."
+
+#: includes/sso-guides.php:139
+msgid ""
+"Press “Create App”. Copy the “Client ID (Consumer Key)” and the “Client "
+"Secret (Consumer Secret)”."
+msgstr ""
+"Clique em “Create App”. Copie o “Client ID (Consumer Key)” e o “Client "
+"Secret (Consumer Secret)”."
+
+#: includes/sso-guides.php:141
+msgid ""
+"Without the OpenID Connect permissions ticked, Yahoo signs the person in but"
+" returns a profile with no email, and the account cannot be created."
+msgstr ""
+"Sem as permissões de OpenID Connect marcadas, o Yahoo deixa a pessoa entrar "
+"mas devolve um perfil sem e-mail, e a conta não pode ser criada."
+
+#: includes/sso-guides.php:146
+msgid ""
+"Turn on two-factor authentication on the Twitch account first: the console "
+"refuses to register an app without it."
+msgstr ""
+"Primeiro ative a verificação em duas etapas na conta do Twitch: o console se"
+" recusa a registrar um aplicativo sem isso."
+
+#: includes/sso-guides.php:147
+msgid ""
+"Open the Twitch developer console and press “Register Your Application”."
+msgstr ""
+"Entre no console de desenvolvedores do Twitch e clique em “Register Your "
+"Application”."
+
+#: includes/sso-guides.php:148
+msgid ""
+"Name: it has to be unique across all of Twitch, so “ConoSurTech Login” beats"
+" “Login”."
+msgstr ""
+"Name: tem que ser único em todo o Twitch, então “ConoSurTech Login” é melhor"
+" que “Login”."
+
+#: includes/sso-guides.php:149
+msgid ""
+"Paste the redirect URL from above into “OAuth Redirect URLs” and press "
+"“Add”."
+msgstr ""
+"Cole a URL de retorno de cima em “OAuth Redirect URLs” e clique em “Add”."
+
+#: includes/sso-guides.php:150
+msgid "Category: “Website Integration”. Client Type: “Confidential”."
+msgstr "Category: “Website Integration”. Client Type: “Confidential”."
+
+#: includes/sso-guides.php:151
+msgid "Press “Create”, then “Manage” on the app you just made."
+msgstr ""
+"Clique em “Create” e depois em “Manage” no aplicativo que você acabou de "
+"criar."
+
+#: includes/sso-guides.php:152
+msgid ""
+"The client ID is there. Press “New Secret” and copy the secret — it is shown"
+" once."
+msgstr ""
+"O ID de cliente está ali. Clique em “New Secret” e copie o segredo: é "
+"mostrado uma única vez."
+
+#: includes/sso-guides.php:154
+msgid ""
+"Client Type has to be “Confidential”. A “Public” app gets no secret, and the"
+" token exchange this plugin does fails."
+msgstr ""
+"O Client Type tem que ser “Confidential”. Um aplicativo “Public” não recebe "
+"segredo, e a troca de token que este plugin faz falha."
+
+#: includes/sso-guides.php:159
+msgid ""
+"Open the Discord developer portal and press “New Application”. Give it a "
+"name and accept the terms."
+msgstr ""
+"Entre no portal de desenvolvedores do Discord e clique em “New Application”."
+" Dê um nome e aceite os termos."
+
+#: includes/sso-guides.php:160
+msgid "Go to “OAuth2” in the left menu."
+msgstr "Vá em “OAuth2”, no menu da esquerda."
+
+#: includes/sso-guides.php:161
+msgid ""
+"Under “Redirects” press “Add Redirect”, paste the redirect URL from above, "
+"and press “Save Changes” at the bottom."
+msgstr ""
+"Em “Redirects” clique em “Add Redirect”, cole a URL de retorno de cima e "
+"clique em “Save Changes” lá embaixo."
+
+#: includes/sso-guides.php:162
+msgid "On that same page copy the “Client ID”."
+msgstr "Nessa mesma página copie o “Client ID”."
+
+#: includes/sso-guides.php:163
+msgid "Press “Reset Secret” to reveal the “Client Secret” and copy it."
+msgstr "Clique em “Reset Secret” para o “Client Secret” aparecer e copie-o."
+
+#: includes/sso-guides.php:165
+msgid ""
+"Discord only hands over the email when the account has it verified. An "
+"unverified account signs in and comes back with no address."
+msgstr ""
+"O Discord só entrega o e-mail quando a conta o tem verificado. Uma conta não"
+" verificada entra e volta sem endereço."
+
+#: includes/sso-guides.php:170
+msgid ""
+"On GitLab, open your avatar menu → “Edit profile” → “Applications”. (For a "
+"whole group, the same screen exists under the group’s Settings.)"
+msgstr ""
+"No GitLab, abra o menu do seu avatar → “Edit profile” → “Applications”. "
+"(Para um grupo inteiro, a mesma tela existe nas configurações do grupo.)"
+
+#: includes/sso-guides.php:171
+msgid "Press “Add new application” and give it a name."
+msgstr "Clique em “Add new application” e dê um nome."
+
+#: includes/sso-guides.php:172
+msgid "Paste the redirect URL from above into “Redirect URI”, one per line."
+msgstr "Cole a URL de retorno de cima em “Redirect URI”, uma por linha."
+
+#: includes/sso-guides.php:173
+msgid "Leave “Confidential” ticked."
+msgstr "Deixe “Confidential” marcado."
+
+#: includes/sso-guides.php:174
+msgid "Scopes: tick “openid”, “email” and “profile”."
+msgstr "Scopes: marque “openid”, “email” e “profile”."
+
+#: includes/sso-guides.php:175
+msgid ""
+"Press “Save application”. Copy the “Application ID” and the “Secret” — the "
+"secret is shown once."
+msgstr ""
+"Clique em “Save application”. Copie o “Application ID” e o “Secret”: o "
+"segredo é mostrado uma única vez."
+
+#: includes/sso-guides.php:177
+msgid ""
+"This is for gitlab.com. A self-hosted GitLab has the same screens but "
+"different URLs, and the plugin points at gitlab.com."
+msgstr ""
+"Isto é para o gitlab.com. Um GitLab auto-hospedado tem as mesmas telas mas "
+"URLs diferentes, e o plugin aponta para o gitlab.com."
+
+#: includes/sso-guides.php:182
+msgid ""
+"Open the Login with Amazon console and press “Create a New Security "
+"Profile”."
+msgstr ""
+"Entre no console do Login with Amazon e clique em “Create a New Security "
+"Profile”."
+
+#: includes/sso-guides.php:183
+msgid ""
+"Fill in the name, the description, and a privacy policy URL. All three are "
+"required."
+msgstr ""
+"Preencha o nome, a descrição e uma URL de política de privacidade. Os três "
+"são obrigatórios."
+
+#: includes/sso-guides.php:184
+msgid ""
+"Save. Back on the list, open the gear menu on your profile → “Web Settings” "
+"→ “Edit”."
+msgstr ""
+"Salve. De volta à lista, abra o menu da engrenagem do seu perfil → “Web "
+"Settings” → “Edit”."
+
+#: includes/sso-guides.php:185
+msgid ""
+"Paste the redirect URL from above into “Allowed Return URLs”. In “Allowed "
+"Origins” put just the domain, with no path."
+msgstr ""
+"Cole a URL de retorno de cima em “Allowed Return URLs”. Em “Allowed Origins”"
+" coloque só o domínio, sem caminho."
+
+#: includes/sso-guides.php:186
+msgid ""
+"Save, then copy the “Client ID” and press “Show Secret” to copy the “Client "
+"Secret”."
+msgstr ""
+"Salve e copie o “Client ID”; clique em “Show Secret” para copiar o “Client "
+"Secret”."
+
+#: includes/sso-guides.php:188
+msgid ""
+"The return URL lives under “Web Settings”, not on the profile’s main page — "
+"that is the step everyone misses."
+msgstr ""
+"A URL de retorno fica em “Web Settings”, não na página principal do perfil —"
+" é a etapa que todo mundo pula."
+
+#: includes/sso.php:702
+msgid ""
+"The provider did not hand over an access token. Check the client ID and the "
+"secret."
+msgstr ""
+"O provedor não entregou um token de acesso. Confira o ID de cliente e o "
+"segredo."
+
+#: includes/sso.php:713
+msgid ""
+"The token worked but the profile came back empty. The app is probably "
+"missing the permissions this provider needs."
+msgstr ""
+"O token funcionou mas o perfil voltou vazio. Provavelmente faltam ao "
+"aplicativo as permissões que este provedor precisa."
+
+#. translators: %s: name of the social network
+#: includes/sso.php:729
+#, php-format
+msgid "The %s account was linked, and it now gets into this account."
+msgstr "A conta %s foi vinculada, e agora entra nesta conta."
+
+#. translators: %s: name of the social network
+#: includes/sso.php:780
+#, php-format
+msgid "The %s account was unlinked."
+msgstr "A conta %s foi desvinculada."
+
+#: includes/sso.php:821
+msgid "It works"
+msgstr "Funciona"
+
+#: includes/sso.php:822
+msgid "It did not work"
+msgstr "Não funcionou"
+
+#. translators: %s: provider name
+#: includes/sso.php:827
+#, php-format
+msgid ""
+"The round trip with %s finished correctly. You can enable the button now."
+msgstr "O ida e volta com %s terminou certo. Você já pode ativar o botão."
+
+#. translators: %s: provider name
+#: includes/sso.php:832
+#, php-format
+msgid "The round trip with %s failed."
+msgstr "O ida e volta com %s falhou."
+
+#. translators: %s: e-mail address
+#: includes/sso.php:838
+#, php-format
+msgid "The provider handed over this email: %s"
+msgstr "O provedor entregou este e-mail: %s"
+
+#: includes/sso.php:866 templates/sessions.php:63
+msgid "Close"
+msgstr "Fechar"
+
+#: templates/account-guest.php:13
+msgid "This is your account"
+msgstr "Esta é a sua conta"
+
+#: templates/account-guest.php:14
+msgid "Sign in to see it."
+msgstr "Entre para vê-la."
+
+#: templates/account-nav.php:13
+msgid "Account sections"
+msgstr "Seções da conta"
+
+#. translators: %s: month and year they joined
+#: templates/account.php:28
+#, php-format
+msgid "Member since %s"
+msgstr "Membro desde %s"
+
+#: templates/account/accounts.php:13
+msgid "Networks you can sign in with"
+msgstr "Redes com as quais você pode entrar"
+
+#: templates/account/accounts.php:14
+msgid "Any of these opens this same account. Unlink the ones you do not use."
+msgstr ""
+"Qualquer uma destas abre esta mesma conta. Desvincule as que você não usa."
+
+#: templates/account/accounts.php:18
+msgid "Networks you can link"
+msgstr "Redes que você pode vincular"
+
+#: templates/account/accounts.php:19
+msgid ""
+"Add one and from then on it opens this account too. Nothing gets duplicated:"
+" it is the same account with another way in."
+msgstr ""
+"Adicione uma e a partir daí ela também abre esta conta. Nada é duplicado: é "
+"a mesma conta com outra forma de entrar."
+
+#: templates/account/avatar.php:14
+msgid "Your photo"
+msgstr "Sua foto"
+
+#: templates/account/avatar.php:28
+msgid "Choose a photo"
+msgstr "Escolher uma foto"
+
+#: templates/account/avatar.php:32 templates/account/handle.php:29
+#: templates/account/notifications.php:43 templates/fields.php:64
+msgid "Save"
+msgstr "Salvar"
+
+#: templates/account/avatar.php:35 templates/account/security.php:270
+msgid "Remove it"
+msgstr "Removê-la"
+
+#. translators: %s: maximum size, already formatted
+#: templates/account/avatar.php:44
+#, php-format
+msgid "JPG, PNG, GIF or WebP, up to %s."
+msgstr "JPG, PNG, GIF ou WebP, até %s."
+
+#: templates/account/handle-field.php:20
+msgid ""
+"It is your short name on the site: the one that goes in the address of your "
+"profile and the one other people use to find you. It is not how you sign in "
+"—that is always your email— and it is not the name shown on your "
+"certificates, which comes from your first and last name."
+msgstr ""
+"É o seu nome curto no site: o que vai no endereço do seu perfil e com o qual"
+" as outras pessoas encontram você. Não é como você entra —isso é sempre o "
+"seu e-mail— nem o nome que aparece nos seus certificados, que vem do seu "
+"nome e sobrenome."
+
+#: templates/account/handle-field.php:30
+msgid "Your profile:"
+msgstr "Seu perfil:"
+
+#: templates/account/handle-field.php:36
+msgid "Check if it is available"
+msgstr "Veja se está livre"
+
+#. translators: %s: date from which it can be changed
+#: templates/account/handle-field.php:47 templates/account/handle.php:36
+#, php-format
+msgid "You changed it recently. You can change it again on %s."
+msgstr "Você o mudou há pouco. Pode mudar de novo em %s."
+
+#: templates/account/handle-field.php:55
+msgid ""
+"No spaces: this goes in a web address. Letters, numbers, dots, dashes and "
+"underscores."
+msgstr ""
+"Sem espaços: isto vai em um endereço web. Letras, números, pontos, hifens e "
+"sublinhados."
+
+#: templates/account/handle-field.php:56
+msgid ""
+"Spaces turn into dashes, because a web address cannot have them. Everything "
+"else that does not fit in an address is dropped."
+msgstr ""
+"Os espaços viram hifens, porque um endereço web não pode tê-los. Todo o "
+"resto que não cabe em um endereço é descartado."
+
+#: templates/account/handle.php:15
+msgid "Your public name"
+msgstr "Seu nome público"
+
+#: templates/account/handle.php:16
+msgid ""
+"This is how people see you, and what goes in the address of your profile. "
+"Your email is how you get in, and nobody sees it."
+msgstr ""
+"É assim que as pessoas veem você, e é o que vai no endereço do seu perfil. O"
+" seu e-mail é como você entra, e ninguém o vê."
+
+#: templates/account/home.php:14
+msgid "Nothing to show yet. The sections above are all yours."
+msgstr "Ainda não há nada para mostrar. As seções acima são todas suas."
+
+#: templates/account/notifications.php:20
+msgid "This site does not send any notifications you can turn off."
+msgstr "Este site não envia avisos que você possa desativar."
+
+#: templates/account/notifications.php:22
+msgid "What we email you about"
+msgstr "Sobre o que a gente te escreve"
+
+#: templates/account/privacy.php:28
+msgid "Asked on"
+msgstr "Pedido em"
+
+#: templates/account/privacy.php:44
+msgid "Download"
+msgstr "Baixar"
+
+#: templates/account/privacy.php:54
+msgid ""
+"Everything this site knows about you is yours: you can take it with you, and"
+" you can ask us to erase it."
+msgstr ""
+"Tudo o que este site sabe sobre você é seu: você pode levar embora, e pode "
+"pedir que a gente apague."
+
+#: templates/account/privacy.php:57
+msgid ""
+"We sent you an email to confirm it. Nothing happens until you click that "
+"link."
+msgstr ""
+"Enviamos um e-mail para você confirmar. Nada acontece até você clicar nesse "
+"link."
+
+#: templates/account/privacy.php:59
+msgid "An account with admin permissions cannot ask for its own deletion."
+msgstr ""
+"Uma conta com permissões de administração não pode pedir a própria exclusão."
+
+#: templates/account/privacy.php:61
+msgid "We could not create the request. There may already be one waiting."
+msgstr "Não conseguimos criar o pedido. Pode já haver um esperando."
+
+#: templates/account/privacy.php:66
+msgid ""
+"Heads up, this only shows to administrators: the site has no outgoing mail "
+"set up, so the confirmation email never arrives and every request stays "
+"waiting forever."
+msgstr ""
+"Atenção, isto só aparece para administradores: o site não tem e-mail de "
+"saída configurado, então o e-mail de confirmação nunca chega e todo pedido "
+"fica esperando para sempre."
+
+#: templates/account/privacy.php:71
+msgid "Download your data"
+msgstr "Baixar os seus dados"
+
+#: templates/account/privacy.php:72
+msgid ""
+"A file with everything: your details, your courses, what you wrote in the "
+"forums and in the comments. You get an email to confirm; once you do, we "
+"prepare it and it shows up here to download."
+msgstr ""
+"Um arquivo com tudo: os seus dados, os seus cursos, o que você escreveu nos "
+"fóruns e nos comentários. Você recebe um e-mail para confirmar; quando "
+"confirma, a gente prepara e ele aparece aqui para baixar."
+
+#: templates/account/privacy.php:83
+msgid "Ask for my data"
+msgstr "Pedir os meus dados"
+
+#: templates/account/privacy.php:84
+msgid "Ask for it again, up to date"
+msgstr "Pedir de novo, atualizado"
+
+#: templates/account/privacy.php:98
+msgid "Delete your account"
+msgstr "Excluir a sua conta"
+
+#: templates/account/privacy.php:102
+msgid ""
+"This account administers the site, so it cannot delete itself: the site "
+"would be left with nobody in charge. Another administrator has to lower its "
+"role first, and then it can ask."
+msgstr ""
+"Esta conta administra o site, então não pode se excluir: o site ficaria sem "
+"ninguém no comando. Outro administrador precisa baixar a função dela "
+"primeiro, e aí ela pode pedir."
+
+#: templates/account/privacy.php:105
+msgid "This cannot be undone."
+msgstr "Isto não tem volta."
+
+#: templates/account/privacy.php:107
+msgid "Your details, your progress and your certificates are erased."
+msgstr "Os seus dados, o seu progresso e os seus certificados são apagados."
+
+#: templates/account/privacy.php:108
+msgid "What you wrote in public stays, with no name on it."
+msgstr "O que você escreveu em público fica, sem nome nenhum."
+
+#: templates/account/privacy.php:109
+msgid ""
+"You stop being able to sign in, and nothing can be recovered afterwards — "
+"not by you and not by us."
+msgstr ""
+"Você deixa de conseguir entrar, e depois não se recupera nada — nem você nem"
+" a gente."
+
+#: templates/account/privacy.php:111
+msgid "If you want a copy of anything, download your data first."
+msgstr ""
+"Se você quiser uma cópia de alguma coisa, baixe os seus dados primeiro."
+
+#: templates/account/privacy.php:112
+msgid ""
+"Asking is not deleting: we send you an email and nothing happens until you "
+"click the link in it. That is what stops somebody who borrowed your screen "
+"for a minute."
+msgstr ""
+"Pedir não é excluir: a gente manda um e-mail e nada acontece até você clicar"
+" no link dele. É isso que impede quem pegou a sua tela emprestada por um "
+"minuto."
+
+#: templates/account/privacy.php:117
+msgid ""
+"Ask to delete your account? You still have to confirm it by email, and after"
+" that there is no going back."
+msgstr ""
+"Pedir que a sua conta seja excluída? Você ainda tem que confirmar por "
+"e-mail, e depois disso não há volta."
+
+#: templates/account/privacy.php:121
+msgid "Ask to delete my account"
+msgstr "Pedir a exclusão da minha conta"
+
+#: templates/account/security.php:29
+msgid "Two-step verification is on."
+msgstr "A verificação em duas etapas está ativada."
+
+#: templates/account/security.php:30
+msgid "Two-step verification is off."
+msgstr "A verificação em duas etapas está desativada."
+
+#: templates/account/security.php:31
+msgid "Your authenticator app is set up."
+msgstr "O seu aplicativo autenticador está configurado."
+
+#: templates/account/security.php:33
+msgid "New backup codes. The old ones no longer work."
+msgstr "Códigos de backup novos. Os antigos não funcionam mais."
+
+#: templates/account/security.php:34
+msgid ""
+"That code is not right. Check the app and try again — they change every "
+"thirty seconds."
+msgstr ""
+"Esse código não está certo. Veja no aplicativo e tente de novo: eles mudam a"
+" cada trinta segundos."
+
+#: templates/account/security.php:35
+msgid "First set up a way to receive the second step."
+msgstr "Primeiro configure uma forma de receber a segunda etapa."
+
+#: templates/account/security.php:36
+msgid "This site requires two-step verification: it cannot be turned off."
+msgstr "Este site exige a verificação em duas etapas: não dá para desativar."
+
+#: templates/account/security.php:37
+msgid "The passkey was removed."
+msgstr "A passkey foi removida."
+
+#: templates/account/security.php:38
+msgid "The passkey has a new name."
+msgstr "A passkey tem um nome novo."
+
+#: templates/account/security.php:50
+msgid "How you get in"
+msgstr "Como você entra"
+
+#: templates/account/security.php:52
+msgid "Email"
+msgstr "E-mail"
+
+#: templates/account/security.php:54 templates/login.php:98
+msgid "Password"
+msgstr "Senha"
+
+#: templates/account/security.php:58
+msgid "The one on your WordPress account."
+msgstr "A da sua conta do WordPress."
+
+#: templates/account/security.php:59
+msgid ""
+"You do not have one. You get in with a link sent to your email, or with a "
+"social account."
+msgstr ""
+"Você não tem. Você entra com um link enviado para o seu e-mail, ou com uma "
+"conta social."
+
+#: templates/account/security.php:74
+msgid ""
+"The way in with no password and nothing to type: the fingerprint, the face "
+"or the PIN of your own device. The key never leaves it, there is nothing on "
+"our side worth stealing, and it cannot be used on a fake site pretending to "
+"be this one."
+msgstr ""
+"A forma de entrar sem senha e sem digitar nada: a impressão digital, o rosto"
+" ou o PIN do seu próprio dispositivo. A chave nunca sai dele, não há nada do"
+" nosso lado que valha a pena roubar, e ela não pode ser usada em um site "
+"falso fingindo ser este."
+
+#: templates/account/security.php:76
+msgid ""
+"When you get in with a passkey we do not ask for a second step: the passkey "
+"already is two of them in one — the device you have, and the fingerprint, "
+"face or PIN that unlocks it."
+msgstr ""
+"Quando você entra com uma passkey a gente não pede uma segunda etapa: a "
+"passkey já são duas em uma — o dispositivo que você tem, e a impressão "
+"digital, o rosto ou o PIN que o desbloqueia."
+
+#. translators: %s: date it was added
+#: templates/account/security.php:108
+#, php-format
+msgid "Added on %s"
+msgstr "Adicionada em %s"
+
+#. translators: %s: how long ago it was used
+#: templates/account/security.php:117
+#, php-format
+msgid "used %s ago"
+msgstr "usada há %s"
+
+#: templates/account/security.php:134
+msgid "Name of this passkey"
+msgstr "Nome desta passkey"
+
+#: templates/account/security.php:138
+msgid "Save name"
+msgstr "Salvar nome"
+
+#: templates/account/security.php:139
+msgid "Remove this passkey"
+msgstr "Remover esta passkey"
+
+#: templates/account/security.php:157
+msgid "Name it, so you recognise it later"
+msgstr "Dê um nome, para reconhecê-la depois"
+
+#: templates/account/security.php:160
+msgid "Add a passkey"
+msgstr "Adicionar uma passkey"
+
+#: templates/account/security.php:168
+msgid "Write these down now"
+msgstr "Anote estes agora"
+
+#: templates/account/security.php:169
+msgid ""
+"Each one gets you in once, if you lose the phone or the email. They are "
+"shown only this time: we keep them scrambled, so nobody —including us— can "
+"read them back."
+msgstr ""
+"Cada um deixa você entrar uma vez, se você perder o telefone ou o e-mail. "
+"Eles são mostrados só desta vez: a gente guarda embaralhado, então ninguém "
+"—nem a gente— consegue lê-los de volta."
+
+#: templates/account/security.php:179
+msgid ""
+"One more thing when you sign in: a code that only you have. If somebody gets"
+" hold of your email, they still do not get in."
+msgstr ""
+"Mais uma coisa quando você entra: um código que só você tem. Se alguém se "
+"apoderar do seu e-mail, mesmo assim não entra."
+
+#: templates/account/security.php:190
+msgid ""
+"Right now it is not being asked anywhere: the only way in you have is the "
+"link we email you, and the second step would be another code to that same "
+"inbox — it would not prove anything new."
+msgstr ""
+"Agora mesmo não está sendo pedido em lugar nenhum: a única forma de entrar "
+"que você tem é o link que mandamos por e-mail, e a segunda etapa seria outro"
+" código para a mesma caixa — não provaria nada de novo."
+
+#. translators: %s: list of ways in, already comma-separated
+#: templates/account/security.php:196
+#, php-format
+msgid ""
+"It is not asked when you get in with the link we email you: that link "
+"already proves you have the inbox, and the code would go to the same place. "
+"It is asked when you get in with %s."
+msgstr ""
+"Não é pedido quando você entra com o link que mandamos por e-mail: esse link"
+" já prova que você tem a caixa de entrada, e o código iria para o mesmo "
+"lugar. É pedido quando você entra com %s."
+
+#: templates/account/security.php:204
+msgid ""
+"Set up the authenticator app below and it starts being asked with the link "
+"too."
+msgstr ""
+"Configure o aplicativo autenticador aqui embaixo e ele passa a ser pedido "
+"com o link também."
+
+#: templates/account/security.php:213
+msgid "On"
+msgstr "Ativada"
+
+#: templates/account/security.php:214
+msgid "Off"
+msgstr "Desativada"
+
+#: templates/account/security.php:218
+msgid "This site requires it."
+msgstr "Este site exige."
+
+#. translators: %s: list of available methods
+#: templates/account/security.php:228
+#, php-format
+msgid "Ready to use: %s."
+msgstr "Pronta para usar: %s."
+
+#: templates/account/security.php:241
+msgid "Turn it on"
+msgstr "Ativar"
+
+#: templates/account/security.php:243
+msgid "Turn it off"
+msgstr "Desativar"
+
+#. translators: %d: codes they have left
+#: templates/account/security.php:252
+#, php-format
+msgid "New backup codes (%d left)"
+msgstr "Códigos de backup novos (%d restantes)"
+
+#: templates/account/security.php:263
+msgid "Authenticator app"
+msgstr "Aplicativo autenticador"
+
+#: templates/account/security.php:266
+msgid "Set up. When you sign in, we ask for the six-digit code from the app."
+msgstr ""
+"Configurado. Quando você entra, pedimos o código de seis dígitos do "
+"aplicativo."
+
+#: templates/account/security.php:277
+msgid ""
+"Scan this with Google Authenticator, 1Password, Aegis or whichever app you "
+"use, and then write down the code it shows to confirm it."
+msgstr ""
+"Escaneie isto com o Google Authenticator, 1Password, Aegis ou o aplicativo "
+"que você usar, e depois escreva o código que ele mostrar para confirmar."
+
+#: templates/account/security.php:283
+msgid "Cannot scan it? Type this key into the app:"
+msgstr "Não consegue escanear? Digite esta chave no aplicativo:"
+
+#: templates/account/security.php:291
+msgid "The code from the app"
+msgstr "O código do aplicativo"
+
+#: templates/account/security.php:294 templates/login-2fa.php:57
+msgid "Confirm"
+msgstr "Confirmar"
+
+#: templates/account/security.php:312
+msgid "Where you are signed in"
+msgstr "Onde você está com sessão aberta"
+
+#: templates/accounts.php:20
+msgid "Account linked."
+msgstr "Conta vinculada."
+
+#: templates/accounts.php:27
+msgid "None yet. Link one below and it opens this same account."
+msgstr "Ainda nenhuma. Vincule uma aqui embaixo e ela abre esta mesma conta."
+
+#: templates/accounts.php:29
+msgid "You already have them all linked."
+msgstr "Você já tem todas vinculadas."
+
+#: templates/accounts.php:31
+msgid "No provider has been set up yet."
+msgstr "Nenhum provedor foi configurado ainda."
+
+#: templates/accounts.php:57
+msgid "Linked to your account"
+msgstr "Vinculada à sua conta"
+
+#: templates/accounts.php:58
+msgid "Not linked"
+msgstr "Não vinculada"
+
+#: templates/accounts.php:68
+msgid "Unlink"
+msgstr "Desvincular"
+
+#: templates/accounts.php:72
+msgid "Link"
+msgstr "Vincular"
+
+#: templates/fields.php:32
+msgid "Some required fields are missing."
+msgstr "Faltam alguns campos obrigatórios."
+
+#: templates/login-2fa.php:22
+msgid "One more step"
+msgstr "Mais uma etapa"
+
+#: templates/login-2fa.php:26
+msgid "That code is not right, or it expired. Try the next one."
+msgstr "Esse código não está certo, ou expirou. Tente o seguinte."
+
+#: templates/login-2fa.php:28
+msgid "Sent. Check your email."
+msgstr "Enviado. Veja o seu e-mail."
+
+#: templates/login-2fa.php:36
+msgid "The code"
+msgstr "O código"
+
+#. translators: %d: days
+#: templates/login-2fa.php:48
+#, php-format
+msgid "Do not ask again on this browser for %d days"
+msgstr "Não perguntar de novo neste navegador por %d dias"
+
+#: templates/login-2fa.php:60
+msgid "Send it again"
+msgstr "Enviar de novo"
+
+#: templates/login-2fa.php:66
+msgid "Or use:"
+msgstr "Ou use:"
+
+#: templates/login-2fa.php:88
+msgid ""
+"Lost the phone and the email? Use one of your backup codes: they go in the "
+"same box."
+msgstr ""
+"Perdeu o telefone e o e-mail? Use um dos seus códigos de backup: vão na "
+"mesma caixa."
+
+#: templates/login.php:22
+msgid "Check your email"
+msgstr "Veja o seu e-mail"
+
+#: templates/login.php:23
+msgid "We sent a sign-in link to"
+msgstr "Mandamos um link de acesso para"
+
+#. translators: %d: how many minutes the link lasts
+#: templates/login.php:29
+#, php-format
+msgid ""
+"Click the link and you are in. It expires in %d minutes and works once."
+msgstr ""
+"Clique no link e você entra. Expira em %d minutos e serve uma única vez."
+
+#: templates/login.php:34
+msgid "Did not arrive? Check your spam or promotions folder."
+msgstr "Não chegou? Veja no spam ou na aba de promoções."
+
+#: templates/login.php:41
+msgid "That link expired or was already used. Ask for a new one."
+msgstr "Esse link expirou ou já foi usado. Peça um novo."
+
+#: templates/login.php:43
+msgid "That email address does not look valid."
+msgstr "Esse endereço de e-mail não parece válido."
+
+#: templates/login.php:45
+msgid ""
+"We could not finish signing you in with that provider. Try again or use your"
+" email."
+msgstr ""
+"Não conseguimos completar o acesso com esse provedor. Tente de novo ou use o"
+" seu e-mail."
+
+#: templates/login.php:47
+msgid "Something went wrong. Try again."
+msgstr "Algo deu errado. Tente de novo."
+
+#: templates/login.php:53
+msgid "Sign in with a passkey"
+msgstr "Entrar com uma passkey"
+
+#: templates/login.php:54
+msgid "or"
+msgstr "ou"
+
+#: templates/login.php:64
+msgid "or with your email"
+msgstr "ou com o seu e-mail"
+
+#: templates/login.php:65 templates/login.php:87
+msgid "or with your password"
+msgstr "ou com a sua senha"
+
+#: templates/login.php:79
+msgid "Send me the sign-in link"
+msgstr "Mandar o link de acesso"
+
+#: templates/login.php:82
+msgid ""
+"You get an email with a link. Click it and you are in: no password to choose"
+" or type."
+msgstr ""
+"Você recebe um e-mail com um link. Clica nele e já está dentro: sem senha "
+"para escolher nem digitar."
+
+#: templates/login.php:97
+msgid "Email or username"
+msgstr "E-mail ou usuário"
+
+#: templates/login.php:105
+msgid "I forgot my password"
+msgstr "Esqueci a minha senha"
+
+#: templates/sessions.php:20
+msgid "Done."
+msgstr "Pronto."
+
+#: templates/sessions.php:24
+msgid "There are no open sessions."
+msgstr "Não há sessões abertas."
+
+#. translators: %s: how long ago the session started
+#: templates/sessions.php:47
+#, php-format
+msgid "started %s ago"
+msgstr "começou há %s"
+
+#: templates/sessions.php:57
+msgid "This session"
+msgstr "Esta sessão"
+
+#: templates/sessions.php:76
+msgid "Close the others"
+msgstr "Fechar as outras"
+
+#. translators: 1: plugin name, 2: screen name
+#: includes/admin.php:37
+#, php-format
+msgctxt "title of a dashboard screen"
+msgid "%1$s | %2$s"
+msgstr "%1$s | %2$s"
+
+#, php-format
+#~ msgctxt "título de una pantalla del escritorio"
+#~ msgid "%1$s | %2$s"
+#~ msgstr ""

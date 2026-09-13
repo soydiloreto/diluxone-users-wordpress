@@ -1,0 +1,699 @@
+/**
+ * The plugin styles.
+ *
+ * A users plugin lands on any site, with any theme, and what it draws —
+ * forms, panels, lists, buttons — has to read the same everywhere. That is
+ * why there are real components here and not four loose rules.
+ *
+ * The only way for them ALSO not to clash is for the site to be able to
+ * change them without rewriting them. Hence the system:
+ *
+ *   1. Everything visual comes from `--diluxone-users-*` custom properties,
+ *      declared exactly once, below.
+ *   2. The components never write a literal colour or radius: they use those
+ *      properties.
+ *   3. A site with a design of its own copies neither this sheet nor turns it
+ *      off: it redefines the properties, pointing them at its own tokens, and
+ *      everything falls into place.
+ *
+ * Measurements inherit from the theme where it makes sense — typeface and
+ * font size — so the block does not look pasted in from somewhere else.
+ */
+
+:root {
+	--diluxone-users-font: inherit;
+	--diluxone-users-radius: 12px;
+	--diluxone-users-radius-sm: 8px;
+	--diluxone-users-control-h: 46px;
+	--diluxone-users-gap: 16px;
+
+	--diluxone-users-surface: #ffffff;
+	--diluxone-users-surface-alt: #f5f6f8;
+	--diluxone-users-border: #e2e5ec;
+	--diluxone-users-text: #16181d;
+	--diluxone-users-muted: #626a7a;
+
+/* The accent is split in two because they are two different jobs: a link
+	   colour has to read ON TOP OF the background, and a button colour has to
+	   read UNDERNEATH its own text. In dark mode a site usually lightens the
+	   first and leaves the second alone; with a single token, the button ended
+	   up pale lavender with white letters. */
+	--diluxone-users-accent: #2b59d6;
+	--diluxone-users-accent-bg: var(--diluxone-users-accent);
+	--diluxone-users-accent-ink: #ffffff;
+	--diluxone-users-ok: #0f7b4f;
+	--diluxone-users-danger: #b3261e;
+}
+
+/* There is no dark-mode block here, and that is on purpose.
+ *
+ * There was one, following `prefers-color-scheme`, and it was a mistake: dark
+ * mode belongs to the SITE, not to the plugin. A light site viewed from a
+ * system in dark mode ended up with a light page and the plugin panels in
+ * black, with unreadable text on top. And since that block had more
+ * specificity than the properties above, it could not even be overridden by
+ * repointing them.
+ *
+ * A site with a dark mode already knows when it is in the dark — through its
+ * own class, its own switch or its own media query — and its tokens change
+ * there. With the properties pointed at those tokens, this changes with it
+ * and never on its own.
+ */
+
+.diluxone-users,
+.diluxone-users-account {
+	font-family: var(--diluxone-users-font);
+	color: var(--diluxone-users-text);
+}
+
+.diluxone-users *,
+.diluxone-users-account * { box-sizing: border-box; }
+
+/* ── Superficies ────────────────────────────────────────────────────── */
+
+.diluxone-users-panel {
+	padding: 22px 24px;
+	margin: 0 0 var(--diluxone-users-gap);
+	background: var(--diluxone-users-surface);
+	border: 1px solid var(--diluxone-users-border);
+	border-radius: var(--diluxone-users-radius);
+}
+.diluxone-users-panel > :first-child { margin-top: 0; }
+.diluxone-users-panel > :last-child { margin-bottom: 0; }
+
+/* One single size for a box heading, whether it comes from a hand-written h3
+   or from the <summary> of one that opens and closes. Having them differ is
+   what made two boxes side by side look like two different pages. */
+.diluxone-users-panel h3,
+.diluxone-users-panel__title {
+	margin: 0;
+	font-size: 1.32em;
+	font-weight: 700;
+	line-height: 1.25;
+}
+.diluxone-users-panel h3 { margin-bottom: 10px; }
+
+/* ── Boxes that open and close ──────────────────────────────────────── */
+
+details.diluxone-users-panel { padding: 0; }
+.diluxone-users-panel__head {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 20px 22px 20px 26px;
+	cursor: pointer;
+	list-style: none;
+}
+/* The little triangle browsers add on their own: it is removed in both
+   dialects, because each one uses its own and both have to be turned off. */
+.diluxone-users-panel__head::-webkit-details-marker { display: none; }
+.diluxone-users-panel__head::marker { content: ''; }
+
+.diluxone-users-panel__title { flex: 1 1 auto; min-width: 0; }
+
+/* The open-and-close control is a button: round, the size of a finger and on
+   the right. A nine-pixel arrow can be neither seen nor tapped. */
+.diluxone-users-panel__arrow {
+	position: relative;
+	flex: 0 0 auto;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	background: var(--diluxone-users-surface-alt);
+	transition: transform .18s ease, background-color .18s ease;
+}
+/* The tip: two borders turned 45°, the only thing that comes out crisp on
+   any screen and at any zoom. */
+.diluxone-users-panel__arrow::before {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 11px;
+	height: 11px;
+	border-right: 2.5px solid var(--diluxone-users-text);
+	border-bottom: 2.5px solid var(--diluxone-users-text);
+	transform: translate(-50%, -70%) rotate(45deg);
+}
+details.diluxone-users-panel[open] > .diluxone-users-panel__head .diluxone-users-panel__arrow { transform: rotate(180deg); }
+.diluxone-users-panel__head:hover .diluxone-users-panel__arrow { background-color: color-mix( in srgb, var(--diluxone-users-accent) 16%, var(--diluxone-users-surface-alt) ); }
+.diluxone-users-panel__head:focus-visible { outline: 2px solid var(--diluxone-users-accent); outline-offset: -3px; border-radius: var(--diluxone-users-radius); }
+
+.diluxone-users-panel__body { padding: 4px 26px 24px; }
+.diluxone-users-panel__body > :first-child { margin-top: 0; }
+.diluxone-users-panel__body > :last-child { margin-bottom: 0; }
+
+/* Each box's save button. They are inside the same form, so any of them
+   submits the whole page: there is no need to pick one. */
+.diluxone-users-panel__save { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--diluxone-users-border); }
+
+/* A panel containing a list with a frame of its own: the inner one is
+   surplus, and two frames touching look like a mistake. */
+.diluxone-users-panel__body .diluxone-users-linked,
+.diluxone-users-panel__body .diluxone-users-sessions__list,
+.diluxone-users-panel--list .diluxone-users-linked,
+.diluxone-users-panel--list .diluxone-users-sessions__list {
+	border: 0;
+	border-radius: 0;
+	margin-bottom: 0;
+	background: transparent;
+}
+.diluxone-users-panel__body .diluxone-users-linked__item:first-child,
+.diluxone-users-panel__body .diluxone-users-session:first-child,
+.diluxone-users-panel--list .diluxone-users-linked__item:first-child,
+.diluxone-users-panel--list .diluxone-users-session:first-child { border-top: 1px solid var(--diluxone-users-border); }
+.diluxone-users-panel__body .diluxone-users-linked__item,
+.diluxone-users-panel__body .diluxone-users-session,
+.diluxone-users-panel--list .diluxone-users-linked__item,
+.diluxone-users-panel--list .diluxone-users-session { padding-inline: 0; }
+.diluxone-users-panel--list .diluxone-users-sessions__all { margin-top: 16px; }
+
+.diluxone-users-note,
+.diluxone-users-note-block { margin: 8px 0 0; font-size: 0.9em; color: var(--diluxone-users-muted); }
+
+.diluxone-users-data { display: grid; grid-template-columns: auto 1fr; gap: 6px 20px; margin: 0; }
+.diluxone-users-data dt { color: var(--diluxone-users-muted); }
+.diluxone-users-data dd { margin: 0; }
+
+/* ── Avisos ─────────────────────────────────────────────────────────── */
+
+.diluxone-users-notice {
+	margin: 0 0 var(--diluxone-users-gap);
+	padding: 12px 16px;
+	border-left: 3px solid var(--diluxone-users-border);
+	border-radius: var(--diluxone-users-radius-sm);
+	background: var(--diluxone-users-surface-alt);
+	font-size: 0.95em;
+}
+.diluxone-users-notice--ok { border-left-color: var(--diluxone-users-ok); }
+.diluxone-users-notice--error { border-left-color: var(--diluxone-users-danger); }
+.diluxone-users-notice--info { border-left-color: var(--diluxone-users-accent); }
+
+/* ── Formularios ────────────────────────────────────────────────────── */
+
+.diluxone-users-form { display: flex; flex-direction: column; align-items: stretch; gap: 8px; max-width: 34rem; }
+.diluxone-users-form label { font-weight: 600; }
+/* A button inside a column form stretches to the full width and looks like a
+   banner. It takes the room it says, and starts on the left. */
+.diluxone-users-form > .diluxone-users-button,
+.diluxone-users-form > button { align-self: flex-start; margin-top: 6px; }
+
+.diluxone-users-form input[type="text"],
+.diluxone-users-form input[type="email"],
+.diluxone-users-form input[type="tel"],
+.diluxone-users-form input[type="url"],
+.diluxone-users-form input[type="number"],
+.diluxone-users-form input[type="date"],
+.diluxone-users-form select,
+.diluxone-users-form textarea,
+.diluxone-users-field input[type="text"],
+.diluxone-users-field input[type="email"],
+.diluxone-users-field input[type="tel"],
+.diluxone-users-field input[type="url"],
+.diluxone-users-field input[type="number"],
+.diluxone-users-field input[type="date"],
+.diluxone-users-field select,
+.diluxone-users-field textarea {
+	width: 100%;
+	min-height: var(--diluxone-users-control-h);
+	padding: 0 14px;
+	border: 1px solid var(--diluxone-users-border);
+	border-radius: var(--diluxone-users-radius-sm);
+	background: var(--diluxone-users-surface);
+	color: var(--diluxone-users-text);
+	font: inherit;
+}
+.diluxone-users-form textarea,
+.diluxone-users-field textarea { padding: 12px 14px; min-height: 8em; }
+
+.diluxone-users-form input:focus,
+.diluxone-users-form select:focus,
+.diluxone-users-form textarea:focus,
+.diluxone-users-field input:focus,
+.diluxone-users-field select:focus,
+.diluxone-users-field textarea:focus {
+	outline: 2px solid var(--diluxone-users-accent);
+	outline-offset: 1px;
+	border-color: var(--diluxone-users-accent);
+}
+
+.diluxone-users-form input:disabled,
+.diluxone-users-field input:disabled { background: var(--diluxone-users-surface-alt); color: var(--diluxone-users-muted); }
+
+.diluxone-users-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+.diluxone-users-field__help { margin: 0; font-size: 0.85em; color: var(--diluxone-users-muted); }
+.diluxone-users-field__required { color: var(--diluxone-users-danger); }
+
+/* The phone is two controls that are one: the dialling code and the number. */
+.diluxone-users-phone { display: grid; grid-template-columns: minmax(0, 9rem) minmax(0, 1fr); gap: 8px; }
+
+.diluxone-users-check { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 12px; }
+.diluxone-users-check input { margin-top: 4px; }
+.diluxone-users-check small { display: block; color: var(--diluxone-users-muted); }
+
+/* ── Botones ────────────────────────────────────────────────────────── */
+
+.diluxone-users-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: var(--diluxone-users-control-h);
+	padding: 0 22px;
+	border: 1px solid transparent;
+	border-radius: var(--diluxone-users-radius-sm);
+	background: var(--diluxone-users-accent-bg);
+	color: var(--diluxone-users-accent-ink);
+	font: inherit;
+	font-weight: 600;
+	text-decoration: none;
+	cursor: pointer;
+	transition: filter .15s ease;
+}
+.diluxone-users-button:hover { filter: brightness(0.93); color: var(--diluxone-users-accent-ink); }
+
+.diluxone-users-button--soft {
+	background: transparent;
+	border-color: var(--diluxone-users-border);
+	color: var(--diluxone-users-text);
+}
+.diluxone-users-button--soft:hover { background: var(--diluxone-users-surface-alt); color: var(--diluxone-users-text); filter: none; }
+
+.diluxone-users-button--danger { background: var(--diluxone-users-danger); color: #fff; }
+.diluxone-users-button--danger:hover { color: #fff; }
+
+.diluxone-users-chip {
+	display: inline-block;
+	padding: 4px 12px;
+	border-radius: 999px;
+	background: var(--diluxone-users-surface-alt);
+	color: var(--diluxone-users-muted);
+	font-size: 0.85em;
+	font-weight: 600;
+}
+
+/* ── Tablas ─────────────────────────────────────────────────────────── */
+
+.diluxone-users-table { width: 100%; border-collapse: collapse; margin: 0 0 var(--diluxone-users-gap); }
+.diluxone-users-table th,
+.diluxone-users-table td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--diluxone-users-border); }
+.diluxone-users-table th { font-size: 0.85em; text-transform: uppercase; letter-spacing: .05em; color: var(--diluxone-users-muted); }
+
+/* ── Listas de filas (sesiones, redes vinculadas) ───────────────────── */
+
+.diluxone-users-linked,
+.diluxone-users-sessions__list {
+	list-style: none;
+	margin: 0 0 var(--diluxone-users-gap);
+	padding: 0;
+	border: 1px solid var(--diluxone-users-border);
+	border-radius: var(--diluxone-users-radius);
+	overflow: hidden;
+	background: var(--diluxone-users-surface);
+}
+
+.diluxone-users-linked__item,
+.diluxone-users-session {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding: 14px 18px;
+	margin: 0;
+	border-top: 1px solid var(--diluxone-users-border);
+}
+.diluxone-users-linked__item:first-child,
+.diluxone-users-session:first-child { border-top: 0; }
+
+.diluxone-users-linked__logo {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 38px;
+	height: 38px;
+	flex: 0 0 38px;
+	border-radius: 50%;
+	background: var(--diluxone-users-surface-alt);
+	color: var(--diluxone-users-brand, var(--diluxone-users-text));
+}
+.diluxone-users-linked__item.is-linked .diluxone-users-linked__logo { background: var(--diluxone-users-brand, var(--diluxone-users-accent-bg)); color: #fff; }
+.diluxone-users-linked__item.has-color .diluxone-users-linked__logo { background: #fff; box-shadow: inset 0 0 0 1px var(--diluxone-users-border); }
+
+.diluxone-users-linked__who,
+.diluxone-users-session__what { display: flex; flex-direction: column; gap: 2px; flex: 1 1 auto; min-width: 0; }
+.diluxone-users-linked__who span,
+.diluxone-users-session__what span { font-size: 0.9em; color: var(--diluxone-users-muted); }
+
+.diluxone-users-linked__item form,
+.diluxone-users-session__action { margin: 0; flex: 0 0 auto; }
+.diluxone-users-linked__item .diluxone-users-button,
+.diluxone-users-session__action .diluxone-users-button { min-height: 38px; padding: 0 16px; font-size: 0.9em; }
+
+.diluxone-users-session--current { background: var(--diluxone-users-surface-alt); }
+.diluxone-users-sessions__all { margin: 0; }
+
+/* These lists fit the width of a page as readily as that of a column down
+   the side, so what rules is not the screen size but the container's: with
+   the menu at the side the screen is wide and the box measures 320px, and a
+   media query knows nothing about it. */
+.diluxone-users-linked,
+.diluxone-users-sessions__list { container-type: inline-size; }
+
+@container (max-width: 420px) {
+	.diluxone-users-linked__item,
+	.diluxone-users-session { flex-wrap: wrap; }
+	.diluxone-users-linked__who,
+	.diluxone-users-session__what { flex: 1 1 100%; order: 2; }
+	.diluxone-users-linked__item form,
+	.diluxone-users-session__action { order: 3; }
+}
+
+/* And the fallback for a browser that does not know about containers yet. */
+@media (max-width: 560px) {
+	.diluxone-users-linked__item,
+	.diluxone-users-session { flex-wrap: wrap; }
+	.diluxone-users-linked__who,
+	.diluxone-users-session__what { flex: 1 1 100%; order: 2; }
+}
+
+/* ── Las passkeys ───────────────────────────────────────────────────── */
+
+/* Each key is a box that opens, the same as the screen panels: closed you
+   read the name, open you change it or remove the key. A text field always
+   open on every row looks like a half-filled form. */
+.diluxone-users-keys {
+	list-style: none;
+	margin: 0 0 var(--diluxone-users-gap);
+	padding: 0;
+	border: 1px solid var(--diluxone-users-border);
+	border-radius: var(--diluxone-users-radius);
+	overflow: hidden;
+	background: var(--diluxone-users-surface);
+}
+.diluxone-users-keys > li + li { border-top: 1px solid var(--diluxone-users-border); }
+
+.diluxone-users-key__row {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding: 12px 16px;
+	cursor: pointer;
+	list-style: none;
+}
+.diluxone-users-key__row::-webkit-details-marker { display: none; }
+.diluxone-users-key__row::marker { content: ''; }
+.diluxone-users-key__row:focus-visible { outline: 2px solid var(--diluxone-users-accent); outline-offset: -3px; }
+
+.diluxone-users-key__logo {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 38px;
+	height: 38px;
+	flex: 0 0 38px;
+	border-radius: 50%;
+	background: var(--diluxone-users-accent-bg);
+	color: var(--diluxone-users-accent-ink);
+}
+.diluxone-users-key__who { display: flex; flex-direction: column; gap: 2px; flex: 1 1 auto; min-width: 0; }
+.diluxone-users-key__who > span { font-size: 0.9em; color: var(--diluxone-users-muted); }
+
+/* The same tip as the panels, in miniature: it is the same gesture. */
+.diluxone-users-key__arrow {
+	position: relative;
+	flex: 0 0 auto;
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	background: var(--diluxone-users-surface-alt);
+	transition: transform .18s ease, background-color .18s ease;
+}
+.diluxone-users-key__arrow::before {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 8px;
+	height: 8px;
+	border-right: 2px solid var(--diluxone-users-text);
+	border-bottom: 2px solid var(--diluxone-users-text);
+	transform: translate(-50%, -70%) rotate(45deg);
+}
+details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key__arrow { transform: rotate(180deg); }
+.diluxone-users-key__row:hover .diluxone-users-key__arrow { background-color: color-mix( in srgb, var(--diluxone-users-accent) 16%, var(--diluxone-users-surface-alt) ); }
+
+.diluxone-users-key__edit {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 8px;
+	margin: 0;
+	padding: 4px 16px 18px 68px;
+}
+.diluxone-users-key__edit label { font-weight: 600; font-size: 0.9em; }
+.diluxone-users-key__edit input[type="text"] { width: 100%; max-width: 22rem; }
+.diluxone-users-key__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.diluxone-users-key__actions .diluxone-users-button { min-height: 38px; padding: 0 16px; font-size: 0.9em; }
+
+.diluxone-users-key-add { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin: 0; }
+.diluxone-users-key-add .diluxone-users-key__field { display: flex; flex-direction: column; gap: 6px; flex: 0 1 22rem; min-width: 0; }
+.diluxone-users-key-add label { font-weight: 600; }
+
+@media (max-width: 640px) {
+	.diluxone-users-key__edit { padding-left: 16px; }
+}
+
+/* ── The account area ───────────────────────────────────────────────── */
+
+.diluxone-users-account__header {
+	display: flex;
+	align-items: center;
+	gap: 18px;
+	padding: 0 0 20px;
+	margin-bottom: 20px;
+	border-bottom: 1px solid var(--diluxone-users-border);
+}
+.diluxone-users-account__avatar {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 64px;
+	height: 64px;
+	flex: 0 0 64px;
+	border-radius: 50%;
+	background: var(--diluxone-users-accent-bg);
+	color: var(--diluxone-users-accent-ink);
+	font-size: 1.3em;
+	font-weight: 700;
+	overflow: hidden;
+}
+.diluxone-users-account__avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.diluxone-users-account__name { margin: 0; font-size: 1.5em; }
+.diluxone-users-account__since { margin: 2px 0 0; color: var(--diluxone-users-muted); }
+
+.diluxone-users-account__nav { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 24px; }
+.diluxone-users-account__tab {
+	padding: 10px 16px;
+	border-radius: var(--diluxone-users-radius-sm);
+	color: var(--diluxone-users-muted);
+	text-decoration: none;
+	font-weight: 600;
+}
+.diluxone-users-account__tab:hover { background: var(--diluxone-users-surface-alt); color: var(--diluxone-users-text); }
+.diluxone-users-account__tab.is-current { background: var(--diluxone-users-accent-bg); color: var(--diluxone-users-accent-ink); }
+
+.diluxone-users-account__title { margin: 0 0 6px; font-size: 1.35em; }
+
+/* Menu at the side: the navigation becomes a column and the content sits beside it. */
+.diluxone-users-account--side .diluxone-users-account__body {
+	display: grid;
+	grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+	gap: 32px;
+	align-items: start;
+}
+.diluxone-users-account--side .diluxone-users-account__nav { flex-direction: column; flex-wrap: nowrap; margin: 0; }
+
+@media (max-width: 782px) {
+	.diluxone-users-account--side .diluxone-users-account__body { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+	.diluxone-users-account--side .diluxone-users-account__nav { flex-direction: row; flex-wrap: wrap; }
+}
+
+/* ── The front-page summary ─────────────────────────────────────────── */
+
+.diluxone-users-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+	gap: var(--diluxone-users-gap);
+	margin: 22px 0 0;
+}
+.diluxone-users-card-summary {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: 18px 20px;
+	background: var(--diluxone-users-surface);
+	border: 1px solid var(--diluxone-users-border);
+	border-radius: var(--diluxone-users-radius);
+	text-decoration: none;
+	color: inherit;
+}
+.diluxone-users-card-summary:hover { border-color: var(--diluxone-users-accent); }
+.diluxone-users-card-summary__label { font-size: 0.8em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--diluxone-users-muted); }
+.diluxone-users-card-summary__value { font-size: 1.9em; font-weight: 800; line-height: 1.15; margin-top: 4px; }
+.diluxone-users-card-summary__note { font-size: 0.92em; color: var(--diluxone-users-muted); }
+.diluxone-users-card-summary__cta { margin-top: 10px; font-weight: 700; color: var(--diluxone-users-accent); }
+
+/* ── Acceso ─────────────────────────────────────────────────────────── */
+
+.diluxone-users-login__title, .diluxone-users-fields__title { margin: 0 0 6px; }
+.diluxone-users-login__email { font-weight: 700; }
+.diluxone-users-divider {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	margin: 24px 0;
+	color: var(--diluxone-users-muted);
+	font-size: 0.9em;
+}
+.diluxone-users-divider::before, .diluxone-users-divider::after {
+	content: "";
+	flex: 1 1 auto;
+	height: 1px;
+	background: var(--diluxone-users-border);
+}
+
+/* ── The profile picture ────────────────────────────────────────────── */
+
+.diluxone-users-avatar__form { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.diluxone-users-avatar__current { flex: 0 0 auto; line-height: 0; }
+.diluxone-users-avatar__current img { border-radius: 50%; }
+.diluxone-users-avatar__actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+/* The file input is ugly in every browser and different in each one: it is
+   hidden inside the label, which is already a system button. */
+.diluxone-users-avatar__actions input[type="file"] {
+	position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+	overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.diluxone-users-avatar__actions label { cursor: pointer; }
+.diluxone-users-avatar .diluxone-users-note { flex: 1 1 100%; }
+
+/* ── The public name ────────────────────────────────────────────────── */
+
+.diluxone-users-handle .diluxone-users-form { max-width: 28rem; }
+
+/* WordPress's own form, so it does not clash with the rest. */
+.diluxone-users .login-username,
+.diluxone-users .login-password { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.diluxone-users .login-username label,
+.diluxone-users .login-password label { font-weight: 600; }
+.diluxone-users .login-username input,
+.diluxone-users .login-password input {
+	width: 100%;
+	min-height: var(--diluxone-users-control-h);
+	padding: 0 14px;
+	border: 1px solid var(--diluxone-users-border);
+	border-radius: var(--diluxone-users-radius-sm);
+	background: var(--diluxone-users-surface);
+	color: var(--diluxone-users-text);
+	font: inherit;
+}
+.diluxone-users .login-remember { margin-bottom: 14px; color: var(--diluxone-users-muted); }
+.diluxone-users .login-submit input {
+	min-height: var(--diluxone-users-control-h);
+	padding: 0 22px;
+	border: 0;
+	border-radius: var(--diluxone-users-radius-sm);
+	background: var(--diluxone-users-accent-bg);
+	color: var(--diluxone-users-accent-ink);
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+/* ── Segundo factor ─────────────────────────────────────────────────── */
+
+.diluxone-users-totp { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+.diluxone-users-totp__qr {
+	flex: 0 0 auto;
+	padding: 10px;
+	background: #fff;
+	border: 1px solid var(--diluxone-users-border);
+	border-radius: var(--diluxone-users-radius-sm);
+	line-height: 0;
+}
+.diluxone-users-totp__manual { flex: 1 1 260px; min-width: 0; }
+.diluxone-users-totp__key {
+	display: inline-block;
+	padding: 8px 12px;
+	background: var(--diluxone-users-surface-alt);
+	border-radius: var(--diluxone-users-radius-sm);
+	font-size: 1.05em;
+	letter-spacing: .08em;
+	word-break: break-all;
+}
+
+/* Backup codes are shown only once: they are seen as what they are,
+   something to copy or print, not as running text. */
+.diluxone-users-backup__list {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+	gap: 8px;
+	margin: 14px 0 0;
+	padding: 0;
+	list-style: none;
+}
+.diluxone-users-backup__list code {
+	display: block;
+	padding: 10px 12px;
+	background: var(--diluxone-users-surface-alt);
+	border-radius: var(--diluxone-users-radius-sm);
+	text-align: center;
+	letter-spacing: .06em;
+}
+
+.diluxone-users-login--2fa { max-width: 34rem; }
+.diluxone-users-login--2fa #diluxone-users-2fa-code { font-size: 1.4em; letter-spacing: .3em; text-align: center; }
+
+/* ── Privacidad ─────────────────────────────────────────────────────── */
+
+/* The block that deletes the account is set apart from the one that
+   downloads: they are two very different things and cannot look alike. */
+.diluxone-users-panel--danger { border-color: color-mix( in srgb, var(--diluxone-users-danger) 35%, var(--diluxone-users-border) ); }
+.diluxone-users-panel--danger h3 { color: var(--diluxone-users-danger); }
+
+.diluxone-users-list-plain { margin: 10px 0 14px; padding-left: 20px; }
+.diluxone-users-list-plain li { margin-bottom: 6px; }
+
+.diluxone-users-requests { margin-top: 16px; }
+.diluxone-users-requests__action { text-align: right; white-space: nowrap; }
+.diluxone-users-requests .diluxone-users-button { min-height: 36px; padding: 0 16px; font-size: .92em; }
+
+.diluxone-users-pill {
+	display: inline-block;
+	padding: 4px 12px;
+	border-radius: 999px;
+	background: var(--diluxone-users-surface-alt);
+	color: var(--diluxone-users-muted);
+	font-size: .88em;
+	font-weight: 600;
+}
+.diluxone-users-pill--ok { background: color-mix( in srgb, var(--diluxone-users-ok) 14%, transparent ); color: var(--diluxone-users-ok); }
+.diluxone-users-pill--pending { background: color-mix( in srgb, var(--diluxone-users-accent) 12%, transparent ); color: var(--diluxone-users-accent); }
+.diluxone-users-pill--off { background: color-mix( in srgb, var(--diluxone-users-danger) 12%, transparent ); color: var(--diluxone-users-danger); }
+
+.diluxone-users-handle-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+/* The air between the pieces comes from `gap`. The paragraph margins any
+   theme brings would add to it and leave gaps two lines tall. */
+.diluxone-users-handle-field > p { margin-block: 0; }
+.diluxone-users-handle-field > input { max-width: 26rem; }
+/* What it is and what it is not goes before the field: after it has been
+   typed it is no use at all. */
+.diluxone-users-handle__what { margin: 0; font-size: 0.9em; line-height: 1.55; color: var(--diluxone-users-muted); }
+.diluxone-users-handle__preview,
+.diluxone-users-handle__state { margin: 0; font-size: 0.9em; }
+.diluxone-users-handle__preview { color: var(--diluxone-users-muted); }
+.diluxone-users-handle__preview a { word-break: break-all; }
+.diluxone-users-handle__state { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.diluxone-users-handle__notice { font-weight: 600; }
+.diluxone-users-handle__notice.is-free { color: var(--diluxone-users-ok); }
+.diluxone-users-handle__notice.is-taken { color: var(--diluxone-users-danger); }
+.diluxone-users-handle__notice.is-waiting { color: var(--diluxone-users-muted); font-weight: 400; }

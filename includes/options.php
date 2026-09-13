@@ -1,179 +1,179 @@
 <?php
 /**
- * Los ajustes del plugin, con sus valores por defecto en un solo lugar.
+ * The plugin settings, with their default values in a single place.
  *
- * Todo lo que en otros plugins es una constante o un número escrito en el
- * código vive acá y se edita desde el admin.
+ * Everything that in other plugins is a constant or a number written into the
+ * code lives here and is edited from the admin.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Valores por defecto. La clave es el nombre de la option, con prefijo.
+ * Default values. The key is the option name, with its prefix.
  *
  * @return array<string, mixed>
  */
-function users_dlx_plus_option_defaults(): array {
+function diluxone_users_option_defaults(): array {
 	return array(
-		// ── Acceso sin contraseña ─────────────────────────────────────
-		// Cómo entra la gente a este sitio:
-		// 'link'     sólo el enlace por correo; se cierra el formulario de
-		// usuario y contraseña de wp-login.php.
-		// 'password' sólo usuario y contraseña, el de WordPress de siempre.
-		// 'both'     las dos cosas, una debajo de la otra.
-		'users_dlx_plus_login_method'       => 'both',
-		// Página con el formulario de acceso (el shortcode [users_dlx_plus_login] o el
-		// que ponga el sitio). En 0 se usa wp-login.php.
-		'users_dlx_plus_login_page'         => 0,
-		// Minutos que vale el enlace del correo.
-		'users_dlx_plus_login_expiry'       => 15,
-		// Segundos entre dos pedidos para el mismo correo.
-		'users_dlx_plus_login_throttle'     => 60,
-		// Crear la cuenta si el correo no existe. Apagado, el enlace sólo
-		// sirve para quien ya está registrado.
-		'users_dlx_plus_login_register'     => 1,
-		// Rol de las cuentas creadas así.
-		'users_dlx_plus_login_role'         => 'subscriber',
-		'users_dlx_plus_login_subject'      => '',
-		'users_dlx_plus_login_body'         => '',
+		// ── Passwordless sign-in ──────────────────────────────────────
+		// How people get into this site:
+		// 'link'     the e-mail link only; the username-and-password form of
+		// wp-login.php is closed.
+		// 'password' username and password only, the usual WordPress one.
+		// 'both'     both of them, one below the other.
+		'diluxone_users_login_method'       => 'both',
+		// Page holding the sign-in form (the [diluxone_users_login] shortcode,
+		// or whichever one the site puts there). At 0, wp-login.php is used.
+		'diluxone_users_login_page'         => 0,
+		// Minutes the e-mail link is good for.
+		'diluxone_users_login_expiry'       => 15,
+		// Seconds between two requests for the same e-mail address.
+		'diluxone_users_login_throttle'     => 60,
+		// Create the account when the e-mail does not exist. Turned off, the
+		// link only works for someone already registered.
+		'diluxone_users_login_register'     => 1,
+		// Role of the accounts created that way.
+		'diluxone_users_login_role'         => 'subscriber',
+		'diluxone_users_login_subject'      => '',
+		'diluxone_users_login_body'         => '',
 
-		// ── Duración de la sesión ─────────────────────────────────────
-		'users_dlx_plus_session_long_days'  => 30,  // Con "recordarme".
-		'users_dlx_plus_session_short_days' => 2,   // Sin "recordarme".
+		// ── Session length ────────────────────────────────────────────
+		'diluxone_users_session_long_days'  => 30,  // Con "recordarme".
+		'diluxone_users_session_short_days' => 2,   // Sin "recordarme".
 
-		// ── Login social ──────────────────────────────────────────────
-		// Si el correo que devuelve la red ya existe en el sitio, esa cuenta
-		// es de la misma persona y se vinculan. Es lo que hace que entrar con
-		// Google hoy y con GitHub mañana sea la misma cuenta.
-		'users_dlx_plus_sso_link_by_email'  => 1,
-		// Crear una cuenta nueva cuando el correo no existe.
-		'users_dlx_plus_sso_register'       => 1,
-		// Exigir que el proveedor diga que el correo está verificado.
-		'users_dlx_plus_sso_verified_only'  => 0,
-		// Roles que no pueden entrar con una red social. Va como lista porque
-		// son varios; el guardado de abajo la trata aparte.
-		'users_dlx_plus_sso_blocked_roles'  => array(),
+		// ── Social login ──────────────────────────────────────────────
+		// If the e-mail the network returns already exists on the site, that
+		// account belongs to the same person and they are linked. It is what
+		// makes signing in with Google today and GitHub tomorrow one account.
+		'diluxone_users_sso_link_by_email'  => 1,
+		// Create a new account when the e-mail does not exist.
+		'diluxone_users_sso_register'       => 1,
+		// Require the provider to say the e-mail is verified.
+		'diluxone_users_sso_verified_only'  => 0,
+		// Roles that cannot sign in with a social account. It goes as a list
+		// because there are several; the saving below treats it separately.
+		'diluxone_users_sso_blocked_roles'  => array(),
 
-		/* Cómo se ven los botones de las redes. */
-		'users_dlx_plus_sso_button_skin'    => 'brand',
-		'users_dlx_plus_sso_button_shape'   => 'rounded',
-		'users_dlx_plus_sso_button_show'    => 'icon-text',
-		// Vacío significa el texto por defecto, que además se traduce solo.
-		'users_dlx_plus_sso_button_text'    => '',
-		'users_dlx_plus_sso_button_columns' => 2,
+		/* How the network buttons look. */
+		'diluxone_users_sso_button_skin'    => 'brand',
+		'diluxone_users_sso_button_shape'   => 'rounded',
+		'diluxone_users_sso_button_show'    => 'icon-text',
+		// Empty means the default text, which also translates itself.
+		'diluxone_users_sso_button_text'    => '',
+		'diluxone_users_sso_button_columns' => 2,
 
-		// ── El área de cuenta ─────────────────────────────────────────
-		// La página que tiene el shortcode [users_dlx_plus_account]. Con eso declarado
-		// en un solo lugar, todo el que necesite mandar a alguien a «mi
-		// cuenta» —LifterLMS, bbPress, un certificado— apunta bien.
-		'users_dlx_plus_account_page'       => 0,
-		// Dónde va la navegación: arriba, al costado, o en ningún lado
-		// porque la pone el sitio con [users_dlx_plus_account_nav].
-		'users_dlx_plus_account_layout'     => 'tabs',
-		// La portada con avatar, nombre y desde cuándo.
-		'users_dlx_plus_account_header'     => 1,
-		// La configuración de cada sección: si está prendida, cómo se llama,
-		// en qué orden va, y las secciones propias que agregó el sitio. Es
-		// una lista porque el guardado la trata aparte.
-		'users_dlx_plus_account_sections'   => array(),
+		// ── The account area ──────────────────────────────────────────
+		// The page holding the [diluxone_users_account] shortcode. With that
+		// declared in a single place, everyone who needs to send somebody to
+		// "my account" — LifterLMS, bbPress, a certificate — points right.
+		'diluxone_users_account_page'       => 0,
+		// Where the navigation goes: on top, down the side, or nowhere at all
+		// because the site places it with [diluxone_users_account_nav].
+		'diluxone_users_account_layout'     => 'tabs',
+		// The front page with avatar, name and member-since date.
+		'diluxone_users_account_header'     => 1,
+		// The configuration of each section: whether it is on, what it is
+		// called, what order it goes in, and the site's own added sections. It
+		// is a list because the saving treats it separately.
+		'diluxone_users_account_sections'   => array(),
 
-		// ── El nombre público ─────────────────────────────────────────
-		// El correo es la identidad y no se elige; esto es el nombre corto
-		// con el que la persona aparece y que va en la URL de su perfil.
-		'users_dlx_plus_handle_enabled'     => 0,
-		// Además del correo, se puede pedir el enlace de acceso escribiendo
-		// el nombre público. El enlace igual sale al correo de la cuenta.
-		'users_dlx_plus_handle_login'       => 0,
-		'users_dlx_plus_handle_min'         => 3,
-		'users_dlx_plus_handle_max'         => 30,
-		// 'strict' = a-z 0-9 . _ - ; 'unicode' acepta acentos y ñ.
-		'users_dlx_plus_handle_charset'     => 'strict',
-		// Qué hacer con los espacios: 'dash' los cambia por guiones —una
-		// dirección no puede tener espacios— o 'reject' los rechaza y avisa.
-		'users_dlx_plus_handle_spaces'      => 'dash',
-		// Días que hay que esperar entre un cambio y el siguiente. 0 = sin
-		// espera; un nombre que cambia todos los días no identifica a nadie.
-		'users_dlx_plus_handle_cooldown'    => 30,
-		'users_dlx_plus_handle_reserved'    => '',
+		// ── The public name ───────────────────────────────────────────
+		// The e-mail is the identity and is not chosen; this is the short name
+		// the person appears under and that goes in their profile URL.
+		'diluxone_users_handle_enabled'     => 0,
+		// Besides the e-mail, the sign-in link can be requested by typing the
+		// public name. The link still goes to the account's e-mail address.
+		'diluxone_users_handle_login'       => 0,
+		'diluxone_users_handle_min'         => 3,
+		'diluxone_users_handle_max'         => 30,
+		// 'strict' = a-z 0-9 . _ - ; 'unicode' accepts accents and ñ.
+		'diluxone_users_handle_charset'     => 'strict',
+		// What to do with spaces: 'dash' turns them into hyphens — an address
+		// cannot contain spaces — or 'reject' refuses them and says so.
+		'diluxone_users_handle_spaces'      => 'dash',
+		// Days to wait between one change and the next. 0 = no wait; a name
+		// that changes every day identifies nobody.
+		'diluxone_users_handle_cooldown'    => 30,
+		'diluxone_users_handle_reserved'    => '',
 
-		// ── La foto de perfil ─────────────────────────────────────────
-		// Dejar que la persona suba la suya.
-		'users_dlx_plus_avatar_upload'      => 1,
-		// Si no subió ninguna, ir a buscarla a Gravatar. Apagado, no se hace
-		// ninguna petición a un tercero con el hash del correo de nadie.
-		'users_dlx_plus_avatar_gravatar'    => 1,
-		// Y si no hay ni una ni otra: las iniciales sobre el color de acento.
-		'users_dlx_plus_avatar_initials'    => 1,
-		'users_dlx_plus_avatar_max_kb'      => 2048,
+		// ── The profile picture ───────────────────────────────────────
+		// Let the person upload their own.
+		'diluxone_users_avatar_upload'      => 1,
+		// If they uploaded none, go and fetch it from Gravatar. Turned off, no
+		// request is made to a third party with anybody's e-mail hash.
+		'diluxone_users_avatar_gravatar'    => 1,
+		// And if there is neither: the initials over the accent colour.
+		'diluxone_users_avatar_initials'    => 1,
+		'diluxone_users_avatar_max_kb'      => 2048,
 
-		// ── Apariencia ────────────────────────────────────────────────
-		// La hoja del plugin. Apagada, el sitio estila las clases users-dlx-plus-*.
-		'users_dlx_plus_styles'             => 1,
-		// Los dos valores que cambian todo lo demás, porque el resto de la
-		// hoja sale de ellos. Vacío = los que trae la hoja.
-		'users_dlx_plus_style_accent'       => '',
-		'users_dlx_plus_style_radius'       => '',
+		// ── Appearance ────────────────────────────────────────────────
+		// The plugin stylesheet. Off, the site styles the diluxone-users-* classes.
+		'diluxone_users_styles'             => 1,
+		// The two values that change everything else, because the rest of the
+		// sheet derives from them. Empty = the ones the sheet ships with.
+		'diluxone_users_style_accent'       => '',
+		'diluxone_users_style_radius'       => '',
 
-		// ── Segundo factor ────────────────────────────────────────────
-		// 'off' no se pide nunca; 'optional' sólo a quien lo prendió;
-		// 'required' a todo el mundo que pueda usarlo.
-		'users_dlx_plus_2fa_mode'           => 'optional',
-		// Los métodos que este sitio ofrece. Vacío equivale a apagado.
-		'users_dlx_plus_2fa_methods'        => array( 'totp', 'email' ),
-		// Roles a los que se les pide. Vacío = a todos.
-		'users_dlx_plus_2fa_roles'          => array(),
-		// Qué hacer cuando alguien entra por el enlace de correo:
-		// 'auto'   pedirlo sólo si el segundo paso NO es otro correo. Un
-		// código al mismo buzón que ya se abrió no prueba nada
-		// nuevo; una aplicación autenticadora sí.
-		// 'always' pedirlo siempre.
-		// 'never'  no pedirlo nunca.
-		'users_dlx_plus_2fa_link'           => 'auto',
-		// Días que se recuerda un navegador que ya pasó el desafío. 0 = nunca.
-		'users_dlx_plus_2fa_remember_days'  => 30,
+		// ── Second factor ─────────────────────────────────────────────
+		// 'off' is never asked; 'optional' only of whoever turned it on;
+		// 'required' of everybody who can use it.
+		'diluxone_users_2fa_mode'           => 'optional',
+		// The methods this site offers. Empty is equivalent to off.
+		'diluxone_users_2fa_methods'        => array( 'totp', 'email' ),
+		// Roles it is asked of. Empty = everybody.
+		'diluxone_users_2fa_roles'          => array(),
+		// What to do when somebody comes in by e-mail link:
+		// 'auto'   ask only if the second step is NOT another e-mail. A code
+		// to the same inbox that was just opened proves nothing
+		// new; an authenticator app does.
+		// 'always' always ask.
+		// 'never'  never ask.
+		'diluxone_users_2fa_link'           => 'auto',
+		// Days a browser that already passed the challenge is remembered. 0 = never.
+		'diluxone_users_2fa_remember_days'  => 30,
 
 		// ── Passkeys ──────────────────────────────────────────────────
-		// ── Privacidad ──────────────────────────────────────────────
-		// Qué puede hacer alguien con sus datos sin pedirle nada a nadie.
-		// Los dos vienen prendidos: es lo que corresponde, y un sitio que
-		// prefiera atender esos pedidos a mano los apaga.
-		'users_dlx_plus_privacy_export'     => 1,
-		'users_dlx_plus_privacy_delete'     => 1,
+		// ── Privacy ─────────────────────────────────────────────────
+		// What somebody can do with their own data without asking anyone.
+		// Both come turned on: it is the right thing, and a site that would
+		// rather handle those requests by hand turns them off.
+		'diluxone_users_privacy_export'     => 1,
+		'diluxone_users_privacy_delete'     => 1,
 
-		// ── Sesiones ────────────────────────────────────────────────
-		// Si cada persona ve dónde tiene la sesión abierta y puede cerrarlas.
-		'users_dlx_plus_sessions_show'      => 1,
+		// ── Sessions ────────────────────────────────────────────────
+		// Whether each person sees where their sessions are open and can close them.
+		'diluxone_users_sessions_show'      => 1,
 
-		'users_dlx_plus_passkey_enabled'    => 0,
-		// 'device' sólo la llave del aparato que se está usando; 'any' también
-		// las de afuera —una llave USB, o el teléfono escaneando un QR—.
-		'users_dlx_plus_passkey_where'      => 'any',
-		// Exigir que además se verifique quién es: huella, cara o PIN.
-		'users_dlx_plus_passkey_verify'     => 1,
+		'diluxone_users_passkey_enabled'    => 0,
+		// 'device' only the key of the device in use; 'any' also the ones from
+		// outside — a USB key, or the phone scanning a QR code.
+		'diluxone_users_passkey_where'      => 'any',
+		// Require verifying who they are on top: fingerprint, face or PIN.
+		'diluxone_users_passkey_verify'     => 1,
 
-		// ── El registro nativo de WordPress ───────────────────────────
-		// 'site' respeta lo que diga Ajustes → Generales; 'on' y 'off' lo
-		// fuerzan desde acá, que es donde se administran las cuentas.
-		'users_dlx_plus_wp_registration'    => 'site',
+		// ── WordPress's own registration ──────────────────────────────
+		// 'site' respects whatever Settings → General says; 'on' and 'off'
+		// force it from here, which is where accounts are administered.
+		'diluxone_users_wp_registration'    => 'site',
 
-		// Qué pasa cuando alguien abre el perfil del escritorio de WordPress:
-		// 'allow' nada, 'redirect' lo manda al área de cuenta del sitio,
-		// 'block' le dice que no. Nunca alcanza a quien administra.
-		'users_dlx_plus_wp_profile'         => 'allow',
+		// What happens when somebody opens the WordPress dashboard profile:
+		// 'allow' nothing, 'redirect' sends them to the site account area,
+		// 'block' tells them no. It never reaches whoever administers.
+		'diluxone_users_wp_profile'         => 'allow',
 	);
 }
 
 /**
- * Un ajuste, con su valor por defecto.
+ * One setting, with its default value.
  *
- * @param string $key  Nombre de la option, con prefijo.
- * @param mixed  $fallback  Valor si no hay ni option ni default.
+ * @param string $key      Option name, with prefix.
+ * @param mixed  $fallback Value when there is neither option nor default.
  * @return mixed
  */
-function users_dlx_plus_option( string $key, $fallback = null ) {
-	$defaults = users_dlx_plus_option_defaults();
+function diluxone_users_option( string $key, $fallback = null ) {
+	$defaults = diluxone_users_option_defaults();
 	$value    = get_option( $key, null );
 
 	if ( null === $value ) {
@@ -181,89 +181,90 @@ function users_dlx_plus_option( string $key, $fallback = null ) {
 	}
 
 	/**
-	 * Filtra un ajuste del plugin.
+	 * Filters one plugin setting.
 	 *
-	 * @param mixed  $value Valor resuelto.
-	 * @param string $key Nombre de la option.
+	 * @param mixed  $value Resolved value.
+	 * @param string $key   Option name.
 	 */
-	return apply_filters( 'users_dlx_plus_option', $value, $key );
+	return apply_filters( 'diluxone_users_option', $value, $key );
 }
 
 /**
- * ¿Este ajuste lo está forzando el sitio desde código?
+ * Is this setting being forced from code by the site?
  *
- * Un plugin como cst-core puede fijar un valor por el filtro `users_dlx_plus_option`
- * —porque en ese sitio no es una opción sino cómo funciona—. Cuando eso pasa,
- * el control del admin se guarda y no cambia nada, que es exactamente la clase
- * de mentira que hay que evitar en una pantalla de ajustes. Con esto se puede
- * mostrar al lado del control.
+ * A plugin such as cst-core can pin a value through the
+ * `diluxone_users_option` filter — because on that site it is not an option
+ * but how things work. When that happens, the admin control saves and changes
+ * nothing, which is exactly the kind of lie to avoid on a settings screen.
+ * With this it can be shown next to the control.
  */
-function users_dlx_plus_option_forced( string $key ): bool {
-	$defaults = users_dlx_plus_option_defaults();
+function diluxone_users_option_forced( string $key ): bool {
+	$defaults = diluxone_users_option_defaults();
 	$stored   = get_option( $key, null );
 	$stored   = null === $stored ? ( $defaults[ $key ] ?? null ) : $stored;
 
-	return users_dlx_plus_option( $key ) !== $stored;
+	return diluxone_users_option( $key ) !== $stored;
 }
 
 /**
- * Quién está fijando un ajuste desde el código.
+ * Who is pinning a setting from code.
  *
- * «Algo del sitio decidió esto» no le sirve a nadie: quien lee eso quiere ir
- * a sacarlo, y no sabe dónde. Acá sale el archivo y la función, que es lo que
- * hace falta para encontrarlo. Se listan todos los enganchados al filtro
- * porque cualquiera de ellos puede ser el que manda; cuál de todos, lo dice
- * abrir el archivo.
+ * "Something on the site decided this" helps nobody: whoever reads that wants
+ * to go and remove it, and does not know where. Here the file and the
+ * function come out, which is what it takes to find it. Everything hooked to
+ * the filter is listed because any of them could be the one that wins; which
+ * one it is, opening the file will say.
  *
  * @return array<int, string>
  */
-function users_dlx_plus_option_forced_by(): array {
+function diluxone_users_option_forced_by(): array {
 	global $wp_filter;
 
-	if ( ! isset( $wp_filter['users_dlx_plus_option'] ) ) {
+	if ( ! isset( $wp_filter['diluxone_users_option'] ) ) {
 		return array();
 	}
 
-	$quienes = array();
+	$who = array();
 
-	foreach ( $wp_filter['users_dlx_plus_option']->callbacks as $enganchados ) {
-		foreach ( $enganchados as $enganche ) {
-			$fn = $enganche['function'];
+	foreach ( $wp_filter['diluxone_users_option']->callbacks as $hooked ) {
+		foreach ( $hooked as $hook ) {
+			$fn = $hook['function'];
 
 			if ( ! is_string( $fn ) || ! function_exists( $fn ) ) {
 				continue;
 			}
 
 			try {
-				$archivo = (string) ( new ReflectionFunction( $fn ) )->getFileName();
+				$file = (string) ( new ReflectionFunction( $fn ) )->getFileName();
 			} catch ( ReflectionException $e ) {
 				continue;
 			}
 
-			$quienes[] = sprintf(
+			$who[] = sprintf(
 				'%s() — %s',
 				$fn,
-				ltrim( str_replace( wp_normalize_path( WP_PLUGIN_DIR ), '', wp_normalize_path( $archivo ) ), '/' )
+				ltrim( str_replace( wp_normalize_path( WP_PLUGIN_DIR ), '', wp_normalize_path( $file ) ), '/' )
 			);
 		}
 	}
 
-	return $quienes;
+	return $who;
 }
 
-/** Los minutos de vigencia del enlace, acotados a algo razonable. */
-function users_dlx_plus_login_expiry(): int {
-	return max( 1, min( 1440, (int) users_dlx_plus_option( 'users_dlx_plus_login_expiry' ) ) );
+/** The link lifetime in minutes, clamped to something reasonable. */
+function diluxone_users_login_expiry(): int {
+	return max( 1, min( 1440, (int) diluxone_users_option( 'diluxone_users_login_expiry' ) ) );
 }
 
 /**
- * La URL de la pantalla de acceso del sitio.
+ * The URL of the site's sign-in screen.
  *
- * Sin página configurada se cae a wp-login.php, que es donde WordPress espera
- * mandar a alguien que no entró: un plugin no puede dejar un sitio sin puerta.
+ * With no page configured it falls back to wp-login.php, which is where
+ * WordPress expects to send somebody who is not signed in: a plugin cannot
+ * leave a site with no door.
  */
-function users_dlx_plus_login_url(): string {
-	$id  = (int) users_dlx_plus_option( 'users_dlx_plus_login_page' );
+function diluxone_users_login_url(): string {
+	$id  = (int) diluxone_users_option( 'diluxone_users_login_page' );
 	$url = $id > 0 ? (string) get_permalink( $id ) : '';
 
 	if ( '' === $url ) {
@@ -271,19 +272,20 @@ function users_dlx_plus_login_url(): string {
 	}
 
 	/**
-	 * Filtra la URL de la pantalla de acceso.
+	 * Filters the URL of the sign-in screen.
 	 *
 	 * @param string $url
 	 */
-	return apply_filters( 'users_dlx_plus_login_url', $url );
+	return apply_filters( 'diluxone_users_login_url', $url );
 }
 
-/** Guarda los ajustes que llegan de una pantalla del admin. */
 /**
+ * Saves the settings arriving from an admin screen.
+ *
  * @param array<string, mixed> $input
  */
-function users_dlx_plus_save_options( array $input ): void {
-	$defaults = users_dlx_plus_option_defaults();
+function diluxone_users_save_options( array $input ): void {
+	$defaults = diluxone_users_option_defaults();
 
 	foreach ( $input as $key => $value ) {
 		if ( ! array_key_exists( $key, $defaults ) ) {
@@ -297,8 +299,8 @@ function users_dlx_plus_save_options( array $input ): void {
 			continue;
 		}
 
-		// Una lista de claves —los roles bloqueados es la única por ahora—.
-		// Se guarda saneada elemento por elemento y sin índices sueltos.
+		// A list of keys — the blocked roles are the only one so far. It is
+		// stored sanitised element by element and with no stray indexes.
 		if ( is_array( $default ) ) {
 			update_option( $key, array_values( array_unique( array_map( 'sanitize_key', (array) $value ) ) ) );
 			continue;

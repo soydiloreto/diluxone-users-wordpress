@@ -1,73 +1,73 @@
 <?php
 /**
- * Plantillas sobrescribibles.
+ * Overridable templates.
  *
- * El plugin trae su propio marcado para que caiga en cualquier sitio y ande,
- * pero un sitio con diseño propio tiene que poder reemplazarlo sin tocar el
- * plugin. Se busca, en orden:
+ * The plugin ships its own markup so it lands anywhere and works, but a site
+ * with a design of its own has to be able to replace it without touching the
+ * plugin. The lookup order is:
  *
- *   1. El filtro `users_dlx_plus_template`, que gana siempre.
- *   2. wp-content/themes/<theme-hijo>/users-dlx-plus/<archivo>
- *   3. wp-content/themes/<theme>/users-dlx-plus/<archivo>
- *   4. La plantilla del plugin.
+ *   1. The `diluxone_users_template` filter, which always wins.
+ *   2. wp-content/themes/<child-theme>/diluxone-users/<file>
+ *   3. wp-content/themes/<theme>/diluxone-users/<file>
+ *   4. The plugin's template.
  *
- * Es el mismo mecanismo que usan bbPress y LifterLMS, por dos razones: es el
- * que la gente que instala plugins ya conoce, y no obliga a nadie a copiar
- * archivos dentro del plugin, que se pierden en la próxima actualización.
+ * It is the same mechanism bbPress and LifterLMS use, for two reasons: it is
+ * the one people who install plugins already know, and it forces nobody to
+ * copy files inside the plugin, where they are lost on the next update.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/** Ruta del archivo de plantilla que hay que usar. */
-function users_dlx_plus_template( string $file ): string {
-	// Se acepta con extensión o sin ella: quien pide una plantilla piensa en
-	// «account/home», no en un archivo. Y se compara con is_file() y no con
-	// file_exists(), que también da verdadero para un directorio —y
-	// «account» es un directorio de plantillas.
+/** Path of the template file to use. */
+function diluxone_users_template( string $file ): string {
+	// It is accepted with or without the extension: whoever asks for a template
+	// thinks of "account/home", not of a file. And the comparison is with
+	// is_file() and not file_exists(), which is also true for a directory — and
+	// "account" is a directory of templates.
 	$file = '.php' === substr( $file, -4 ) ? $file : $file . '.php';
 
 	$candidates = array(
-		get_stylesheet_directory() . '/users-dlx-plus/' . $file,
-		get_template_directory() . '/users-dlx-plus/' . $file,
-		USERS_DLX_PLUS_DIR . 'templates/' . $file,
+		get_stylesheet_directory() . '/diluxone-users/' . $file,
+		get_template_directory() . '/diluxone-users/' . $file,
+		DILUXONE_USERS_DIR . 'templates/' . $file,
 	);
 
 	$path = '';
 
-	foreach ( $candidates as $candidata ) {
-		if ( is_file( $candidata ) ) {
-			$path = $candidata;
+	foreach ( $candidates as $candidate ) {
+		if ( is_file( $candidate ) ) {
+			$path = $candidate;
 			break;
 		}
 	}
 
 	/**
-	 * Filtra qué archivo se usa para pintar algo del plugin.
+	 * Filters which file is used to draw something of the plugin.
 	 *
-	 * @param string $path    Ruta encontrada.
-	 * @param string $file Nombre pedido, ya con extensión: "account/home.php".
+	 * @param string $path Path found.
+	 * @param string $file Name asked for, with its extension: "account/home.php".
 	 */
-	return (string) apply_filters( 'users_dlx_plus_template', $path, $file );
+	return (string) apply_filters( 'diluxone_users_template', $path, $file );
 }
 
 /**
- * Pinta una plantilla y devuelve lo que imprimió.
+ * Draws a template and returns what it printed.
  *
- * Las variables llegan como variables sueltas, que es lo que espera quien
- * escribe una plantilla y no una clase.
+ * The variables arrive as loose variables, which is what whoever writes a
+ * template and not a class expects.
  *
  * @param array<string, mixed> $data
  */
-function users_dlx_plus_render( string $file, array $data = array() ): string {
-	$path = users_dlx_plus_template( $file );
+function diluxone_users_render( string $file, array $data = array() ): string {
+	$path = diluxone_users_template( $file );
 
 	if ( '' === $path ) {
 		return '';
 	}
 
-	// phpcs:ignore WordPress.PHP.DontExtract.extract_extract -- es el contrato de una plantilla.
+	// phpcs:ignore WordPress.PHP.DontExtract.extract_extract -- it is a template's contract.
 	extract( $data, EXTR_SKIP );
 
 	ob_start();
@@ -77,131 +77,131 @@ function users_dlx_plus_render( string $file, array $data = array() ): string {
 }
 
 /**
- * La versión con la que se pide un archivo del plugin.
+ * The version a plugin file is requested with.
  *
- * La fecha del archivo, no la versión del plugin: mientras se trabaja, la
- * versión no cambia y el navegador se queda con la hoja vieja. Eso hizo perder
- * una tarde discutiendo un cambio que estaba hecho y no se veía.
+ * The file date, not the plugin version: while work is going on the version
+ * does not change and the browser keeps the old stylesheet. That cost an
+ * afternoon arguing about a change that was made and could not be seen.
  *
- * @param string $file Ruta relativa dentro del plugin, p. ej. "assets/users-dlx-plus.css".
+ * @param string $file Relative path inside the plugin, e.g. "assets/diluxone-users.css".
  */
-function users_dlx_plus_asset_version( string $file ): string {
-	$path = USERS_DLX_PLUS_DIR . $file;
+function diluxone_users_asset_version( string $file ): string {
+	$path = DILUXONE_USERS_DIR . $file;
 	$time = is_file( $path ) ? (int) filemtime( $path ) : 0;
 
-	return $time > 0 ? USERS_DLX_PLUS_VERSION . '.' . $time : USERS_DLX_PLUS_VERSION;
+	return $time > 0 ? DILUXONE_USERS_VERSION . '.' . $time : DILUXONE_USERS_VERSION;
 }
 
-/** El color de acento que se está usando. */
-function users_dlx_plus_style_accent(): string {
-	$accent = trim( (string) users_dlx_plus_option( 'users_dlx_plus_style_accent' ) );
+/** The accent colour currently in use. */
+function diluxone_users_style_accent(): string {
+	$accent = trim( (string) diluxone_users_option( 'diluxone_users_style_accent' ) );
 
 	return '' !== $accent ? $accent : '#2b59d6';
 }
 
 /**
- * La hoja de estilos del plugin, sólo si el sitio la quiere.
+ * The plugin stylesheet, only if the site wants it.
  *
- * Se registra y no se encola: la encola cada shortcode al pintarse, así una
- * página que no muestra nada del plugin no carga su CSS.
+ * It is registered and not enqueued: each shortcode enqueues it as it draws,
+ * so a page showing nothing of the plugin loads none of its CSS.
  *
- * Un sitio con diseño propio tiene dos caminos, y el primero suele alcanzar:
- * redefinir las propiedades `--users-dlx-plus-*` para que los componentes tomen sus
- * colores, o apagar la hoja entera y estilar las clases `users-dlx-plus-*` por su
- * cuenta.
+ * A site with a design of its own has two roads, and the first usually
+ * suffices: redefine the `--diluxone-users-*` properties so the components
+ * take their colours from them, or turn the whole sheet off and style the
+ * `diluxone-users-*` classes on its own.
  */
-function users_dlx_plus_styles(): void {
-	if ( ! users_dlx_plus_option( 'users_dlx_plus_styles' ) ) {
+function diluxone_users_styles(): void {
+	if ( ! diluxone_users_option( 'diluxone_users_styles' ) ) {
 		return;
 	}
 
-	wp_register_style( 'users-dlx-plus', USERS_DLX_PLUS_URL . 'assets/users-dlx-plus.css', array(), users_dlx_plus_asset_version( 'assets/users-dlx-plus.css' ) );
+	wp_register_style( 'diluxone-users', DILUXONE_USERS_URL . 'assets/diluxone-users.css', array(), diluxone_users_asset_version( 'assets/diluxone-users.css' ) );
 
-	// Los dos valores que se eligen desde el admin viajan como propiedades, no
-	// como reglas: no hay ningún archivo que generar ni que invalidar, y lo que
-	// se toca es exactamente lo que el resto de la hoja ya estaba leyendo.
+	// The two values chosen from the admin travel as properties, not as rules:
+	// there is no file to generate or to invalidate, and what is touched is
+	// exactly what the rest of the sheet was already reading.
 	$tokens = '';
 
-	if ( '' !== trim( (string) users_dlx_plus_option( 'users_dlx_plus_style_accent' ) ) ) {
-		$tokens .= '--users-dlx-plus-accent: ' . sanitize_hex_color( users_dlx_plus_style_accent() ) . ';';
+	if ( '' !== trim( (string) diluxone_users_option( 'diluxone_users_style_accent' ) ) ) {
+		$tokens .= '--diluxone-users-accent: ' . sanitize_hex_color( diluxone_users_style_accent() ) . ';';
 	}
 
-	$radius = (string) users_dlx_plus_option( 'users_dlx_plus_style_radius' );
+	$radius = (string) diluxone_users_option( 'diluxone_users_style_radius' );
 
 	if ( '' !== trim( $radius ) ) {
-		$tokens .= '--users-dlx-plus-radius: ' . (int) $radius . 'px;';
-		$tokens .= '--users-dlx-plus-radius-sm: ' . max( 0, (int) $radius - 4 ) . 'px;';
+		$tokens .= '--diluxone-users-radius: ' . (int) $radius . 'px;';
+		$tokens .= '--diluxone-users-radius-sm: ' . max( 0, (int) $radius - 4 ) . 'px;';
 	}
 
 	if ( '' !== $tokens ) {
-		wp_add_inline_style( 'users-dlx-plus', ':root{' . $tokens . '}' );
+		wp_add_inline_style( 'diluxone-users', ':root{' . $tokens . '}' );
 	}
 
-	// Y si la página que se está pidiendo ya trae uno de nuestros shortcodes,
-	// se encola acá. Encolarla sólo cuando el shortcode se pinta llega tarde
-	// en los temas de bloques, que arman la plantilla en otro momento: en
-	// Twenty Twenty-Five la hoja no salía y todo se veía en crudo.
-	if ( users_dlx_plus_page_has_shortcode() ) {
-		wp_enqueue_style( 'users-dlx-plus' );
+	// And if the page being requested already carries one of our shortcodes, it
+	// is enqueued here. Enqueueing it only when the shortcode draws arrives too
+	// late in block themes, which assemble the template at another moment: in
+	// Twenty Twenty-Five the sheet did not come out and everything looked raw.
+	if ( diluxone_users_page_has_shortcode() ) {
+		wp_enqueue_style( 'diluxone-users' );
 	}
 }
-add_action( 'wp_enqueue_scripts', 'users_dlx_plus_styles', 5 );
+add_action( 'wp_enqueue_scripts', 'diluxone_users_styles', 5 );
 
-/** ¿Lo que se va a pintar tiene alguno de los shortcodes del plugin? */
-function users_dlx_plus_page_has_shortcode(): bool {
+/** Does what is about to be drawn carry any of the plugin's shortcodes? */
+function diluxone_users_page_has_shortcode(): bool {
 	$post = get_post();
 
 	if ( ! $post instanceof WP_Post ) {
 		return false;
 	}
 
-	foreach ( array( 'users_dlx_plus_account', 'users_dlx_plus_account_nav', 'users_dlx_plus_login', 'users_dlx_plus_fields', 'users_dlx_plus_accounts', 'users_dlx_plus_sessions', 'users_dlx_plus_handle', 'users_dlx_plus_avatar', 'users_dlx_plus_notifications' ) as $shortcode ) {
+	foreach ( array( 'diluxone_users_account', 'diluxone_users_account_nav', 'diluxone_users_login', 'diluxone_users_fields', 'diluxone_users_accounts', 'diluxone_users_sessions', 'diluxone_users_handle', 'diluxone_users_avatar', 'diluxone_users_notifications' ) as $shortcode ) {
 		if ( has_shortcode( $post->post_content, $shortcode ) ) {
 			return true;
 		}
 	}
 
 	/**
-	 * Filtra si esta página necesita la hoja del plugin.
+	 * Filters whether this page needs the plugin stylesheet.
 	 *
-	 * Un sitio que pinta los shortcodes desde una plantilla —y no desde el
-	 * contenido— la prende por acá.
+	 * A site drawing the shortcodes from a template — and not from the content
+	 * — turns it on through here.
 	 *
 	 * @param bool    $needs
 	 * @param WP_Post $post
 	 */
-	return (bool) apply_filters( 'users_dlx_plus_needs_styles', false, $post );
+	return (bool) apply_filters( 'diluxone_users_needs_styles', false, $post );
 }
 
-/** Encola la hoja, si está registrada. La llaman los shortcodes al pintarse. */
-function users_dlx_plus_enqueue_styles(): void {
-	if ( wp_style_is( 'users-dlx-plus', 'registered' ) ) {
-		wp_enqueue_style( 'users-dlx-plus' );
+/** Enqueues the sheet, if it is registered. The shortcodes call it as they draw. */
+function diluxone_users_enqueue_styles(): void {
+	if ( wp_style_is( 'diluxone-users', 'registered' ) ) {
+		wp_enqueue_style( 'diluxone-users' );
 	}
 }
 
 /**
- * Una caja que se abre y se cierra.
+ * A box that opens and closes.
  *
- * Es un `<details>` y no un div con JavaScript: el navegador ya sabe abrirlo,
- * cerrarlo, enfocarlo con el teclado, buscar adentro con Ctrl+F aunque esté
- * cerrado, y abrirlo al imprimir. Todo eso habría que reescribirlo —mal— para
- * llegar al mismo lugar.
+ * It is a `<details>` and not a div with JavaScript: the browser already
+ * knows how to open it, close it, focus it with the keyboard, search inside
+ * it with Ctrl+F even when closed, and open it when printing. All of that
+ * would have to be rewritten — badly — to arrive at the same place.
  *
- * @param string $title  El título de la caja.
- * @param bool   $open   Si arranca abierta.
- * @param string $classes Clases extra.
+ * @param string $title   The box heading.
+ * @param bool   $open    Whether it starts open.
+ * @param string $classes Extra classes.
  */
-function users_dlx_plus_panel_open( string $title, bool $open = false, string $classes = '' ): void {
+function diluxone_users_panel_open( string $title, bool $open = false, string $classes = '' ): void {
 	printf(
-		'<details class="users-dlx-plus-panel %1$s"%2$s>'
-			. '<summary class="users-dlx-plus-panel__cabeza">'
-			. '<span class="users-dlx-plus-panel__titulo">%3$s</span>'
-			// La flecha es un elemento y no un pseudo: así se puede dibujar
-			// con dos bordes, que es lo único que sale nítido en cualquier
-			// pantalla, y girarla al abrir.
-			. '<span class="users-dlx-plus-panel__flecha" aria-hidden="true"></span>'
-			. '</summary><div class="users-dlx-plus-panel__cuerpo">',
+		'<details class="diluxone-users-panel %1$s"%2$s>'
+			. '<summary class="diluxone-users-panel__head">'
+			. '<span class="diluxone-users-panel__title">%3$s</span>'
+			// The arrow is an element and not a pseudo: that way it can be drawn
+			// with two borders, the only thing that comes out crisp on any
+			// screen, and turned as it opens.
+			. '<span class="diluxone-users-panel__arrow" aria-hidden="true"></span>'
+			. '</summary><div class="diluxone-users-panel__body">',
 		esc_attr( $classes ),
 		$open ? ' open' : '',
 		esc_html( $title )
@@ -209,18 +209,18 @@ function users_dlx_plus_panel_open( string $title, bool $open = false, string $c
 }
 
 /**
- * Cierra la caja abierta con users_dlx_plus_panel_open().
+ * Closes the box opened with diluxone_users_panel_open().
  *
- * Con `$guardar`, la caja termina con su propio botón. Como todas las cajas de
- * una pantalla viven dentro del mismo formulario, cualquiera de esos botones
- * manda la página entera: no hay que acordarse de cuál apretar ni volver
- * arriba a buscarlo.
+ * With `$save`, the box ends with a button of its own. Since every box on a
+ * screen lives inside the same form, any of those buttons submits the whole
+ * page: there is no need to remember which one to press or to go back up to
+ * find it.
  */
-function users_dlx_plus_panel_close( string $guardar = '' ): void {
-	if ( '' !== $guardar ) {
+function diluxone_users_panel_close( string $save = '' ): void {
+	if ( '' !== $save ) {
 		printf(
-			'<p class="users-dlx-plus-panel__guardar"><button type="submit" class="users-dlx-plus-button">%s</button></p>',
-			esc_html( $guardar )
+			'<p class="diluxone-users-panel__save"><button type="submit" class="diluxone-users-button">%s</button></p>',
+			esc_html( $save )
 		);
 	}
 

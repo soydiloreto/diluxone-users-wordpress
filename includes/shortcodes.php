@@ -1,52 +1,52 @@
 <?php
 /**
- * Los shortcodes: la puerta para que esto entre en cualquier diseño.
+ * The shortcodes: the door that lets this fit into any design.
  *
- *   [users_dlx_plus_login]   el formulario de "mandame el enlace" + los botones sociales
- *   [users_dlx_plus_fields]    los campos de la persona, para editarlos
- *   [users_dlx_plus_sessions] las sesiones abiertas, con el botón de cerrarlas
- *   [users_dlx_plus_accounts]  las redes sociales vinculadas
+ *   [diluxone_users_login]    the "send me the link" form + the social buttons
+ *   [diluxone_users_fields]   the person's fields, for editing
+ *   [diluxone_users_sessions] the open sessions, with the button to close them
+ *   [diluxone_users_accounts] the linked social networks
  *
- * Cada uno pinta una plantilla que el sitio puede reemplazar (ver
- * includes/plantillas.php), y el CSS que traen se puede apagar desde los
- * ajustes. Así el que lo instala y no toca nada obtiene algo usable, y el que
- * tiene diseño propio no tiene que pelearle a nada.
+ * Each one draws a template the site can replace (see includes/templates.php),
+ * and the CSS they bring can be turned off from the settings. That way
+ * whoever installs it and touches nothing gets something usable, and whoever
+ * has a design of their own has nothing to fight.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/** El estado que viene por la query, para saber qué mensaje mostrar. */
-function users_dlx_plus_state(): string {
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- sólo elige qué mensaje se ve.
-	return isset( $_GET['users-dlx-plus'] ) ? sanitize_key( wp_unslash( $_GET['users-dlx-plus'] ) ) : '';
+/** The state arriving through the query, to know which message to show. */
+function diluxone_users_state(): string {
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- it only picks which message is seen.
+	return isset( $_GET['diluxone-users'] ) ? sanitize_key( wp_unslash( $_GET['diluxone-users'] ) ) : '';
 }
 
 /**
- * El desafío del segundo factor, si hay uno a medio hacer.
+ * The second-factor challenge, when there is one half-done.
  *
- * Va antes del formulario de acceso y lo reemplaza: quien está a mitad de
- * camino no tiene que volver a escribir su correo, tiene que terminar.
+ * It goes before the sign-in form and replaces it: whoever is halfway does
+ * not have to type their e-mail again, they have to finish.
  *
  * @return array<string, mixed>|array{}
  */
-function users_dlx_plus_login_challenge(): array {
-	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- el nonce propio ES la credencial.
-	if ( ! isset( $_GET['users_dlx_plus_2fa'], $_GET['users_dlx_plus_key'] ) ) {
+function diluxone_users_login_challenge(): array {
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- our own nonce IS the credential.
+	if ( ! isset( $_GET['diluxone_users_2fa'], $_GET['diluxone_users_key'] ) ) {
 		return array();
 	}
 
-	$user_id = absint( $_GET['users_dlx_plus_2fa'] );
-	$key     = sanitize_text_field( wp_unslash( $_GET['users_dlx_plus_key'] ) );
-	$method  = sanitize_key( wp_unslash( $_GET['users_dlx_plus_method'] ?? '' ) );
+	$user_id = absint( $_GET['diluxone_users_2fa'] );
+	$key     = sanitize_text_field( wp_unslash( $_GET['diluxone_users_key'] ) );
+	$method  = sanitize_key( wp_unslash( $_GET['diluxone_users_method'] ?? '' ) );
 	// phpcs:enable
 
-	if ( array() === users_dlx_plus_2fa_pending( $user_id, $key ) ) {
+	if ( array() === diluxone_users_2fa_pending( $user_id, $key ) ) {
 		return array();
 	}
 
-	$methods = users_dlx_plus_2fa_available( $user_id );
+	$methods = diluxone_users_2fa_available( $user_id );
 
 	return array(
 		'user_id' => $user_id,
@@ -57,49 +57,49 @@ function users_dlx_plus_login_challenge(): array {
 }
 
 /**
- * Shortcode login.
+ * Login shortcode.
  *
- * @param array<string, string>|string $atts WordPress manda '' cuando no hay ninguno.
+ * @param array<string, string>|string $atts WordPress sends '' when there are none.
  */
-function users_dlx_plus_shortcode_login( $atts = array() ): string {
+function diluxone_users_shortcode_login( $atts = array() ): string {
 	if ( is_user_logged_in() ) {
 		return '';
 	}
 
-	users_dlx_plus_enqueue_styles();
+	diluxone_users_enqueue_styles();
 
-	// A mitad de camino: falta el segundo factor y nada más.
-	$challenge = users_dlx_plus_login_challenge();
+	// Halfway there: the second factor is missing and nothing else.
+	$challenge = diluxone_users_login_challenge();
 
 	if ( array() !== $challenge ) {
-		return users_dlx_plus_render( 'login-2fa', array_merge( $challenge, array( 'state' => users_dlx_plus_state() ) ) );
+		return diluxone_users_render( 'login-2fa', array_merge( $challenge, array( 'state' => diluxone_users_state() ) ) );
 	}
 
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	$email = isset( $_GET['email'] ) ? sanitize_email( wp_unslash( $_GET['email'] ) ) : '';
 
-	return users_dlx_plus_render(
+	return diluxone_users_render(
 		'login.php',
 		array(
-			'state'     => users_dlx_plus_state(),
+			'state'     => diluxone_users_state(),
 			'email'     => $email,
-			'providers' => users_dlx_plus_sso_available(),
-			'minutes'   => users_dlx_plus_login_expiry(),
+			'providers' => diluxone_users_sso_available(),
+			'minutes'   => diluxone_users_login_expiry(),
 		)
 	);
 }
-add_shortcode( 'users_dlx_plus_login', 'users_dlx_plus_shortcode_login' );
+add_shortcode( 'diluxone_users_login', 'diluxone_users_shortcode_login' );
 
 /**
- * Los campos de la persona.
+ * The person's fields.
  *
- * `grupo` limita a los campos de un grupo, para que un sitio pueda partir el
- * formulario en dos bloques como hace el nuestro (lo que hace falta arriba, lo
- * opcional abajo).
+ * `group` limits it to the fields of one group, so a site can split the form
+ * into two blocks the way ours does (what is needed on top, the optional part
+ * below).
  *
- * @param array<string, string>|string $atts WordPress manda '' cuando no hay ninguno.
+ * @param array<string, string>|string $atts WordPress sends '' when there are none.
  */
-function users_dlx_plus_shortcode_fields( $atts = array() ): string {
+function diluxone_users_shortcode_fields( $atts = array() ): string {
 	if ( ! is_user_logged_in() ) {
 		return '';
 	}
@@ -110,89 +110,90 @@ function users_dlx_plus_shortcode_fields( $atts = array() ): string {
 			'title' => '',
 		),
 		(array) $atts,
-		'users_dlx_plus_fields_save'
+		'diluxone_users_fields_save'
 	);
 
-	users_dlx_plus_enqueue_styles();
+	diluxone_users_enqueue_styles();
 
-	return users_dlx_plus_render(
+	return diluxone_users_render(
 		'fields.php',
 		array(
 			'user_id' => get_current_user_id(),
-			'fields'  => users_dlx_plus_fields( (string) $atts['group'] ),
+			'fields'  => diluxone_users_fields( (string) $atts['group'] ),
 			'group'   => (string) $atts['group'],
 			'title'   => (string) $atts['title'],
-			'state'   => users_dlx_plus_state(),
+			'state'   => diluxone_users_state(),
 		)
 	);
 }
-add_shortcode( 'users_dlx_plus_fields', 'users_dlx_plus_shortcode_fields' );
+add_shortcode( 'diluxone_users_fields', 'diluxone_users_shortcode_fields' );
 
-/** Guarda el formulario de [users_dlx_plus_fields]. */
-function users_dlx_plus_save_fields_form(): void {
+/** Saves the [diluxone_users_fields] form. */
+function diluxone_users_save_fields_form(): void {
 	if ( ! is_user_logged_in() ) {
-		wp_die( esc_html__( 'You have to sign in first.', 'users-dlx-plus' ) );
+		wp_die( esc_html__( 'You have to sign in first.', 'diluxone-users' ) );
 	}
 
-	check_admin_referer( 'users_dlx_plus_fields_save' );
+	check_admin_referer( 'diluxone_users_fields_save' );
 
-	$group   = sanitize_key( wp_unslash( $_POST['users_dlx_plus_group'] ?? '' ) );
-	$missing = users_dlx_plus_save( get_current_user_id(), $_POST, $group );
+	$group   = sanitize_key( wp_unslash( $_POST['diluxone_users_group'] ?? '' ) );
+	$missing = diluxone_users_save( get_current_user_id(), $_POST, $group );
 	$back    = wp_get_referer();
 	$back    = $back ? $back : home_url( '/' );
 
-	wp_safe_redirect( add_query_arg( 'users-dlx-plus', array() === $missing ? 'saved' : 'missing', $back ) );
+	wp_safe_redirect( add_query_arg( 'diluxone-users', array() === $missing ? 'saved' : 'missing', $back ) );
 	exit;
 }
-add_action( 'admin_post_users_dlx_plus_fields_save', 'users_dlx_plus_save_fields_form' );
+add_action( 'admin_post_diluxone_users_fields_save', 'diluxone_users_save_fields_form' );
 
 /**
- * Shortcode sessions.
+ * Sessions shortcode.
  *
- * @param array<string, string>|string $atts WordPress manda '' cuando no hay ninguno.
+ * @param array<string, string>|string $atts WordPress sends '' when there are none.
  */
-function users_dlx_plus_shortcode_sessions( $atts = array() ): string {
+function diluxone_users_shortcode_sessions( $atts = array() ): string {
 	if ( ! is_user_logged_in() ) {
 		return '';
 	}
 
-	users_dlx_plus_enqueue_styles();
+	diluxone_users_enqueue_styles();
 
-	return users_dlx_plus_render(
+	return diluxone_users_render(
 		'sessions.php',
 		array(
-			'sessions'      => users_dlx_plus_sessions( get_current_user_id() ),
-			'can_close_one' => users_dlx_plus_sessions_addressable(),
-			'state'         => users_dlx_plus_state(),
+			'sessions'      => diluxone_users_sessions( get_current_user_id() ),
+			'can_close_one' => diluxone_users_sessions_addressable(),
+			'state'         => diluxone_users_state(),
 		)
 	);
 }
-add_shortcode( 'users_dlx_plus_sessions', 'users_dlx_plus_shortcode_sessions' );
+add_shortcode( 'diluxone_users_sessions', 'diluxone_users_shortcode_sessions' );
 
 /**
- * Las redes sociales de la persona. Shortcode: [users_dlx_plus_accounts]
+ * The person's social networks. Shortcode: [diluxone_users_accounts]
  *
- * El atributo `only` parte la lista: `linked` son con las que ya entra y
- * `available` las que podría sumar. Sin él, todas juntas. Un sitio que las
- * muestra en dos cajas distintas no tiene que filtrar nada por su cuenta.
+ * The `only` attribute splits the list: `linked` are the ones they already
+ * sign in with and `available` the ones they could add. Without it, all of
+ * them together. A site showing them in two separate boxes does not have to
+ * filter anything itself.
  *
- * @param array<string, string>|string $atts WordPress manda '' cuando no hay ninguno.
+ * @param array<string, string>|string $atts WordPress sends '' when there are none.
  */
-function users_dlx_plus_shortcode_accounts( $atts = array() ): string {
+function diluxone_users_shortcode_accounts( $atts = array() ): string {
 	if ( ! is_user_logged_in() ) {
 		return '';
 	}
 
-	users_dlx_plus_enqueue_styles();
+	diluxone_users_enqueue_styles();
 
-	$atts    = shortcode_atts( array( 'only' => '' ), (array) $atts, 'users_dlx_plus_accounts' );
+	$atts    = shortcode_atts( array( 'only' => '' ), (array) $atts, 'diluxone_users_accounts' );
 	$user_id = get_current_user_id();
 
-	// De dónde vino, para volver ahí después de ir y venir del proveedor.
-	set_transient( 'users_dlx_plus_sso_back_' . $user_id, (string) home_url( add_query_arg( array() ) ), 10 * MINUTE_IN_SECONDS );
+	// Where it came from, to go back there after the trip to the provider.
+	set_transient( 'diluxone_users_sso_back_' . $user_id, (string) home_url( add_query_arg( array() ) ), 10 * MINUTE_IN_SECONDS );
 
-	$linked    = users_dlx_plus_sso_linked( $user_id );
-	$providers = users_dlx_plus_sso_available();
+	$linked    = diluxone_users_sso_linked( $user_id );
+	$providers = diluxone_users_sso_available();
 
 	if ( 'linked' === $atts['only'] ) {
 		$providers = array_filter( $providers, static fn( string $id ): bool => in_array( $id, $linked, true ), ARRAY_FILTER_USE_KEY );
@@ -200,14 +201,14 @@ function users_dlx_plus_shortcode_accounts( $atts = array() ): string {
 		$providers = array_filter( $providers, static fn( string $id ): bool => ! in_array( $id, $linked, true ), ARRAY_FILTER_USE_KEY );
 	}
 
-	return users_dlx_plus_render(
+	return diluxone_users_render(
 		'accounts.php',
 		array(
 			'providers' => $providers,
 			'linked'    => $linked,
-			'state'     => users_dlx_plus_state(),
+			'state'     => diluxone_users_state(),
 			'only'      => (string) $atts['only'],
 		)
 	);
 }
-add_shortcode( 'users_dlx_plus_accounts', 'users_dlx_plus_shortcode_accounts' );
+add_shortcode( 'diluxone_users_accounts', 'diluxone_users_shortcode_accounts' );

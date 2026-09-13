@@ -1,52 +1,52 @@
 <?php
 /**
- * El segundo factor de la aplicación autenticadora (TOTP).
+ * The authenticator-app second factor (TOTP).
  *
- * Es el RFC 6238 y son treinta líneas de matemática: un secreto compartido,
- * la hora dividida en ventanas de treinta segundos, un HMAC-SHA1 y seis
- * dígitos. Se implementa acá y no con una librería porque una dependencia
- * externa en un plugin de WordPress es un problema de mantenimiento mucho más
- * grande que este archivo, y porque lo que hay que hacer está escrito en un
- * documento público que no cambia desde 2011.
+ * It is RFC 6238 and it is thirty lines of arithmetic: a shared secret, the
+ * time divided into thirty-second windows, an HMAC-SHA1 and six digits. It is
+ * implemented here and not with a library because an external dependency in a
+ * WordPress plugin is a far bigger maintenance problem than this file, and
+ * because what has to be done is written in a public document that has not
+ * changed since 2011.
  *
- * Lo que NO se hace acá es inventar criptografía: el HMAC lo hace PHP.
+ * What is NOT done here is inventing cryptography: PHP does the HMAC.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/** El alfabeto de base32, que es como se escriben estos secretos. */
-const USERS_DLX_PLUS_BASE32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+/** The base32 alphabet, which is how these secrets are written. */
+const DILUXONE_USERS_BASE32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
-/** Cuántos segundos dura cada código. Es 30 en todas las aplicaciones. */
-const USERS_DLX_PLUS_TOTP_STEP = 30;
+/** How many seconds each code lasts. It is 30 in every app. */
+const DILUXONE_USERS_TOTP_STEP = 30;
 
-/** Cuántos dígitos. También son 6 en todas. */
-const USERS_DLX_PLUS_TOTP_DIGITS = 6;
+/** How many digits. Also 6 in every one. */
+const DILUXONE_USERS_TOTP_DIGITS = 6;
 
 /**
- * Cuántas ventanas para atrás y para adelante se aceptan.
+ * How many windows backwards and forwards are accepted.
  *
- * Una. Sin eso, un reloj dos segundos corrido rechaza códigos correctos; con
- * más, la ventana de un código robado se estira sin necesidad.
+ * One. Without it, a clock two seconds out rejects correct codes; with more,
+ * the window of a stolen code is stretched for no reason.
  */
-const USERS_DLX_PLUS_TOTP_DRIFT = 1;
+const DILUXONE_USERS_TOTP_DRIFT = 1;
 
-/** Un secreto nuevo, en base32 y del largo que recomienda el RFC. */
-function users_dlx_plus_totp_secret_new( int $length = 32 ): string {
+/** A fresh secret, in base32 and of the length the RFC recommends. */
+function diluxone_users_totp_secret_new( int $length = 32 ): string {
 	$secret = '';
 	$bytes  = random_bytes( max( 1, $length ) );
 
 	for ( $i = 0; $i < $length; $i++ ) {
-		$secret .= USERS_DLX_PLUS_BASE32[ ord( $bytes[ $i ] ) & 31 ];
+		$secret .= DILUXONE_USERS_BASE32[ ord( $bytes[ $i ] ) & 31 ];
 	}
 
 	return $secret;
 }
 
-/** De base32 a los bytes crudos que come el HMAC. */
-function users_dlx_plus_base32_decode( string $secret ): string {
+/** From base32 to the raw bytes the HMAC eats. */
+function diluxone_users_base32_decode( string $secret ): string {
 	$secret = strtoupper( preg_replace( '/[^A-Z2-7]/i', '', $secret ) ?? '' );
 
 	if ( '' === $secret ) {
@@ -56,7 +56,7 @@ function users_dlx_plus_base32_decode( string $secret ): string {
 	$bits = '';
 
 	foreach ( str_split( $secret ) as $char ) {
-		$bits .= str_pad( decbin( (int) strpos( USERS_DLX_PLUS_BASE32, $char ) ), 5, '0', STR_PAD_LEFT );
+		$bits .= str_pad( decbin( (int) strpos( DILUXONE_USERS_BASE32, $char ) ), 5, '0', STR_PAD_LEFT );
 	}
 
 	$bytes = '';
@@ -71,43 +71,43 @@ function users_dlx_plus_base32_decode( string $secret ): string {
 }
 
 /**
- * El código que corresponde a un secreto en un momento dado.
+ * The code matching a secret at a given moment.
  *
- * @param int $timestamp Momento; 0 = ahora.
+ * @param int $timestamp Moment; 0 = now.
  */
-function users_dlx_plus_totp_code( string $secret, int $timestamp = 0 ): string {
-	$key = users_dlx_plus_base32_decode( $secret );
+function diluxone_users_totp_code( string $secret, int $timestamp = 0 ): string {
+	$key = diluxone_users_base32_decode( $secret );
 
 	if ( '' === $key ) {
 		return '';
 	}
 
-	$counter = intdiv( 0 === $timestamp ? time() : $timestamp, USERS_DLX_PLUS_TOTP_STEP );
+	$counter = intdiv( 0 === $timestamp ? time() : $timestamp, DILUXONE_USERS_TOTP_STEP );
 
-	// El contador va como ocho bytes, big-endian. pack('J') existe desde PHP 5.6.
+	// The counter goes as eight bytes, big-endian. pack('J') exists since PHP 5.6.
 	$hash = hash_hmac( 'sha1', pack( 'J', $counter ), $key, true );
 
-	// «Truncamiento dinámico»: el último nibble dice de dónde leer los cuatro
-	// bytes que importan. Es literal del RFC 4226, §5.4.
+	// "Dynamic truncation": the last nibble says where to read the four bytes
+	// that matter from. It is straight out of RFC 4226, §5.4.
 	$offset = ord( $hash[ strlen( $hash ) - 1 ] ) & 0x0F;
 	$number = ( ( ord( $hash[ $offset ] ) & 0x7F ) << 24 )
 		| ( ( ord( $hash[ $offset + 1 ] ) & 0xFF ) << 16 )
 		| ( ( ord( $hash[ $offset + 2 ] ) & 0xFF ) << 8 )
 		| ( ord( $hash[ $offset + 3 ] ) & 0xFF );
 
-	return str_pad( (string) ( $number % ( 10 ** USERS_DLX_PLUS_TOTP_DIGITS ) ), USERS_DLX_PLUS_TOTP_DIGITS, '0', STR_PAD_LEFT );
+	return str_pad( (string) ( $number % ( 10 ** DILUXONE_USERS_TOTP_DIGITS ) ), DILUXONE_USERS_TOTP_DIGITS, '0', STR_PAD_LEFT );
 }
 
-/** ¿Este código corresponde a este secreto, ahora o hace un ratito? */
-function users_dlx_plus_totp_check( string $secret, string $code ): bool {
+/** Does this code match this secret, now or a moment ago? */
+function diluxone_users_totp_check( string $secret, string $code ): bool {
 	$code = preg_replace( '/\D/', '', $code ) ?? '';
 
-	if ( strlen( $code ) !== USERS_DLX_PLUS_TOTP_DIGITS ) {
+	if ( strlen( $code ) !== DILUXONE_USERS_TOTP_DIGITS ) {
 		return false;
 	}
 
-	for ( $i = -USERS_DLX_PLUS_TOTP_DRIFT; $i <= USERS_DLX_PLUS_TOTP_DRIFT; $i++ ) {
-		if ( hash_equals( users_dlx_plus_totp_code( $secret, time() + $i * USERS_DLX_PLUS_TOTP_STEP ), $code ) ) {
+	for ( $i = -DILUXONE_USERS_TOTP_DRIFT; $i <= DILUXONE_USERS_TOTP_DRIFT; $i++ ) {
+		if ( hash_equals( diluxone_users_totp_code( $secret, time() + $i * DILUXONE_USERS_TOTP_STEP ), $code ) ) {
 			return true;
 		}
 	}
@@ -115,70 +115,70 @@ function users_dlx_plus_totp_check( string $secret, string $code ): bool {
 	return false;
 }
 
-/* ── Lo que ve el plugin ───────────────────────────────────────────── */
+/* ── What the plugin sees ──────────────────────────────────────────── */
 
-/** El secreto ya confirmado de alguien. Vacío si todavía no lo activó. */
-function users_dlx_plus_totp_secret( int $user_id ): string {
-	return (string) get_user_meta( $user_id, 'users_dlx_plus_totp', true );
+/** Somebody's confirmed secret. Empty when they have not activated it yet. */
+function diluxone_users_totp_secret( int $user_id ): string {
+	return (string) get_user_meta( $user_id, 'diluxone_users_totp', true );
 }
 
-/** ¿Tiene la aplicación configurada y confirmada? */
-function users_dlx_plus_totp_ready( int $user_id ): bool {
-	return '' !== users_dlx_plus_totp_secret( $user_id );
+/** Do they have the app set up and confirmed? */
+function diluxone_users_totp_ready( int $user_id ): bool {
+	return '' !== diluxone_users_totp_secret( $user_id );
 }
 
 /**
- * El secreto que está probando ahora, generándolo si hace falta.
+ * The secret they are trying out right now, generating it if needed.
  *
- * Se guarda aparte del definitivo: hasta que no escriba un código correcto no
- * se activa nada, así nadie se queda afuera por haber abierto la pantalla y
- * haberse ido.
+ * It is stored apart from the definitive one: until they type a correct code
+ * nothing is activated, so nobody is locked out for having opened the screen
+ * and walked away.
  */
-function users_dlx_plus_totp_pending( int $user_id ): string {
-	$secret = (string) get_user_meta( $user_id, 'users_dlx_plus_totp_pending', true );
+function diluxone_users_totp_pending( int $user_id ): string {
+	$secret = (string) get_user_meta( $user_id, 'diluxone_users_totp_pending', true );
 
 	if ( '' === $secret ) {
-		$secret = users_dlx_plus_totp_secret_new();
-		update_user_meta( $user_id, 'users_dlx_plus_totp_pending', $secret );
+		$secret = diluxone_users_totp_secret_new();
+		update_user_meta( $user_id, 'diluxone_users_totp_pending', $secret );
 	}
 
 	return $secret;
 }
 
-/** Verifica contra el secreto activo. Es el callback del registro. */
-function users_dlx_plus_totp_verify( int $user_id, string $code ): bool {
-	$secret = users_dlx_plus_totp_secret( $user_id );
+/** Verifies against the active secret. It is the registry callback. */
+function diluxone_users_totp_verify( int $user_id, string $code ): bool {
+	$secret = diluxone_users_totp_secret( $user_id );
 
 	if ( '' === $secret ) {
 		return false;
 	}
 
-	// Un código sólo se usa una vez: sin esto, quien lo vea de reojo tiene
-	// treinta segundos para escribirlo también.
-	$used = (string) get_user_meta( $user_id, 'users_dlx_plus_totp_used', true );
+	// A code is used once: without this, whoever glimpses it over a shoulder
+	// has thirty seconds to type it too.
+	$used = (string) get_user_meta( $user_id, 'diluxone_users_totp_used', true );
 	$code = preg_replace( '/\D/', '', $code ) ?? '';
 
 	if ( '' !== $used && hash_equals( $used, $code ) ) {
 		return false;
 	}
 
-	if ( ! users_dlx_plus_totp_check( $secret, $code ) ) {
+	if ( ! diluxone_users_totp_check( $secret, $code ) ) {
 		return false;
 	}
 
-	update_user_meta( $user_id, 'users_dlx_plus_totp_used', $code );
+	update_user_meta( $user_id, 'diluxone_users_totp_used', $code );
 
 	return true;
 }
 
 /**
- * La URI que entienden todas las aplicaciones autenticadoras.
+ * The URI every authenticator app understands.
  *
- * El emisor va dos veces —en la etiqueta y como parámetro— porque las
- * aplicaciones viejas leen una y las nuevas la otra, y así la entrada queda
- * bien nombrada en las dos.
+ * The issuer goes in twice — in the label and as a parameter — because old
+ * apps read one and new ones the other, and that way the entry is named
+ * properly in both.
  */
-function users_dlx_plus_totp_uri( int $user_id, string $secret ): string {
+function diluxone_users_totp_uri( int $user_id, string $secret ): string {
 	$user   = get_userdata( $user_id );
 	$issuer = wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES );
 	$label  = $issuer . ':' . ( $user instanceof WP_User ? $user->user_email : (string) $user_id );
@@ -187,8 +187,8 @@ function users_dlx_plus_totp_uri( int $user_id, string $secret ): string {
 		array(
 			'secret' => $secret,
 			'issuer' => $issuer,
-			'digits' => USERS_DLX_PLUS_TOTP_DIGITS,
-			'period' => USERS_DLX_PLUS_TOTP_STEP,
+			'digits' => DILUXONE_USERS_TOTP_DIGITS,
+			'period' => DILUXONE_USERS_TOTP_STEP,
 		),
 		'',
 		'&',
@@ -196,28 +196,28 @@ function users_dlx_plus_totp_uri( int $user_id, string $secret ): string {
 	);
 }
 
-/** El secreto en grupos de cuatro, para poder tipearlo sin equivocarse. */
-function users_dlx_plus_totp_readable( string $secret ): string {
+/** The secret in groups of four, so it can be typed without mistakes. */
+function diluxone_users_totp_readable( string $secret ): string {
 	return trim( chunk_split( $secret, 4, ' ' ) );
 }
 
-/** Activa la aplicación si el código que escribieron es correcto. */
-function users_dlx_plus_totp_activate( int $user_id, string $code ): bool {
-	$secret = (string) get_user_meta( $user_id, 'users_dlx_plus_totp_pending', true );
+/** Activates the app if the code they typed is right. */
+function diluxone_users_totp_activate( int $user_id, string $code ): bool {
+	$secret = (string) get_user_meta( $user_id, 'diluxone_users_totp_pending', true );
 
-	if ( '' === $secret || ! users_dlx_plus_totp_check( $secret, $code ) ) {
+	if ( '' === $secret || ! diluxone_users_totp_check( $secret, $code ) ) {
 		return false;
 	}
 
-	update_user_meta( $user_id, 'users_dlx_plus_totp', $secret );
-	delete_user_meta( $user_id, 'users_dlx_plus_totp_pending' );
+	update_user_meta( $user_id, 'diluxone_users_totp', $secret );
+	delete_user_meta( $user_id, 'diluxone_users_totp_pending' );
 
 	return true;
 }
 
-/** La saca. */
-function users_dlx_plus_totp_forget( int $user_id ): void {
-	delete_user_meta( $user_id, 'users_dlx_plus_totp' );
-	delete_user_meta( $user_id, 'users_dlx_plus_totp_pending' );
-	delete_user_meta( $user_id, 'users_dlx_plus_totp_used' );
+/** Removes it. */
+function diluxone_users_totp_forget( int $user_id ): void {
+	delete_user_meta( $user_id, 'diluxone_users_totp' );
+	delete_user_meta( $user_id, 'diluxone_users_totp_pending' );
+	delete_user_meta( $user_id, 'diluxone_users_totp_used' );
 }

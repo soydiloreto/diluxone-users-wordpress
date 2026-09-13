@@ -1,40 +1,40 @@
 <?php
 /**
- * La IP de quien está del otro lado.
+ * The IP of whoever is on the other side.
  *
- * `REMOTE_ADDR` es la IP de quien abrió la conexión TCP. Detrás de un proxy
- * —nginx, un balanceador, Cloudflare, el front end de Azure App Service— eso
- * es el proxy, no la persona: en un sitio así todas las sesiones quedan
- * guardadas con la misma IP interna y la pantalla de sesiones no sirve para
- * nada.
+ * `REMOTE_ADDR` is the IP of whoever opened the TCP connection. Behind a proxy
+ * — nginx, a load balancer, Cloudflare, the Azure App Service front end —
+ * that is the proxy, not the person: on a site like that every session is
+ * stored under the same internal IP and the sessions screen is useless.
  *
- * La IP real viene en una cabecera, y las cabeceras las escribe el cliente:
- * confiar en ellas siempre sería dejar que cualquiera diga que es quien
- * quiera. Por eso sólo se les hace caso cuando `REMOTE_ADDR` es una dirección
- * privada o de loopback — o sea, cuando el pedido llegó por un proxy de la
- * propia red. En un servidor expuesto directo a internet, manda REMOTE_ADDR.
+ * The real IP arrives in a header, and headers are written by the client:
+ * always trusting them would mean letting anybody claim to be whoever they
+ * like. That is why they are only listened to when `REMOTE_ADDR` is a private
+ * or loopback address — that is, when the request arrived through a proxy on
+ * our own network. On a server exposed straight to the internet, REMOTE_ADDR
+ * rules.
  *
- * Azure App Service, además, escribe la IP con el puerto pegado
- * («190.15.219.128:64110»). Se lo saca.
+ * Azure App Service also writes the IP with the port stuck on
+ * ("190.15.219.128:64110"). That is stripped.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Las cabeceras donde puede venir la IP, en orden de confianza.
+ * The headers the IP can arrive in, in order of trust.
  *
  * @return array<int, string>
  */
-function users_dlx_plus_ip_headers(): array {
+function diluxone_users_ip_headers(): array {
 	/**
-	 * Filtra qué cabeceras se miran para averiguar la IP del cliente.
+	 * Filters which headers are looked at to work out the client IP.
 	 *
 	 * @param array<int, string> $headers
 	 */
 	return (array) apply_filters(
-		'users_dlx_plus_ip_headers',
+		'diluxone_users_ip_headers',
 		array(
 			'HTTP_CF_CONNECTING_IP', // Cloudflare.
 			'HTTP_TRUE_CLIENT_IP',   // Akamai, Cloudflare Enterprise.
@@ -45,21 +45,21 @@ function users_dlx_plus_ip_headers(): array {
 }
 
 /**
- * Limpia un valor de cabecera y devuelve la primera IP válida.
+ * Cleans a header value and returns the first valid IP.
  *
- * X-Forwarded-For es una lista: «cliente, proxy1, proxy2». La primera es la
- * que abrió el pedido. También se le saca el puerto que le pega Azure y los
- * corchetes de una IPv6 con puerto.
+ * X-Forwarded-For is a list: "client, proxy1, proxy2". The first one is the
+ * one that opened the request. The port Azure sticks on and the brackets of
+ * an IPv6 with a port are also stripped.
  */
-function users_dlx_plus_ip_from( string $value ): string {
+function diluxone_users_ip_from( string $value ): string {
 	foreach ( explode( ',', $value ) as $candidate ) {
 		$candidate = trim( $candidate );
 
-		// IPv6 entre corchetes, con o sin puerto: [::1]:443
+			// IPv6 in brackets, with or without a port: [::1]:443
 		if ( '' !== $candidate && '[' === $candidate[0] ) {
 			$candidate = (string) preg_replace( '/^\[([^\]]+)\](:\d+)?$/', '$1', $candidate );
 		} elseif ( 1 === substr_count( $candidate, ':' ) ) {
-			// Un solo ":" es IPv4 con puerto; dos o más, IPv6 sin corchetes.
+				// A single ":" is IPv4 with a port; two or more, IPv6 without brackets.
 			$candidate = (string) strtok( $candidate, ':' );
 		}
 
@@ -72,12 +72,12 @@ function users_dlx_plus_ip_from( string $value ): string {
 }
 
 /**
- * ¿Esta IP es de la red interna?
+ * Is this IP from the internal network?
  *
- * Si REMOTE_ADDR es privada o de loopback, el pedido llegó por un proxy de la
- * propia infraestructura y sus cabeceras son creíbles.
+ * If REMOTE_ADDR is private or loopback, the request arrived through a proxy
+ * of our own infrastructure and its headers are believable.
  */
-function users_dlx_plus_ip_is_internal( string $ip ): bool {
+function diluxone_users_ip_is_internal( string $ip ): bool {
 	if ( '' === $ip ) {
 		return true;
 	}
@@ -86,21 +86,21 @@ function users_dlx_plus_ip_is_internal( string $ip ): bool {
 }
 
 /**
- * La IP del cliente, resuelta.
+ * The client IP, resolved.
  *
- * @param array<string, mixed>|null $server Para poder testearlo sin servidor.
+ * @param array<string, mixed>|null $server So it can be tested with no server.
  */
-function users_dlx_plus_client_ip( ?array $server = null ): string {
+function diluxone_users_client_ip( ?array $server = null ): string {
 	$server = null === $server ? $_SERVER : $server; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-	$remote = users_dlx_plus_ip_from( (string) ( $server['REMOTE_ADDR'] ?? '' ) );
+	$remote = diluxone_users_ip_from( (string) ( $server['REMOTE_ADDR'] ?? '' ) );
 
-	// Expuesto directo a internet: las cabeceras no son de fiar.
-	if ( ! users_dlx_plus_ip_is_internal( $remote ) ) {
+		// Exposed straight to the internet: the headers are not to be trusted.
+	if ( ! diluxone_users_ip_is_internal( $remote ) ) {
 		return $remote;
 	}
 
-	foreach ( users_dlx_plus_ip_headers() as $header ) {
-		$ip = users_dlx_plus_ip_from( (string) ( $server[ $header ] ?? '' ) );
+	foreach ( diluxone_users_ip_headers() as $header ) {
+		$ip = diluxone_users_ip_from( (string) ( $server[ $header ] ?? '' ) );
 
 		if ( '' !== $ip ) {
 			return $ip;
@@ -111,38 +111,38 @@ function users_dlx_plus_client_ip( ?array $server = null ): string {
 }
 
 /**
- * La IP resuelta se guarda con la sesión.
+ * The resolved IP is stored with the session.
  *
- * WordPress guarda `REMOTE_ADDR` tal cual, y detrás de un proxy eso es el
- * proxy. Este filtro es el punto que el propio WordPress deja para agregarle
- * datos a la sesión, así que la nuestra viaja al lado de la suya sin pisarla.
+ * WordPress stores `REMOTE_ADDR` as it is, and behind a proxy that is the
+ * proxy. This filter is the point WordPress itself leaves for adding data to
+ * the session, so ours travels beside its own without treading on it.
  *
  * @param array<string, mixed> $info
  * @return array<string, mixed>
  */
-function users_dlx_plus_session_ip( array $info ): array {
-	$ip = users_dlx_plus_client_ip();
+function diluxone_users_session_ip( array $info ): array {
+	$ip = diluxone_users_client_ip();
 
 	if ( '' !== $ip ) {
-		$info['users_dlx_plus_ip'] = $ip;
+		$info['diluxone_users_ip'] = $ip;
 	}
 
 	return $info;
 }
-add_filter( 'attach_session_information', 'users_dlx_plus_session_ip' );
+add_filter( 'attach_session_information', 'diluxone_users_session_ip' );
 
 /**
- * La IP que se muestra de una sesión guardada.
+ * The IP shown for a stored session.
  *
- * Prefiere la nuestra; si la sesión es vieja y no la tiene, usa la de
- * WordPress limpiándole el puerto que le pega Azure.
+ * Ours is preferred; if the session is old and does not have it, WordPress's
+ * is used with the port Azure sticks on cleaned off.
  *
  * @param array<string, mixed> $session
  */
-function users_dlx_plus_session_ip_of( array $session ): string {
-	if ( ! empty( $session['users_dlx_plus_ip'] ) ) {
-		return (string) $session['users_dlx_plus_ip'];
+function diluxone_users_session_ip_of( array $session ): string {
+	if ( ! empty( $session['diluxone_users_ip'] ) ) {
+		return (string) $session['diluxone_users_ip'];
 	}
 
-	return users_dlx_plus_ip_from( (string) ( $session['ip'] ?? '' ) );
+	return diluxone_users_ip_from( (string) ( $session['ip'] ?? '' ) );
 }

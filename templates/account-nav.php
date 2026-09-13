@@ -1,19 +1,19 @@
 <?php
 /**
- * La navegación del área de cuenta.
+ * The account-area navigation.
  *
  * @var string                              $current
  * @var array<string, array<string, mixed>> $sections
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<nav class="users-dlx-plus-account__nav" aria-label="<?php esc_attr_e( 'Account sections', 'users-dlx-plus' ); ?>">
-	<?php foreach ( $sections as $users_dlx_plus_id => $users_dlx_plus_section ) : ?>
-		<a class="users-dlx-plus-account__tab <?php echo $users_dlx_plus_id === $current ? 'is-current' : ''; ?>"
-			href="<?php echo esc_url( users_dlx_plus_account_url( $users_dlx_plus_id ) ); ?>"
-			<?php echo $users_dlx_plus_id === $current ? 'aria-current="page"' : ''; ?>><?php echo esc_html( $users_dlx_plus_section['label'] ); ?></a>
+<nav class="diluxone-users-account__nav" aria-label="<?php esc_attr_e( 'Account sections', 'diluxone-users' ); ?>">
+	<?php foreach ( $sections as $diluxone_users_id => $diluxone_users_section ) : ?>
+		<a class="diluxone-users-account__tab <?php echo $diluxone_users_id === $current ? 'is-current' : ''; ?>"
+			href="<?php echo esc_url( diluxone_users_account_url( $diluxone_users_id ) ); ?>"
+			<?php echo $diluxone_users_id === $current ? 'aria-current="page"' : ''; ?>><?php echo esc_html( $diluxone_users_section['label'] ); ?></a>
 	<?php endforeach; ?>
 </nav>

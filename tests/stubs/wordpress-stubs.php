@@ -164,9 +164,10 @@ if (!function_exists('delete_option')) {
 
 // ── Sanitization (cont.) ────────────────────────────────────────
 //
-// Los hooks (add_action / add_filter) NO se stubean: los provee Brain Monkey
-// dentro de cada test, y un stub acá lo taparía — los tests que verifican en
-// qué hook y con qué prioridad se registra algo pasarían a fallar siempre.
+// The hooks (add_action / add_filter) are NOT stubbed: Brain Monkey provides
+// them inside each test, and a stub here would cover them up — the tests
+// checking which hook something registers on, and at which priority, would
+// start failing every time.
 
 if (!function_exists('sanitize_key')) {
 	function sanitize_key(string $key): string {
@@ -174,9 +175,9 @@ if (!function_exists('sanitize_key')) {
 	}
 }
 
-// ── User meta en memoria ────────────────────────────────────────
+// ── User meta in memory ─────────────────────────────────────────
 //
-// Suficiente para ejercitar la lógica de tokens de acceso sin base de datos.
+// Enough to exercise the sign-in token logic with no database.
 
 if (!isset($GLOBALS['cst_test_user_meta'])) {
 	$GLOBALS['cst_test_user_meta'] = [];
@@ -203,8 +204,8 @@ if (!function_exists('delete_user_meta')) {
 }
 
 if (!function_exists('wp_hash')) {
-	// El wp_hash real usa las sales del sitio. Para el test alcanza con que sea
-	// determinista y de una sola dirección.
+	// The real wp_hash uses the site salts. For the test it is enough for it to
+	// be deterministic and one-way.
 	function wp_hash(string $data): string {
 		return hash_hmac('md5', $data, 'clave-de-prueba');
 	}
@@ -212,12 +213,12 @@ if (!function_exists('wp_hash')) {
 
 if (!function_exists('wp_generate_password')) {
 	function wp_generate_password(int $length = 12, bool $special = true, bool $extra = false): string {
-		$alfabeto = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-		$salida = '';
+		$alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+		$output = '';
 		for ($i = 0; $i < $length; $i++) {
-			$salida .= $alfabeto[random_int(0, strlen($alfabeto) - 1)];
+			$output .= $alphabet[random_int(0, strlen($alphabet) - 1)];
 		}
-		return $salida;
+		return $output;
 	}
 }
 
@@ -235,11 +236,11 @@ if (!function_exists('is_user_logged_in')) {
 	function is_user_logged_in(): bool { return false; }
 }
 
-// ── Usuarios y contraseñas ────────────────────────────────────────────────
-// Los tests que miran la política del segundo factor necesitan una persona con
-// roles, y los códigos de respaldo necesitan hashear y comprobar. Se resuelven
-// con lo mínimo: un array de usuarios y un hash de verdad, no uno de mentira,
-// para que la prueba de «no se guarda en claro» signifique algo.
+// ── Users and passwords ───────────────────────────────────────────────────
+// The tests looking at the second-factor policy need a person with roles, and
+// the backup codes need hashing and checking. They are settled with the bare
+// minimum: an array of users and a real hash, not a fake one, so that the
+// "it is not stored in the clear" test means something.
 
 if (!isset($GLOBALS['_test_wp_users'])) {
 	$GLOBALS['_test_wp_users'] = [];
@@ -269,9 +270,9 @@ if (!function_exists('wp_rand')) {
 	}
 }
 
-// Una WP_User mínima. El código de producción comprueba `instanceof WP_User`
-// antes de leer roles, que es lo correcto; sin esta clase los tests pasarían
-// por el camino de «no existe» y no probarían nada.
+// A minimal WP_User. The production code checks `instanceof WP_User` before
+// reading roles, which is correct; without this class the tests would go down
+// the "does not exist" path and prove nothing.
 if (!class_exists('WP_User')) {
 	class WP_User {
 		public $ID = 0;
@@ -291,8 +292,8 @@ if (!class_exists('WP_User')) {
 }
 
 // ── Transients ────────────────────────────────────────────────────────────
-// Los desafíos de las passkeys viven acá: son de un solo uso y de vida corta,
-// que es exactamente lo que hace un transient.
+// The passkey challenges live here: they are single-use and short-lived,
+// which is exactly what a transient does.
 
 if (!isset($GLOBALS['_test_wp_transients'])) {
 	$GLOBALS['_test_wp_transients'] = [];

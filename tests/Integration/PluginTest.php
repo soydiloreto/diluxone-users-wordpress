@@ -1,58 +1,58 @@
 <?php
 /**
- * Que el plugin arranque de verdad en un WordPress limpio.
+ * That the plugin really boots on a clean WordPress.
  *
- * Los tests unitarios corren contra stubs y no ven esto: que el archivo
- * principal cargue sus veintitantos includes sin chocar, que las opciones se
- * siembren solas, y que el área de cuenta exista antes de que nadie la
- * configure. Es el piso de «funciona en una instalación nueva».
+ * The unit tests run against stubs and do not see this: that the main file
+ * loads its twenty-odd includes without clashing, that the options seed
+ * themselves, and that the account area exists before anybody configures it.
+ * It is the floor of "it works on a fresh install".
  */
 
 namespace Tests\Integration;
 
 class PluginTest extends IntegrationTestCase {
 
-	public function test_el_plugin_esta_cargado(): void {
-		$this->assertTrue( defined( 'USERS_DLX_PLUS_VERSION' ) );
-		$this->assertTrue( function_exists( 'users_dlx_plus_option' ) );
+	public function test_the_plugin_is_loaded(): void {
+		$this->assertTrue( defined( 'DILUXONE_USERS_VERSION' ) );
+		$this->assertTrue( function_exists( 'diluxone_users_option' ) );
 	}
 
-	public function test_las_opciones_tienen_valor_por_defecto(): void {
-		// Sin nada guardado, cada ajuste tiene que contestar algo razonable:
-		// un plugin recién instalado no puede depender de que alguien pase
-		// por todas sus pantallas antes de que el sitio funcione.
-		$this->assertSame( 'both', users_dlx_plus_option( 'users_dlx_plus_login_method' ) );
-		$this->assertSame( 'optional', users_dlx_plus_option( 'users_dlx_plus_2fa_mode' ) );
-		$this->assertSame( 1, (int) users_dlx_plus_option( 'users_dlx_plus_privacy_export' ) );
+	public function test_options_have_a_default_value(): void {
+		// With nothing stored, every setting has to answer something reasonable:
+		// a freshly installed plugin cannot depend on somebody going through
+		// all of its screens before the site works.
+		$this->assertSame( 'both', diluxone_users_option( 'diluxone_users_login_method' ) );
+		$this->assertSame( 'optional', diluxone_users_option( 'diluxone_users_2fa_mode' ) );
+		$this->assertSame( 1, (int) diluxone_users_option( 'diluxone_users_privacy_export' ) );
 	}
 
-	public function test_el_area_de_cuenta_trae_sus_secciones(): void {
-		$secciones = users_dlx_plus_sections( true );
+	public function test_the_account_area_ships_its_sections(): void {
+		$sections = diluxone_users_sections( true );
 
 		foreach ( array( 'home', 'details', 'accounts', 'security', 'privacy', 'notifications' ) as $id ) {
-			$this->assertArrayHasKey( $id, $secciones, "falta la sección $id" );
+			$this->assertArrayHasKey( $id, $sections, "falta la sección $id" );
 		}
 	}
 
-	public function test_sin_redes_sociales_no_hay_seccion_de_cuentas_vinculadas(): void {
-		// La regla que sostiene la coherencia del plugin: lo que no está
-		// configurado no aparece, sin que haya que apagar nada a mano.
+	public function test_with_no_social_networks_there_is_no_linked_accounts_section(): void {
+		// The rule that holds the plugin together: what is not configured does
+		// not show up, with nothing to turn off by hand.
 		wp_set_current_user( $this->alguien() );
 
-		$this->assertArrayNotHasKey( 'accounts', users_dlx_plus_sections() );
+		$this->assertArrayNotHasKey( 'accounts', diluxone_users_sections() );
 	}
 
-	public function test_los_campos_de_wordpress_estan_entre_los_campos(): void {
-		users_dlx_plus_seed_fields();
+	public function test_wordpress_own_fields_are_among_the_fields(): void {
+		diluxone_users_seed_fields();
 
-		$claves = wp_list_pluck( users_dlx_plus_fields(), 'key' );
+		$keys = wp_list_pluck( diluxone_users_fields(), 'key' );
 
-		$this->assertContains( 'first_name', $claves );
-		$this->assertContains( 'last_name', $claves );
+		$this->assertContains( 'first_name', $keys );
+		$this->assertContains( 'last_name', $keys );
 	}
 
-	public function test_el_plugin_trae_sus_propias_notificaciones(): void {
-		$this->assertArrayHasKey( 'users_dlx_plus_notify_login', users_dlx_plus_notification_prefs() );
-		$this->assertArrayHasKey( 'users_dlx_plus_notify_security', users_dlx_plus_notification_prefs() );
+	public function test_the_plugin_ships_its_own_notifications(): void {
+		$this->assertArrayHasKey( 'diluxone_users_notify_login', diluxone_users_notification_prefs() );
+		$this->assertArrayHasKey( 'diluxone_users_notify_security', diluxone_users_notification_prefs() );
 	}
 }

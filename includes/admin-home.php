@@ -1,31 +1,32 @@
 <?php
 /**
- * La portada del plugin: en qué estado está todo esto ahora.
+ * The plugin front page: what state all of this is in right now.
  *
- * No es una pantalla de bienvenida con un texto fijo. Son los números y el
- * estado reales: cuánta gente hay, cuánta está adentro, qué se le pide, cómo
- * se entra y qué falta configurar. Lo que uno querría saber antes de tocar
- * cualquier otra pantalla.
+ * It is not a welcome screen with a fixed text. It is the real numbers and
+ * the real state: how many people there are, how many are in, what they are
+ * asked for, how they get in and what is left to configure. What you would
+ * want to know before touching any other screen.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Los números de la portada.
+ * The front-page numbers.
  *
- * Cuántas cuentas hay se cuenta con un COUNT(*) sobre la tabla de usuarios y
- * no con count_users(), que además agrupa por rol recorriendo la tabla de
- * metadatos: con veinticinco mil cuentas eso se llevaba cinco segundos y acá
- * el número por rol no se usa.
+ * How many accounts there are is counted with a COUNT(*) over the users table
+ * and not with count_users(), which also groups by role by walking the
+ * metadata table: with twenty-five thousand accounts that took five seconds
+ * and the per-role number is not used here.
  *
- * Igual se cachea: son dos consultas que no cambian de un minuto a otro.
+ * It is cached all the same: they are two queries that do not change from one
+ * minute to the next.
  *
  * @return array<string, int>
  */
-function users_dlx_plus_home_numbers(): array {
-	$cached = get_transient( 'users_dlx_plus_home_numbers' );
+function diluxone_users_home_numbers(): array {
+	$cached = get_transient( 'diluxone_users_home_numbers' );
 
 	if ( is_array( $cached ) ) {
 		return $cached;
@@ -33,10 +34,10 @@ function users_dlx_plus_home_numbers(): array {
 
 	global $wpdb;
 
-	// Dos conteos para la pantalla de resumen. `count_users()` recorre todos
-	// los roles para devolver uno de estos números, y en un sitio de 25.000
-	// personas eso tarda; el otro no tiene API ninguna. No se cachean porque
-	// la pantalla existe para mostrar cómo está el sitio ahora.
+	// Two counts for the summary screen. `count_users()` walks every role to
+	// return one of these numbers, and on a site of 25,000 people that takes a
+	// while; the other has no API at all. They are not cached because the
+	// screen exists to show how the site is right now.
 	// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	$numbers = array(
 		'users'    => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->users}" ),
@@ -44,15 +45,15 @@ function users_dlx_plus_home_numbers(): array {
 	);
 	// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
-	set_transient( 'users_dlx_plus_home_numbers', $numbers, 15 * MINUTE_IN_SECONDS );
+	set_transient( 'diluxone_users_home_numbers', $numbers, 15 * MINUTE_IN_SECONDS );
 
 	return $numbers;
 }
 
-/** Una baldosa con un número y su rótulo. */
-function users_dlx_plus_tile( string $value, string $label, string $link = '', string $link_label = '' ): void {
+/** A tile with a number and its label. */
+function diluxone_users_tile( string $value, string $label, string $link = '', string $link_label = '' ): void {
 	?>
-	<div class="users-dlx-plus-tile">
+	<div class="diluxone-users-tile">
 		<b><?php echo esc_html( $value ); ?></b>
 		<span><?php echo esc_html( $label ); ?></span>
 		<?php if ( '' !== $link ) : ?>
@@ -63,19 +64,20 @@ function users_dlx_plus_tile( string $value, string $label, string $link = '', s
 }
 
 /**
- * Una fila de estado: qué es, cómo está y qué hacer.
+ * A status row: what it is, how it is doing and what to do.
  *
- * El estado tiene tres valores y no dos. «A confirmar» existe porque hay cosas
- * que desde acá no se pueden saber —si el correo sale de verdad, por ejemplo—
- * y decir «listo» sin estar seguro es peor que no decir nada.
+ * The state has three values and not two. "To be confirmed" exists because
+ * there are things that cannot be known from here — whether the mail really
+ * goes out, for instance — and saying "ready" without being sure is worse
+ * than saying nothing.
  *
  * @param string $state ok | pending | unknown
  */
-function users_dlx_plus_status_row( string $what, string $state, string $detail, string $link = '', string $link_label = '' ): void {
+function diluxone_users_status_row( string $what, string $state, string $detail, string $link = '', string $link_label = '' ): void {
 	$pills = array(
-		'ok'      => array( 'on', __( 'Ready', 'users-dlx-plus' ) ),
-		'pending' => array( 'blank', __( 'Pending', 'users-dlx-plus' ) ),
-		'unknown' => array( 'off', __( 'Cannot tell', 'users-dlx-plus' ) ),
+		'ok'      => array( 'on', __( 'Ready', 'diluxone-users' ) ),
+		'pending' => array( 'blank', __( 'Pending', 'diluxone-users' ) ),
+		'unknown' => array( 'off', __( 'Cannot tell', 'diluxone-users' ) ),
 	);
 
 	[ $tone, $label ] = $pills[ $state ] ?? $pills['unknown'];
@@ -83,7 +85,7 @@ function users_dlx_plus_status_row( string $what, string $state, string $detail,
 	<tr>
 		<th scope="row"><?php echo esc_html( $what ); ?></th>
 		<td>
-			<span class="users-dlx-plus-pill users-dlx-plus-pill--<?php echo esc_attr( $tone ); ?>"><?php echo esc_html( $label ); ?></span>
+			<span class="diluxone-users-pill diluxone-users-pill--<?php echo esc_attr( $tone ); ?>"><?php echo esc_html( $label ); ?></span>
 			<?php echo esc_html( $detail ); ?>
 			<?php if ( '' !== $link ) : ?>
 				<a href="<?php echo esc_url( $link ); ?>"><?php echo esc_html( $link_label ); ?></a>
@@ -94,162 +96,162 @@ function users_dlx_plus_status_row( string $what, string $state, string $detail,
 }
 
 /** Screen home. */
-function users_dlx_plus_screen_home(): void {
-	$numbers   = users_dlx_plus_home_numbers();
-	$fields    = users_dlx_plus_fields( '', false );
+function diluxone_users_screen_home(): void {
+	$numbers   = diluxone_users_home_numbers();
+	$fields    = diluxone_users_fields( '', false );
 	$active    = array_filter( $fields, static fn( array $f ): bool => (bool) $f['active'] );
-	$providers = users_dlx_plus_sso_providers();
-	$ready     = users_dlx_plus_sso_available();
-	$setup     = array_filter( array_keys( $providers ), 'users_dlx_plus_sso_configured' );
-	$page      = (int) users_dlx_plus_option( 'users_dlx_plus_login_page' );
+	$providers = diluxone_users_sso_providers();
+	$ready     = diluxone_users_sso_available();
+	$setup     = array_filter( array_keys( $providers ), 'diluxone_users_sso_configured' );
+	$page      = (int) diluxone_users_option( 'diluxone_users_login_page' );
 
-	users_dlx_plus_screen_open( users_dlx_plus_screens()[ USERS_DLX_PLUS_MENU ] );
+	diluxone_users_screen_open( diluxone_users_screens()[ DILUXONE_USERS_MENU ] );
 
-	users_dlx_plus_intro( __( 'Who is in this site, what is asked of them and how they get in.', 'users-dlx-plus' ) );
+	diluxone_users_intro( __( 'Who is in this site, what is asked of them and how they get in.', 'diluxone-users' ) );
 	?>
 
-	<div class="users-dlx-plus-tiles">
+	<div class="diluxone-users-tiles">
 		<?php
-		users_dlx_plus_tile(
+		diluxone_users_tile(
 			number_format_i18n( $numbers['users'] ),
-			__( 'accounts', 'users-dlx-plus' ),
+			__( 'accounts', 'diluxone-users' ),
 			admin_url( 'users.php' ),
-			__( 'All users', 'users-dlx-plus' )
+			__( 'All users', 'diluxone-users' )
 		);
 
-		users_dlx_plus_tile(
+		diluxone_users_tile(
 			number_format_i18n( $numbers['sessions'] ),
-			__( 'with an open session', 'users-dlx-plus' ),
-			users_dlx_plus_admin_url( 'users-dlx-plus-sessions' ),
-			__( 'See who', 'users-dlx-plus' )
+			__( 'with an open session', 'diluxone-users' ),
+			diluxone_users_admin_url( 'diluxone-users-sessions' ),
+			__( 'See who', 'diluxone-users' )
 		);
 
-		users_dlx_plus_tile(
+		diluxone_users_tile(
 			number_format_i18n( count( $active ) ) . ' / ' . number_format_i18n( count( $fields ) ),
-			__( 'fields in use', 'users-dlx-plus' ),
-			users_dlx_plus_admin_url( 'users-dlx-plus-fields' ),
-			__( 'Manage them', 'users-dlx-plus' )
+			__( 'fields in use', 'diluxone-users' ),
+			diluxone_users_admin_url( 'diluxone-users-fields' ),
+			__( 'Manage them', 'diluxone-users' )
 		);
 
-		users_dlx_plus_tile(
+		diluxone_users_tile(
 			number_format_i18n( count( $ready ) ) . ' / ' . number_format_i18n( count( $providers ) ),
-			__( 'social providers on', 'users-dlx-plus' ),
-			users_dlx_plus_admin_url( 'users-dlx-plus-social' ),
-			__( 'Set them up', 'users-dlx-plus' )
+			__( 'social providers on', 'diluxone-users' ),
+			diluxone_users_admin_url( 'diluxone-users-social' ),
+			__( 'Set them up', 'diluxone-users' )
 		);
 		?>
 	</div>
 
-	<h2><?php esc_html_e( 'How people get in', 'users-dlx-plus' ); ?></h2>
-	<table class="widefat striped users-dlx-plus-estado">
+	<h2><?php esc_html_e( 'How people get in', 'diluxone-users' ); ?></h2>
+	<table class="widefat striped diluxone-users-state">
 		<tbody>
 			<?php
-			users_dlx_plus_status_row(
-				__( 'Sign-in page', 'users-dlx-plus' ),
+			diluxone_users_status_row(
+				__( 'Sign-in page', 'diluxone-users' ),
 				$page > 0 ? 'ok' : 'pending',
 				$page > 0
 					? (string) get_the_title( $page )
-					: __( 'Not chosen yet: wp-login.php is doing the job.', 'users-dlx-plus' ),
-				users_dlx_plus_admin_url( 'users-dlx-plus-login' ),
-				__( 'Choose it', 'users-dlx-plus' )
+					: __( 'Not chosen yet: wp-login.php is doing the job.', 'diluxone-users' ),
+				diluxone_users_admin_url( 'diluxone-users-login' ),
+				__( 'Choose it', 'diluxone-users' )
 			);
 
-			users_dlx_plus_status_row(
-				__( 'Link by email', 'users-dlx-plus' ),
+			diluxone_users_status_row(
+				__( 'Link by email', 'diluxone-users' ),
 				'ok',
-				users_dlx_plus_option( 'users_dlx_plus_login_register' )
-					? __( 'On. If the email does not exist, the account is created in the same step.', 'users-dlx-plus' )
-					: __( 'On, for accounts that already exist. New ones are not created from here.', 'users-dlx-plus' )
+				diluxone_users_option( 'diluxone_users_login_register' )
+					? __( 'On. If the email does not exist, the account is created in the same step.', 'diluxone-users' )
+					: __( 'On, for accounts that already exist. New ones are not created from here.', 'diluxone-users' )
 			);
 
-			$metodos = array(
-				'link'     => __( 'Only the email link: wp-login.php sends people to the sign-in page.', 'users-dlx-plus' ),
-				'password' => __( 'Only username and password, the WordPress one.', 'users-dlx-plus' ),
-				'both'     => __( 'The email link and the password, both.', 'users-dlx-plus' ),
+			$methods = array(
+				'link'     => __( 'Only the email link: wp-login.php sends people to the sign-in page.', 'diluxone-users' ),
+				'password' => __( 'Only username and password, the WordPress one.', 'diluxone-users' ),
+				'both'     => __( 'The email link and the password, both.', 'diluxone-users' ),
 			);
 
-			users_dlx_plus_status_row(
-				__( 'How people get in', 'users-dlx-plus' ),
+			diluxone_users_status_row(
+				__( 'How people get in', 'diluxone-users' ),
 				'ok',
-				$metodos[ users_dlx_plus_login_method() ]
+				$methods[ diluxone_users_login_method() ]
 			);
 
-			$dos_pasos = array(
-				'off'      => __( 'Off: nobody is asked for a second step.', 'users-dlx-plus' ),
-				'optional' => __( 'Optional: whoever wants it turns it on from their profile.', 'users-dlx-plus' ),
-				'required' => __( 'Required for everybody who can use it.', 'users-dlx-plus' ),
+			$two_step = array(
+				'off'      => __( 'Off: nobody is asked for a second step.', 'diluxone-users' ),
+				'optional' => __( 'Optional: whoever wants it turns it on from their profile.', 'diluxone-users' ),
+				'required' => __( 'Required for everybody who can use it.', 'diluxone-users' ),
 			);
 
-			users_dlx_plus_status_row(
-				__( 'Two-step verification', 'users-dlx-plus' ),
-				'off' === (string) users_dlx_plus_option( 'users_dlx_plus_2fa_mode' ) ? 'pending' : 'ok',
-				$dos_pasos[ (string) users_dlx_plus_option( 'users_dlx_plus_2fa_mode' ) ] ?? ''
+			diluxone_users_status_row(
+				__( 'Two-step verification', 'diluxone-users' ),
+				'off' === (string) diluxone_users_option( 'diluxone_users_2fa_mode' ) ? 'pending' : 'ok',
+				$two_step[ (string) diluxone_users_option( 'diluxone_users_2fa_mode' ) ] ?? ''
 			);
 
-			users_dlx_plus_status_row(
-				__( 'Passkeys', 'users-dlx-plus' ),
-				users_dlx_plus_option( 'users_dlx_plus_passkey_enabled' ) ? 'ok' : 'pending',
-				users_dlx_plus_option( 'users_dlx_plus_passkey_enabled' )
+			diluxone_users_status_row(
+				__( 'Passkeys', 'diluxone-users' ),
+				diluxone_users_option( 'diluxone_users_passkey_enabled' ) ? 'ok' : 'pending',
+				diluxone_users_option( 'diluxone_users_passkey_enabled' )
 					? sprintf(
-						/* translators: %s: el dominio con el que quedan atadas */
-						__( 'On, tied to %s.', 'users-dlx-plus' ),
-						users_dlx_plus_passkey_rp_id()
+							/* translators: %s: the domain they end up tied to */
+						__( 'On, tied to %s.', 'diluxone-users' ),
+						diluxone_users_passkey_rp_id()
 					)
-					: __( 'Off. It is the only way in that cannot be phished.', 'users-dlx-plus' )
+					: __( 'Off. It is the only way in that cannot be phished.', 'diluxone-users' )
 			);
 
-			users_dlx_plus_status_row(
-				__( 'Social login', 'users-dlx-plus' ),
+			diluxone_users_status_row(
+				__( 'Social login', 'diluxone-users' ),
 				array() !== $ready ? 'ok' : 'pending',
 				array() !== $ready
-					/* translators: %s: lista de proveedores */
-					? sprintf( __( 'Working: %s', 'users-dlx-plus' ), implode( ', ', wp_list_pluck( $ready, 'name' ) ) )
+					/* translators: %s: list of providers */
+					? sprintf( __( 'Working: %s', 'diluxone-users' ), implode( ', ', wp_list_pluck( $ready, 'name' ) ) )
 					: (
 						array() !== $setup
-							? __( 'There are providers with credentials, but none is verified and enabled yet.', 'users-dlx-plus' )
-							: __( 'No provider set up yet: only the email link works.', 'users-dlx-plus' )
+							? __( 'There are providers with credentials, but none is verified and enabled yet.', 'diluxone-users' )
+							: __( 'No provider set up yet: only the email link works.', 'diluxone-users' )
 					),
-				users_dlx_plus_admin_url( 'users-dlx-plus-social' ),
-				__( 'Providers', 'users-dlx-plus' )
+				diluxone_users_admin_url( 'diluxone-users-social' ),
+				__( 'Providers', 'diluxone-users' )
 			);
 
-			// Si sale o no un correo no se puede saber sin mandar uno. Lo único
-			// comprobable es si hay algo enganchado al envío, y eso no alcanza
-			// para decir que funciona.
-			$hay_mailer = (bool) has_filter( 'phpmailer_init' );
+			// Whether an e-mail goes out cannot be known without sending one. The
+			// only checkable thing is whether anything is hooked to the sending,
+			// and that is not enough to say it works.
+			$has_mailer = (bool) has_filter( 'phpmailer_init' );
 
-			users_dlx_plus_status_row(
-				__( 'Outgoing email', 'users-dlx-plus' ),
-				$hay_mailer ? 'unknown' : 'pending',
-				$hay_mailer
-					? __( 'Something is hooked into delivery, but whether mail actually leaves cannot be known from here. Send yourself a link to find out.', 'users-dlx-plus' )
-					: __( 'Nothing is hooked into delivery: WordPress will try the server’s mail() and that usually fails. Without email there is no sign-in link.', 'users-dlx-plus' )
+			diluxone_users_status_row(
+				__( 'Outgoing email', 'diluxone-users' ),
+				$has_mailer ? 'unknown' : 'pending',
+				$has_mailer
+					? __( 'Something is hooked into delivery, but whether mail actually leaves cannot be known from here. Send yourself a link to find out.', 'diluxone-users' )
+					: __( 'Nothing is hooked into delivery: WordPress will try the server’s mail() and that usually fails. Without email there is no sign-in link.', 'diluxone-users' )
 			);
 
-			users_dlx_plus_status_row(
-				__( 'Session length', 'users-dlx-plus' ),
+			diluxone_users_status_row(
+				__( 'Session length', 'diluxone-users' ),
 				'ok',
 				sprintf(
-					/* translators: 1: días con recordarme, 2: días sin recordarme */
-					__( '%1$d days with “remember me”, %2$d without.', 'users-dlx-plus' ),
-					(int) users_dlx_plus_option( 'users_dlx_plus_session_long_days' ),
-					(int) users_dlx_plus_option( 'users_dlx_plus_session_short_days' )
+						/* translators: 1: days with remember-me, 2: days without remember-me */
+					__( '%1$d days with “remember me”, %2$d without.', 'diluxone-users' ),
+					(int) diluxone_users_option( 'diluxone_users_session_long_days' ),
+					(int) diluxone_users_option( 'diluxone_users_session_short_days' )
 				),
-				users_dlx_plus_admin_url( 'users-dlx-plus-sessions', array( 'tab' => 'duration' ) ),
-				__( 'Change it', 'users-dlx-plus' )
+				diluxone_users_admin_url( 'diluxone-users-sessions', array( 'tab' => 'duration' ) ),
+				__( 'Change it', 'diluxone-users' )
 			);
 			?>
 		</tbody>
 	</table>
 
-	<h2><?php esc_html_e( 'What is asked of people', 'users-dlx-plus' ); ?></h2>
+	<h2><?php esc_html_e( 'What is asked of people', 'diluxone-users' ); ?></h2>
 	<?php if ( array() === $active ) : ?>
-		<p class="users-dlx-plus-admin__intro"><?php esc_html_e( 'Nothing beyond the email address.', 'users-dlx-plus' ); ?></p>
+		<p class="diluxone-users-admin__intro"><?php esc_html_e( 'Nothing beyond the email address.', 'diluxone-users' ); ?></p>
 	<?php else : ?>
-		<table class="widefat striped users-dlx-plus-estado">
+		<table class="widefat striped diluxone-users-state">
 			<tbody>
 				<?php
-				foreach ( users_dlx_plus_groups() as $group => $group_label ) :
+				foreach ( diluxone_users_groups() as $group => $group_label ) :
 					$in_group = array_filter( $active, static fn( array $f ): bool => $f['group'] === $group );
 
 					if ( array() === $in_group ) {
@@ -265,12 +267,12 @@ function users_dlx_plus_screen_home(): void {
 		</table>
 	<?php endif; ?>
 
-	<h2><?php esc_html_e( 'If you get locked out', 'users-dlx-plus' ); ?></h2>
-	<p class="users-dlx-plus-admin__intro">
-		<?php esc_html_e( 'On a site without passwords and without outgoing email, an expired session leaves you outside. With access to the server:', 'users-dlx-plus' ); ?>
+	<h2><?php esc_html_e( 'If you get locked out', 'diluxone-users' ); ?></h2>
+	<p class="diluxone-users-admin__intro">
+		<?php esc_html_e( 'On a site without passwords and without outgoing email, an expired session leaves you outside. With access to the server:', 'diluxone-users' ); ?>
 	</p>
-	<p><code>wp users-dlx-plus login <?php echo esc_html( wp_get_current_user()->user_email ); ?></code></p>
+	<p><code>wp diluxone-users login <?php echo esc_html( wp_get_current_user()->user_email ); ?></code></p>
 	<?php
 
-	users_dlx_plus_screen_close();
+	diluxone_users_screen_close();
 }

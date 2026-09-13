@@ -1,9 +1,9 @@
 <?php
 /**
- * Los campos de la persona, para editarlos.
+ * The person's fields, for editing.
  *
- * Reemplazable desde el tema en:
- *   wp-content/themes/<tu-tema>/users-dlx-plus/datos.php
+ * Overridable from the theme at:
+ *   wp-content/themes/<your-theme>/diluxone-users/fields.php
  *
  * @var int                              $user_id
  * @var array<int, array<string, mixed>> $fields
@@ -11,7 +11,7 @@
  * @var string                           $title
  * @var string                           $state
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -20,47 +20,47 @@ if ( array() === $fields ) {
 	return;
 }
 ?>
-<div class="users-dlx-plus users-dlx-plus-fields">
+<div class="diluxone-users diluxone-users-fields">
 
 	<?php if ( '' !== $title ) : ?>
-		<h2 class="users-dlx-plus-fields__title"><?php echo esc_html( $title ); ?></h2>
+		<h2 class="diluxone-users-fields__title"><?php echo esc_html( $title ); ?></h2>
 	<?php endif; ?>
 
 	<?php if ( 'saved' === $state ) : ?>
-		<p class="users-dlx-plus-notice users-dlx-plus-notice--ok"><?php esc_html_e( 'Saved.', 'users-dlx-plus' ); ?></p>
+		<p class="diluxone-users-notice diluxone-users-notice--ok"><?php esc_html_e( 'Saved.', 'diluxone-users' ); ?></p>
 	<?php elseif ( 'missing' === $state ) : ?>
-		<p class="users-dlx-plus-notice users-dlx-plus-notice--error"><?php esc_html_e( 'Some required fields are missing.', 'users-dlx-plus' ); ?></p>
+		<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'Some required fields are missing.', 'diluxone-users' ); ?></p>
 	<?php endif; ?>
 
-	<form class="users-dlx-plus-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-		<input type="hidden" name="action" value="users_dlx_plus_fields_save">
-		<input type="hidden" name="users_dlx_plus_group" value="<?php echo esc_attr( $group ); ?>">
-		<?php wp_nonce_field( 'users_dlx_plus_fields_save' ); ?>
+	<form class="diluxone-users-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+		<input type="hidden" name="action" value="diluxone_users_fields_save">
+		<input type="hidden" name="diluxone_users_group" value="<?php echo esc_attr( $group ); ?>">
+		<?php wp_nonce_field( 'diluxone_users_fields_save' ); ?>
 
-		<?php foreach ( $fields as $users_dlx_plus_field ) : ?>
-			<div class="users-dlx-plus-field users-dlx-plus-field--<?php echo esc_attr( $users_dlx_plus_field['type'] ); ?>">
-				<?php if ( 'checkbox' !== $users_dlx_plus_field['type'] ) : ?>
-					<label for="<?php echo esc_attr( $users_dlx_plus_field['key'] ); ?>">
-						<?php echo esc_html( $users_dlx_plus_field['label'] ); ?>
-						<?php if ( $users_dlx_plus_field['required'] ) : ?>
-							<span class="users-dlx-plus-field__required" aria-hidden="true">*</span>
+		<?php foreach ( $fields as $diluxone_users_field ) : ?>
+			<div class="diluxone-users-field diluxone-users-field--<?php echo esc_attr( $diluxone_users_field['type'] ); ?>">
+				<?php if ( 'checkbox' !== $diluxone_users_field['type'] ) : ?>
+					<label for="<?php echo esc_attr( $diluxone_users_field['key'] ); ?>">
+						<?php echo esc_html( $diluxone_users_field['label'] ); ?>
+						<?php if ( $diluxone_users_field['required'] ) : ?>
+							<span class="diluxone-users-field__required" aria-hidden="true">*</span>
 						<?php endif; ?>
 					</label>
 				<?php endif; ?>
 
-				<?php users_dlx_plus_field_input( $users_dlx_plus_field, users_dlx_plus_value( $user_id, $users_dlx_plus_field['key'] ) ); ?>
+				<?php diluxone_users_field_input( $diluxone_users_field, diluxone_users_value( $user_id, $diluxone_users_field['key'] ) ); ?>
 
-				<?php if ( '' !== $users_dlx_plus_field['help'] ) : ?>
-					<p class="users-dlx-plus-field__help"><?php echo esc_html( $users_dlx_plus_field['help'] ); ?></p>
+				<?php if ( '' !== $diluxone_users_field['help'] ) : ?>
+					<p class="diluxone-users-field__help"><?php echo esc_html( $diluxone_users_field['help'] ); ?></p>
 				<?php endif; ?>
 
-				<?php $users_dlx_plus_nota = users_dlx_plus_field_edit_note( $users_dlx_plus_field, $user_id ); ?>
-				<?php if ( '' !== $users_dlx_plus_nota ) : ?>
-					<p class="users-dlx-plus-field__help users-dlx-plus-field__limite"><?php echo esc_html( $users_dlx_plus_nota ); ?></p>
+				<?php $diluxone_users_nota = diluxone_users_field_edit_note( $diluxone_users_field, $user_id ); ?>
+				<?php if ( '' !== $diluxone_users_nota ) : ?>
+					<p class="diluxone-users-field__help diluxone-users-field__limit"><?php echo esc_html( $diluxone_users_nota ); ?></p>
 				<?php endif; ?>
 			</div>
 		<?php endforeach; ?>
 
-		<button type="submit" class="users-dlx-plus-button"><?php esc_html_e( 'Save', 'users-dlx-plus' ); ?></button>
+		<button type="submit" class="diluxone-users-button"><?php esc_html_e( 'Save', 'diluxone-users' ); ?></button>
 	</form>
 </div>

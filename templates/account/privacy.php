@@ -1,47 +1,47 @@
 <?php
 /**
- * Privacidad: bajar tus datos o pedir que se borre la cuenta.
+ * Privacy: downloading your data or asking for the account to be deleted.
  *
  * @var bool                $can_erase
  * @var array<int, WP_Post> $erasures
  * @var array<int, WP_Post> $exports
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- sólo elige el mensaje.
-$users_dlx_plus_aviso   = isset( $_GET['users-dlx-plus'] ) ? sanitize_key( wp_unslash( $_GET['users-dlx-plus'] ) ) : '';
-$users_dlx_plus_estados = users_dlx_plus_data_states();
-$users_dlx_plus_correo  = users_dlx_plus_data_mail_ready();
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- it only picks the message.
+$diluxone_users_notice     = isset( $_GET['diluxone-users'] ) ? sanitize_key( wp_unslash( $_GET['diluxone-users'] ) ) : '';
+$diluxone_users_estados    = diluxone_users_data_states();
+$diluxone_users_mail_ready = diluxone_users_data_mail_ready();
 
-/** Pinta una tabla de solicitudes. */
-$users_dlx_plus_tabla = static function ( array $pedidos ) use ( $users_dlx_plus_estados ): void {
-	if ( array() === $pedidos ) {
+/** Draws a table of requests. */
+$diluxone_users_table = static function ( array $requests ) use ( $diluxone_users_estados ): void {
+	if ( array() === $requests ) {
 		return;
 	}
 	?>
-	<table class="users-dlx-plus-tabla users-dlx-plus-pedidos">
+	<table class="diluxone-users-table diluxone-users-requests">
 		<thead>
 			<tr>
-				<th><?php esc_html_e( 'Asked on', 'users-dlx-plus' ); ?></th>
-				<th><?php esc_html_e( 'Status', 'users-dlx-plus' ); ?></th>
-				<th class="users-dlx-plus-pedidos__accion"></th>
+				<th><?php esc_html_e( 'Asked on', 'diluxone-users' ); ?></th>
+				<th><?php esc_html_e( 'Status', 'diluxone-users' ); ?></th>
+				<th class="diluxone-users-requests__action"></th>
 			</tr>
 		</thead>
 		<tbody>
 			<?php
-			foreach ( $pedidos as $users_dlx_plus_pedido ) :
-				[ $users_dlx_plus_tono, $users_dlx_plus_texto ] = $users_dlx_plus_estados[ $users_dlx_plus_pedido->post_status ] ?? array( 'off', $users_dlx_plus_pedido->post_status );
-				$users_dlx_plus_archivo                         = users_dlx_plus_data_file( $users_dlx_plus_pedido );
+			foreach ( $requests as $diluxone_users_request ) :
+				[ $diluxone_users_tono, $diluxone_users_text ] = $diluxone_users_estados[ $diluxone_users_request->post_status ] ?? array( 'off', $diluxone_users_request->post_status );
+				$diluxone_users_file                           = diluxone_users_data_file( $diluxone_users_request );
 				?>
 				<tr>
-					<td><?php echo esc_html( (string) wp_date( 'j M Y, H:i', (int) get_post_timestamp( $users_dlx_plus_pedido ) ) ); ?></td>
-					<td><span class="users-dlx-plus-pill users-dlx-plus-pill--<?php echo esc_attr( $users_dlx_plus_tono ); ?>"><?php echo esc_html( $users_dlx_plus_texto ); ?></span></td>
-					<td class="users-dlx-plus-pedidos__accion">
-						<?php if ( '' !== $users_dlx_plus_archivo ) : ?>
-							<a class="users-dlx-plus-button" href="<?php echo esc_url( $users_dlx_plus_archivo ); ?>" download><?php esc_html_e( 'Download', 'users-dlx-plus' ); ?></a>
+					<td><?php echo esc_html( (string) wp_date( 'j M Y, H:i', (int) get_post_timestamp( $diluxone_users_request ) ) ); ?></td>
+					<td><span class="diluxone-users-pill diluxone-users-pill--<?php echo esc_attr( $diluxone_users_tono ); ?>"><?php echo esc_html( $diluxone_users_text ); ?></span></td>
+					<td class="diluxone-users-requests__action">
+						<?php if ( '' !== $diluxone_users_file ) : ?>
+							<a class="diluxone-users-button" href="<?php echo esc_url( $diluxone_users_file ); ?>" download><?php esc_html_e( 'Download', 'diluxone-users' ); ?></a>
 						<?php endif; ?>
 					</td>
 				</tr>
@@ -51,75 +51,75 @@ $users_dlx_plus_tabla = static function ( array $pedidos ) use ( $users_dlx_plus
 	<?php
 };
 ?>
-<p><?php esc_html_e( 'Everything this site knows about you is yours: you can take it with you, and you can ask us to erase it.', 'users-dlx-plus' ); ?></p>
+<p><?php esc_html_e( 'Everything this site knows about you is yours: you can take it with you, and you can ask us to erase it.', 'diluxone-users' ); ?></p>
 
-<?php if ( 'requested' === $users_dlx_plus_aviso ) : ?>
-	<p class="users-dlx-plus-notice users-dlx-plus-notice--ok"><?php esc_html_e( 'We sent you an email to confirm it. Nothing happens until you click that link.', 'users-dlx-plus' ); ?></p>
-<?php elseif ( 'admin' === $users_dlx_plus_aviso ) : ?>
-	<p class="users-dlx-plus-notice users-dlx-plus-notice--error"><?php esc_html_e( 'An account with admin permissions cannot ask for its own deletion.', 'users-dlx-plus' ); ?></p>
-<?php elseif ( 'error' === $users_dlx_plus_aviso ) : ?>
-	<p class="users-dlx-plus-notice users-dlx-plus-notice--error"><?php esc_html_e( 'We could not create the request. There may already be one waiting.', 'users-dlx-plus' ); ?></p>
+<?php if ( 'requested' === $diluxone_users_notice ) : ?>
+	<p class="diluxone-users-notice diluxone-users-notice--ok"><?php esc_html_e( 'We sent you an email to confirm it. Nothing happens until you click that link.', 'diluxone-users' ); ?></p>
+<?php elseif ( 'admin' === $diluxone_users_notice ) : ?>
+	<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'An account with admin permissions cannot ask for its own deletion.', 'diluxone-users' ); ?></p>
+<?php elseif ( 'error' === $diluxone_users_notice ) : ?>
+	<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'We could not create the request. There may already be one waiting.', 'diluxone-users' ); ?></p>
 <?php endif; ?>
 
-<?php if ( ! $users_dlx_plus_correo && current_user_can( 'manage_options' ) ) : ?>
-	<p class="users-dlx-plus-notice users-dlx-plus-notice--error">
-		<?php esc_html_e( 'Heads up, this only shows to administrators: the site has no outgoing mail set up, so the confirmation email never arrives and every request stays waiting forever.', 'users-dlx-plus' ); ?>
+<?php if ( ! $diluxone_users_mail_ready && current_user_can( 'manage_options' ) ) : ?>
+	<p class="diluxone-users-notice diluxone-users-notice--error">
+		<?php esc_html_e( 'Heads up, this only shows to administrators: the site has no outgoing mail set up, so the confirmation email never arrives and every request stays waiting forever.', 'diluxone-users' ); ?>
 	</p>
 <?php endif; ?>
 
-<?php if ( users_dlx_plus_option( 'users_dlx_plus_privacy_export' ) ) : ?>
-	<?php users_dlx_plus_panel_open( __( 'Download your data', 'users-dlx-plus' ), true ); ?>
-	<p><?php esc_html_e( 'A file with everything: your details, your courses, what you wrote in the forums and in the comments. You get an email to confirm; once you do, we prepare it and it shows up here to download.', 'users-dlx-plus' ); ?></p>
+<?php if ( diluxone_users_option( 'diluxone_users_privacy_export' ) ) : ?>
+	<?php diluxone_users_panel_open( __( 'Download your data', 'diluxone-users' ), true ); ?>
+	<p><?php esc_html_e( 'A file with everything: your details, your courses, what you wrote in the forums and in the comments. You get an email to confirm; once you do, we prepare it and it shows up here to download.', 'diluxone-users' ); ?></p>
 
-	<?php $users_dlx_plus_tabla( $exports ); ?>
+	<?php $diluxone_users_table( $exports ); ?>
 
 	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-		<input type="hidden" name="action" value="users_dlx_plus_data_request">
-		<input type="hidden" name="users_dlx_plus_request" value="export">
-		<?php wp_nonce_field( 'users_dlx_plus_data_request' ); ?>
-		<button type="submit" class="users-dlx-plus-button">
+		<input type="hidden" name="action" value="diluxone_users_data_request">
+		<input type="hidden" name="diluxone_users_request" value="export">
+		<?php wp_nonce_field( 'diluxone_users_data_request' ); ?>
+		<button type="submit" class="diluxone-users-button">
 			<?php
 			echo array() === $exports
-				? esc_html__( 'Ask for my data', 'users-dlx-plus' )
-				: esc_html__( 'Ask for it again, up to date', 'users-dlx-plus' );
+				? esc_html__( 'Ask for my data', 'diluxone-users' )
+				: esc_html__( 'Ask for it again, up to date', 'diluxone-users' );
 			?>
 		</button>
 	</form>
-	<?php users_dlx_plus_panel_close(); ?>
+	<?php diluxone_users_panel_close(); ?>
 <?php endif; ?>
 
-<?php if ( users_dlx_plus_option( 'users_dlx_plus_privacy_delete' ) ) : ?>
+<?php if ( diluxone_users_option( 'diluxone_users_privacy_delete' ) ) : ?>
 	<?php
 	/*
-	 * La primera caja se abre. Si la de arriba no está, ésta pasa a ser la
-	 * primera y la que se abre es ésta.
+	 * The first box opens. If the one above is not there, this becomes the
+	 * first and this is the one that opens.
 	 */
 	?>
-	<?php users_dlx_plus_panel_open( __( 'Delete your account', 'users-dlx-plus' ), ! users_dlx_plus_option( 'users_dlx_plus_privacy_export' ), 'users-dlx-plus-panel--peligro' ); ?>
+	<?php diluxone_users_panel_open( __( 'Delete your account', 'diluxone-users' ), ! diluxone_users_option( 'diluxone_users_privacy_export' ), 'diluxone-users-panel--danger' ); ?>
 
 	<?php if ( ! $can_erase ) : ?>
-		<p class="users-dlx-plus-notice users-dlx-plus-notice--info">
-			<?php esc_html_e( 'This account administers the site, so it cannot delete itself: the site would be left with nobody in charge. Another administrator has to lower its role first, and then it can ask.', 'users-dlx-plus' ); ?>
+		<p class="diluxone-users-notice diluxone-users-notice--info">
+			<?php esc_html_e( 'This account administers the site, so it cannot delete itself: the site would be left with nobody in charge. Another administrator has to lower its role first, and then it can ask.', 'diluxone-users' ); ?>
 		</p>
 	<?php else : ?>
-		<p><strong><?php esc_html_e( 'This cannot be undone.', 'users-dlx-plus' ); ?></strong></p>
-		<ul class="users-dlx-plus-lista">
-			<li><?php esc_html_e( 'Your details, your progress and your certificates are erased.', 'users-dlx-plus' ); ?></li>
-			<li><?php esc_html_e( 'What you wrote in public stays, with no name on it.', 'users-dlx-plus' ); ?></li>
-			<li><?php esc_html_e( 'You stop being able to sign in, and nothing can be recovered afterwards — not by you and not by us.', 'users-dlx-plus' ); ?></li>
+		<p><strong><?php esc_html_e( 'This cannot be undone.', 'diluxone-users' ); ?></strong></p>
+		<ul class="diluxone-users-list-plain">
+			<li><?php esc_html_e( 'Your details, your progress and your certificates are erased.', 'diluxone-users' ); ?></li>
+			<li><?php esc_html_e( 'What you wrote in public stays, with no name on it.', 'diluxone-users' ); ?></li>
+			<li><?php esc_html_e( 'You stop being able to sign in, and nothing can be recovered afterwards — not by you and not by us.', 'diluxone-users' ); ?></li>
 		</ul>
-		<p><?php esc_html_e( 'If you want a copy of anything, download your data first.', 'users-dlx-plus' ); ?></p>
-		<p class="users-dlx-plus-note"><?php esc_html_e( 'Asking is not deleting: we send you an email and nothing happens until you click the link in it. That is what stops somebody who borrowed your screen for a minute.', 'users-dlx-plus' ); ?></p>
+		<p><?php esc_html_e( 'If you want a copy of anything, download your data first.', 'diluxone-users' ); ?></p>
+		<p class="diluxone-users-note"><?php esc_html_e( 'Asking is not deleting: we send you an email and nothing happens until you click the link in it. That is what stops somebody who borrowed your screen for a minute.', 'diluxone-users' ); ?></p>
 
-		<?php $users_dlx_plus_tabla( $erasures ); ?>
+		<?php $diluxone_users_table( $erasures ); ?>
 
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
-			onsubmit="return confirm( '<?php echo esc_js( __( 'Ask to delete your account? You still have to confirm it by email, and after that there is no going back.', 'users-dlx-plus' ) ); ?>' );">
-			<input type="hidden" name="action" value="users_dlx_plus_data_request">
-			<input type="hidden" name="users_dlx_plus_request" value="erase">
-			<?php wp_nonce_field( 'users_dlx_plus_data_request' ); ?>
-			<button type="submit" class="users-dlx-plus-button users-dlx-plus-button--peligro"><?php esc_html_e( 'Ask to delete my account', 'users-dlx-plus' ); ?></button>
+			onsubmit="return confirm( '<?php echo esc_js( __( 'Ask to delete your account? You still have to confirm it by email, and after that there is no going back.', 'diluxone-users' ) ); ?>' );">
+			<input type="hidden" name="action" value="diluxone_users_data_request">
+			<input type="hidden" name="diluxone_users_request" value="erase">
+			<?php wp_nonce_field( 'diluxone_users_data_request' ); ?>
+			<button type="submit" class="diluxone-users-button diluxone-users-button--danger"><?php esc_html_e( 'Ask to delete my account', 'diluxone-users' ); ?></button>
 		</form>
 	<?php endif; ?>
-	<?php users_dlx_plus_panel_close(); ?>
+	<?php diluxone_users_panel_close(); ?>
 <?php endif; ?>

@@ -2,134 +2,134 @@
 /**
  * Passkeys (WebAuthn).
  *
- * Una passkey es una clave privada que vive en el dispositivo o en el llavero
- * de la persona y que nunca sale de ahí. El sitio guarda sólo la pública. No
- * hay nada que robar de la base, nada que reusar en otro sitio, y no se puede
- * phishear: el navegador se niega a firmar para un dominio que no es el que
- * registró la clave.
+ * A passkey is a private key that lives on the person's device or in their
+ * keychain and never leaves it. The site stores only the public one. There is
+ * nothing to steal from the database, nothing to reuse on another site, and
+ * it cannot be phished: the browser refuses to sign for a domain that is not
+ * the one that registered the key.
  *
- * Lo que se implementa acá es la verificación, que es la parte que importa:
+ * What is implemented here is the verification, which is the part that
+ * matters:
  *
- *   - El desafío lo emite el servidor, dura poco y se usa una sola vez.
- *   - Se comprueba el tipo de operación, el origen y el hash del dominio.
- *   - Se exige la marca de «presencia de usuario», y la de «verificación» si
- *     el sitio la pide.
- *   - La firma se verifica con la clave pública guardada, sobre exactamente
- *     los bytes que manda el estándar.
+ *   - The challenge is issued by the server, lives briefly and is used once.
+ *   - The operation type, the origin and the domain hash are all checked.
+ *   - The "user present" flag is required, and the "user verified" one when
+ *     the site asks for it.
+ *   - The signature is verified against the stored public key, over exactly
+ *     the bytes the standard prescribes.
  *
- * Del alta se aprovecha `getPublicKey()`, que los navegadores modernos ya
- * devuelven en formato DER: así no hace falta un intérprete de CBOR para leer
- * el objeto de atestación, que es la parte más frágil de cualquier
- * implementación de WebAuthn.
+ * Registration leans on `getPublicKey()`, which modern browsers already
+ * return in DER format: that way no CBOR interpreter is needed to read the
+ * attestation object, the most fragile part of any WebAuthn implementation.
  *
- * Deliberadamente NO se verifica la atestación del fabricante: sirve para
- * exigir marcas de llave concretas en entornos corporativos, y en un sitio
- * abierto sólo agrega superficie de error.
+ * Manufacturer attestation is deliberately NOT verified: it is there to
+ * require specific key brands in corporate environments, and on an open site
+ * it only adds surface for error.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/** Cuánto vive un desafío. Corto: es un ida y vuelta de segundos. */
-const USERS_DLX_PLUS_PASSKEY_TTL = 5 * MINUTE_IN_SECONDS;
+/** How long a challenge lives. Short: it is a round trip of seconds. */
+const DILUXONE_USERS_PASSKEY_TTL = 5 * MINUTE_IN_SECONDS;
 
-/* ── Base64url, que es como viaja todo esto ────────────────────────── */
+/* ── Base64url, which is how all of this travels ───────────────────── */
 
-/** Codifica en base64url, que es como WebAuthn manda y espera todo. */
-function users_dlx_plus_b64url_encode( string $bytes ): string {
+/** Encodes as base64url, which is how WebAuthn sends and expects everything. */
+function diluxone_users_b64url_encode( string $bytes ): string {
 	return rtrim( strtr( base64_encode( $bytes ), '+/', '-_' ), '=' );
 }
 
 /** B64url decode. */
-function users_dlx_plus_b64url_decode( string $text ): string {
+function diluxone_users_b64url_decode( string $text ): string {
 	$text = strtr( $text, '-_', '+/' );
 
 	return (string) base64_decode( str_pad( $text, strlen( $text ) % 4 ? strlen( $text ) + 4 - strlen( $text ) % 4 : 0, '=' ), true );
 }
 
-/* ── Quiénes somos para el navegador ───────────────────────────────── */
+/* ── Who we are as far as the browser is concerned ─────────────────── */
 
 /**
- * El dominio con el que se registra la passkey.
+ * The domain the passkey is registered against.
  *
- * Una passkey queda atada a este valor: si cambia, las que había dejan de
- * servir. Por eso sale del host y no de una opción que alguien pueda tocar
- * sin saber lo que hace.
+ * A passkey is tied to this value: if it changes, the existing ones stop
+ * working. That is why it comes from the host and not from an option somebody
+ * could change without knowing what it does.
  */
-function users_dlx_plus_passkey_rp_id(): string {
+function diluxone_users_passkey_rp_id(): string {
 	$host = wp_parse_url( home_url(), PHP_URL_HOST );
 
 	/**
-	 * Filtra el dominio de las passkeys.
+	 * Filters the passkey domain.
 	 *
-	 * Sólo tiene sentido tocarlo para subir un nivel —de `cuenta.sitio.com` a
-	 * `sitio.com`— y compartirlas entre subdominios.
+	 * The only sensible reason to touch it is to go up a level — from
+	 * `account.site.com` to `site.com` — and share them across subdomains.
 	 *
 	 * @param string $rp_id
 	 */
-	return (string) apply_filters( 'users_dlx_plus_passkey_rp_id', is_string( $host ) ? $host : '' );
+	return (string) apply_filters( 'diluxone_users_passkey_rp_id', is_string( $host ) ? $host : '' );
 }
 
-/** El origen exacto que tiene que declarar el navegador. */
-function users_dlx_plus_passkey_origin(): string {
+/** The exact origin the browser has to declare. */
+function diluxone_users_passkey_origin(): string {
 	$parts = wp_parse_url( home_url() );
 
 	return sprintf( '%s://%s%s', $parts['scheme'] ?? 'https', $parts['host'] ?? '', isset( $parts['port'] ) ? ':' . $parts['port'] : '' );
 }
 
-/* ── Las llaves de cada persona ────────────────────────────────────── */
+/* ── Each person's keys ────────────────────────────────────────────── */
 
 /**
- * Las passkeys de alguien.
+ * Somebody's passkeys.
  *
  * @return array<int, array<string, mixed>>
  */
-function users_dlx_plus_passkeys( int $user_id ): array {
-	$keys = get_user_meta( $user_id, 'users_dlx_plus_passkeys', true );
+function diluxone_users_passkeys( int $user_id ): array {
+	$keys = get_user_meta( $user_id, 'diluxone_users_passkeys', true );
 
 	return is_array( $keys ) ? array_values( $keys ) : array();
 }
 
-/** ¿Tiene al menos una? */
-function users_dlx_plus_passkeys_ready( int $user_id ): bool {
-	return array() !== users_dlx_plus_passkeys( $user_id );
+/** Do they have at least one? */
+function diluxone_users_passkeys_ready( int $user_id ): bool {
+	return array() !== diluxone_users_passkeys( $user_id );
 }
 
 /**
- * Guarda la lista de passkeys de una persona.
+ * Stores one person's list of passkeys.
  *
  * @param array<int, array<string, mixed>> $keys
  */
-function users_dlx_plus_passkeys_save( int $user_id, array $keys ): void {
-	update_user_meta( $user_id, 'users_dlx_plus_passkeys', array_values( $keys ) );
+function diluxone_users_passkeys_save( int $user_id, array $keys ): void {
+	update_user_meta( $user_id, 'diluxone_users_passkeys', array_values( $keys ) );
 }
 
-/** Saca una por su identificador. */
-function users_dlx_plus_passkey_forget( int $user_id, string $id ): void {
-	users_dlx_plus_passkeys_save(
+/** Removes one by its identifier. */
+function diluxone_users_passkey_forget( int $user_id, string $id ): void {
+	diluxone_users_passkeys_save(
 		$user_id,
-		array_filter( users_dlx_plus_passkeys( $user_id ), static fn( array $k ): bool => $k['id'] !== $id )
+		array_filter( diluxone_users_passkeys( $user_id ), static fn( array $k ): bool => $k['id'] !== $id )
 	);
 }
 
 /**
- * A quién pertenece una passkey.
+ * Who a passkey belongs to.
  *
- * Se busca por meta porque en el ingreso todavía no hay sesión: la passkey
- * dice quién es antes de que nadie diga su correo.
+ * The lookup is by meta because at sign-in time there is no session yet: the
+ * passkey says who they are before anybody has given their e-mail.
  */
-function users_dlx_plus_passkey_owner( string $id ): int {
+function diluxone_users_passkey_owner( string $id ): int {
 	$users = get_users(
 		array(
-			'meta_key' => 'users_dlx_plus_passkeys', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'meta_key' => 'diluxone_users_passkeys', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 		'fields'       => 'ID',
 		'number'       => 500,
 		)
 	);
 
 	foreach ( $users as $user_id ) {
-		foreach ( users_dlx_plus_passkeys( (int) $user_id ) as $key ) {
+		foreach ( diluxone_users_passkeys( (int) $user_id ) as $key ) {
 			if ( hash_equals( (string) $key['id'], $id ) ) {
 				return (int) $user_id;
 			}
@@ -139,20 +139,20 @@ function users_dlx_plus_passkey_owner( string $id ): int {
 	return 0;
 }
 
-/* ── Desafíos ──────────────────────────────────────────────────────── */
+/* ── Challenges ────────────────────────────────────────────────────── */
 
-/** Emite un desafío y lo guarda para poder compararlo después. */
-function users_dlx_plus_passkey_challenge_new( string $scope ): string {
-	$challenge = users_dlx_plus_b64url_encode( random_bytes( 32 ) );
+/** Issues a challenge and stores it so it can be compared later. */
+function diluxone_users_passkey_challenge_new( string $scope ): string {
+	$challenge = diluxone_users_b64url_encode( random_bytes( 32 ) );
 
-	set_transient( 'users_dlx_plus_pk_' . $scope . '_' . md5( $challenge ), 1, USERS_DLX_PLUS_PASSKEY_TTL );
+	set_transient( 'diluxone_users_pk_' . $scope . '_' . md5( $challenge ), 1, DILUXONE_USERS_PASSKEY_TTL );
 
 	return $challenge;
 }
 
-/** Lo consume: si existía lo borra y devuelve true. De un solo uso. */
-function users_dlx_plus_passkey_challenge_use( string $scope, string $challenge ): bool {
-	$key = 'users_dlx_plus_pk_' . $scope . '_' . md5( $challenge );
+/** Consumes it: if it existed, deletes it and returns true. Single use. */
+function diluxone_users_passkey_challenge_use( string $scope, string $challenge ): bool {
+	$key = 'diluxone_users_pk_' . $scope . '_' . md5( $challenge );
 
 	if ( ! get_transient( $key ) ) {
 		return false;
@@ -163,14 +163,14 @@ function users_dlx_plus_passkey_challenge_use( string $scope, string $challenge 
 	return true;
 }
 
-/* ── Verificación ──────────────────────────────────────────────────── */
+/* ── Verification ──────────────────────────────────────────────────── */
 
 /**
- * Revisa el `clientDataJSON` que devuelve el navegador.
+ * Checks the `clientDataJSON` the browser returns.
  *
  * @return array<string, mixed>|null
  */
-function users_dlx_plus_passkey_client_data( string $json, string $type, string $scope ): ?array {
+function diluxone_users_passkey_client_data( string $json, string $type, string $scope ): ?array {
 	$data = json_decode( $json, true );
 
 	if ( ! is_array( $data ) ) {
@@ -181,13 +181,13 @@ function users_dlx_plus_passkey_client_data( string $json, string $type, string 
 		return null;
 	}
 
-	// El origen tiene que ser exactamente el nuestro: es lo que hace que una
-	// passkey no se pueda usar desde un sitio clonado.
-	if ( ( $data['origin'] ?? '' ) !== users_dlx_plus_passkey_origin() ) {
+	// The origin has to be exactly ours: it is what makes a passkey unusable
+	// from a cloned site.
+	if ( ( $data['origin'] ?? '' ) !== diluxone_users_passkey_origin() ) {
 		return null;
 	}
 
-	if ( ! users_dlx_plus_passkey_challenge_use( $scope, (string) ( $data['challenge'] ?? '' ) ) ) {
+	if ( ! diluxone_users_passkey_challenge_use( $scope, (string) ( $data['challenge'] ?? '' ) ) ) {
 		return null;
 	}
 
@@ -195,31 +195,31 @@ function users_dlx_plus_passkey_client_data( string $json, string $type, string 
 }
 
 /**
- * Revisa el `authenticatorData`.
+ * Checks the `authenticatorData`.
  *
- * Son 37 bytes fijos y después lo opcional: el hash del dominio, un byte de
- * banderas y un contador.
+ * It is 37 fixed bytes and then the optional part: the domain hash, a flags
+ * byte and a counter.
  *
  * @return array{flags: int, counter: int}|null
  */
-function users_dlx_plus_passkey_auth_data( string $bytes ): ?array {
+function diluxone_users_passkey_auth_data( string $bytes ): ?array {
 	if ( strlen( $bytes ) < 37 ) {
 		return null;
 	}
 
-	if ( ! hash_equals( substr( $bytes, 0, 32 ), hash( 'sha256', users_dlx_plus_passkey_rp_id(), true ) ) ) {
+	if ( ! hash_equals( substr( $bytes, 0, 32 ), hash( 'sha256', diluxone_users_passkey_rp_id(), true ) ) ) {
 		return null;
 	}
 
 	$flags = ord( $bytes[32] );
 
-	// Bit 0: alguien estuvo presente. Sin eso, cualquier proceso podría firmar.
+	// Bit 0: somebody was present. Without it, any process could sign.
 	if ( 0 === ( $flags & 0x01 ) ) {
 		return null;
 	}
 
-	// Bit 2: además se verificó quién es (huella, cara, PIN).
-	if ( users_dlx_plus_option( 'users_dlx_plus_passkey_verify' ) && 0 === ( $flags & 0x04 ) ) {
+	// Bit 2: who they are was verified too (fingerprint, face, PIN).
+	if ( diluxone_users_option( 'diluxone_users_passkey_verify' ) && 0 === ( $flags & 0x04 ) ) {
 		return null;
 	}
 
@@ -229,27 +229,27 @@ function users_dlx_plus_passkey_auth_data( string $bytes ): ?array {
 	);
 }
 
-/** Arma una clave pública utilizable a partir del DER que mandó el navegador. */
-function users_dlx_plus_passkey_pem( string $der ): string {
+/** Builds a usable public key out of the DER the browser sent. */
+function diluxone_users_passkey_pem( string $der ): string {
 	return "-----BEGIN PUBLIC KEY-----\n" . chunk_split( base64_encode( $der ), 64, "\n" ) . "-----END PUBLIC KEY-----\n";
 }
 
 /**
- * ¿La firma es de esa clave y sobre esos datos?
+ * Is the signature from that key and over that data?
  *
- * Lo que se firma es la concatenación de `authenticatorData` con el SHA-256 de
- * `clientDataJSON`. No es una elección: está en el estándar y cualquier otra
- * cosa no valida.
+ * What is signed is `authenticatorData` concatenated with the SHA-256 of
+ * `clientDataJSON`. It is not a choice: it is in the standard and anything
+ * else fails to validate.
  */
-function users_dlx_plus_passkey_signature_ok( string $der, int $alg, string $auth_data, string $client_json, string $signature ): bool {
-	$key = openssl_pkey_get_public( users_dlx_plus_passkey_pem( $der ) );
+function diluxone_users_passkey_signature_ok( string $der, int $alg, string $auth_data, string $client_json, string $signature ): bool {
+	$key = openssl_pkey_get_public( diluxone_users_passkey_pem( $der ) );
 
 	if ( false === $key ) {
 		return false;
 	}
 
-	// -7 es ECDSA con P-256 y SHA-256; -257 es RSA con SHA-256. Son los dos
-	// que usan las passkeys reales.
+	// -7 is ECDSA with P-256 and SHA-256; -257 is RSA with SHA-256. Those are
+	// the two real passkeys use.
 	$digest = -257 === $alg ? OPENSSL_ALGO_SHA256 : OPENSSL_ALGO_SHA256;
 
 	if ( ! in_array( $alg, array( -7, -257 ), true ) ) {
@@ -259,137 +259,137 @@ function users_dlx_plus_passkey_signature_ok( string $der, int $alg, string $aut
 	return 1 === openssl_verify( $auth_data . hash( 'sha256', $client_json, true ), $signature, $key, $digest );
 }
 
-/* ── El ida y vuelta con el navegador ──────────────────────────────── */
+/* ── The round trip with the browser ───────────────────────────────── */
 
-/** ¿El sitio ofrece passkeys? */
-function users_dlx_plus_passkeys_enabled(): bool {
-	return (bool) users_dlx_plus_option( 'users_dlx_plus_passkey_enabled' );
+/** Does the site offer passkeys? */
+function diluxone_users_passkeys_enabled(): bool {
+	return (bool) diluxone_users_option( 'diluxone_users_passkey_enabled' );
 }
 
-/** Los datos para empezar un alta. */
 /**
+ * The data needed to start a registration.
+ *
  * @return array<string, mixed>
  */
-function users_dlx_plus_passkeys_register_options(): array {
+function diluxone_users_passkeys_register_options(): array {
 	$user = wp_get_current_user();
 
 	return array(
-		'challenge'               => users_dlx_plus_passkey_challenge_new( 'reg' ),
+		'challenge'               => diluxone_users_passkey_challenge_new( 'reg' ),
 		'rp'                      => array(
-			'id'   => users_dlx_plus_passkey_rp_id(),
+			'id'   => diluxone_users_passkey_rp_id(),
 			'name' => wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES ),
 		),
 		'user'                    => array(
-			// El id del usuario va como bytes opacos: no se le manda al
-			// autenticador nada que identifique a la persona fuera del sitio.
-			// La semilla dice 'upfw' y se queda así: es lo que el autenticador
-			// guardó junto a cada passkey. Cambiarla le cambia la identidad a
-			// quien ya tiene una, y su llave deja de reconocerse.
-			'id'          => users_dlx_plus_b64url_encode( hash( 'sha256', 'upfw|' . $user->ID . '|' . wp_salt(), true ) ),
+			// The user id travels as opaque bytes: nothing identifying the
+			// person outside the site is sent to the authenticator. The seed
+			// says 'upfw' and stays that way: it is what the authenticator
+			// stored alongside each passkey. Changing it changes the identity
+			// of whoever already has one, and their key stops recognising itself.
+		'id'              => diluxone_users_b64url_encode( hash( 'sha256', 'upfw|' . $user->ID . '|' . wp_salt(), true ) ),
 			'name'        => $user->user_email,
-			'displayName' => users_dlx_plus_display_name( $user ),
+			'displayName' => diluxone_users_display_name( $user ),
 		),
 		'excludeCredentials'      => array_map(
 			static fn( array $k ): array => array(
 				'id'   => $k['id'],
 				'type' => 'public-key',
 			),
-			users_dlx_plus_passkeys( $user->ID )
+			diluxone_users_passkeys( $user->ID )
 		),
-		'authenticatorAttachment' => 'device' === (string) users_dlx_plus_option( 'users_dlx_plus_passkey_where' ) ? 'platform' : null,
-		'userVerification'        => users_dlx_plus_option( 'users_dlx_plus_passkey_verify' ) ? 'required' : 'preferred',
+		'authenticatorAttachment' => 'device' === (string) diluxone_users_option( 'diluxone_users_passkey_where' ) ? 'platform' : null,
+		'userVerification'        => diluxone_users_option( 'diluxone_users_passkey_verify' ) ? 'required' : 'preferred',
 		'residentKey'             => 'preferred',
 	);
 }
 
-/** Los datos para empezar un ingreso. */
 /**
+ * The data needed to start a sign-in.
+ *
  * @return array<string, mixed>
  */
-function users_dlx_plus_passkeys_login_options(): array {
+function diluxone_users_passkeys_login_options(): array {
 	return array(
-		'challenge'        => users_dlx_plus_passkey_challenge_new( 'log' ),
-		'rpId'             => users_dlx_plus_passkey_rp_id(),
-		'userVerification' => users_dlx_plus_option( 'users_dlx_plus_passkey_verify' ) ? 'required' : 'preferred',
+		'challenge'        => diluxone_users_passkey_challenge_new( 'log' ),
+		'rpId'             => diluxone_users_passkey_rp_id(),
+		'userVerification' => diluxone_users_option( 'diluxone_users_passkey_verify' ) ? 'required' : 'preferred',
 	);
 }
 
-/** Todo el diálogo con el navegador pasa por acá. */
-function users_dlx_plus_passkeys_ajax(): void {
-	// phpcs:disable WordPress.Security.NonceVerification.Missing -- el nonce se verifica según el paso.
+/** The whole dialogue with the browser goes through here. */
+function diluxone_users_passkeys_ajax(): void {
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the nonce is verified per step.
 	$step = sanitize_key( wp_unslash( $_POST['step'] ?? '' ) );
 
-	if ( ! users_dlx_plus_passkeys_enabled() ) {
-		wp_send_json_error( array( 'message' => __( 'This site does not use passkeys.', 'users-dlx-plus' ) ), 400 );
+	if ( ! diluxone_users_passkeys_enabled() ) {
+		wp_send_json_error( array( 'message' => __( 'This site does not use passkeys.', 'diluxone-users' ) ), 400 );
 	}
 
-	// Las dos operaciones de alta exigen sesión y nonce; las de ingreso no
-	// pueden exigir sesión, porque justamente sirven para abrirla.
+	// The two registration operations require a session and a nonce; the
+	// sign-in ones cannot require a session, because opening one is the point.
 	if ( in_array( $step, array( 'register-options', 'register' ), true ) ) {
-		if ( ! is_user_logged_in() || ! check_ajax_referer( 'users_dlx_plus_passkeys', 'nonce', false ) ) {
-			wp_send_json_error( array( 'message' => __( 'Session expired. Reload the page.', 'users-dlx-plus' ) ), 403 );
+		if ( ! is_user_logged_in() || ! check_ajax_referer( 'diluxone_users_passkeys', 'nonce', false ) ) {
+			wp_send_json_error( array( 'message' => __( 'Session expired. Reload the page.', 'diluxone-users' ) ), 403 );
 		}
 	}
 
 	switch ( $step ) {
 		case 'register-options':
-			wp_send_json_success( users_dlx_plus_passkeys_register_options() );
-			// wp_send_json_* contesta y corta: no hay caída al siguiente caso.
+			wp_send_json_success( diluxone_users_passkeys_register_options() );
+				// wp_send_json_* answers and stops: there is no fall-through to the next case.
 
 		case 'register':
-			wp_send_json( users_dlx_plus_passkeys_register( wp_unslash( $_POST ) ) );
-			// wp_send_json_* contesta y corta: no hay caída al siguiente caso.
+			wp_send_json( diluxone_users_passkeys_register( wp_unslash( $_POST ) ) );
+				// wp_send_json_* answers and stops: there is no fall-through to the next case.
 
 		case 'login-options':
-			wp_send_json_success( users_dlx_plus_passkeys_login_options() );
-			// wp_send_json_* contesta y corta: no hay caída al siguiente caso.
+			wp_send_json_success( diluxone_users_passkeys_login_options() );
+				// wp_send_json_* answers and stops: there is no fall-through to the next case.
 
 		case 'login':
-			wp_send_json( users_dlx_plus_passkeys_login( wp_unslash( $_POST ) ) );
+			wp_send_json( diluxone_users_passkeys_login( wp_unslash( $_POST ) ) );
 	}
 	// phpcs:enable
 
-	wp_send_json_error( array( 'message' => __( 'Unknown step.', 'users-dlx-plus' ) ), 400 );
+	wp_send_json_error( array( 'message' => __( 'Unknown step.', 'diluxone-users' ) ), 400 );
 }
-add_action( 'wp_ajax_users_dlx_plus_passkeys', 'users_dlx_plus_passkeys_ajax' );
-add_action( 'wp_ajax_nopriv_users_dlx_plus_passkeys', 'users_dlx_plus_passkeys_ajax' );
+add_action( 'wp_ajax_diluxone_users_passkeys', 'diluxone_users_passkeys_ajax' );
+add_action( 'wp_ajax_nopriv_diluxone_users_passkeys', 'diluxone_users_passkeys_ajax' );
 
-/** Da de alta una passkey nueva. */
 /**
- * @return array<string, mixed>
- */
-/**
+ * Registers a new passkey.
+ *
  * @param array<string, mixed> $post
  * @return array<string, mixed>
  */
-function users_dlx_plus_passkeys_register( array $post ): array {
+function diluxone_users_passkeys_register( array $post ): array {
 	$user_id = get_current_user_id();
 	$id      = sanitize_text_field( (string) ( $post['id'] ?? '' ) );
-	$der     = users_dlx_plus_b64url_decode( (string) ( $post['publicKey'] ?? '' ) );
+	$der     = diluxone_users_b64url_decode( (string) ( $post['publicKey'] ?? '' ) );
 	$alg     = (int) ( $post['algorithm'] ?? 0 );
 	$json    = (string) ( $post['clientDataJSON'] ?? '' );
 
-	if ( '' === $id || '' === $der || null === users_dlx_plus_passkey_client_data( $json, 'webauthn.create', 'reg' ) ) {
+	if ( '' === $id || '' === $der || null === diluxone_users_passkey_client_data( $json, 'webauthn.create', 'reg' ) ) {
 		return array(
 			'success' => false,
-			'data'    => array( 'message' => __( 'That did not check out. Try again.', 'users-dlx-plus' ) ),
+			'data'    => array( 'message' => __( 'That did not check out. Try again.', 'diluxone-users' ) ),
 		);
 	}
 
-	if ( ! in_array( $alg, array( -7, -257 ), true ) || false === openssl_pkey_get_public( users_dlx_plus_passkey_pem( $der ) ) ) {
+	if ( ! in_array( $alg, array( -7, -257 ), true ) || false === openssl_pkey_get_public( diluxone_users_passkey_pem( $der ) ) ) {
 		return array(
 			'success' => false,
-			'data'    => array( 'message' => __( 'That key is of a kind this site cannot verify.', 'users-dlx-plus' ) ),
+			'data'    => array( 'message' => __( 'That key is of a kind this site cannot verify.', 'diluxone-users' ) ),
 		);
 	}
 
-	$keys = users_dlx_plus_passkeys( $user_id );
+	$keys = diluxone_users_passkeys( $user_id );
 
 	foreach ( $keys as $key ) {
 		if ( hash_equals( (string) $key['id'], $id ) ) {
 			return array(
 				'success' => true,
-				'data'    => array( 'message' => __( 'That one was already here.', 'users-dlx-plus' ) ),
+				'data'    => array( 'message' => __( 'That one was already here.', 'diluxone-users' ) ),
 			);
 		}
 	}
@@ -398,62 +398,63 @@ function users_dlx_plus_passkeys_register( array $post ): array {
 		'id'      => $id,
 		'key'     => base64_encode( $der ),
 		'alg'     => $alg,
-		'label'   => users_dlx_plus_passkey_clean_label( (string) ( $post['label'] ?? '' ) ),
+		'label'   => diluxone_users_passkey_clean_label( (string) ( $post['label'] ?? '' ) ),
 		'created' => time(),
 		'used'    => 0,
 		'counter' => 0,
 	);
 
-	users_dlx_plus_passkeys_save( $user_id, $keys );
+	diluxone_users_passkeys_save( $user_id, $keys );
 
-	users_dlx_plus_notify_security(
+	diluxone_users_notify_security(
 		$user_id,
 		sprintf(
-			/* translators: %s: el nombre que se le puso a la passkey */
-			__( 'A passkey was added: %s.', 'users-dlx-plus' ),
+				/* translators: %s: the name given to the passkey */
+			__( 'A passkey was added: %s.', 'diluxone-users' ),
 			end( $keys )['label']
 		)
 	);
 
 	return array(
 		'success' => true,
-		'data'    => array( 'message' => __( 'Passkey saved.', 'users-dlx-plus' ) ),
+		'data'    => array( 'message' => __( 'Passkey saved.', 'diluxone-users' ) ),
 	);
 }
 
 /**
- * El nombre que se guarda para una llave.
+ * The name stored for a key.
  *
- * Lo elige la persona: son suyas y va a tener varias —el teléfono, la
- * notebook, la llave física— y «Passkey, Passkey, Passkey» no le dice a nadie
- * cuál sacar cuando pierde una. Si no escribe nada, se propone el dispositivo.
+ * The person chooses it: the keys are theirs and they will have several — the
+ * phone, the laptop, the physical key — and "Passkey, Passkey, Passkey" tells
+ * nobody which one to remove when they lose one. If they write nothing, the
+ * device is proposed.
  */
-function users_dlx_plus_passkey_clean_label( string $label ): string {
+function diluxone_users_passkey_clean_label( string $label ): string {
 	$label = trim( sanitize_text_field( $label ) );
 
 	if ( '' === $label ) {
-		return users_dlx_plus_passkey_label();
+		return diluxone_users_passkey_label();
 	}
 
 	return mb_substr( $label, 0, 60 );
 }
 
-/** Le cambia el nombre a una llave. */
-function users_dlx_plus_passkey_rename( int $user_id, string $id, string $label ): void {
-	$keys = users_dlx_plus_passkeys( $user_id );
+/** Renames a key. */
+function diluxone_users_passkey_rename( int $user_id, string $id, string $label ): void {
+	$keys = diluxone_users_passkeys( $user_id );
 
 	foreach ( $keys as $i => $key ) {
 		if ( hash_equals( (string) $key['id'], $id ) ) {
-			$keys[ $i ]['label'] = users_dlx_plus_passkey_clean_label( $label );
-			users_dlx_plus_passkeys_save( $user_id, $keys );
+			$keys[ $i ]['label'] = diluxone_users_passkey_clean_label( $label );
+			diluxone_users_passkeys_save( $user_id, $keys );
 
 			return;
 		}
 	}
 }
 
-/** Un nombre razonable para la llave, sacado del navegador. */
-function users_dlx_plus_passkey_label(): string {
+/** A reasonable name for the key, taken from the browser. */
+function diluxone_users_passkey_label(): string {
 	$agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 
 	foreach ( array(
@@ -463,51 +464,49 @@ function users_dlx_plus_passkey_label(): string {
 		'Macintosh' => 'Mac',
 		'Windows'   => 'Windows',
 		'Linux'     => 'Linux',
-	) as $aguja => $nombre ) {
-		if ( false !== stripos( $agent, $aguja ) ) {
-			return $nombre;
+	) as $needle => $name ) {
+		if ( false !== stripos( $agent, $needle ) ) {
+			return $name;
 		}
 	}
 
-	return __( 'Passkey', 'users-dlx-plus' );
+	return __( 'Passkey', 'diluxone-users' );
 }
 
-/** Entra con una passkey. */
 /**
- * @return array<string, mixed>
- */
-/**
+ * Signs in with a passkey.
+ *
  * @param array<string, mixed> $post
  * @return array<string, mixed>
  */
-function users_dlx_plus_passkeys_login( array $post ): array {
+function diluxone_users_passkeys_login( array $post ): array {
 	$id        = sanitize_text_field( (string) ( $post['id'] ?? '' ) );
 	$json      = (string) ( $post['clientDataJSON'] ?? '' );
-	$auth_data = users_dlx_plus_b64url_decode( (string) ( $post['authenticatorData'] ?? '' ) );
-	$signature = users_dlx_plus_b64url_decode( (string) ( $post['signature'] ?? '' ) );
+	$auth_data = diluxone_users_b64url_decode( (string) ( $post['authenticatorData'] ?? '' ) );
+	$signature = diluxone_users_b64url_decode( (string) ( $post['signature'] ?? '' ) );
 
-	$fallo = array(
+	$failure = array(
 		'success' => false,
-		'data'    => array( 'message' => __( 'That passkey did not check out.', 'users-dlx-plus' ) ),
+		'data'    => array( 'message' => __( 'That passkey did not check out.', 'diluxone-users' ) ),
 	);
 
-	if ( '' === $id || null === users_dlx_plus_passkey_client_data( $json, 'webauthn.get', 'log' ) ) {
-		return $fallo;
+	if ( '' === $id || null === diluxone_users_passkey_client_data( $json, 'webauthn.get', 'log' ) ) {
+		return $failure;
 	}
 
-	$auth = users_dlx_plus_passkey_auth_data( $auth_data );
+	$auth = diluxone_users_passkey_auth_data( $auth_data );
 
 	if ( null === $auth ) {
-		return $fallo;
+		return $failure;
 	}
 
-	$user_id = users_dlx_plus_passkey_owner( $id );
+	$user_id = diluxone_users_passkey_owner( $id );
 
 	if ( $user_id <= 0 ) {
-		return $fallo;
+		return $failure;
 	}
 
-	$keys  = users_dlx_plus_passkeys( $user_id );
+	$keys  = diluxone_users_passkeys( $user_id );
 	$found = null;
 
 	foreach ( $keys as $i => $key ) {
@@ -518,35 +517,35 @@ function users_dlx_plus_passkeys_login( array $post ): array {
 	}
 
 	if ( null === $found ) {
-		return $fallo;
+		return $failure;
 	}
 
 	$der = (string) base64_decode( (string) $keys[ $found ]['key'], true );
 
-	if ( ! users_dlx_plus_passkey_signature_ok( $der, (int) $keys[ $found ]['alg'], $auth_data, $json, $signature ) ) {
-		return $fallo;
+	if ( ! diluxone_users_passkey_signature_ok( $der, (int) $keys[ $found ]['alg'], $auth_data, $json, $signature ) ) {
+		return $failure;
 	}
 
-	// El contador sólo puede subir. Si baja, la llave se clonó; se avisa y se
-	// sigue, porque muchas passkeys sincronizadas devuelven siempre cero y
-	// rechazar ahí dejaría afuera a media internet.
+	// The counter can only go up. If it goes down, the key was cloned; that is
+	// logged and the sign-in goes on, because many synced passkeys always
+	// return zero and refusing there would lock out half the internet.
 	if ( $auth['counter'] > 0 && $auth['counter'] <= (int) $keys[ $found ]['counter'] ) {
-		do_action( 'users_dlx_plus_passkey_counter_warning', $user_id, $id );
+		do_action( 'diluxone_users_passkey_counter_warning', $user_id, $id );
 	}
 
 	$keys[ $found ]['counter'] = $auth['counter'];
 	$keys[ $found ]['used']    = time();
 
-	users_dlx_plus_passkeys_save( $user_id, $keys );
+	diluxone_users_passkeys_save( $user_id, $keys );
 
-	// Una passkey ya es dos factores en un paso: algo que tenés más algo que
-	// sos o sabés. Pedirle además un código sería pedir tres.
-	$redirect = (string) apply_filters( 'users_dlx_plus_login_redirect', home_url( '/' ), $user_id );
+	// A passkey is already two factors in one step: something you have plus
+	// something you are or know. Asking for a code on top would be asking three.
+	$redirect = (string) apply_filters( 'diluxone_users_login_redirect', home_url( '/' ), $user_id );
 
 	wp_set_current_user( $user_id );
 	wp_set_auth_cookie( $user_id, true );
 
-	do_action( 'users_dlx_plus_logged_in', $user_id, 'passkey' );
+	do_action( 'diluxone_users_logged_in', $user_id, 'passkey' );
 
 	return array(
 		'success' => true,
@@ -554,65 +553,65 @@ function users_dlx_plus_passkeys_login( array $post ): array {
 	);
 }
 
-/* ── Lo que ve la gente ────────────────────────────────────────────── */
+/* ── What people see ───────────────────────────────────────────────── */
 
 /**
- * El script, sólo donde hace falta.
+ * The script, only where it is needed.
  *
- * Se encola desde el shortcode que lo necesita y no en todo el sitio: es la
- * misma regla que la hoja de estilos.
+ * It is enqueued from the shortcode that needs it and not across the whole
+ * site: the same rule as the stylesheet.
  */
-function users_dlx_plus_passkeys_enqueue(): void {
-	if ( ! users_dlx_plus_passkeys_enabled() || wp_script_is( 'users-dlx-plus-passkeys', 'enqueued' ) ) {
+function diluxone_users_passkeys_enqueue(): void {
+	if ( ! diluxone_users_passkeys_enabled() || wp_script_is( 'diluxone-users-passkeys', 'enqueued' ) ) {
 		return;
 	}
 
-	wp_enqueue_script( 'users-dlx-plus-passkeys', USERS_DLX_PLUS_URL . 'assets/users-dlx-plus-passkeys.js', array(), users_dlx_plus_asset_version( 'assets/users-dlx-plus-passkeys.js' ), true );
+	wp_enqueue_script( 'diluxone-users-passkeys', DILUXONE_USERS_URL . 'assets/diluxone-users-passkeys.js', array(), diluxone_users_asset_version( 'assets/diluxone-users-passkeys.js' ), true );
 
 	wp_localize_script(
-		'users-dlx-plus-passkeys',
-		'usersDlxPlusPasskeys',
+		'diluxone-users-passkeys',
+		'diluxOneUsersPasskeys',
 		array(
-			'ajax'   => admin_url( 'admin-ajax.php' ),
-			'nonce'  => wp_create_nonce( 'users_dlx_plus_passkeys' ),
-			'textos' => array(
-				'error' => __( 'That did not work. Try again.', 'users-dlx-plus' ),
-				'viejo' => __( 'This browser is too old for passkeys.', 'users-dlx-plus' ),
+			'ajax'  => admin_url( 'admin-ajax.php' ),
+			'nonce' => wp_create_nonce( 'diluxone_users_passkeys' ),
+			'texts' => array(
+				'error' => __( 'That did not work. Try again.', 'diluxone-users' ),
+				'old'   => __( 'This browser is too old for passkeys.', 'diluxone-users' ),
 			),
 		)
 	);
 }
 
 /**
- * Renombrar o sacar una passkey desde el perfil.
+ * Renaming or removing a passkey from the profile.
  *
- * Las dos cosas viven en el mismo formulario —el nombre y los botones están en
- * la misma fila— así que son la misma acción con dos botones.
+ * Both live in the same form — the name and the buttons are on the same row —
+ * so they are one action with two buttons.
  */
-function users_dlx_plus_passkeys_manage(): void {
+function diluxone_users_passkeys_manage(): void {
 	if ( ! is_user_logged_in() ) {
-		wp_safe_redirect( users_dlx_plus_login_url() );
+		wp_safe_redirect( diluxone_users_login_url() );
 		exit;
 	}
 
-	check_admin_referer( 'users_dlx_plus_passkey' );
+	check_admin_referer( 'diluxone_users_passkey' );
 
 	// phpcs:disable WordPress.Security.NonceVerification.Missing -- verificado arriba.
-	$user_id = get_current_user_id();
-	$id      = sanitize_text_field( wp_unslash( $_POST['users_dlx_plus_passkey'] ?? '' ) );
-	$hacer   = sanitize_key( wp_unslash( $_POST['users_dlx_plus_passkey_do'] ?? '' ) );
+	$user_id   = get_current_user_id();
+	$id        = sanitize_text_field( wp_unslash( $_POST['diluxone_users_passkey'] ?? '' ) );
+	$operation = sanitize_key( wp_unslash( $_POST['diluxone_users_passkey_do'] ?? '' ) );
 
-	if ( 'delete' === $hacer ) {
-		users_dlx_plus_passkey_forget( $user_id, $id );
-		users_dlx_plus_notify_security( $user_id, __( 'A passkey was removed.', 'users-dlx-plus' ) );
-		$aviso = 'passkeyoff';
+	if ( 'delete' === $operation ) {
+		diluxone_users_passkey_forget( $user_id, $id );
+		diluxone_users_notify_security( $user_id, __( 'A passkey was removed.', 'diluxone-users' ) );
+		$notice = 'passkeyoff';
 	} else {
-		users_dlx_plus_passkey_rename( $user_id, $id, sanitize_text_field( wp_unslash( $_POST['users_dlx_plus_passkey_label'] ?? '' ) ) );
-		$aviso = 'passkeyname';
+		diluxone_users_passkey_rename( $user_id, $id, sanitize_text_field( wp_unslash( $_POST['diluxone_users_passkey_label'] ?? '' ) ) );
+		$notice = 'passkeyname';
 	}
 	// phpcs:enable
 
-	wp_safe_redirect( add_query_arg( 'users-dlx-plus', $aviso, users_dlx_plus_account_url( 'security' ) ) );
+	wp_safe_redirect( add_query_arg( 'diluxone-users', $notice, diluxone_users_account_url( 'security' ) ) );
 	exit;
 }
-add_action( 'admin_post_users_dlx_plus_passkey', 'users_dlx_plus_passkeys_manage' );
+add_action( 'admin_post_diluxone_users_passkey', 'diluxone_users_passkeys_manage' );

@@ -1,75 +1,75 @@
 <?php
 /**
- * Las redes sociales vinculadas a la cuenta.
+ * The social networks linked to the account.
  *
- * Reemplazable desde el tema en:
- *   wp-content/themes/<tu-tema>/users-dlx-plus/accounts.php
+ * Overridable from the theme at:
+ *   wp-content/themes/<your-theme>/diluxone-users/accounts.php
  *
- * @var array<string, array<string, mixed>> $providers Redes disponibles.
- * @var array<int, string>                  $linked    IDs ya vinculados.
+ * @var array<string, array<string, mixed>> $providers Available networks.
+ * @var array<int, string>                  $linked    IDs already linked.
  * @var string                              $state
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<div class="users-dlx-plus users-dlx-plus-accounts">
+<div class="diluxone-users diluxone-users-accounts">
 
 	<?php if ( 'linked' === $state ) : ?>
-		<p class="users-dlx-plus-notice users-dlx-plus-notice--ok"><?php esc_html_e( 'Account linked.', 'users-dlx-plus' ); ?></p>
+		<p class="diluxone-users-notice diluxone-users-notice--ok"><?php esc_html_e( 'Account linked.', 'diluxone-users' ); ?></p>
 	<?php endif; ?>
 
 	<?php if ( array() === $providers ) : ?>
-		<p class="users-dlx-plus-note">
+		<p class="diluxone-users-note">
 			<?php
 			if ( 'linked' === ( $only ?? '' ) ) {
-				esc_html_e( 'None yet. Link one below and it opens this same account.', 'users-dlx-plus' );
+				esc_html_e( 'None yet. Link one below and it opens this same account.', 'diluxone-users' );
 			} elseif ( 'available' === ( $only ?? '' ) ) {
-				esc_html_e( 'You already have them all linked.', 'users-dlx-plus' );
+				esc_html_e( 'You already have them all linked.', 'diluxone-users' );
 			} else {
-				esc_html_e( 'No provider has been set up yet.', 'users-dlx-plus' );
+				esc_html_e( 'No provider has been set up yet.', 'diluxone-users' );
 			}
 			?>
 		</p>
 	<?php else : ?>
 
-	<ul class="users-dlx-plus-linked">
+	<ul class="diluxone-users-linked">
 		<?php
-		foreach ( $providers as $users_dlx_plus_id => $users_dlx_plus_provider ) :
-			$users_dlx_plus_is_linked = in_array( $users_dlx_plus_id, $linked, true );
+		foreach ( $providers as $diluxone_users_id => $diluxone_users_provider ) :
+			$diluxone_users_is_linked = in_array( $diluxone_users_id, $linked, true );
 			?>
 			<?php
 			/*
-			 * Un logo con color propio —el de Google, el de Microsoft— no se
-			 * pinta encima: se deja sobre fondo claro, que es lo que piden
-			 * sus guías y lo único donde se lee.
+			 * A logo with a colour of its own — Google's, Microsoft's — is not
+			 * painted over: it is left on a light background, which is what
+			 * their guidelines ask for and the only place it reads.
 			 */
 			?>
-			<li class="users-dlx-plus-linked__item <?php echo $users_dlx_plus_is_linked ? 'is-linked' : ''; ?> <?php echo users_dlx_plus_sso_icon_is_colored( $users_dlx_plus_id ) ? 'has-color' : ''; ?>" style="--users-dlx-plus-brand: <?php echo esc_attr( $users_dlx_plus_provider['color'] ); ?>">
-				<span class="users-dlx-plus-linked__logo"><?php echo users_dlx_plus_sso_icon( $users_dlx_plus_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- SVG propio. ?></span>
+			<li class="diluxone-users-linked__item <?php echo $diluxone_users_is_linked ? 'is-linked' : ''; ?> <?php echo diluxone_users_sso_icon_is_colored( $diluxone_users_id ) ? 'has-color' : ''; ?>" style="--diluxone-users-brand: <?php echo esc_attr( $diluxone_users_provider['color'] ); ?>">
+				<span class="diluxone-users-linked__logo"><?php echo diluxone_users_sso_icon( $diluxone_users_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- SVG propio. ?></span>
 
-				<span class="users-dlx-plus-linked__who">
-					<strong><?php echo esc_html( $users_dlx_plus_provider['name'] ); ?></strong>
+				<span class="diluxone-users-linked__who">
+					<strong><?php echo esc_html( $diluxone_users_provider['name'] ); ?></strong>
 					<span>
 						<?php
-						echo $users_dlx_plus_is_linked
-							? esc_html__( 'Linked to your account', 'users-dlx-plus' )
-							: esc_html__( 'Not linked', 'users-dlx-plus' );
+						echo $diluxone_users_is_linked
+							? esc_html__( 'Linked to your account', 'diluxone-users' )
+							: esc_html__( 'Not linked', 'diluxone-users' );
 						?>
 					</span>
 				</span>
 
-				<?php if ( $users_dlx_plus_is_linked ) : ?>
+				<?php if ( $diluxone_users_is_linked ) : ?>
 					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-						<input type="hidden" name="action" value="users_dlx_plus_sso_unlink">
-						<input type="hidden" name="users_dlx_plus_provider" value="<?php echo esc_attr( $users_dlx_plus_id ); ?>">
-						<?php wp_nonce_field( 'users_dlx_plus_sso_unlink' ); ?>
-						<button type="submit" class="users-dlx-plus-button users-dlx-plus-button--soft"><?php esc_html_e( 'Unlink', 'users-dlx-plus' ); ?></button>
+						<input type="hidden" name="action" value="diluxone_users_sso_unlink">
+						<input type="hidden" name="diluxone_users_provider" value="<?php echo esc_attr( $diluxone_users_id ); ?>">
+						<?php wp_nonce_field( 'diluxone_users_sso_unlink' ); ?>
+						<button type="submit" class="diluxone-users-button diluxone-users-button--soft"><?php esc_html_e( 'Unlink', 'diluxone-users' ); ?></button>
 					</form>
 				<?php else : ?>
-					<a class="users-dlx-plus-button users-dlx-plus-button--soft" href="<?php echo esc_url( users_dlx_plus_sso_login_url( $users_dlx_plus_id ) ); ?>">
-						<?php esc_html_e( 'Link', 'users-dlx-plus' ); ?>
+					<a class="diluxone-users-button diluxone-users-button--soft" href="<?php echo esc_url( diluxone_users_sso_login_url( $diluxone_users_id ) ); ?>">
+						<?php esc_html_e( 'Link', 'diluxone-users' ); ?>
 					</a>
 				<?php endif; ?>
 			</li>

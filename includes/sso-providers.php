@@ -1,47 +1,47 @@
 <?php
 /**
- * La tabla de proveedores de login social.
+ * The social-login provider table.
  *
- * OAuth 2 es el mismo baile en todos: mandar a autorizar, volver con un
- * código, cambiarlo por un token, pedir el perfil. Lo único propio de cada
- * proveedor son cuatro URLs, un scope y cómo se lee el perfil que devuelve.
- * Eso es una tabla, no una clase por proveedor: agregar uno nuevo es agregar
- * una fila acá.
+ * OAuth 2 is the same dance everywhere: send them off to authorise, come back
+ * with a code, exchange it for a token, ask for the profile. The only thing
+ * each provider has of its own is four URLs, a scope and how the profile it
+ * returns is read. That is a table, not a class per provider: adding a new one
+ * is adding a row here.
  *
- * Sólo entran los que funcionan con este flujo. Quedan afuera, a propósito:
+ * Only the ones that work with this flow get in. Deliberately left out:
  *
- *   - **Apple**: el secreto de cliente es un JWT firmado con ES256 que hay que
- *     regenerar cada seis meses, y la respuesta vuelve por POST (form_post).
- *     Es otro flujo, no una fila más.
- *   - **Steam**: no usa OAuth 2 sino OpenID 2.0, que es un protocolo distinto
- *     y además no devuelve el correo.
+ *   - **Apple**: the client secret is a JWT signed with ES256 that has to be
+ *     regenerated every six months, and the answer comes back by POST
+ *     (form_post). That is another flow, not one more row.
+ *   - **Steam**: it does not use OAuth 2 but OpenID 2.0, which is a different
+ *     protocol and on top of that returns no e-mail.
  *
- * Un botón que no anda es peor que no tener el botón.
+ * A button that does not work is worse than not having the button.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Todos los proveedores que el plugin sabe manejar.
+ * Every provider the plugin knows how to handle.
  *
- * Campos de cada uno:
- *   name       Cómo se llama para la gente.
- *   color      El color de su marca, para la tarjeta y el botón.
- *   authorize  URL adonde se manda a la persona.
- *   token      URL donde se cambia el código por un token.
- *   profile    URL de donde se lee el perfil.
- *   scope      Los permisos que se piden.
- *   extra      Parámetros sueltos que pide ese proveedor.
- *   pkce       Si exige PKCE (X lo exige; al resto no le molesta).
- *   map        La función que lee su respuesta.
- *   console    Dónde se crea la aplicación.
- *   guide      La documentación del proveedor.
+ * Fields of each one:
+ *   name       What it is called for people.
+ *   color      Its brand colour, for the card and the button.
+ *   authorize  URL the person is sent to.
+ *   token      URL where the code is exchanged for a token.
+ *   profile    URL the profile is read from.
+ *   scope      The permissions asked for.
+ *   extra      Odd parameters that provider requires.
+ *   pkce       Whether it requires PKCE (X does; the rest do not mind).
+ *   map        The function that reads its answer.
+ *   console    Where the application is created.
+ *   guide      The provider documentation.
  *
  * @return array<string, array<string, mixed>>
  */
-function users_dlx_plus_sso_providers(): array {
+function diluxone_users_sso_providers(): array {
 	$providers = array(
 		'google'    => array(
 			'name'      => 'Google',
@@ -52,7 +52,7 @@ function users_dlx_plus_sso_providers(): array {
 			'scope'     => 'openid email profile',
 			'extra'     => array( 'prompt' => 'select_account' ),
 			'pkce'      => false,
-			'map'       => 'users_dlx_plus_sso_map_oidc',
+			'map'       => 'diluxone_users_sso_map_oidc',
 			'console'   => 'https://console.cloud.google.com/apis/credentials',
 			'guide'     => 'https://developers.google.com/identity/openid-connect/openid-connect',
 		),
@@ -65,7 +65,7 @@ function users_dlx_plus_sso_providers(): array {
 			'scope'     => 'openid email profile',
 			'extra'     => array(),
 			'pkce'      => false,
-			'map'       => 'users_dlx_plus_sso_map_oidc',
+			'map'       => 'diluxone_users_sso_map_oidc',
 			'console'   => 'https://entra.microsoft.com/',
 			'guide'     => 'https://learn.microsoft.com/entra/identity-platform/v2-protocols-oidc',
 		),
@@ -78,7 +78,7 @@ function users_dlx_plus_sso_providers(): array {
 			'scope'     => 'openid profile email',
 			'extra'     => array(),
 			'pkce'      => false,
-			'map'       => 'users_dlx_plus_sso_map_oidc',
+			'map'       => 'diluxone_users_sso_map_oidc',
 			'console'   => 'https://www.linkedin.com/developers/apps',
 			'guide'     => 'https://learn.microsoft.com/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2',
 		),
@@ -90,10 +90,10 @@ function users_dlx_plus_sso_providers(): array {
 			'profile'   => 'https://api.twitter.com/2/users/me?user.fields=name,username',
 			'scope'     => 'tweet.read users.read',
 			'extra'     => array(),
-			// X exige PKCE y no devuelve el correo: la cuenta se crea con un
-			// correo derivado del usuario, o se vincula desde el perfil.
+			// X requires PKCE and returns no e-mail: the account is created with
+			// an e-mail derived from the username, or linked from the profile.
 			'pkce'      => true,
-			'map'       => 'users_dlx_plus_sso_map_twitter',
+			'map'       => 'diluxone_users_sso_map_twitter',
 			'console'   => 'https://developer.twitter.com/en/portal/dashboard',
 			'guide'     => 'https://docs.x.com/resources/fundamentals/authentication/oauth-2-0/authorization-code',
 		),
@@ -106,7 +106,7 @@ function users_dlx_plus_sso_providers(): array {
 			'scope'     => 'email',
 			'extra'     => array(),
 			'pkce'      => false,
-			'map'       => 'users_dlx_plus_sso_map_facebook',
+			'map'       => 'diluxone_users_sso_map_facebook',
 			'console'   => 'https://developers.facebook.com/apps/',
 			'guide'     => 'https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow',
 		),
@@ -119,7 +119,7 @@ function users_dlx_plus_sso_providers(): array {
 			'scope'     => 'read:user user:email',
 			'extra'     => array(),
 			'pkce'      => false,
-			'map'       => 'users_dlx_plus_sso_map_github',
+			'map'       => 'diluxone_users_sso_map_github',
 			'console'   => 'https://github.com/settings/developers',
 			'guide'     => 'https://docs.github.com/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps',
 		),
@@ -132,7 +132,7 @@ function users_dlx_plus_sso_providers(): array {
 			'scope'     => 'auth',
 			'extra'     => array(),
 			'pkce'      => false,
-			'map'       => 'users_dlx_plus_sso_map_wordpress',
+			'map'       => 'diluxone_users_sso_map_wordpress',
 			'console'   => 'https://developer.wordpress.com/apps/',
 			'guide'     => 'https://developer.wordpress.com/docs/oauth2/',
 		),
@@ -145,7 +145,7 @@ function users_dlx_plus_sso_providers(): array {
 			'scope'     => 'openid email profile',
 			'extra'     => array(),
 			'pkce'      => false,
-			'map'       => 'users_dlx_plus_sso_map_oidc',
+			'map'       => 'diluxone_users_sso_map_oidc',
 			'console'   => 'https://developer.yahoo.com/apps/',
 			'guide'     => 'https://developer.yahoo.com/oauth2/guide/openid_connect/',
 		),
@@ -154,13 +154,13 @@ function users_dlx_plus_sso_providers(): array {
 			'color'     => '#9146FF',
 			'authorize' => 'https://id.twitch.tv/oauth2/authorize',
 			'token'     => 'https://id.twitch.tv/oauth2/token',
-			// El endpoint OIDC y no /helix/users: éste anda con el Bearer solo,
-			// el otro además pide la cabecera Client-Id.
+			// The OIDC endpoint and not /helix/users: this one works with the
+			// Bearer alone, the other also wants the Client-Id header.
 			'profile'   => 'https://id.twitch.tv/oauth2/userinfo',
 			'scope'     => 'openid user:read:email',
 			'extra'     => array( 'claims' => '{"userinfo":{"email":null,"preferred_username":null}}' ),
 			'pkce'      => false,
-			'map'       => 'users_dlx_plus_sso_map_oidc',
+			'map'       => 'diluxone_users_sso_map_oidc',
 			'console'   => 'https://dev.twitch.tv/console/apps',
 			'guide'     => 'https://dev.twitch.tv/docs/authentication/getting-tokens-oidc/',
 		),
@@ -173,7 +173,7 @@ function users_dlx_plus_sso_providers(): array {
 			'scope'     => 'identify email',
 			'extra'     => array(),
 			'pkce'      => false,
-			'map'       => 'users_dlx_plus_sso_map_discord',
+			'map'       => 'diluxone_users_sso_map_discord',
 			'console'   => 'https://discord.com/developers/applications',
 			'guide'     => 'https://discord.com/developers/docs/topics/oauth2',
 		),
@@ -186,7 +186,7 @@ function users_dlx_plus_sso_providers(): array {
 			'scope'     => 'openid email profile',
 			'extra'     => array(),
 			'pkce'      => false,
-			'map'       => 'users_dlx_plus_sso_map_oidc',
+			'map'       => 'diluxone_users_sso_map_oidc',
 			'console'   => 'https://gitlab.com/-/profile/applications',
 			'guide'     => 'https://docs.gitlab.com/ee/integration/openid_connect_provider.html',
 		),
@@ -199,16 +199,16 @@ function users_dlx_plus_sso_providers(): array {
 			'scope'     => 'profile',
 			'extra'     => array(),
 			'pkce'      => false,
-			'map'       => 'users_dlx_plus_sso_map_amazon',
+			'map'       => 'diluxone_users_sso_map_amazon',
 			'console'   => 'https://developer.amazon.com/loginwithamazon/console/site/lwa/overview.html',
 			'guide'     => 'https://developer.amazon.com/docs/login-with-amazon/web-docs.html',
 		),
 	);
 
 	/**
-	 * Filtra los proveedores de login social.
+	 * Filters the social-login providers.
 	 *
 	 * @param array<string, array<string, mixed>> $providers
 	 */
-	return apply_filters( 'users_dlx_plus_sso_providers', $providers );
+	return apply_filters( 'diluxone_users_sso_providers', $providers );
 }

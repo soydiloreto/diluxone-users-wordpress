@@ -1,31 +1,32 @@
 <?php
 /**
- * Un código QR, en SVG, sin dependencias.
+ * A QR code, in SVG, with no dependencies.
  *
- * Hace falta para una sola cosa: mostrar la URI `otpauth://` para que la
- * persona la escanee con su aplicación autenticadora. Traer una librería
- * entera —o peor, mandarle la URI a un servicio externo que genere la
- * imagen, que es lo que hacen varios plugins y significa filtrar el secreto
- * del segundo factor a un tercero— es desproporcionado.
+ * It is needed for exactly one thing: showing the `otpauth://` URI so the
+ * person can scan it with their authenticator app. Pulling in a whole library
+ * — or worse, sending the URI to an external service that generates the
+ * image, which is what several plugins do and means leaking the second-factor
+ * secret to a third party — is out of all proportion.
  *
- * Alcance a propósito: modo byte, nivel de corrección L, versiones 1 a 10 y
- * máscara fija. Con eso entran hasta 174 caracteres, que es de sobra para una
- * URI de TOTP, y se evita la mitad del estándar. La máscara fija es legal: el
- * estándar exige que la información de formato diga cuál se usó, no que se
- * elija la mejor.
+ * The scope is deliberate: byte mode, correction level L, versions 1 to 10
+ * and a fixed mask. That fits up to 174 characters, which is plenty for a
+ * TOTP URI, and avoids half the standard. The fixed mask is legal: the
+ * standard requires the format information to say which one was used, not
+ * that the best one be chosen.
  *
- * Todo lo que sigue es ISO/IEC 18004. Las tablas son del estándar.
+ * Everything that follows is ISO/IEC 18004. The tables are the standard's.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/** Cuántos bytes de datos entran por versión, en modo byte y nivel L. */
 /**
+ * How many data bytes fit per version, in byte mode and level L.
+ *
  * @return array<int, int>
  */
-function users_dlx_plus_qr_capacity(): array {
+function diluxone_users_qr_capacity(): array {
 	return array(
 		1  => 17,
 		2  => 32,
@@ -41,13 +42,13 @@ function users_dlx_plus_qr_capacity(): array {
 }
 
 /**
- * Por versión: [ codewords de corrección por bloque, bloques grupo 1,
- * codewords de datos por bloque grupo 1, bloques grupo 2, codewords grupo 2 ].
- * Nivel L.
+ * Per version: [ error-correction codewords per block, group 1 blocks,
+ * data codewords per group 1 block, group 2 blocks, group 2 codewords ].
+ * Level L.
  *
  * @return array<int, array<int, int>>
  */
-function users_dlx_plus_qr_blocks(): array {
+function diluxone_users_qr_blocks(): array {
 	return array(
 		1  => array( 7, 1, 19, 0, 0 ),
 		2  => array( 10, 1, 34, 0, 0 ),
@@ -62,11 +63,12 @@ function users_dlx_plus_qr_blocks(): array {
 	);
 }
 
-/** Dónde van los patrones de alineación, por versión. */
 /**
+ * Where the alignment patterns go, per version.
+ *
  * @return array<int, array<int, int>>
  */
-function users_dlx_plus_qr_alignment(): array {
+function diluxone_users_qr_alignment(): array {
 	return array(
 		1  => array(),
 		2  => array( 6, 18 ),
@@ -82,14 +84,14 @@ function users_dlx_plus_qr_alignment(): array {
 }
 
 /**
- * La información de versión, para 7 en adelante.
+ * The version information, for 7 onwards.
  *
- * Son 18 bits calculados con un BCH que no hace falta implementar: son cuatro
- * valores y están en el estándar.
+ * They are 18 bits worked out with a BCH that there is no need to implement:
+ * there are four values and they are in the standard.
  *
  * @return array<int, string>
  */
-function users_dlx_plus_qr_version_info(): array {
+function diluxone_users_qr_version_info(): array {
 	return array(
 		7  => '000111110010010100',
 		8  => '001000010110111100',
@@ -99,19 +101,21 @@ function users_dlx_plus_qr_version_info(): array {
 }
 
 /**
- * La información de formato para nivel L y máscara 0.
+ * The format information for level L and mask 0.
  *
- * Uno solo, porque el nivel y la máscara son fijos. También sale del estándar.
+ * Only one, because the level and the mask are fixed. It also comes from the
+ * standard.
  */
-const USERS_DLX_PLUS_QR_FORMAT = '111011111000100';
+const DILUXONE_USERS_QR_FORMAT = '111011111000100';
 
 /* ── Reed-Solomon sobre GF(256) ────────────────────────────────────── */
 
-/** Las tablas de exponentes y logaritmos del campo, calculadas una vez. */
 /**
+ * The field's exponent and logarithm tables, worked out once.
+ *
  * @return array<int, array<int, int>>
  */
-function users_dlx_plus_qr_gf(): array {
+function diluxone_users_qr_gf(): array {
 	static $tables = null;
 
 	if ( null !== $tables ) {
@@ -127,7 +131,7 @@ function users_dlx_plus_qr_gf(): array {
 		$log[ $x ] = $i;
 		$x       <<= 1;
 
-		// El polinomio primitivo del QR es 0x11D.
+			// The QR primitive polynomial is 0x11D.
 		if ( $x & 0x100 ) {
 			$x ^= 0x11D;
 		}
@@ -142,12 +146,13 @@ function users_dlx_plus_qr_gf(): array {
 	return $tables;
 }
 
-/** El polinomio generador para n codewords de corrección. */
 /**
+ * The generator polynomial for n correction codewords.
+ *
  * @return array<int, int>
  */
-function users_dlx_plus_qr_generator( int $n ): array {
-	[ $exp, $log ] = users_dlx_plus_qr_gf();
+function diluxone_users_qr_generator( int $n ): array {
+	[ $exp, $log ] = diluxone_users_qr_gf();
 
 	$poly = array( 1 );
 
@@ -168,25 +173,21 @@ function users_dlx_plus_qr_generator( int $n ): array {
 	return $poly;
 }
 
-/** Los codewords de corrección de un bloque de datos. */
 /**
- * @return array<string, mixed>
- */
-/**
- * Los códigos de corrección de errores de un bloque de datos.
+ * The error-correction codewords of a data block.
  *
  * @param array<int, float|int> $data
  * @return array<int, float|int>
  */
-function users_dlx_plus_qr_ec( array $data, int $n ): array {
-	[ $exp, $log ] = users_dlx_plus_qr_gf();
+function diluxone_users_qr_ec( array $data, int $n ): array {
+	[ $exp, $log ] = diluxone_users_qr_gf();
 
-	$gen  = users_dlx_plus_qr_generator( $n );
+	$gen  = diluxone_users_qr_generator( $n );
 	$rest = array_merge( $data, array_fill( 0, $n, 0 ) );
 
-	$largo = count( $data );
+	$length = count( $data );
 
-	for ( $i = 0; $i < $largo; $i++ ) {
+	for ( $i = 0; $i < $length; $i++ ) {
 		$coef = $rest[ $i ];
 
 		if ( 0 === $coef ) {
@@ -206,17 +207,17 @@ function users_dlx_plus_qr_ec( array $data, int $n ): array {
 /* ── La matriz ─────────────────────────────────────────────────────── */
 
 /**
- * La matriz de módulos de un texto: true = negro.
+ * The module matrix of a text: true = black.
  *
  * @return array<int, array<int, bool>>
  */
-function users_dlx_plus_qr_matrix( string $text ): ?array {
+function diluxone_users_qr_matrix( string $text ): ?array {
 	$bytes  = array_map( 'ord', str_split( $text ) );
 	$length = count( $bytes );
 
 	$version = 0;
 
-	foreach ( users_dlx_plus_qr_capacity() as $v => $max ) {
+	foreach ( diluxone_users_qr_capacity() as $v => $max ) {
 		if ( $length <= $max ) {
 			$version = $v;
 			break;
@@ -227,12 +228,12 @@ function users_dlx_plus_qr_matrix( string $text ): ?array {
 		return null;
 	}
 
-	[ $ec_per_block, $g1_blocks, $g1_words, $g2_blocks, $g2_words ] = users_dlx_plus_qr_blocks()[ $version ];
+	[ $ec_per_block, $g1_blocks, $g1_words, $g2_blocks, $g2_words ] = diluxone_users_qr_blocks()[ $version ];
 
 	$total_data = $g1_blocks * $g1_words + $g2_blocks * $g2_words;
 
-	// El flujo de bits: modo (0100), longitud, los datos, y el relleno.
-	// El campo de longitud es de 8 bits hasta la versión 9 y de 16 desde la 10.
+	// The bit stream: mode (0100), length, the data, and the padding.
+	// The length field is 8 bits up to version 9 and 16 from version 10.
 	$bits  = '0100';
 	$bits .= str_pad( decbin( $length ), $version < 10 ? 8 : 16, '0', STR_PAD_LEFT );
 
@@ -240,27 +241,27 @@ function users_dlx_plus_qr_matrix( string $text ): ?array {
 		$bits .= str_pad( decbin( $byte ), 8, '0', STR_PAD_LEFT );
 	}
 
-	// Terminador de hasta cuatro ceros y relleno hasta byte completo.
+	// A terminator of up to four zeros and padding to a whole byte.
 	$bits .= str_repeat( '0', min( 4, $total_data * 8 - strlen( $bits ) ) );
 	$bits .= str_repeat( '0', ( 8 - strlen( $bits ) % 8 ) % 8 );
 
-	// Y después, los dos bytes de relleno alternados que manda el estándar.
+	// And after that, the two alternating padding bytes the standard prescribes.
 	$padding = array( 0xEC, 0x11 );
 	$i       = 0;
 
-	$objetivo = $total_data * 8;
-	$puestos  = strlen( $bits );
+	$target = $total_data * 8;
+	$placed = strlen( $bits );
 
-	while ( $puestos < $objetivo ) {
-		$bits    .= str_pad( decbin( $padding[ $i % 2 ] ), 8, '0', STR_PAD_LEFT );
-		$puestos += 8;
+	while ( $placed < $target ) {
+		$bits   .= str_pad( decbin( $padding[ $i % 2 ] ), 8, '0', STR_PAD_LEFT );
+		$placed += 8;
 		++$i;
 	}
 
 	$codewords = array_map( 'bindec', str_split( $bits, 8 ) );
 
-	// Se parte en bloques, se calcula la corrección de cada uno, y después se
-	// intercalan: primero el codeword 0 de cada bloque, después el 1, etc.
+	// It is split into blocks, the correction of each one is worked out, and
+	// then they are interleaved: first codeword 0 of every block, then 1, etc.
 	$data_blocks = array();
 	$ec_blocks   = array();
 	$offset      = 0;
@@ -270,15 +271,15 @@ function users_dlx_plus_qr_matrix( string $text ): ?array {
 			$block         = array_slice( $codewords, $offset, $words );
 			$offset       += $words;
 			$data_blocks[] = $block;
-			$ec_blocks[]   = users_dlx_plus_qr_ec( $block, $ec_per_block );
+			$ec_blocks[]   = diluxone_users_qr_ec( $block, $ec_per_block );
 		}
 	}
 
 	$stream = array();
 
-	$mas_largo = max( $g1_words, $g2_words );
+	$longest = max( $g1_words, $g2_words );
 
-	for ( $i = 0; $i < $mas_largo; $i++ ) {
+	for ( $i = 0; $i < $longest; $i++ ) {
 		foreach ( $data_blocks as $block ) {
 			if ( isset( $block[ $i ] ) ) {
 				$stream[] = $block[ $i ];
@@ -300,14 +301,15 @@ function users_dlx_plus_qr_matrix( string $text ): ?array {
 		$final .= str_pad( decbin( (int) $codeword ), 8, '0', STR_PAD_LEFT );
 	}
 
-	return users_dlx_plus_qr_place( (int) $version, $final );
+	return diluxone_users_qr_place( (int) $version, $final );
 }
 
-/** Dibuja la matriz: patrones fijos, datos y máscara. */
 /**
+ * Draws the matrix: fixed patterns, data and mask.
+ *
  * @return array<int, array<int, bool>>
  */
-function users_dlx_plus_qr_place( int $version, string $bits ): array {
+function diluxone_users_qr_place( int $version, string $bits ): array {
 	$size = 17 + 4 * $version;
 
 	$matrix   = array_fill( 0, $size, array_fill( 0, $size, false ) );
@@ -318,7 +320,7 @@ function users_dlx_plus_qr_place( int $version, string $bits ): array {
 		$reserved[ $r ][ $c ] = true;
 	};
 
-	// Los tres cuadrados de las esquinas, con su separador.
+	// The three corner squares, with their separator.
 	foreach ( array( array( 0, 0 ), array( 0, $size - 7 ), array( $size - 7, 0 ) ) as [$row, $col] ) {
 		for ( $r = -1; $r <= 7; $r++ ) {
 			for ( $c = -1; $c <= 7; $c++ ) {
@@ -326,28 +328,28 @@ function users_dlx_plus_qr_place( int $version, string $bits ): array {
 					continue;
 				}
 
-				// Fuera del cuadrado de 7×7 es el separador, que va siempre en
-				// blanco: sin eso, las esquinas del separador salían negras y
-				// ningún lector encontraba el patrón.
-				$dentro = $r >= 0 && $r <= 6 && $c >= 0 && $c <= 6;
+				// Outside the 7×7 square it is the separator, which is always
+				// white: without that, the separator corners came out black and
+				// no reader found the pattern.
+				$inside = $r >= 0 && $r <= 6 && $c >= 0 && $c <= 6;
 				$borde  = 0 === $r || 6 === $r || 0 === $c || 6 === $c;
-				$centro = $r >= 2 && $r <= 4 && $c >= 2 && $c <= 4;
+				$centre = $r >= 2 && $r <= 4 && $c >= 2 && $c <= 4;
 
-				$set( $row + $r, $col + $c, $dentro && ( $borde || $centro ) );
+				$set( $row + $r, $col + $c, $inside && ( $borde || $centre ) );
 			}
 		}
 	}
 
-	// Los patrones de alineación, salvo donde chocan con los de las esquinas.
-	$centres = users_dlx_plus_qr_alignment()[ $version ];
+	// The alignment patterns, except where they clash with the corner ones.
+	$centres = diluxone_users_qr_alignment()[ $version ];
 
 	foreach ( $centres as $row ) {
 		foreach ( $centres as $col ) {
-			$esquina = ( 6 === $row && 6 === $col )
+			$corner = ( 6 === $row && 6 === $col )
 				|| ( 6 === $row && $col === $size - 7 )
 				|| ( $row === $size - 7 && 6 === $col );
 
-			if ( $esquina ) {
+			if ( $corner ) {
 				continue;
 			}
 
@@ -359,17 +361,17 @@ function users_dlx_plus_qr_place( int $version, string $bits ): array {
 		}
 	}
 
-	// Las dos líneas punteadas.
+	// The two dotted lines.
 	for ( $i = 8; $i < $size - 8; $i++ ) {
 		$set( 6, $i, 0 === $i % 2 );
 		$set( $i, 6, 0 === $i % 2 );
 	}
 
-	// La información de formato va en dos copias. El bit 0 es el menos
-	// significativo, y cada copia lo reparte distinto: una baja por la columna
-	// 8 y la otra corre por la fila 8. Las dos posiciones salen del estándar y
-	// no se pueden deducir; están escritas tal cual.
-	$format = USERS_DLX_PLUS_QR_FORMAT;
+	// The format information goes in two copies. Bit 0 is the least
+	// significant, and each copy spreads it differently: one runs down column 8
+	// and the other along row 8. Both sets of positions come from the standard
+	// and cannot be derived; they are written out as they are.
+	$format = DILUXONE_USERS_QR_FORMAT;
 
 	for ( $i = 0; $i < 15; $i++ ) {
 		$bit = '1' === $format[ 14 - $i ];
@@ -393,13 +395,13 @@ function users_dlx_plus_qr_place( int $version, string $bits ): array {
 		}
 	}
 
-	// El módulo que siempre es negro. Va después de la información de formato
-	// porque cae justo encima de uno de sus lugares.
+	// The module that is always black. It goes after the format information
+	// because it falls right on top of one of its places.
 	$set( $size - 8, 8, true );
 
-	// La información de versión, de la 7 en adelante.
+	// The version information, from version 7 onwards.
 	if ( $version >= 7 ) {
-		$info = users_dlx_plus_qr_version_info()[ $version ];
+		$info = diluxone_users_qr_version_info()[ $version ];
 
 		for ( $i = 0; $i < 18; $i++ ) {
 			$bit = '1' === $info[ 17 - $i ];
@@ -411,8 +413,8 @@ function users_dlx_plus_qr_place( int $version, string $bits ): array {
 		}
 	}
 
-	// Y ahora los datos: en zigzag de a dos columnas, de abajo a la derecha
-	// hacia arriba, salteando la columna 6 que es la línea punteada.
+	// And now the data: zigzagging two columns at a time, from bottom right
+	// upwards, skipping column 6, which is the dotted line.
 	$index = 0;
 	$total = strlen( $bits );
 	$up    = true;
@@ -433,7 +435,7 @@ function users_dlx_plus_qr_place( int $version, string $bits ): array {
 				$bit = $index < $total && '1' === $bits[ $index ];
 				++$index;
 
-				// Máscara 0: se invierte donde (fila + columna) es par.
+					// Mask 0: it is inverted where (row + column) is even.
 				$matrix[ $row ][ $c ] = 0 === ( $row + $c ) % 2 ? ! $bit : $bit;
 			}
 		}
@@ -445,20 +447,20 @@ function users_dlx_plus_qr_place( int $version, string $bits ): array {
 }
 
 /**
- * El QR de un texto, como SVG listo para imprimir.
+ * The QR of a text, as an SVG ready to print.
  *
- * @param int $size Lado en píxeles.
+ * @param int $size Side in pixels.
  */
-function users_dlx_plus_qr_svg( string $text, int $size = 220 ): string {
-	$matrix = users_dlx_plus_qr_matrix( $text );
+function diluxone_users_qr_svg( string $text, int $size = 220 ): string {
+	$matrix = diluxone_users_qr_matrix( $text );
 
 	if ( null === $matrix ) {
 		return '';
 	}
 
 	$modules = count( $matrix );
-	// Cuatro módulos de margen: el estándar los pide y sin ellos hay lectores
-	// que no encuentran el código.
+	// Four modules of margin: the standard asks for them and without them some
+	// readers do not find the code.
 	$quiet = 4;
 	$side  = $modules + $quiet * 2;
 

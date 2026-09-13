@@ -1,141 +1,142 @@
 <?php
 /**
- * La pantalla de herramientas: lo poco que se puede hacer a mano.
+ * The tools screen: the little that can be done by hand.
  *
- * Cada cosa de acá existe porque alguna vez hubo que hacerla por SSH o con un
- * script suelto. Nada de esto es una función del plugin: son los cinco
- * botones que aparecen cuando algo salió mal y hay alguien esperando del otro
- * lado.
+ * Everything here exists because at some point it had to be done over SSH or
+ * with a loose script. None of it is a feature of the plugin: they are the
+ * five buttons that show up when something went wrong and somebody is waiting
+ * on the other side.
  *
- * Lo que NO está, a propósito: leer el código de dos pasos de una persona. El
- * código se guarda hasheado, así que «verlo» sería romperlo a fuerza bruta, y
- * un botón así le da a cualquier administrador el segundo factor de cualquier
- * cuenta —que es exactamente lo que el segundo factor tiene que impedir—. En
- * su lugar se le manda uno nuevo.
+ * What is deliberately NOT here: reading somebody's two-step code. The code
+ * is stored hashed, so "seeing" it would mean brute-forcing it, and a button
+ * like that hands any administrator the second factor of any account — which
+ * is exactly what a second factor is meant to prevent. A new one is sent
+ * instead.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/** El option donde se guarda qué pasó con la última herramienta que se usó. */
-const USERS_DLX_PLUS_TOOL_RESULT = 'users_dlx_plus_tool_result';
+/** The option storing what happened with the last tool that was used. */
+const DILUXONE_USERS_TOOL_RESULT = 'diluxone_users_tool_result';
 
 /**
- * Deja anotado el resultado para después de la redirección.
+ * Records the result for after the redirect.
  *
- * Nunca vuelve: redirige y corta. Va anotado como `never` en el docblock y no
- * en la firma porque el plugin todavía soporta PHP 8.0, donde ese tipo nativo
- * no existe.
+ * It never returns: it redirects and stops. It is annotated as `never` in the
+ * docblock and not in the signature because the plugin still supports PHP
+ * 8.0, where that native type does not exist.
  *
- * @param string $text  Qué pasó.
- * @param string $type  'success' o 'error'.
+ * @param string $text What happened.
+ * @param string $type 'success' or 'error'.
  * @return never
  */
-function users_dlx_plus_tool_done( string $text, string $type = 'success' ): void {
-	set_transient( USERS_DLX_PLUS_TOOL_RESULT . '_' . get_current_user_id(), array( $text, $type ), 60 );
+function diluxone_users_tool_done( string $text, string $type = 'success' ): void {
+	set_transient( DILUXONE_USERS_TOOL_RESULT . '_' . get_current_user_id(), array( $text, $type ), 60 );
 
-	wp_safe_redirect( users_dlx_plus_admin_url( 'users-dlx-plus-tools' ) );
+	wp_safe_redirect( diluxone_users_admin_url( 'diluxone-users-tools' ) );
 	exit;
 }
 
 /**
- * Todo lo que se dispara desde esta pantalla entra por acá.
+ * Everything fired from this screen comes in through here.
  *
- * Un único `admin_post`, un único nonce y una única comprobación de permiso:
- * repartido en cinco endpoints, tarde o temprano uno se queda sin alguna de
- * las tres.
+ * A single `admin_post`, a single nonce and a single capability check: spread
+ * over five endpoints, sooner or later one of them ends up missing one of the
+ * three.
  *
  * @return void
  */
-function users_dlx_plus_tools_action(): void {
+function diluxone_users_tools_action(): void {
 	if ( ! current_user_can( 'manage_options' ) ) {
-		wp_die( esc_html__( 'You are not allowed to do this.', 'users-dlx-plus' ) );
+		wp_die( esc_html__( 'You are not allowed to do this.', 'diluxone-users' ) );
 	}
 
-	check_admin_referer( 'users_dlx_plus_tools' );
+	check_admin_referer( 'diluxone_users_tools' );
 
 	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verificado arriba.
 	$tool = isset( $_POST['tool'] ) ? sanitize_key( wp_unslash( $_POST['tool'] ) ) : '';
 
-	// Un mapa y no un switch: cada herramienta termina en una redirección que
-	// corta la ejecución, así que un `break` detrás de cada una sería código
-	// muerto y un comentario de fall-through sería mentira.
-	$herramientas = array(
-		'flush'  => 'users_dlx_plus_tool_flush',
-		'code'   => 'users_dlx_plus_tool_send_code',
-		'close'  => 'users_dlx_plus_tool_close_sessions',
-		'export' => 'users_dlx_plus_tool_export',
-		'import' => 'users_dlx_plus_tool_import',
+	// A map and not a switch: every tool ends in a redirect that stops
+	// execution, so a `break` behind each one would be dead code and a
+	// fall-through comment would be a lie.
+	$tools = array(
+		'flush'  => 'diluxone_users_tool_flush',
+		'code'   => 'diluxone_users_tool_send_code',
+		'close'  => 'diluxone_users_tool_close_sessions',
+		'export' => 'diluxone_users_tool_export',
+		'import' => 'diluxone_users_tool_import',
 	);
 
-	if ( ! isset( $herramientas[ $tool ] ) ) {
-		users_dlx_plus_tool_done( __( 'Nothing to do.', 'users-dlx-plus' ), 'error' );
+	if ( ! isset( $tools[ $tool ] ) ) {
+		diluxone_users_tool_done( __( 'Nothing to do.', 'diluxone-users' ), 'error' );
 	}
 
-	$herramientas[ $tool ]();
+	$tools[ $tool ]();
 }
 
 /**
- * Regraba las reglas de reescritura.
+ * Rewrites the rewrite rules.
  *
- * La regla en sí se registra en `init` en cada pedido; lo que se pierde es la
- * copia guardada, y eso es lo que se rehace acá.
+ * The rule itself registers on `init` on every request; what gets lost is the
+ * stored copy, and that is what is rebuilt here.
  *
  * @return never
  */
-function users_dlx_plus_tool_flush(): void {
+function diluxone_users_tool_flush(): void {
 	flush_rewrite_rules( false );
-	update_option( 'users_dlx_plus_rewrite_version', USERS_DLX_PLUS_VERSION );
+	update_option( 'diluxone_users_rewrite_version', DILUXONE_USERS_VERSION );
 
-	users_dlx_plus_tool_done( __( 'Rewrite rules rebuilt.', 'users-dlx-plus' ) );
+	diluxone_users_tool_done( __( 'Rewrite rules rebuilt.', 'diluxone-users' ) );
 }
 
-add_action( 'admin_post_users_dlx_plus_tools', 'users_dlx_plus_tools_action' );
+add_action( 'admin_post_diluxone_users_tools', 'diluxone_users_tools_action' );
 
 /**
- * Le manda a una persona un código de dos pasos nuevo.
+ * Sends a person a fresh two-step code.
  *
- * Se dice lo mismo exista o no la cuenta: esta pantalla es para el
- * administrador, pero el hábito de no confirmar quién está registrado se
- * mantiene igual.
+ * The same thing is said whether the account exists or not: this screen is
+ * for the administrator, but the habit of not confirming who is registered is
+ * kept all the same.
  *
  * @return never
  */
-function users_dlx_plus_tool_send_code(): void {
-	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verificado en users_dlx_plus_tools_action().
+function diluxone_users_tool_send_code(): void {
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verificado en diluxone_users_tools_action().
 	$typed = sanitize_email( wp_unslash( $_POST['email'] ?? '' ) );
 	$user  = '' !== $typed ? get_user_by( 'email', $typed ) : false;
 
 	if ( ! $user instanceof WP_User ) {
-		users_dlx_plus_tool_done( __( 'No account with that e-mail address.', 'users-dlx-plus' ), 'error' );
+		diluxone_users_tool_done( __( 'No account with that e-mail address.', 'diluxone-users' ), 'error' );
 	}
 
-	$ok = users_dlx_plus_2fa_email_send( $user->ID );
+	$ok = diluxone_users_2fa_email_send( $user->ID );
 
-	users_dlx_plus_tool_done(
+	diluxone_users_tool_done(
 		$ok
 			? sprintf(
 				/* translators: %s: e-mail address */
-				__( 'A fresh code is on its way to %s.', 'users-dlx-plus' ),
+				__( 'A fresh code is on its way to %s.', 'diluxone-users' ),
 				$user->user_email
 			)
-			: __( 'The code could not be sent. Check outgoing mail in Status.', 'users-dlx-plus' ),
+			: __( 'The code could not be sent. Check outgoing mail in Status.', 'diluxone-users' ),
 		$ok ? 'success' : 'error'
 	);
 }
 
 /**
- * Cierra sesiones: las de una persona, o las de todo el mundo.
+ * Closes sessions: one person's, or everybody's.
  *
- * Lo segundo deja afuera a quien lo apretó, y está bien que así sea: si se
- * usa es porque se sospecha que hay una sesión ajena abierta, y dejar la
- * propia viva por comodidad sería dejar abierta justamente la que importa.
+ * The second one leaves out whoever pressed it, and rightly so: if it is used
+ * it is because somebody else's session is suspected to be open, and keeping
+ * your own alive for convenience would be leaving open precisely the one that
+ * matters.
  *
  * @return never
  */
-function users_dlx_plus_tool_close_sessions(): void {
-	// phpcs:disable WordPress.Security.NonceVerification.Missing -- verificado en users_dlx_plus_tools_action().
+function diluxone_users_tool_close_sessions(): void {
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- verificado en diluxone_users_tools_action().
 	$scope = isset( $_POST['scope'] ) ? sanitize_key( wp_unslash( $_POST['scope'] ) ) : 'one';
 	$typed = sanitize_email( wp_unslash( $_POST['close_email'] ?? '' ) );
 	// phpcs:enable
@@ -143,141 +144,141 @@ function users_dlx_plus_tool_close_sessions(): void {
 	if ( 'all' === $scope ) {
 		WP_Session_Tokens::destroy_all_for_all_users();
 
-		users_dlx_plus_tool_done( __( 'Every session on the site is closed. Everyone signs in again, you included.', 'users-dlx-plus' ) );
+		diluxone_users_tool_done( __( 'Every session on the site is closed. Everyone signs in again, you included.', 'diluxone-users' ) );
 	}
 
 	$user = '' !== $typed ? get_user_by( 'email', $typed ) : false;
 
 	if ( ! $user instanceof WP_User ) {
-		users_dlx_plus_tool_done( __( 'No account with that e-mail address.', 'users-dlx-plus' ), 'error' );
+		diluxone_users_tool_done( __( 'No account with that e-mail address.', 'diluxone-users' ), 'error' );
 	}
 
 	WP_Session_Tokens::get_instance( $user->ID )->destroy_all();
 
-	users_dlx_plus_tool_done(
+	diluxone_users_tool_done(
 		sprintf(
 			/* translators: %s: e-mail address */
-			__( 'Every session for %s is closed.', 'users-dlx-plus' ),
+			__( 'Every session for %s is closed.', 'diluxone-users' ),
 			$user->user_email
 		)
 	);
 }
 
 /**
- * Qué se lleva un export.
+ * What an export takes with it.
  *
- * Los ajustes y los campos: lo que define cómo se comporta el plugin. Ni una
- * credencial de red social —eso es un secreto, y un JSON que se manda por
- * correo no es lugar para uno— ni nada que pertenezca a una persona.
+ * The settings and the fields: what defines how the plugin behaves. Not one
+ * social-network credential — that is a secret, and a JSON file sent by
+ * e-mail is no place for one — nor anything belonging to a person.
  *
  * @return array<string, mixed>
  */
-function users_dlx_plus_tool_settings(): array {
+function diluxone_users_tool_settings(): array {
 	$out = array();
 
-	foreach ( array_keys( users_dlx_plus_option_defaults() ) as $key ) {
-		if ( 'users_dlx_plus_sso' === $key ) {
+	foreach ( array_keys( diluxone_users_option_defaults() ) as $key ) {
+		if ( 'diluxone_users_sso' === $key ) {
 			continue;
 		}
 
-		$out[ $key ] = users_dlx_plus_option( $key );
+		$out[ $key ] = diluxone_users_option( $key );
 	}
 
-	$out['users_dlx_plus_fields'] = get_option( 'users_dlx_plus_fields', array() );
+	$out['diluxone_users_fields'] = get_option( 'diluxone_users_fields', array() );
 
 	return $out;
 }
 
 /**
- * Baja los ajustes como un JSON.
+ * Downloads the settings as JSON.
  *
  * @return never
  */
-function users_dlx_plus_tool_export(): void {
+function diluxone_users_tool_export(): void {
 	$payload = array(
-		'plugin'   => 'users-dlx-plus',
-		'version'  => USERS_DLX_PLUS_VERSION,
+		'plugin'   => 'diluxone-users',
+		'version'  => DILUXONE_USERS_VERSION,
 		'site'     => home_url(),
 		'exported' => gmdate( 'c' ),
-		'settings' => users_dlx_plus_tool_settings(),
+		'settings' => diluxone_users_tool_settings(),
 	);
 
-	$nombre = 'users-plus-' . gmdate( 'Y-m-d' ) . '.json';
+	$name = 'users-plus-' . gmdate( 'Y-m-d' ) . '.json';
 
 	nocache_headers();
 	header( 'Content-Type: application/json; charset=utf-8' );
-	header( 'Content-Disposition: attachment; filename=' . $nombre );
+	header( 'Content-Disposition: attachment; filename=' . $name );
 
 	echo wp_json_encode( $payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 	exit;
 }
 
 /**
- * Mete de vuelta un JSON exportado.
+ * Puts an exported JSON file back in.
  *
- * Sólo se aceptan las claves que el plugin conoce. Un archivo con basura
- * adentro —o de otro plugin, o tocado a mano— no puede escribir options que
- * no sean suyas.
+ * Only the keys the plugin knows are accepted. A file with rubbish inside —
+ * or from another plugin, or edited by hand — cannot write options that are
+ * not its own.
  *
  * @return never
  */
-function users_dlx_plus_tool_import(): void {
-	// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- verificado arriba; el contenido se valida como JSON acá abajo.
-	$subido = isset( $_FILES['file']['tmp_name'] ) ? sanitize_text_field( wp_unslash( $_FILES['file']['tmp_name'] ) ) : '';
+function diluxone_users_tool_import(): void {
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- verified above; the content is validated as JSON below.
+	$uploaded = isset( $_FILES['file']['tmp_name'] ) ? sanitize_text_field( wp_unslash( $_FILES['file']['tmp_name'] ) ) : '';
 
-	if ( '' === $subido || ! is_uploaded_file( $subido ) ) {
-		users_dlx_plus_tool_done( __( 'No file uploaded.', 'users-dlx-plus' ), 'error' );
+	if ( '' === $uploaded || ! is_uploaded_file( $uploaded ) ) {
+		diluxone_users_tool_done( __( 'No file uploaded.', 'diluxone-users' ), 'error' );
 	}
 
-	$raw  = (string) file_get_contents( $subido ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- es un archivo local recién subido, no una URL.
+	$raw  = (string) file_get_contents( $uploaded ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- es un archivo local recién subido, no una URL.
 	$json = json_decode( $raw, true );
 
 	if ( ! is_array( $json ) || ! isset( $json['settings'] ) || ! is_array( $json['settings'] ) ) {
-		users_dlx_plus_tool_done( __( 'That file is not a Users+ export.', 'users-dlx-plus' ), 'error' );
+		diluxone_users_tool_done( __( 'That file is not a DiluxOne Users+ export.', 'diluxone-users' ), 'error' );
 	}
 
-	$conocidas = array_keys( users_dlx_plus_option_defaults() );
-	$escritas  = 0;
+	$known   = array_keys( diluxone_users_option_defaults() );
+	$written = 0;
 
 	foreach ( $json['settings'] as $key => $value ) {
-		if ( 'users_dlx_plus_fields' === $key && is_array( $value ) ) {
-			update_option( 'users_dlx_plus_fields', $value );
-			++$escritas;
+		if ( 'diluxone_users_fields' === $key && is_array( $value ) ) {
+			update_option( 'diluxone_users_fields', $value );
+			++$written;
 			continue;
 		}
 
-		if ( ! in_array( $key, $conocidas, true ) || 'users_dlx_plus_sso' === $key ) {
+		if ( ! in_array( $key, $known, true ) || 'diluxone_users_sso' === $key ) {
 			continue;
 		}
 
-		users_dlx_plus_save_options( array( $key => $value ) );
-		++$escritas;
+		diluxone_users_save_options( array( $key => $value ) );
+		++$written;
 	}
 
-	users_dlx_plus_tool_done(
+	diluxone_users_tool_done(
 		sprintf(
 			/* translators: %d: number of settings written */
-			_n( '%d setting restored.', '%d settings restored.', $escritas, 'users-dlx-plus' ),
-			$escritas
+			_n( '%d setting restored.', '%d settings restored.', $written, 'diluxone-users' ),
+			$written
 		)
 	);
 }
 
 /**
- * Una herramienta: título, explicación y su propio formulario.
+ * One tool: heading, explanation and a form of its own.
  *
- * @param string   $title Cómo se llama.
- * @param string   $text  Qué hace y cuándo se usa.
- * @param callable $form  Lo que va adentro del formulario.
- * @param bool     $files Si el formulario sube un archivo.
+ * @param string   $title What it is called.
+ * @param string   $text  What it does and when it is used.
+ * @param callable $form  What goes inside the form.
+ * @param bool     $files Whether the form uploads a file.
  * @return void
  */
-function users_dlx_plus_tool_box( string $title, string $text, callable $form, bool $files = false, string $action = 'users_dlx_plus_tools' ): void {
+function diluxone_users_tool_box( string $title, string $text, callable $form, bool $files = false, string $action = 'diluxone_users_tools' ): void {
 	if ( '' !== $title ) {
 		printf( '<h2>%s</h2>', esc_html( $title ) );
 	}
 
-	users_dlx_plus_intro( $text );
+	diluxone_users_intro( $text );
 
 	printf(
 		'<form method="post" action="%s"%s>',
@@ -294,91 +295,91 @@ function users_dlx_plus_tool_box( string $title, string $text, callable $form, b
 }
 
 /** Screen tools. */
-function users_dlx_plus_screen_tools(): void {
-	users_dlx_plus_screen_open( __( 'Tools', 'users-dlx-plus' ) );
+function diluxone_users_screen_tools(): void {
+	diluxone_users_screen_open( __( 'Tools', 'diluxone-users' ) );
 
-	$result = get_transient( USERS_DLX_PLUS_TOOL_RESULT . '_' . get_current_user_id() );
+	$result = get_transient( DILUXONE_USERS_TOOL_RESULT . '_' . get_current_user_id() );
 
 	if ( is_array( $result ) ) {
-		delete_transient( USERS_DLX_PLUS_TOOL_RESULT . '_' . get_current_user_id() );
-		users_dlx_plus_notice( (string) $result[0], (string) $result[1] );
+		delete_transient( DILUXONE_USERS_TOOL_RESULT . '_' . get_current_user_id() );
+		diluxone_users_notice( (string) $result[0], (string) $result[1] );
 	}
 
-	users_dlx_plus_intro( __( 'Five buttons for when something went wrong and somebody is waiting on the other side.', 'users-dlx-plus' ) );
+	diluxone_users_intro( __( 'Five buttons for when something went wrong and somebody is waiting on the other side.', 'diluxone-users' ) );
 
-	users_dlx_plus_tool_box(
-		__( 'Rebuild the rewrite rules', 'users-dlx-plus' ),
-		__( 'Use this when a section of the account area returns a 404. The account area routes its sections through rewrite rules, and those go stale when permalinks change or another plugin rewrites them.', 'users-dlx-plus' ),
+	diluxone_users_tool_box(
+		__( 'Rebuild the rewrite rules', 'diluxone-users' ),
+		__( 'Use this when a section of the account area returns a 404. The account area routes its sections through rewrite rules, and those go stale when permalinks change or another plugin rewrites them.', 'diluxone-users' ),
 		static function (): void {
 			echo '<input type="hidden" name="tool" value="flush">';
-			submit_button( __( 'Rebuild', 'users-dlx-plus' ), 'secondary', 'submit', false );
+			submit_button( __( 'Rebuild', 'diluxone-users' ), 'secondary', 'submit', false );
 		}
 	);
 
-	users_dlx_plus_tool_box(
-		__( 'Send a test message', 'users-dlx-plus' ),
-		__( 'It goes to your own address. If it does not arrive, the sign-in links and the second-step codes are not arriving either.', 'users-dlx-plus' ),
+	diluxone_users_tool_box(
+		__( 'Send a test message', 'diluxone-users' ),
+		__( 'It goes to your own address. If it does not arrive, the sign-in links and the second-step codes are not arriving either.', 'diluxone-users' ),
 		static function (): void {
-			submit_button( __( 'Send it', 'users-dlx-plus' ), 'secondary', 'submit', false );
+			submit_button( __( 'Send it', 'diluxone-users' ), 'secondary', 'submit', false );
 		},
 		false,
-		'users_dlx_plus_mail_test'
+		'diluxone_users_mail_test'
 	);
 
-	users_dlx_plus_tool_box(
-		__( 'Send someone a fresh code', 'users-dlx-plus' ),
-		__( 'For when a person says the second-step code never arrived. It sends a new one and voids the previous one. You never get to see it — the code is stored hashed, which is the point.', 'users-dlx-plus' ),
+	diluxone_users_tool_box(
+		__( 'Send someone a fresh code', 'diluxone-users' ),
+		__( 'For when a person says the second-step code never arrived. It sends a new one and voids the previous one. You never get to see it — the code is stored hashed, which is the point.', 'diluxone-users' ),
 		static function (): void {
 			echo '<input type="hidden" name="tool" value="code">';
 			printf(
 				'<input type="email" name="email" class="regular-text" required placeholder="%s"> ',
-				esc_attr__( 'their e-mail address', 'users-dlx-plus' )
+				esc_attr__( 'their e-mail address', 'diluxone-users' )
 			);
-			submit_button( __( 'Send the code', 'users-dlx-plus' ), 'secondary', 'submit', false );
+			submit_button( __( 'Send the code', 'diluxone-users' ), 'secondary', 'submit', false );
 		}
 	);
 
-	users_dlx_plus_tool_box(
-		__( 'Close sessions', 'users-dlx-plus' ),
-		__( 'Closing every session on the site signs you out too. That is on purpose: if you are doing this, the session you are least sure about might be your own.', 'users-dlx-plus' ),
+	diluxone_users_tool_box(
+		__( 'Close sessions', 'diluxone-users' ),
+		__( 'Closing every session on the site signs you out too. That is on purpose: if you are doing this, the session you are least sure about might be your own.', 'diluxone-users' ),
 		static function (): void {
 			echo '<input type="hidden" name="tool" value="close">';
 			echo '<p><label><input type="radio" name="scope" value="one" checked> ';
-			esc_html_e( 'Just this person:', 'users-dlx-plus' );
+			esc_html_e( 'Just this person:', 'diluxone-users' );
 			printf(
 				' <input type="email" name="close_email" class="regular-text" placeholder="%s"></label></p>',
-				esc_attr__( 'their e-mail address', 'users-dlx-plus' )
+				esc_attr__( 'their e-mail address', 'diluxone-users' )
 			);
 			echo '<p><label><input type="radio" name="scope" value="all"> ';
-			esc_html_e( 'Everyone on the site, me included', 'users-dlx-plus' );
+			esc_html_e( 'Everyone on the site, me included', 'diluxone-users' );
 			echo '</label></p>';
-			submit_button( __( 'Close them', 'users-dlx-plus' ), 'delete', 'submit', false );
+			submit_button( __( 'Close them', 'diluxone-users' ), 'delete', 'submit', false );
 		}
 	);
 
-	users_dlx_plus_tool_box(
-		__( 'Settings as a file', 'users-dlx-plus' ),
-		__( 'Take the settings and the user fields from one site to another — staging to production, or a site you set up once and want to repeat. Social login credentials are deliberately left out: those are secrets, and a JSON file that travels by e-mail is no place for one.', 'users-dlx-plus' ),
+	diluxone_users_tool_box(
+		__( 'Settings as a file', 'diluxone-users' ),
+		__( 'Take the settings and the user fields from one site to another — staging to production, or a site you set up once and want to repeat. Social login credentials are deliberately left out: those are secrets, and a JSON file that travels by e-mail is no place for one.', 'diluxone-users' ),
 		static function (): void {
 			echo '<p>';
 			echo '<input type="hidden" name="tool" value="export">';
-			submit_button( __( 'Download them', 'users-dlx-plus' ), 'secondary', 'submit', false );
+			submit_button( __( 'Download them', 'diluxone-users' ), 'secondary', 'submit', false );
 			echo '</p>';
 		}
 	);
 
-	users_dlx_plus_tool_box(
+	diluxone_users_tool_box(
 		'',
-		__( 'Restoring overwrites what is set right now. Only keys this plugin knows are read, so a file from somewhere else cannot write settings that are not ours.', 'users-dlx-plus' ),
+		__( 'Restoring overwrites what is set right now. Only keys this plugin knows are read, so a file from somewhere else cannot write settings that are not ours.', 'diluxone-users' ),
 		static function (): void {
 			echo '<p>';
 			echo '<input type="hidden" name="tool" value="import">';
 			echo '<input type="file" name="file" accept="application/json,.json" required> ';
-			submit_button( __( 'Restore them', 'users-dlx-plus' ), 'secondary', 'submit', false );
+			submit_button( __( 'Restore them', 'diluxone-users' ), 'secondary', 'submit', false );
 			echo '</p>';
 		},
 		true
 	);
 
-	users_dlx_plus_screen_close();
+	diluxone_users_screen_close();
 }

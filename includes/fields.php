@@ -1,45 +1,46 @@
 <?php
 /**
- * Los campos de usuario: qué se le pide a una persona además del correo.
+ * User fields: what a person is asked for besides their e-mail.
  *
- * La definición vive en una option (`users_dlx_plus_fields`) y se edita desde el admin;
- * el valor de cada persona vive en su user meta, con la clave del campo. No hay
- * tabla propia: son datos de usuario y WordPress ya tiene dónde ponerlos.
+ * The definition lives in an option (`diluxone_users_fields`) and is edited
+ * from the admin; each person's value lives in their user meta, under the
+ * field key. There is no table of our own: this is user data and WordPress
+ * already has somewhere to put it.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Los tipos de campo que entiende el plugin.
+ * The field types the plugin understands.
  *
- * @return array<string, string> tipo => nombre para mostrar.
+ * @return array<string, string> type => name to display.
  */
-function users_dlx_plus_field_types(): array {
+function diluxone_users_field_types(): array {
 	return array(
-		'text'     => __( 'Text', 'users-dlx-plus' ),
-		'textarea' => __( 'Long text', 'users-dlx-plus' ),
-		'email'    => __( 'Email address', 'users-dlx-plus' ),
-		'phone'    => __( 'Phone with country code', 'users-dlx-plus' ),
-		'country'  => __( 'Country', 'users-dlx-plus' ),
-		'url'      => __( 'Web address', 'users-dlx-plus' ),
-		'number'   => __( 'Number', 'users-dlx-plus' ),
-		'date'     => __( 'Date', 'users-dlx-plus' ),
-		'select'   => __( 'Fixed list', 'users-dlx-plus' ),
-		'datalist' => __( 'Text with suggestions', 'users-dlx-plus' ),
-		'checkbox' => __( 'Yes / no', 'users-dlx-plus' ),
+		'text'     => __( 'Text', 'diluxone-users' ),
+		'textarea' => __( 'Long text', 'diluxone-users' ),
+		'email'    => __( 'Email address', 'diluxone-users' ),
+		'phone'    => __( 'Phone with country code', 'diluxone-users' ),
+		'country'  => __( 'Country', 'diluxone-users' ),
+		'url'      => __( 'Web address', 'diluxone-users' ),
+		'number'   => __( 'Number', 'diluxone-users' ),
+		'date'     => __( 'Date', 'diluxone-users' ),
+		'select'   => __( 'Fixed list', 'diluxone-users' ),
+		'datalist' => __( 'Text with suggestions', 'diluxone-users' ),
+		'checkbox' => __( 'Yes / no', 'diluxone-users' ),
 	);
 }
 
 /**
- * ¿Este tipo usa la lista de opciones, y para qué?
+ * Does this type use the options list, and what for?
  *
- * En «lista cerrada» y «texto con sugerencias» las opciones son los valores.
- * En «país» son los códigos ISO que van arriba de la lista, y en «teléfono»
- * el país que viene elegido por defecto. En el resto no se usan.
+ * In "closed list" and "text with suggestions" the options are the values. In
+ * "country" they are the ISO codes pinned to the top of the list, and in
+ * "phone" the country that comes selected by default. The rest do not use them.
  */
-function users_dlx_plus_field_uses_options( string $type ): string {
+function diluxone_users_field_uses_options( string $type ): string {
 	switch ( $type ) {
 		case 'select':
 		case 'datalist':
@@ -57,43 +58,44 @@ function users_dlx_plus_field_uses_options( string $type ): string {
 }
 
 /**
- * Los campos que ya son de WordPress.
+ * The fields that already belong to WordPress.
  *
- * El nombre y el apellido no son un invento de este plugin: WordPress los
- * tiene desde siempre, los muestra en el escritorio y los usan medio mundo de
- * plugins. Que además aparezcan acá, en la misma lista y con las mismas
- * reglas que los demás, es lo que hace que «Mis datos» sea la pantalla donde
- * se editan TUS datos y no sólo los que este plugin agregó.
+ * First and last name are not this plugin's invention: WordPress has had them
+ * forever, shows them in the dashboard and half the plugin world uses them.
+ * Having them appear here as well, in the same list and under the same rules
+ * as the others, is what makes "Your details" the screen where YOUR details
+ * are edited and not only the ones this plugin added.
  *
- * No se guardan en una user meta cualquiera: van a donde WordPress los busca.
+ * They are not stored in just any user meta: they go where WordPress looks
+ * for them.
  *
- * @return array<string, string> clave => cómo se guarda.
+ * @return array<string, string> key => how it is stored.
  */
-function users_dlx_plus_native_fields(): array {
+function diluxone_users_native_fields(): array {
 	return array(
 		'first_name' => 'meta',
 		'last_name'  => 'meta',
 	);
 }
 
-/** ¿Esta clave es de un campo de WordPress? */
-function users_dlx_plus_field_is_native( string $key ): bool {
-	return isset( users_dlx_plus_native_fields()[ $key ] );
+/** Is this key one of WordPress's own fields? */
+function diluxone_users_field_is_native( string $key ): bool {
+	return isset( diluxone_users_native_fields()[ $key ] );
 }
 
 /**
- * Los campos con los que arranca un sitio nuevo.
+ * The fields a new site starts with.
  *
- * Son los que hacen falta casi siempre. Cualquiera se puede borrar desde el
- * admin: no hay campos intocables.
+ * They are the ones almost always needed. Any of them can be deleted from the
+ * admin: there are no untouchable fields.
  *
  * @return array<int, array<string, mixed>>
  */
-function users_dlx_plus_default_fields(): array {
+function diluxone_users_default_fields(): array {
 	return array(
 		array(
 			'key'      => 'first_name',
-			'label'    => __( 'First name', 'users-dlx-plus' ),
+			'label'    => __( 'First name', 'diluxone-users' ),
 			'type'     => 'text',
 			'help'     => '',
 			'options'  => array(),
@@ -103,7 +105,7 @@ function users_dlx_plus_default_fields(): array {
 		),
 		array(
 			'key'      => 'last_name',
-			'label'    => __( 'Last name', 'users-dlx-plus' ),
+			'label'    => __( 'Last name', 'diluxone-users' ),
 			'type'     => 'text',
 			'help'     => '',
 			'options'  => array(),
@@ -112,47 +114,47 @@ function users_dlx_plus_default_fields(): array {
 			'active'   => 1,
 		),
 		array(
-			'key'      => 'users_dlx_plus_country',
-			'label'    => __( 'Country', 'users-dlx-plus' ),
+			'key'      => 'diluxone_users_country',
+			'label'    => __( 'Country', 'diluxone-users' ),
 			'type'     => 'country',
 			'help'     => '',
-			// Los de la región primero: el orden alfabético puro deja al país
-			// del sitio a mitad de una lista de casi doscientos.
+			// The ones from the region first: pure alphabetical order leaves the
+			// site's own country halfway down a list of nearly two hundred.
 			'options'  => array( 'AR', 'CL', 'UY', 'PY', 'BO', 'BR', 'PE', 'MX', 'ES' ),
 			'required' => 0,
 			'group'    => 'main',
 			'active'   => 1,
 		),
 		array(
-			'key'      => 'users_dlx_plus_birthday',
-			'label'    => __( 'Date of birth', 'users-dlx-plus' ),
+			'key'      => 'diluxone_users_birthday',
+			'label'    => __( 'Date of birth', 'diluxone-users' ),
 			'type'     => 'date',
-			'help'     => __( 'So we can wish you a happy birthday.', 'users-dlx-plus' ),
+			'help'     => __( 'So we can wish you a happy birthday.', 'diluxone-users' ),
 			'options'  => array(),
 			'required' => 0,
 			'group'    => 'extra',
 			'active'   => 1,
 		),
 		array(
-			'key'      => 'users_dlx_plus_gender',
-			'label'    => __( 'Gender', 'users-dlx-plus' ),
+			'key'      => 'diluxone_users_gender',
+			'label'    => __( 'Gender', 'diluxone-users' ),
 			'type'     => 'datalist',
-			'help'     => __( 'However you identify. Write anything you like, or leave it empty.', 'users-dlx-plus' ),
+			'help'     => __( 'However you identify. Write anything you like, or leave it empty.', 'diluxone-users' ),
 			'options'  => array(
-				__( 'Woman', 'users-dlx-plus' ),
-				__( 'Man', 'users-dlx-plus' ),
-				__( 'Non-binary', 'users-dlx-plus' ),
-				__( 'Prefer not to say', 'users-dlx-plus' ),
+				__( 'Woman', 'diluxone-users' ),
+				__( 'Man', 'diluxone-users' ),
+				__( 'Non-binary', 'diluxone-users' ),
+				__( 'Prefer not to say', 'diluxone-users' ),
 			),
 			'required' => 0,
 			'group'    => 'extra',
 			'active'   => 1,
 		),
 		array(
-			'key'      => 'users_dlx_plus_phone',
-			'label'    => __( 'Mobile (WhatsApp)', 'users-dlx-plus' ),
+			'key'      => 'diluxone_users_phone',
+			'label'    => __( 'Mobile (WhatsApp)', 'diluxone-users' ),
 			'type'     => 'phone',
-			'help'     => __( 'With country code. Only for notifications you ask for.', 'users-dlx-plus' ),
+			'help'     => __( 'With country code. Only for notifications you ask for.', 'diluxone-users' ),
 			'options'  => array( 'AR' ),
 			'required' => 0,
 			'group'    => 'extra',
@@ -162,43 +164,43 @@ function users_dlx_plus_default_fields(): array {
 }
 
 /**
- * El bloque del formulario al que pertenece un campo.
+ * The form block a field belongs to.
  *
- * Son dos y con nombre propio: el principal —lo que el sitio necesita— y el
- * adicional, el «si querés, contanos un poco más». Se aceptan los nombres
- * viejos para no romper lo que ya esté guardado.
+ * There are two, each with a name of its own: the main one — what the site
+ * needs — and the additional one, the "tell us a bit more if you like". The
+ * old names are accepted so nothing already stored breaks.
  */
-function users_dlx_plus_normalize_group( string $group ): string {
-	$viejos = array(
+function diluxone_users_normalize_group( string $group ): string {
+	$old_prefixes = array(
 		'basic'    => 'main',
 		'optional' => 'extra',
 	);
-	$group  = $viejos[ $group ] ?? $group;
+	$group        = $old_prefixes[ $group ] ?? $group;
 
 	return 'main' === $group ? 'main' : 'extra';
 }
 
 /**
- * Los bloques, para mostrarlos.
+ * The blocks, for display.
  *
  * @return array<string, string>
  */
-function users_dlx_plus_groups(): array {
+function diluxone_users_groups(): array {
 	return array(
-		'main'  => __( 'Main block — what the site needs', 'users-dlx-plus' ),
-		'extra' => __( 'Extra block — “if you like, tell us more”', 'users-dlx-plus' ),
+		'main'  => __( 'Main block — what the site needs', 'diluxone-users' ),
+		'extra' => __( 'Extra block — “if you like, tell us more”', 'diluxone-users' ),
 	);
 }
 
 /**
- * Un campo, normalizado. Rellena lo que falte para que quien lo consuma no
- * tenga que chequear cada clave.
+ * One field, normalised. Fills in whatever is missing so that whoever
+ * consumes it does not have to check every key.
  *
  * @param array<string, mixed> $field
  * @return array<string, mixed>
  */
-function users_dlx_plus_normalize_field( array $field ): array {
-	$types = users_dlx_plus_field_types();
+function diluxone_users_normalize_field( array $field ): array {
+	$types = diluxone_users_field_types();
 
 	return array(
 		'key'         => sanitize_key( (string) ( $field['key'] ?? '' ) ),
@@ -216,11 +218,11 @@ function users_dlx_plus_normalize_field( array $field ): array {
 			)
 		),
 		'required'    => empty( $field['required'] ) ? 0 : 1,
-		'group'       => users_dlx_plus_normalize_group( (string) ( $field['group'] ?? '' ) ),
+		'group'       => diluxone_users_normalize_group( (string) ( $field['group'] ?? '' ) ),
 		'active'      => isset( $field['active'] ) && ! $field['active'] ? 0 : 1,
-		// Qué puede hacer con este campo la persona dueña del dato:
-		// 'always' cambiarlo cuando quiera, 'limited' unas cuantas veces,
-		// 'never' mirarlo nomás. Quien administra puede siempre.
+		// What the person who owns the data can do with this field:
+		// 'always' change it whenever they like, 'limited' a few times,
+		// 'never' just look at it. Whoever administers always can.
 		'edit'        => in_array( $field['edit'] ?? '', array( 'always', 'limited', 'never' ), true )
 			? (string) $field['edit']
 			: 'always',
@@ -229,23 +231,23 @@ function users_dlx_plus_normalize_field( array $field ): array {
 }
 
 /**
- * Todos los campos definidos.
+ * Every defined field.
  *
- * @param string $group 'basic', 'optional' o '' para todos.
- * @param bool   $solo_activos
+ * @param string $group 'basic', 'optional' or '' for all of them.
+ * @param bool   $only_active
  * @return array<int, array<string, mixed>>
  */
-function users_dlx_plus_fields( string $group = '', bool $solo_activos = true ): array {
-	$fields = array_map( 'users_dlx_plus_normalize_field', (array) get_option( 'users_dlx_plus_fields', array() ) );
+function diluxone_users_fields( string $group = '', bool $only_active = true ): array {
+	$fields = array_map( 'diluxone_users_normalize_field', (array) get_option( 'diluxone_users_fields', array() ) );
 
 	$fields = array_values(
 		array_filter(
 			$fields,
-			static function ( array $c ) use ( $group, $solo_activos ): bool {
+			static function ( array $c ) use ( $group, $only_active ): bool {
 				if ( '' === $c['key'] || '' === $c['label'] ) {
 					return false;
 				}
-				if ( $solo_activos && ! $c['active'] ) {
+				if ( $only_active && ! $c['active'] ) {
 					return false;
 				}
 
@@ -255,23 +257,24 @@ function users_dlx_plus_fields( string $group = '', bool $solo_activos = true ):
 	);
 
 	/**
-	 * Filtra la lista de campos.
+	 * Filters the list of fields.
 	 *
-	 * Es el punto para agregar o esconder uno desde un tema o desde otro
-	 * plugin, sin tocar la configuración guardada.
+	 * This is the place to add or hide one from a theme or from another
+	 * plugin, without touching the stored configuration.
 	 *
 	 * @param array<int, array<string, mixed>> $fields
 	 * @param string                           $group
 	 */
-	return apply_filters( 'users_dlx_plus_fields', $fields, $group );
+	return apply_filters( 'diluxone_users_fields', $fields, $group );
 }
 
-/** Un campo por su clave, o null. */
 /**
+ * One field by its key, or null.
+ *
  * @return array<string, mixed>
  */
-function users_dlx_plus_field( string $key ): ?array {
-	foreach ( users_dlx_plus_fields( '', false ) as $field ) {
+function diluxone_users_field( string $key ): ?array {
+	foreach ( diluxone_users_fields( '', false ) as $field ) {
 		if ( $field['key'] === $key ) {
 			return $field;
 		}
@@ -280,95 +283,96 @@ function users_dlx_plus_field( string $key ): ?array {
 	return null;
 }
 
-/** El valor que tiene una persona en un campo. */
-function users_dlx_plus_value( int $user_id, string $key ): string {
+/** The value a person has in one field. */
+function diluxone_users_value( int $user_id, string $key ): string {
 	return (string) get_user_meta( $user_id, $key, true );
 }
 
 /**
- * Al guardar un nombre o un apellido, WordPress espera que el nombre visible
- * se rearme solo.
+ * When a first or last name is saved, WordPress expects the display name to
+ * rebuild itself.
  *
- * Sin esto, quien se llamaba «juan@correo.com» sigue apareciendo así al lado
- * de lo que escribe, aunque haya completado su nombre hace un rato.
+ * Without this, someone who used to be called "juan@mail.com" keeps appearing
+ * that way next to whatever they write, even though they filled in their name
+ * a while ago.
  */
-function users_dlx_plus_refresh_display_name( int $user_id ): void {
+function diluxone_users_refresh_display_name( int $user_id ): void {
 	$user = get_userdata( $user_id );
 
 	if ( ! $user instanceof WP_User ) {
 		return;
 	}
 
-	$nombre = trim( (string) get_user_meta( $user_id, 'first_name', true ) . ' ' . (string) get_user_meta( $user_id, 'last_name', true ) );
+	$name = trim( (string) get_user_meta( $user_id, 'first_name', true ) . ' ' . (string) get_user_meta( $user_id, 'last_name', true ) );
 
-	if ( '' === $nombre || $user->display_name === $nombre ) {
+	if ( '' === $name || $user->display_name === $name ) {
 		return;
 	}
 
 	wp_update_user(
 		array(
 			'ID'           => $user_id,
-			'display_name' => $nombre,
+			'display_name' => $name,
 		)
 	);
 }
 
-/* ── Quién puede cambiar qué ───────────────────────────────────────── */
+/* ── Who can change what ───────────────────────────────────────────── */
 
 /**
- * Anota un cambio, si de verdad cambió algo y si lo hizo la persona.
+ * Records a change, if something really changed and if the person did it.
  *
- * Escribir lo mismo que ya estaba no gasta un cupo: quien aprieta «Guardar»
- * dos veces seguidas no cambió nada.
+ * Writing the same thing that was already there does not spend a go: whoever
+ * presses "Save" twice in a row changed nothing.
  *
  * @param array<string, mixed> $field
  */
-function users_dlx_plus_field_count_edit( int $user_id, array $field, string $value ): void {
+function diluxone_users_field_count_edit( int $user_id, array $field, string $value ): void {
 	if ( 'limited' !== $field['edit'] || get_current_user_id() !== $user_id ) {
 		return;
 	}
 
-	if ( users_dlx_plus_value( $user_id, $field['key'] ) === $value ) {
+	if ( diluxone_users_value( $user_id, $field['key'] ) === $value ) {
 		return;
 	}
 
-	update_user_meta( $user_id, 'users_dlx_plus_edits_' . $field['key'], users_dlx_plus_field_edits( $user_id, $field['key'] ) + 1 );
+	update_user_meta( $user_id, 'diluxone_users_edits_' . $field['key'], diluxone_users_field_edits( $user_id, $field['key'] ) + 1 );
 }
 
 
 /**
- * Cuántas veces cambió esta persona este campo.
+ * How many times this person has changed this field.
  *
- * Se cuenta sólo lo que hace ella con sus propios datos. Un administrador
- * corrigiendo el apellido de otro no le gasta el cupo a nadie: el límite
- * existe para que un nombre no cambie todos los días, no para dejar sin
- * arreglo un error de tipeo.
+ * Only what they do with their own data is counted. An administrator fixing
+ * somebody else's surname spends nobody's quota: the limit exists so that a
+ * name does not change every day, not to leave a typo beyond repair.
  */
-function users_dlx_plus_field_edits( int $user_id, string $key ): int {
-	return (int) get_user_meta( $user_id, 'users_dlx_plus_edits_' . $key, true );
+function diluxone_users_field_edits( int $user_id, string $key ): int {
+	return (int) get_user_meta( $user_id, 'diluxone_users_edits_' . $key, true );
 }
 
-/** Cuántos cambios le quedan. -1 si no hay límite. */
 /**
+ * How many changes they have left. -1 when there is no limit.
+ *
  * @param array<string, mixed> $field
  */
-function users_dlx_plus_field_edits_left( array $field, int $user_id ): int {
+function diluxone_users_field_edits_left( array $field, int $user_id ): int {
 	if ( 'limited' !== $field['edit'] ) {
 		return -1;
 	}
 
-	return max( 0, (int) $field['edit_max'] - users_dlx_plus_field_edits( $user_id, $field['key'] ) );
+	return max( 0, (int) $field['edit_max'] - diluxone_users_field_edits( $user_id, $field['key'] ) );
 }
 
 /**
- * ¿Esta persona puede cambiar este campo ahora?
+ * Can this person change this field right now?
  *
- * Quien administra siempre puede: si no, un campo de una sola edición se
- * convierte en un dato que ya nadie puede corregir, ni con motivo.
+ * Whoever administers always can: otherwise a single-edit field turns into a
+ * value nobody can correct any more, not even with good reason.
  *
  * @param array<string, mixed> $field
  */
-function users_dlx_plus_field_editable( array $field, int $user_id ): bool {
+function diluxone_users_field_editable( array $field, int $user_id ): bool {
 	if ( current_user_can( 'edit_users' ) && get_current_user_id() !== $user_id ) {
 		return true;
 	}
@@ -377,43 +381,43 @@ function users_dlx_plus_field_editable( array $field, int $user_id ): bool {
 		return false;
 	}
 
-	return 'limited' !== $field['edit'] || users_dlx_plus_field_edits_left( $field, $user_id ) > 0;
+	return 'limited' !== $field['edit'] || diluxone_users_field_edits_left( $field, $user_id ) > 0;
 }
 
 /**
- * Lo que se le dice a la persona debajo del campo sobre cuántas veces puede
- * cambiarlo. Vacío cuando no hay nada que aclarar.
+ * What the person is told below the field about how many times they can
+ * change it. Empty when there is nothing to point out.
  *
  * @param array<string, mixed> $field
  */
-function users_dlx_plus_field_edit_note( array $field, int $user_id ): string {
+function diluxone_users_field_edit_note( array $field, int $user_id ): string {
 	if ( 'never' === $field['edit'] ) {
-		return __( 'This one cannot be changed from here. Write to us if it is wrong.', 'users-dlx-plus' );
+		return __( 'This one cannot be changed from here. Write to us if it is wrong.', 'diluxone-users' );
 	}
 
 	if ( 'limited' !== $field['edit'] ) {
 		return '';
 	}
 
-	$quedan = users_dlx_plus_field_edits_left( $field, $user_id );
+	$left = diluxone_users_field_edits_left( $field, $user_id );
 
-	if ( 0 === $quedan ) {
-		return __( 'You already used up the changes for this one. Write to us if it is wrong.', 'users-dlx-plus' );
+	if ( 0 === $left ) {
+		return __( 'You already used up the changes for this one. Write to us if it is wrong.', 'diluxone-users' );
 	}
 
 	return sprintf(
-		/* translators: %d: cuántas veces más lo puede cambiar */
-		_n( 'You can change this one %d more time.', 'You can change this one %d more times.', $quedan, 'users-dlx-plus' ),
-		$quedan
+			/* translators: %d: how many more times they can change it */
+		_n( 'You can change this one %d more time.', 'You can change this one %d more times.', $left, 'diluxone-users' ),
+		$left
 	);
 }
 
 /**
- * Limpia un valor según el tipo del campo.
+ * Cleans a value according to the field type.
  *
  * @param array<string, mixed> $field
  */
-function users_dlx_plus_sanitize( array $field, string $value ): string {
+function diluxone_users_sanitize( array $field, string $value ): string {
 	$value = trim( $value );
 
 	switch ( $field['type'] ) {
@@ -430,30 +434,30 @@ function users_dlx_plus_sanitize( array $field, string $value ): string {
 			return '' === $value ? '' : (string) floatval( $value );
 
 		case 'date':
-			// Se guarda como AAAA-MM-DD, que es lo que manda el input y lo
-			// único que se ordena y se compara sin ambigüedad.
+			// Stored as YYYY-MM-DD, which is what the input sends and the only
+			// form that sorts and compares without ambiguity.
 			return preg_match( '/^\d{4}-\d{2}-\d{2}$/', $value ) ? $value : '';
 
 		case 'phone':
-			// Se guarda en formato internacional: "+" y dígitos, nada más. Lo
-			// que se ve con espacios lo arma el formulario; el dato guardado
-			// tiene que poder mandarse a una API sin limpiarlo de nuevo.
+			// Stored in international format: "+" and digits, nothing else. What
+			// is seen with spaces is assembled by the form; the stored value has
+			// to be usable against an API without cleaning it again.
 			$digits = (string) preg_replace( '/\D/', '', $value );
 
 			return '' === $digits ? '' : '+' . $digits;
 
 		case 'country':
-			// Se guarda el código ISO, no el nombre: el nombre cambia con el
-			// idioma y con el humor de la geopolítica, el código no.
+			// The ISO code is stored, not the name: the name changes with the
+			// language and with the mood of geopolitics, the code does not.
 			$iso = strtoupper( trim( $value ) );
 
-			return isset( users_dlx_plus_countries()[ $iso ] ) ? $iso : '';
+			return isset( diluxone_users_countries()[ $iso ] ) ? $iso : '';
 
 		case 'checkbox':
 			return '' === $value ? '' : '1';
 
 		case 'select':
-			// Una lista cerrada es cerrada: lo que no está en la lista, no entra.
+			// A closed list is closed: what is not on the list does not get in.
 			return in_array( $value, $field['options'], true ) ? $value : '';
 
 		default:
@@ -462,43 +466,43 @@ function users_dlx_plus_sanitize( array $field, string $value ): string {
 }
 
 /**
- * Guarda los campos de una persona a partir de un array crudo (típicamente
- * $_POST). Sólo mira las claves que existen como campo.
+ * Saves a person's fields from a raw array (typically $_POST). It only looks
+ * at the keys that exist as a field.
  *
- * Un valor vacío borra la meta en vez de guardar una cadena vacía: así el
- * usuario no acumula filas que no dicen nada.
+ * An empty value deletes the meta instead of storing an empty string: that
+ * way the user does not pile up rows that say nothing.
  *
  * @param array<string, mixed> $input
- * @param string               $group   Limita a un grupo, o '' para todos.
- * @return array<int, string> Etiquetas de los campos obligatorios que faltan.
+ * @param string               $group Limits it to one group, or '' for all.
+ * @return array<int, string> Labels of the required fields that are missing.
  */
-function users_dlx_plus_save( int $user_id, array $input, string $group = '' ): array {
+function diluxone_users_save( int $user_id, array $input, string $group = '' ): array {
 	$missing = array();
 
-	foreach ( users_dlx_plus_fields( $group ) as $field ) {
+	foreach ( diluxone_users_fields( $group ) as $field ) {
 		$key = $field['key'];
 
 		if ( ! array_key_exists( $key, $input ) ) {
 			continue;
 		}
 
-		// El control del navegador se puede sacar con el inspector, así que
-		// el que manda es éste: lo que no se puede editar, no se guarda.
-		if ( ! users_dlx_plus_field_editable( $field, $user_id ) ) {
+		// The browser control can be removed with the inspector, so this is the
+		// one that rules: what cannot be edited is not saved.
+		if ( ! diluxone_users_field_editable( $field, $user_id ) ) {
 			continue;
 		}
 
 		$raw = (string) wp_unslash( $input[ $key ] );
 
-		// El teléfono llega en dos partes: el prefijo del país, de su lista, y
-		// el número. Se juntan acá y no en el navegador para que también valga
-		// cuando el formulario llega sin JavaScript.
+		// The phone arrives in two parts: the country dialling code, from its
+		// list, and the number. They are joined here and not in the browser so
+		// it also holds when the form arrives without JavaScript.
 		if ( 'phone' === $field['type'] && '' !== trim( $raw ) ) {
-			$dial = users_dlx_plus_country_dial( sanitize_text_field( (string) wp_unslash( $input[ $key . '_dial' ] ?? '' ) ) );
+			$dial = diluxone_users_country_dial( sanitize_text_field( (string) wp_unslash( $input[ $key . '_dial' ] ?? '' ) ) );
 			$raw  = '+' . $dial . preg_replace( '/\D/', '', $raw );
 		}
 
-		$value = users_dlx_plus_sanitize( $field, $raw );
+		$value = diluxone_users_sanitize( $field, $raw );
 
 		if ( '' === $value ) {
 			if ( $field['required'] ) {
@@ -506,32 +510,32 @@ function users_dlx_plus_save( int $user_id, array $input, string $group = '' ): 
 				continue;
 			}
 
-			users_dlx_plus_field_count_edit( $user_id, $field, '' );
+			diluxone_users_field_count_edit( $user_id, $field, '' );
 			delete_user_meta( $user_id, $key );
 			continue;
 		}
 
-		users_dlx_plus_field_count_edit( $user_id, $field, $value );
+		diluxone_users_field_count_edit( $user_id, $field, $value );
 
 		update_user_meta( $user_id, $key, $value );
 
-		if ( users_dlx_plus_field_is_native( $key ) ) {
-			$refrescar = true;
+		if ( diluxone_users_field_is_native( $key ) ) {
+			$refresh = true;
 		}
 	}
 
-	if ( ! empty( $refrescar ) ) {
-		users_dlx_plus_refresh_display_name( $user_id );
+	if ( ! empty( $refresh ) ) {
+		diluxone_users_refresh_display_name( $user_id );
 	}
 
 	/**
-	 * Corre después de guardar los campos de una persona.
+	 * Runs after a person's fields are saved.
 	 *
 	 * @param int                  $user_id
 	 * @param array<string, mixed> $input
 	 * @param string               $group
 	 */
-	do_action( 'users_dlx_plus_fields_saved', $user_id, $input, $group );
+	do_action( 'diluxone_users_fields_saved', $user_id, $input, $group );
 
 	return $missing;
 }

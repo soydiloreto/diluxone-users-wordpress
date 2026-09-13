@@ -1,58 +1,60 @@
 <?php
 /**
- * Los logos de cada red, en SVG.
+ * Each network's logo, in SVG.
  *
- * Van inline y no como archivos: son doce dibujos de menos de un kilobyte, y
- * así heredan el tamaño y el color del botón sin una petición más ni un sprite
- * que mantener.
+ * They go inline and not as files: they are twelve drawings of under a
+ * kilobyte each, and that way they inherit the size and colour of the button
+ * with no extra request and no sprite to maintain.
  *
- * Cada marca es de su dueño. Se usan para lo único que sus guías permiten sin
- * pedir permiso: identificar el botón con el que se entra a ese servicio. Por
- * eso los que tienen color de marca lo conservan —el logo de Google no se
- * pinta de otro color— y los que son una silueta usan `currentColor`, que es
- * como esas mismas guías los admiten sobre fondos de color.
+ * Each mark belongs to its owner. They are used for the one thing their
+ * guidelines allow without asking permission: identifying the button you sign
+ * in to that service with. That is why the ones with a brand colour keep it —
+ * the Google logo is not painted another colour — and the ones that are a
+ * silhouette use `currentColor`, which is how those same guidelines admit
+ * them over coloured backgrounds.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * ¿El logo de esta red tiene color propio?
+ * Does this network's logo have a colour of its own?
  *
- * Los de color no se recolorean nunca: se dibujan igual sobre un botón blanco
- * que sobre uno oscuro. Los de silueta toman el color del texto del botón.
+ * The coloured ones are never recoloured: they are drawn the same over a
+ * white button as over a dark one. The silhouettes take the colour of the
+ * button text.
  */
-function users_dlx_plus_sso_icon_is_colored( string $id ): bool {
+function diluxone_users_sso_icon_is_colored( string $id ): bool {
 	return in_array( $id, array( 'google', 'microsoft' ), true );
 }
 
 /**
- * El SVG de una red, listo para imprimir.
+ * A network's SVG, ready to print.
  *
- * @param string $id Identificador del proveedor.
- * @return string SVG, o cadena vacía si esa red no tiene logo.
+ * @param string $id Provider identifier.
+ * @return string SVG, or an empty string when that network has no logo.
  */
-function users_dlx_plus_sso_icon( string $id ): string {
-	$paths = users_dlx_plus_sso_icon_paths();
+function diluxone_users_sso_icon( string $id ): string {
+	$paths = diluxone_users_sso_icon_paths();
 
 	if ( ! isset( $paths[ $id ] ) ) {
 		return '';
 	}
 
 	return sprintf(
-		'<svg class="users-dlx-plus-social__logo" width="20" height="20" viewBox="0 0 24 24" fill="%1$s" aria-hidden="true" focusable="false">%2$s</svg>',
-		users_dlx_plus_sso_icon_is_colored( $id ) ? 'none' : 'currentColor',
+		'<svg class="diluxone-users-social__logo" width="20" height="20" viewBox="0 0 24 24" fill="%1$s" aria-hidden="true" focusable="false">%2$s</svg>',
+		diluxone_users_sso_icon_is_colored( $id ) ? 'none' : 'currentColor',
 		$paths[ $id ]
 	);
 }
 
 /**
- * El dibujo de cada marca.
+ * Each brand's drawing.
  *
  * @return array<string, string>
  */
-function users_dlx_plus_sso_icon_paths(): array {
+function diluxone_users_sso_icon_paths(): array {
 	$paths = array(
 
 		'google'    => '<path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47a5.53 5.53 0 0 1-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/>'
@@ -87,9 +89,9 @@ function users_dlx_plus_sso_icon_paths(): array {
 	);
 
 	/**
-	 * Filtra los logos de las redes.
+	 * Filters the network logos.
 	 *
 	 * @param array<string, string> $paths
 	 */
-	return apply_filters( 'users_dlx_plus_sso_icon_paths', $paths );
+	return apply_filters( 'diluxone_users_sso_icon_paths', $paths );
 }

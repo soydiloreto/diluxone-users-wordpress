@@ -4,12 +4,12 @@
  *
  * Variables: $user.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<?php echo do_shortcode( '[users_dlx_plus_avatar]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode propio. ?>
-<?php echo do_shortcode( '[users_dlx_plus_handle]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode propio. ?>
+<?php echo do_shortcode( '[diluxone_users_avatar]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode propio. ?>
+<?php echo do_shortcode( '[diluxone_users_handle]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode propio. ?>
 <?php
-echo do_shortcode( '[users_dlx_plus_fields]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode propio. 
+echo do_shortcode( '[diluxone_users_fields]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode propio. 

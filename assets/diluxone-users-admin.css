@@ -1,0 +1,320 @@
+/**
+ * The plugin admin styles.
+ *
+ * Everything that can be is left to WordPress's own classes (.wp-list-table,
+ * .form-table, .button): what is here is only what WordPress does not bring —
+ * the provider grid, the state pills and a couple of reading-width fixes.
+ */
+
+.diluxone-users-admin__intro { max-width: 72ch; }
+.diluxone-users-admin__actions { margin: 16px 0; }
+
+/* ── Pastillas de estado ──────────────────────────────────────────── */
+.diluxone-users-pill {
+	display: inline-block; padding: 2px 10px; border-radius: 100px;
+	font-size: 12px; font-weight: 600; line-height: 1.8;
+}
+.diluxone-users-pill--on    { background: #d6f2e4; color: #0a5c3e; }
+.diluxone-users-pill--off   { background: #f0f0f1; color: #50575e; }
+.diluxone-users-pill--blank { background: #fdf0d5; color: #7a5200; }
+
+/* ── Listas ───────────────────────────────────────────────────────── */
+.diluxone-users-list__name code { font-size: 11px; color: #646970; }
+.diluxone-users-list__name .diluxone-users-list__mail { display: block; color: #646970; font-size: 12px; }
+.diluxone-users-list__order { width: 130px; text-align: right; }
+.diluxone-users-list__order form { display: inline; }
+.diluxone-users-list__num { width: 90px; text-align: right; }
+.diluxone-users-danger { color: #b32d2e; }
+
+.diluxone-users-search { margin: 16px 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.diluxone-users-search input[type="search"] { min-width: 42ch; flex: 0 1 460px; }
+.diluxone-users-search__by { color: #646970; margin-left: 8px; }
+.diluxone-users-search__refresh { display: inline-flex; align-items: center; gap: 4px; }
+.diluxone-users-search__refresh .dashicons { font-size: 16px; width: 16px; height: 16px; line-height: 1; }
+.diluxone-users-search__account { margin-left: auto; color: #646970; }
+
+.diluxone-users-shortcodes { max-width: 860px; }
+.diluxone-users-shortcodes td:first-child { width: 260px; }
+.diluxone-users-detail { max-width: 860px; }
+.diluxone-users-detail th { width: 220px; text-align: left; }
+
+/* ── Grilla de proveedores ────────────────────────────────────────── */
+.diluxone-users-cards {
+	display: grid; gap: 16px; margin: 20px 0 32px;
+	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+.diluxone-users-card {
+	background: #fff; border: 1px solid #dcdcde; border-radius: 4px; overflow: hidden;
+	display: flex; flex-direction: column;
+}
+.diluxone-users-card__top {
+	display: flex; align-items: center; gap: 12px;
+	padding: 26px 20px; color: #fff;
+}
+.diluxone-users-card__mark {
+	display: flex; align-items: center; justify-content: center;
+	width: 38px; height: 38px; flex-shrink: 0;
+	border-radius: 50%; background: rgba(255, 255, 255, 0.22);
+	font-size: 20px; font-weight: 700; line-height: 1;
+}
+.diluxone-users-card__name { font-size: 17px; font-weight: 600; }
+.diluxone-users-card__foot {
+	display: flex; align-items: center; justify-content: space-between; gap: 10px;
+	padding: 12px 14px; border-top: 1px solid #dcdcde; margin-top: auto;
+}
+.diluxone-users-card__actions { display: flex; gap: 6px; }
+
+/* ── Getting started ──────────────────────────────────────────────── */
+.diluxone-users-steps { max-width: 80ch; margin: 20px 0 32px; padding-left: 20px; }
+.diluxone-users-steps li { margin-bottom: 22px; }
+.diluxone-users-steps strong { display: block; font-size: 14px; margin-bottom: 4px; }
+.diluxone-users-steps p { margin: 4px 0; }
+
+/* The step-by-step for each console: it reads like a recipe, one line per
+   click, so the steps sit closer together than in the list above. */
+.diluxone-users-steps--numbers li { margin-bottom: 12px; line-height: 1.6; }
+
+.diluxone-users-url-redirect {
+	max-width: 80ch;
+	margin: 20px 0 28px;
+	padding: 16px 20px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-left: 4px solid #2271b1;
+}
+.diluxone-users-url-redirect h3 { margin-top: 0; }
+.diluxone-users-url-redirect p { margin: 6px 0; }
+/* The underscore in diluxone_users_sso sits against the bottom edge of the
+   input and at a glance looks like a space. With air below, what is being
+   copied can be read. */
+.diluxone-users-url-redirect input { padding: 8px 10px; line-height: 1.6; }
+
+.diluxone-users-eye {
+	max-width: 80ch;
+	margin: 0 0 28px;
+	padding: 12px 16px;
+	background: #fcf9e8;
+	border-left: 4px solid #dba617;
+	line-height: 1.6;
+}
+
+/* A field's detail hides what that type does not use (see diluxone-users-admin.js). */
+.diluxone-users-if-type[hidden] { display: none !important; }
+.diluxone-users-multi { min-width: 26ch; }
+
+/* ── Home ─────────────────────────────────────────────────────────── */
+.diluxone-users-tiles {
+	display: grid; gap: 16px; margin: 20px 0 28px;
+	grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+.diluxone-users-tile {
+	background: #fff; border: 1px solid #dcdcde; border-radius: 4px;
+	padding: 18px 20px;
+}
+.diluxone-users-tile b {
+	display: block; font-size: 30px; line-height: 1.1; font-weight: 600;
+	font-variant-numeric: tabular-nums; color: #1d2327;
+}
+.diluxone-users-tile span { display: block; margin-top: 4px; color: #646970; }
+.diluxone-users-tile a { display: inline-block; margin-top: 10px; }
+
+.diluxone-users-state { max-width: 900px; }
+.diluxone-users-state th { width: 280px; text-align: left; }
+.diluxone-users-where {
+	max-width: 100ch; margin: 20px 0; padding: 14px 20px;
+	background: #f6f7f7; border-left: 4px solid #2271b1;
+	line-height: 1.7;
+}
+.diluxone-users-where p { margin: 0 0 8px; }
+.diluxone-users-where p:last-child { margin-bottom: 0; }
+.diluxone-users-state-box { max-width: 900px; margin: 18px 0 24px; padding: 6px 14px; }
+
+/* The social-login role list: in a column, not in a running line. */
+.diluxone-users-roles__item { display: block; margin-bottom: 4px; }
+
+/* ── The buttons screen ─────────────────────────────────────────────────
+   Settings on the left, preview on the right and always in view: if the
+   preview goes to the bottom you have to scroll to see what you just chose,
+   and then it is not a preview.
+   The breakpoint is the same one WordPress uses to drop to a single column. */
+.diluxone-users-buttons {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(300px, 400px);
+	gap: 28px;
+	align-items: start;
+	margin-top: 8px;
+}
+.diluxone-users-buttons__fields { min-width: 0; }
+.diluxone-users-buttons__fields .form-table th { width: 160px; }
+
+.diluxone-users-buttons__preview { position: sticky; top: 46px; min-width: 0; }
+.diluxone-users-buttons__preview h2 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: #646970; }
+
+/* The canvas imitates the site's sign-in box, which is where these buttons
+   are going to live: over just any background they are not judged the same. */
+.diluxone-users-buttons__canvas {
+	padding: 24px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 10px;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 8px 24px rgba(0, 0, 0, .04);
+}
+.diluxone-users-buttons__canvas .diluxone-users-social { cursor: default; }
+.diluxone-users-buttons__canvas .diluxone-users-socials { margin-bottom: 0; }
+
+/* The buttons are judged over both backgrounds: the dark finish vanishes on
+   white and the light one vanishes on dark. */
+.diluxone-users-buttons__backgrounds { display: flex; gap: 6px; margin: 0 0 10px; }
+.diluxone-users-buttons__background {
+	flex: 1 1 auto;
+	padding: 5px 10px;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #f6f7f7;
+	font-size: 12px;
+	cursor: pointer;
+}
+.diluxone-users-buttons__background[aria-pressed="true"] { background: #2271b1; border-color: #2271b1; color: #fff; }
+
+.diluxone-users-buttons__canvas--dark { background: #0B1020; border-color: #0B1020; }
+
+@media (max-width: 782px) {
+	.diluxone-users-buttons { grid-template-columns: minmax(0, 1fr); }
+	.diluxone-users-buttons__preview { position: static; }
+}
+
+/* The box explaining where each section comes from: it is documentation, not
+   a setting, so it is set apart from the tables above. */
+.diluxone-users-explain { max-width: 80ch; margin: 28px 0; padding: 4px 20px 16px; background: #fff; border: 1px solid #dcdcde; border-radius: 6px; }
+.diluxone-users-explain ul { margin: 10px 0 14px; padding-left: 18px; list-style: disc; }
+.diluxone-users-explain li { margin-bottom: 10px; line-height: 1.6; }
+
+/* A setting the site pins from code: the control is visible, and it says it
+   does not rule. That beats hiding it — whoever looks for it has to find it. */
+.diluxone-users-forced {
+	max-width: 60ch; margin: 0 0 10px; padding: 8px 12px;
+	background: #fcf9e8; border-left: 3px solid #dba617;
+}
+
+/* ── The account sections: list and detail ──────────────────────────── */
+
+/* Two panels and not a table: the order is taken in at a glance and dragged,
+   and what a section is amounts to eight fields and an editor. The eight
+   fields inside a row warped the table and hid the order. */
+.diluxone-users-endpoints {
+	margin-top: 16px;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	background: #fff;
+}
+.diluxone-users-endpoints__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 16px 20px;
+	border-bottom: 1px solid #dcdcde;
+}
+.diluxone-users-endpoints__head h2 { margin: 0; font-size: 16px; }
+
+.diluxone-users-endpoints__body { display: flex; align-items: stretch; }
+.diluxone-users-endpoints__order {
+	flex: 0 0 260px;
+	padding: 16px;
+	border-right: 1px solid #dcdcde;
+	background: #f6f7f7;
+}
+.diluxone-users-endpoints__list { margin: 0; padding: 0; list-style: none; }
+.diluxone-users-endpoints__save-order { margin: 16px 0 0; }
+
+.diluxone-users-endpoint {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 6px;
+	border-radius: 4px;
+	background: #e5e7ee;
+	cursor: grab;
+}
+.diluxone-users-endpoint.is-current { background: #2f4bd8; }
+.diluxone-users-endpoint.is-current .diluxone-users-endpoint__name { color: #fff; }
+.diluxone-users-endpoint.is-off .diluxone-users-endpoint__name { opacity: .55; text-decoration: line-through; }
+.diluxone-users-endpoint.is-dragging { opacity: .4; }
+
+.diluxone-users-endpoint__name {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 10px 4px 10px 14px;
+	color: #1d2327;
+	text-decoration: none;
+	font-weight: 500;
+}
+.diluxone-users-endpoint__name:focus { box-shadow: none; outline: 2px solid #2271b1; outline-offset: -2px; }
+
+/* The six dots of the grip, drawn: a loose character looks different on
+   every system and sometimes does not show at all. */
+.diluxone-users-endpoint__grip {
+	flex: 0 0 auto;
+	width: 22px;
+	height: 22px;
+	margin-right: 8px;
+	background-image: radial-gradient( currentColor 1.5px, transparent 1.6px );
+	background-size: 6px 6px;
+	background-position: 3px 4px;
+	background-repeat: repeat;
+	opacity: .45;
+}
+.diluxone-users-endpoint.is-current .diluxone-users-endpoint__grip { color: #fff; opacity: .8; }
+
+.diluxone-users-endpoints__detail { flex: 1 1 auto; min-width: 0; padding: 4px 24px 24px; }
+.diluxone-users-endpoint-form__head {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 16px 0 14px;
+	border-bottom: 1px solid #dcdcde;
+}
+.diluxone-users-endpoint-form__head h3 { flex: 1 1 auto; margin: 0; font-size: 17px; }
+.diluxone-users-endpoint-form .form-table th { width: 190px; }
+
+/* The switch: it is a link, because turning on and off reloads and saves. */
+.diluxone-users-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	color: #50575e;
+	text-decoration: none;
+	font-weight: 600;
+}
+.diluxone-users-toggle__knob {
+	display: inline-block;
+	position: relative;
+	width: 38px;
+	height: 22px;
+	border-radius: 999px;
+	background: #c3c4c7;
+	transition: background-color .15s ease;
+}
+.diluxone-users-toggle__knob::before {
+	content: '';
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: #fff;
+	transition: transform .15s ease;
+}
+.diluxone-users-toggle.is-on { color: #0f7b4f; }
+.diluxone-users-toggle.is-on .diluxone-users-toggle__knob { background: #0f7b4f; }
+.diluxone-users-toggle.is-on .diluxone-users-toggle__knob::before { transform: translateX(16px); }
+
+@media (max-width: 960px) {
+	.diluxone-users-endpoints__body { flex-direction: column; }
+	.diluxone-users-endpoints__order { flex: 1 1 auto; border-right: 0; border-bottom: 1px solid #dcdcde; }
+}
+
+.diluxone-users-forced p { margin: 0 0 6px; }
+.diluxone-users-forced > :last-child { margin-bottom: 0; }
+.diluxone-users-forced ul { margin: 0; padding-left: 20px; list-style: disc; }

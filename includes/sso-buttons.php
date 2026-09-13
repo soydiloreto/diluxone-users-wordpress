@@ -1,30 +1,32 @@
 <?php
 /**
- * Los botones de las redes: cómo se ven y cómo se pintan.
+ * The network buttons: how they look and how they are drawn.
  *
- * El marcado lo arma el plugin —logo, texto, clases— y la apariencia la
- * eligen los ajustes: quien administra no debería tener que escribir CSS para
- * que los botones dejen de ser un enlace pelado.
+ * The plugin assembles the markup — logo, text, classes — and the settings
+ * choose the appearance: whoever administers should not have to write CSS to
+ * stop the buttons being a bare link.
  *
- * La hoja de estilos de los botones se encola siempre que se pintan, incluso
- * con los estilos del plugin apagados: el color de marca y la forma no son la
- * decoración del plugin, son la opción que quien administra acaba de elegir.
- * El sitio la puede pisar; apagarla en silencio sería otra cosa.
+ * The button stylesheet is enqueued whenever they are drawn, even with the
+ * plugin styles turned off: the brand colour and the shape are not the
+ * plugin's decoration, they are the option whoever administers has just
+ * chosen. The site can override it; turning it off in silence would be
+ * another matter.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/** Los tres acabados posibles, con su nombre para la pantalla de ajustes. */
 /**
+ * The three possible finishes, with their name for the settings screen.
+ *
  * @return array<string, mixed>
  */
-function users_dlx_plus_sso_button_skins(): array {
+function diluxone_users_sso_button_skins(): array {
 	return array(
-		'brand' => __( 'Each brand’s colour', 'users-dlx-plus' ),
-		'light' => __( 'White with a border', 'users-dlx-plus' ),
-		'dark'  => __( 'Dark', 'users-dlx-plus' ),
+		'brand' => __( 'Each brand’s colour', 'diluxone-users' ),
+		'light' => __( 'White with a border', 'diluxone-users' ),
+		'dark'  => __( 'Dark', 'diluxone-users' ),
 	);
 }
 
@@ -32,47 +34,50 @@ function users_dlx_plus_sso_button_skins(): array {
 /**
  * @return array<string, mixed>
  */
-function users_dlx_plus_sso_button_shapes(): array {
+function diluxone_users_sso_button_shapes(): array {
 	return array(
-		'rounded' => __( 'Rounded corners', 'users-dlx-plus' ),
-		'pill'    => __( 'Pill', 'users-dlx-plus' ),
-		'square'  => __( 'Square corners', 'users-dlx-plus' ),
+		'rounded' => __( 'Rounded corners', 'diluxone-users' ),
+		'pill'    => __( 'Pill', 'diluxone-users' ),
+		'square'  => __( 'Square corners', 'diluxone-users' ),
 	);
 }
 
-/** Qué muestra el botón. */
 /**
+ * What the button shows.
+ *
  * @return array<string, mixed>
  */
-function users_dlx_plus_sso_button_contents(): array {
+function diluxone_users_sso_button_contents(): array {
 	return array(
-		'icon-text' => __( 'Logo and text', 'users-dlx-plus' ),
-		'icon'      => __( 'Logo only', 'users-dlx-plus' ),
+		'icon-text' => __( 'Logo and text', 'diluxone-users' ),
+		'icon'      => __( 'Logo only', 'diluxone-users' ),
 	);
 }
 
-/** Cuántos por fila. */
 /**
+ * How many per row.
+ *
  * @return array<int, string>
  */
-function users_dlx_plus_sso_button_columns(): array {
+function diluxone_users_sso_button_columns(): array {
 	return array(
-		1 => __( 'One per row', 'users-dlx-plus' ),
-		2 => __( 'Two per row', 'users-dlx-plus' ),
-		0 => __( 'As many as fit', 'users-dlx-plus' ),
+		1 => __( 'One per row', 'diluxone-users' ),
+		2 => __( 'Two per row', 'diluxone-users' ),
+		0 => __( 'As many as fit', 'diluxone-users' ),
 	);
 }
 
-/** El texto de un botón, con la plantilla de los ajustes. */
 /**
+ * A button's text, using the template from the settings.
+ *
  * @param array<string, mixed> $provider
  */
-function users_dlx_plus_sso_button_text( array $provider ): string {
-	$template = trim( (string) users_dlx_plus_option( 'users_dlx_plus_sso_button_text' ) );
+function diluxone_users_sso_button_text( array $provider ): string {
+	$template = trim( (string) diluxone_users_option( 'diluxone_users_sso_button_text' ) );
 
 	if ( '' === $template ) {
-		/* translators: %s: nombre de la red social */
-		$template = __( 'Continue with %s', 'users-dlx-plus' );
+		/* translators: %s: name of the social network */
+		$template = __( 'Continue with %s', 'diluxone-users' );
 	}
 
 	return false === strpos( $template, '%s' )
@@ -80,36 +85,36 @@ function users_dlx_plus_sso_button_text( array $provider ): string {
 		: sprintf( $template, $provider['name'] );
 }
 
-/** Las clases del contenedor, según los ajustes. */
-function users_dlx_plus_sso_buttons_class(): string {
-	$columns = (int) users_dlx_plus_option( 'users_dlx_plus_sso_button_columns' );
+/** The container classes, according to the settings. */
+function diluxone_users_sso_buttons_class(): string {
+	$columns = (int) diluxone_users_option( 'diluxone_users_sso_button_columns' );
 
 	return sprintf(
-		'users-dlx-plus-socials users-dlx-plus-socials--%1$s users-dlx-plus-socials--%2$s users-dlx-plus-socials--%3$s users-dlx-plus-socials--cols-%4$d',
-		sanitize_html_class( (string) users_dlx_plus_option( 'users_dlx_plus_sso_button_skin' ) ),
-		sanitize_html_class( (string) users_dlx_plus_option( 'users_dlx_plus_sso_button_shape' ) ),
-		sanitize_html_class( (string) users_dlx_plus_option( 'users_dlx_plus_sso_button_show' ) ),
+		'diluxone-users-socials diluxone-users-socials--%1$s diluxone-users-socials--%2$s diluxone-users-socials--%3$s diluxone-users-socials--cols-%4$d',
+		sanitize_html_class( (string) diluxone_users_option( 'diluxone_users_sso_button_skin' ) ),
+		sanitize_html_class( (string) diluxone_users_option( 'diluxone_users_sso_button_shape' ) ),
+		sanitize_html_class( (string) diluxone_users_option( 'diluxone_users_sso_button_show' ) ),
 		in_array( $columns, array( 0, 1, 2 ), true ) ? $columns : 2
 	);
 }
 
 /**
- * Un botón.
+ * One button.
  *
- * Con «sólo logo» el nombre sigue en el marcado, escondido para la vista y
- * disponible para un lector de pantalla: un botón sin nombre accesible es un
- * enlace que no se puede leer.
+ * With "logo only" the name stays in the markup, hidden from sight and
+ * available to a screen reader: a button with no accessible name is a link
+ * that cannot be read.
  *
- * @param string               $id       Identificador del proveedor.
- * @param array<string, mixed> $provider Su fila de la tabla.
- * @param string               $url      Adónde va. Vacío para la vista previa.
+ * @param string               $id       Provider identifier.
+ * @param array<string, mixed> $provider Its row of the table.
+ * @param string               $url      Where it goes. Empty for the preview.
  */
-function users_dlx_plus_sso_button( string $id, array $provider, string $url = '' ): string {
-	$text = users_dlx_plus_sso_button_text( $provider );
-	$icon = users_dlx_plus_sso_icon( $id );
+function diluxone_users_sso_button( string $id, array $provider, string $url = '' ): string {
+	$text = diluxone_users_sso_button_text( $provider );
+	$icon = diluxone_users_sso_icon( $id );
 
 	return sprintf(
-		'<a class="users-dlx-plus-social users-dlx-plus-social--%1$s" style="--users-dlx-plus-brand: %2$s" href="%3$s"%4$s>%5$s<span class="users-dlx-plus-social__text">%6$s</span></a>',
+		'<a class="diluxone-users-social diluxone-users-social--%1$s" style="--diluxone-users-brand: %2$s" href="%3$s"%4$s>%5$s<span class="diluxone-users-social__text">%6$s</span></a>',
 		esc_attr( $id ),
 		esc_attr( $provider['color'] ),
 		'' === $url ? '#' : esc_url( $url ),
@@ -120,35 +125,35 @@ function users_dlx_plus_sso_button( string $id, array $provider, string $url = '
 }
 
 /**
- * Todos los botones que hay para mostrar.
+ * Every button there is to show.
  *
- * @param array<string, array<string, mixed>>|null $providers Para la vista
- *        previa del admin; si no se pasa, los que están prendidos.
- * @param bool                                     $live      Si los enlaces entran de verdad.
+ * @param array<string, array<string, mixed>>|null $providers For the admin
+ *        preview; when not passed, the ones that are turned on.
+ * @param bool                                     $live      Whether the links really sign in.
  */
-function users_dlx_plus_sso_buttons( ?array $providers = null, bool $live = true ): string {
-	$providers = null === $providers ? users_dlx_plus_sso_available() : $providers;
+function diluxone_users_sso_buttons( ?array $providers = null, bool $live = true ): string {
+	$providers = null === $providers ? diluxone_users_sso_available() : $providers;
 
 	if ( array() === $providers ) {
 		return '';
 	}
 
-	users_dlx_plus_sso_enqueue_button_styles();
+	diluxone_users_sso_enqueue_button_styles();
 
 	$html = '';
 
 	foreach ( $providers as $id => $provider ) {
-		$html .= users_dlx_plus_sso_button( $id, $provider, $live ? users_dlx_plus_sso_login_url( $id ) : '' );
+		$html .= diluxone_users_sso_button( $id, $provider, $live ? diluxone_users_sso_login_url( $id ) : '' );
 	}
 
-	return sprintf( '<div class="%1$s">%2$s</div>', esc_attr( users_dlx_plus_sso_buttons_class() ), $html );
+	return sprintf( '<div class="%1$s">%2$s</div>', esc_attr( diluxone_users_sso_buttons_class() ), $html );
 }
 
-/** La hoja de los botones. Se encola una sola vez, y tarde: puede pintarse desde un shortcode. */
-function users_dlx_plus_sso_enqueue_button_styles(): void {
-	if ( wp_style_is( 'users-dlx-plus-social', 'enqueued' ) ) {
+/** The button stylesheet. Enqueued once, and late: it can be drawn from a shortcode. */
+function diluxone_users_sso_enqueue_button_styles(): void {
+	if ( wp_style_is( 'diluxone-users-social', 'enqueued' ) ) {
 		return;
 	}
 
-	wp_enqueue_style( 'users-dlx-plus-social', USERS_DLX_PLUS_URL . 'assets/users-dlx-plus-social.css', array(), users_dlx_plus_asset_version( 'assets/users-dlx-plus-social.css' ) );
+	wp_enqueue_style( 'diluxone-users-social', DILUXONE_USERS_URL . 'assets/diluxone-users-social.css', array(), diluxone_users_asset_version( 'assets/diluxone-users-social.css' ) );
 }

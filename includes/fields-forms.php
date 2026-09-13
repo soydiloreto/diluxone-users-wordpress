@@ -1,31 +1,32 @@
 <?php
 /**
- * Los campos, metidos en los formularios que ya existen.
+ * The fields, dropped into the forms that already exist.
  *
- * El plugin no sabe cómo entra la gente al sitio, y no tiene por qué: los
- * mismos campos aparecen en el registro nativo de WordPress, en el alta que
- * hace un administrador, en el perfil del escritorio y —vía shortcode— en la
- * pantalla que tenga el sitio en el front. Un sitio con registro abierto y uno
- * con SSO o enlace por correo terminan con los mismos datos guardados.
+ * The plugin does not know how people get into the site, and it does not have
+ * to: the same fields appear in WordPress's own registration, in the sign-up
+ * an administrator performs, in the dashboard profile and — through a
+ * shortcode — on whatever screen the site has on the front end. A site with
+ * open registration and one with SSO or an e-mail link end up with the same
+ * data stored.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Un campo suelto, en el marcado de tabla que usa el escritorio.
+ * A single field, in the table markup the dashboard uses.
  *
  * @param array<string, mixed> $field
  */
-function users_dlx_plus_field_row( array $field, int $user_id ): void {
-	$value = users_dlx_plus_value( $user_id, $field['key'] );
-	$id    = 'users-dlx-plus-' . $field['key'];
+function diluxone_users_field_row( array $field, int $user_id ): void {
+	$value = diluxone_users_value( $user_id, $field['key'] );
+	$id    = 'diluxone-users-' . $field['key'];
 	?>
 	<tr>
 		<th><label for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $field['label'] ); ?></label></th>
 		<td>
-			<?php users_dlx_plus_field_input( $field, $value, $id ); ?>
+			<?php diluxone_users_field_input( $field, $value, $id ); ?>
 			<?php if ( '' !== $field['help'] ) : ?>
 				<p class="description"><?php echo esc_html( $field['help'] ); ?></p>
 			<?php endif; ?>
@@ -35,26 +36,27 @@ function users_dlx_plus_field_row( array $field, int $user_id ): void {
 }
 
 /**
- * El control de un campo: el <input>, <select> o <textarea> que corresponda.
+ * A field's control: the matching <input>, <select> or <textarea>.
  *
- * Está separado del marcado de alrededor a propósito: es lo único que no puede
- * cambiar entre el escritorio, el registro y la plantilla del front, así que
- * se escribe una vez y lo usan los tres.
+ * It is separated from the surrounding markup on purpose: it is the only part
+ * that cannot change between the dashboard, the registration and the
+ * front-end template, so it is written once and all three use it.
  *
  * @param array<string, mixed> $field
  */
-function users_dlx_plus_field_input( array $field, string $value, string $id = '' ): void {
+function diluxone_users_field_input( array $field, string $value, string $id = '' ): void {
 	$key              = $field['key'];
 	$id               = '' === $id ? $key : $id;
 	$required_attr    = $field['required'] ? ' required' : '';
 	$placeholder_attr = '' === $field['placeholder'] ? '' : ' placeholder="' . esc_attr( $field['placeholder'] ) . '"';
 
-	// Un campo que no se puede cambiar se muestra igual: el dato es de la
-	// persona y tiene derecho a verlo. En los de escribir va `readonly`, que
-	// deja copiar y sigue mandándose; en los de elegir no existe `readonly` y
-	// hay que usar `disabled`. Lo que manda igual es el servidor: esto es
-	// para que se entienda, no para impedir nada.
-	$editable = users_dlx_plus_field_editable( $field, get_current_user_id() );
+	// A field that cannot be changed is shown all the same: the data belongs to
+	// the person and they have a right to see it. On the ones you type into it
+	// is `readonly`, which allows copying and still submits; on the ones you
+	// pick from there is no `readonly` and `disabled` has to be used. What
+	// rules either way is the server: this is so it is understood, not to
+	// prevent anything.
+	$editable = diluxone_users_field_editable( $field, get_current_user_id() );
 	$lock     = $editable ? '' : ' readonly';
 	$lock_sel = $editable ? '' : ' disabled';
 
@@ -72,7 +74,7 @@ function users_dlx_plus_field_input( array $field, string $value, string $id = '
 
 		case 'select':
 			printf( '<select id="%1$s" name="%2$s"%3$s>', esc_attr( $id ), esc_attr( $key ), esc_attr( $required_attr . $lock_sel ) );
-			printf( '<option value="">%s</option>', esc_html__( '— Choose —', 'users-dlx-plus' ) );
+			printf( '<option value="">%s</option>', esc_html__( '— Choose —', 'diluxone-users' ) );
 
 			foreach ( $field['options'] as $option ) {
 				printf(
@@ -98,15 +100,15 @@ function users_dlx_plus_field_input( array $field, string $value, string $id = '
 
 		case 'country':
 			printf( '<select id="%1$s" name="%2$s"%3$s>', esc_attr( $id ), esc_attr( $key ), esc_attr( $required_attr . $lock_sel ) );
-			printf( '<option value="">%s</option>', esc_html__( '— Choose —', 'users-dlx-plus' ) );
+			printf( '<option value="">%s</option>', esc_html__( '— Choose —', 'diluxone-users' ) );
 
-			$preferred = users_dlx_plus_countries_sorted( $field['options'] );
+			$preferred = diluxone_users_countries_sorted( $field['options'] );
 			$cut       = count( $field['options'] );
 			$n         = 0;
 
 			foreach ( $preferred as $iso => $country_name ) {
-				// Los preferidos van arriba y separados del resto: si no, el
-				// país del sitio queda perdido a mitad de una lista de 189.
+				// The preferred ones go on top and apart from the rest: otherwise
+				// the site's own country is lost halfway down a list of 189.
 				if ( $cut > 0 && $n === $cut ) {
 					echo '<option value="" disabled>──────────</option>';
 				}
@@ -125,19 +127,20 @@ function users_dlx_plus_field_input( array $field, string $value, string $id = '
 			return;
 
 		case 'phone':
-			// Dos controles y un solo dato: el prefijo se elige de una lista y
-			// el número se escribe sin él. Lo que se guarda es la suma.
+			// Two controls and a single value: the dialling code is picked from a
+			// list and the number is typed without it. What is stored is the sum.
 			$dial_default = strtoupper( (string) ( $field['options'][0] ?? '' ) );
 			$dial         = $dial_default;
 			$national     = $value;
 
-			// Al releer un valor guardado hay que volver a partirlo. Se prueba
-			// del prefijo más largo al más corto porque +1 y +1242 conviven.
+			// On reading a stored value back it has to be split again. It is tried
+			// from the longest dialling code to the shortest because +1 and +1242
+			// coexist.
 			if ( '' !== $value ) {
 				$digits = ltrim( $value, '+' );
 				$best   = 0;
 
-				foreach ( users_dlx_plus_countries() as $iso => $data ) {
+				foreach ( diluxone_users_countries() as $iso => $data ) {
 					$len = strlen( $data[1] );
 
 					if ( $len > $best && 0 === strpos( $digits, $data[1] ) ) {
@@ -148,23 +151,23 @@ function users_dlx_plus_field_input( array $field, string $value, string $id = '
 				}
 			}
 
-			echo '<span class="users-dlx-plus-phone">';
-			printf( '<select id="%1$s-dial" name="%2$s_dial" class="users-dlx-plus-phone__dial"%3$s>', esc_attr( $id ), esc_attr( $key ), esc_attr( $lock_sel ) );
+			echo '<span class="diluxone-users-phone">';
+			printf( '<select id="%1$s-dial" name="%2$s_dial" class="diluxone-users-phone__dial"%3$s>', esc_attr( $id ), esc_attr( $key ), esc_attr( $lock_sel ) );
 
-			foreach ( users_dlx_plus_countries_sorted( $field['options'] ) as $iso => $country_name ) {
+			foreach ( diluxone_users_countries_sorted( $field['options'] ) as $iso => $country_name ) {
 				printf(
 					'<option value="%1$s"%2$s>%3$s +%4$s</option>',
 					esc_attr( $iso ),
 					selected( $dial, $iso, false ),
 					esc_html( $country_name ),
-					esc_html( users_dlx_plus_country_dial( $iso ) )
+					esc_html( diluxone_users_country_dial( $iso ) )
 				);
 			}
 
 			echo '</select>';
 
 			printf(
-				'<input type="tel" id="%1$s" name="%2$s" value="%3$s" inputmode="tel" class="users-dlx-plus-phone__number" autocomplete="tel-national"%4$s%5$s>',
+				'<input type="tel" id="%1$s" name="%2$s" value="%3$s" inputmode="tel" class="diluxone-users-phone__number" autocomplete="tel-national"%4$s%5$s>',
 				esc_attr( $id ),
 				esc_attr( $key ),
 				esc_attr( $national ),
@@ -176,7 +179,7 @@ function users_dlx_plus_field_input( array $field, string $value, string $id = '
 			return;
 
 		case 'datalist':
-			$list = 'users-dlx-plus-list-' . $key;
+			$list = 'diluxone-users-list-' . $key;
 
 			printf(
 				'<input type="text" id="%1$s" name="%2$s" value="%3$s" list="%4$s" autocomplete="off"%5$s%6$s>',
@@ -219,79 +222,79 @@ function users_dlx_plus_field_input( array $field, string $value, string $id = '
 /* ── Perfil del escritorio ─────────────────────────────────────────── */
 
 /**
- * Los campos del plugin, en el perfil del escritorio.
+ * The plugin fields, in the dashboard profile.
  *
- * @param WP_User|string $user La persona, o el string que manda el hook de alta.
+ * @param WP_User|string $user The person, or the string the sign-up hook passes.
  */
-function users_dlx_plus_profile_fields( $user ): void {
+function diluxone_users_profile_fields( $user ): void {
 	if ( ! $user instanceof WP_User ) {
 		return;
 	}
 
-	$fields = users_dlx_plus_fields();
+	$fields = diluxone_users_fields();
 
 	if ( array() === $fields ) {
 		return;
 	}
 	?>
-	<h2><?php esc_html_e( 'Additional details', 'users-dlx-plus' ); ?></h2>
+	<h2><?php esc_html_e( 'Additional details', 'diluxone-users' ); ?></h2>
 	<table class="form-table" role="presentation">
 		<?php foreach ( $fields as $field ) : ?>
-			<?php users_dlx_plus_field_row( $field, (int) $user->ID ); ?>
+			<?php diluxone_users_field_row( $field, (int) $user->ID ); ?>
 		<?php endforeach; ?>
 	</table>
 	<?php
 }
-add_action( 'show_user_profile', 'users_dlx_plus_profile_fields' );
-add_action( 'edit_user_profile', 'users_dlx_plus_profile_fields' );
+add_action( 'show_user_profile', 'diluxone_users_profile_fields' );
+add_action( 'edit_user_profile', 'diluxone_users_profile_fields' );
 
 /** Profile save. */
-function users_dlx_plus_profile_save( int $user_id ): void {
+function diluxone_users_profile_save( int $user_id ): void {
 	if ( ! current_user_can( 'edit_user', $user_id ) ) {
 		return;
 	}
 
-	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WordPress ya verificó el nonce del perfil antes de este hook.
-	users_dlx_plus_save( $user_id, $_POST );
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WordPress already verified the profile nonce before this hook.
+	diluxone_users_save( $user_id, $_POST );
 }
-add_action( 'personal_options_update', 'users_dlx_plus_profile_save' );
-add_action( 'edit_user_profile_update', 'users_dlx_plus_profile_save' );
+add_action( 'personal_options_update', 'diluxone_users_profile_save' );
+add_action( 'edit_user_profile_update', 'diluxone_users_profile_save' );
 
-/* ── Alta desde el escritorio (Usuarios → Añadir) ──────────────────── */
+/* ── Sign-up from the dashboard (Users → Add New) ──────────────────── */
 
-/** Los campos del plugin, en el alta de una persona desde el escritorio. */
-function users_dlx_plus_new_user_fields( string $type ): void {
-	$fields = users_dlx_plus_fields();
+/** The plugin fields, in the dashboard sign-up of a person. */
+function diluxone_users_new_user_fields( string $type ): void {
+	$fields = diluxone_users_fields();
 
 	if ( 'add-new-user' !== $type || array() === $fields ) {
 		return;
 	}
 	?>
-	<h2><?php esc_html_e( 'Additional details', 'users-dlx-plus' ); ?></h2>
+	<h2><?php esc_html_e( 'Additional details', 'diluxone-users' ); ?></h2>
 	<table class="form-table" role="presentation">
 		<?php foreach ( $fields as $field ) : ?>
-			<?php users_dlx_plus_field_row( $field, 0 ); ?>
+			<?php diluxone_users_field_row( $field, 0 ); ?>
 		<?php endforeach; ?>
 	</table>
 	<?php
 }
-add_action( 'user_new_form', 'users_dlx_plus_new_user_fields' );
+add_action( 'user_new_form', 'diluxone_users_new_user_fields' );
 
 /* ── Registro nativo de WordPress ──────────────────────────────────── */
 
 /**
- * Los campos en wp-login.php?action=register.
+ * The fields on wp-login.php?action=register.
  *
- * Sirve para el sitio que sí tiene el registro abierto. En un sitio sin
- * contraseñas este formulario no se usa nunca y esto no molesta.
+ * It is there for the site that does have open registration. On a site
+ * without passwords this form is never used and this gets in nobody's way.
  */
-function users_dlx_plus_register_form_fields(): void {
-	foreach ( users_dlx_plus_fields() as $field ) {
-		$id = 'users-dlx-plus-' . $field['key'];
+function diluxone_users_register_form_fields(): void {
+	foreach ( diluxone_users_fields() as $field ) {
+		$id = 'diluxone-users-' . $field['key'];
 		?>
 		<p>
 			<label for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $field['label'] ); ?></label>
-			<?php users_dlx_plus_field_input( $field, '', $id ); ?>
+			<?php diluxone_users_field_input( $field, '', $id ); ?>
 			<?php if ( '' !== $field['help'] ) : ?>
 				<em class="description"><?php echo esc_html( $field['help'] ); ?></em>
 			<?php endif; ?>
@@ -299,44 +302,44 @@ function users_dlx_plus_register_form_fields(): void {
 		<?php
 	}
 }
-add_action( 'register_form', 'users_dlx_plus_register_form_fields' );
+add_action( 'register_form', 'diluxone_users_register_form_fields' );
 
 /**
- * Un campo obligatorio vacío no deja completar el registro.
+ * An empty required field does not let the registration go through.
  *
- * @param WP_Error $errores Los errores que ya haya juntado WordPress.
- * @param string   $login   El usuario que se está dando de alta.
- * @param string   $email   Su correo.
+ * @param WP_Error $errors The errors WordPress has already gathered.
+ * @param string   $login  The username being registered.
+ * @param string   $email  Their e-mail.
  * @return WP_Error
  */
-function users_dlx_plus_register_validate( $errores, $login, $email ) {
-	foreach ( users_dlx_plus_fields() as $field ) {
+function diluxone_users_register_validate( $errors, $login, $email ) {
+	foreach ( diluxone_users_fields() as $field ) {
 		if ( ! $field['required'] ) {
 			continue;
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- lo verifica el registro de WordPress; el valor lo sanea users_dlx_plus_sanitize() según el tipo del campo.
-		$value = users_dlx_plus_sanitize( $field, (string) wp_unslash( $_POST[ $field['key'] ] ?? '' ) );
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- WordPress registration verifies it; diluxone_users_sanitize() cleans the value according to the field type.
+		$value = diluxone_users_sanitize( $field, (string) wp_unslash( $_POST[ $field['key'] ] ?? '' ) );
 
 		if ( '' === $value ) {
-			$errores->add(
-				'users_dlx_plus_' . $field['key'],
+			$errors->add(
+				'diluxone_users_' . $field['key'],
 				sprintf(
-					/* translators: %s: nombre del campo */
-					esc_html__( 'Error: “%s” is required.', 'users-dlx-plus' ),
+						/* translators: %s: field name */
+					esc_html__( 'Error: “%s” is required.', 'diluxone-users' ),
 					esc_html( $field['label'] )
 				)
 			);
 		}
 	}
 
-	return $errores;
+	return $errors;
 }
-add_filter( 'registration_errors', 'users_dlx_plus_register_validate', 10, 3 );
+add_filter( 'registration_errors', 'diluxone_users_register_validate', 10, 3 );
 
 /** Register save. */
-function users_dlx_plus_register_save( int $user_id ): void {
-	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- lo verifica el propio registro de WordPress.
-	users_dlx_plus_save( $user_id, $_POST );
+function diluxone_users_register_save( int $user_id ): void {
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WordPress registration verifies it itself.
+	diluxone_users_save( $user_id, $_POST );
 }
-add_action( 'user_register', 'users_dlx_plus_register_save' );
+add_action( 'user_register', 'diluxone_users_register_save' );

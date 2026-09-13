@@ -1,25 +1,26 @@
 <?php
 /**
- * Entrar con una red social (SSO por OAuth 2).
+ * Signing in with a social account (SSO over OAuth 2).
  *
- * Está deliberadamente modelado como Nextend Social Login: un proveedor por
- * red, con su ID de cliente y su secreto, una URL de retorno que se copia y se
- * pega en la consola del proveedor, y la cuenta que se vincula por correo.
+ * Deliberately modelled on Nextend Social Login: one provider per network,
+ * with its client ID and its secret, a callback URL you copy and paste into
+ * the provider's console, and the account linked by e-mail.
  *
- * Lo que cambia respecto de Nextend: los proveedores comparten un solo flujo.
- * Acá está el motor; la tabla de proveedores vive en sso-providers.php.
+ * What changes from Nextend: every provider shares a single flow. The engine
+ * is here; the provider table lives in sso-providers.php.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/** Las credenciales guardadas de un proveedor. */
 /**
+ * A provider's stored credentials.
+ *
  * @return array<string, mixed>
  */
-function users_dlx_plus_sso_credentials( string $id ): array {
-	$all = (array) get_option( 'users_dlx_plus_sso', array() );
+function diluxone_users_sso_credentials( string $id ): array {
+	$all = (array) get_option( 'diluxone_users_sso', array() );
 
 	return array(
 		'active' => ! empty( $all[ $id ]['active'] ),
@@ -28,13 +29,14 @@ function users_dlx_plus_sso_credentials( string $id ): array {
 	);
 }
 
-/** Guarda las credenciales de un proveedor sin tocar las de los demás. */
 /**
+ * Saves one provider's credentials without touching anyone else's.
+ *
  * @param array<string, mixed> $values
  */
-function users_dlx_plus_sso_save_credentials( string $id, array $values ): void {
-	$all      = (array) get_option( 'users_dlx_plus_sso', array() );
-	$previous = users_dlx_plus_sso_credentials( $id );
+function diluxone_users_sso_save_credentials( string $id, array $values ): void {
+	$all      = (array) get_option( 'diluxone_users_sso', array() );
+	$previous = diluxone_users_sso_credentials( $id );
 
 	$new = array(
 		'active' => empty( $values['active'] ) ? 0 : 1,
@@ -42,170 +44,170 @@ function users_dlx_plus_sso_save_credentials( string $id, array $values ): void 
 		'secret' => sanitize_text_field( (string) ( $values['secret'] ?? '' ) ),
 	);
 
-	// Si cambiaron las credenciales, lo que se probó fue otra cosa.
-	$cambio = $new['id'] !== $previous['id'] || $new['secret'] !== $previous['secret'];
+	// If the credentials changed, what was tested was something else.
+	$changed = $new['id'] !== $previous['id'] || $new['secret'] !== $previous['secret'];
 
-	$new['tested'] = $cambio ? 0 : ( users_dlx_plus_sso_tested( $id ) ? 1 : 0 );
+	$new['tested'] = $changed ? 0 : ( diluxone_users_sso_tested( $id ) ? 1 : 0 );
 
-	// Y nadie prende un proveedor sin probarlo.
+	// And nobody turns a provider on without testing it.
 	if ( ! $new['tested'] ) {
 		$new['active'] = 0;
 	}
 
 	$all[ $id ] = $new;
 
-	update_option( 'users_dlx_plus_sso', $all );
+	update_option( 'diluxone_users_sso', $all );
 }
 
 /**
- * En qué estado está un proveedor.
+ * What state a provider is in.
  *
- * Los cuatro estados son los de Nextend y el orden importa: no se puede
- * prender uno que no se probó. Probarlo es hacer el ida y vuelta de verdad
- * contra el proveedor — es la única forma de saber que el ID, el secreto y la
- * URL de retorno están bien, y de que nadie se entere de que no lo están
- * porque no pudo entrar.
+ * The four states are Nextend's and the order matters: one that has not been
+ * tested cannot be turned on. Testing it means doing the real round trip
+ * against the provider — the only way to know the ID, the secret and the
+ * callback URL are right, and that nobody finds out they are not by failing
+ * to get in.
  *
  * @return string not-configured | not-tested | disabled | enabled
  */
-function users_dlx_plus_sso_state( string $id ): string {
-	if ( ! users_dlx_plus_sso_configured( $id ) ) {
+function diluxone_users_sso_state( string $id ): string {
+	if ( ! diluxone_users_sso_configured( $id ) ) {
 		return 'not-configured';
 	}
 
-	if ( ! users_dlx_plus_sso_tested( $id ) ) {
+	if ( ! diluxone_users_sso_tested( $id ) ) {
 		return 'not-tested';
 	}
 
-	return users_dlx_plus_sso_credentials( $id )['active'] ? 'enabled' : 'disabled';
+	return diluxone_users_sso_credentials( $id )['active'] ? 'enabled' : 'disabled';
 }
 
-/** ¿Se probó y funcionó? */
-function users_dlx_plus_sso_tested( string $id ): bool {
-	$all = (array) get_option( 'users_dlx_plus_sso', array() );
+/** Was it tested, and did it work? */
+function diluxone_users_sso_tested( string $id ): bool {
+	$all = (array) get_option( 'diluxone_users_sso', array() );
 
 	return ! empty( $all[ $id ]['tested'] );
 }
 
-/** Marca un proveedor como probado, o le saca la marca. */
-function users_dlx_plus_sso_set_tested( string $id, bool $tested ): void {
-	$all = (array) get_option( 'users_dlx_plus_sso', array() );
+/** Marks a provider as tested, or takes the mark away. */
+function diluxone_users_sso_set_tested( string $id, bool $tested ): void {
+	$all = (array) get_option( 'diluxone_users_sso', array() );
 
 	$all[ $id ]           = (array) ( $all[ $id ] ?? array() );
 	$all[ $id ]['tested'] = $tested ? 1 : 0;
 
-	update_option( 'users_dlx_plus_sso', $all );
+	update_option( 'diluxone_users_sso', $all );
 }
 
-/** ¿Tiene credenciales cargadas? */
-function users_dlx_plus_sso_configured( string $id ): bool {
-	$c = users_dlx_plus_sso_credentials( $id );
+/** Does it have credentials filled in? */
+function diluxone_users_sso_configured( string $id ): bool {
+	$c = diluxone_users_sso_credentials( $id );
 
 	return '' !== $c['id'] && '' !== $c['secret'];
 }
 
-/** ¿Está listo para que entre gente? Configurado, probado y prendido. */
-function users_dlx_plus_sso_ready( string $id ): bool {
-	return 'enabled' === users_dlx_plus_sso_state( $id );
+/** Is it ready for people to use? Configured, tested and turned on. */
+function diluxone_users_sso_ready( string $id ): bool {
+	return 'enabled' === diluxone_users_sso_state( $id );
 }
 
-/** Los proveedores que se pueden mostrar hoy. */
 /**
+ * The providers that can be shown today.
+ *
  * @return array<string, mixed>
  */
-function users_dlx_plus_sso_available(): array {
+function diluxone_users_sso_available(): array {
 	return array_filter(
-		users_dlx_plus_sso_providers(),
-		static fn( array $p, string $id ): bool => users_dlx_plus_sso_ready( $id ),
+		diluxone_users_sso_providers(),
+		static fn( array $p, string $id ): bool => diluxone_users_sso_ready( $id ),
 		ARRAY_FILTER_USE_BOTH
 	);
 }
 
 /**
- * El tramo de la URL donde vive el ida y vuelta con las redes.
+ * The URL segment where the round trip with the networks lives.
  *
- * Se puede mover con el filtro por si un sitio ya tiene una página en /sso/.
- * Cambiarlo obliga a repasar las consolas de los proveedores, porque la URL
- * de retorno queda registrada allá.
+ * It can be moved with the filter in case a site already has a page at /sso/.
+ * Changing it forces a pass over the providers' consoles, because the
+ * callback URL is registered over there.
  */
-function users_dlx_plus_sso_base(): string {
-	return trim( (string) apply_filters( 'users_dlx_plus_sso_base', 'sso' ), '/' );
+function diluxone_users_sso_base(): string {
+	return trim( (string) apply_filters( 'diluxone_users_sso_base', 'sso' ), '/' );
 }
 
 /**
- * La URL de retorno que hay que pegar en la consola del proveedor.
+ * The callback URL to paste into the provider's console.
  *
- * Es una dirección con ruta y sin parámetros a propósito: Microsoft Entra
- * rechaza de plano una URL de retorno con query string («URL may not contain a
- * query string») y Apple hace lo mismo. Lo que antes era `/?users_dlx_plus_sso=google`
- * dejaba afuera a esos dos, así que la ruta es el camino que sirve para todos.
+ * It is an address with a path and no parameters on purpose: Microsoft Entra
+ * flatly rejects a callback URL with a query string ("URL may not contain a
+ * query string") and Apple does the same. What used to be
+ * `/?diluxone_users_sso=google` left those two out, so the path is the road
+ * that works for everyone.
  *
- * Con enlaces permanentes «simples» no hay ruta posible y se vuelve al
- * parámetro, que es lo único que WordPress puede resolver en ese modo.
+ * With "plain" permalinks there is no possible path and it falls back to the
+ * parameter, the only thing WordPress can resolve in that mode.
  */
-function users_dlx_plus_sso_redirect_uri( string $id ): string {
+function diluxone_users_sso_redirect_uri( string $id ): string {
 	if ( '' === (string) get_option( 'permalink_structure' ) ) {
-		return add_query_arg( 'users_dlx_plus_sso', $id, home_url( '/' ) );
+		return add_query_arg( 'diluxone_users_sso', $id, home_url( '/' ) );
 	}
 
-	return home_url( '/' . users_dlx_plus_sso_base() . '/' . $id . '/' );
+	return home_url( '/' . diluxone_users_sso_base() . '/' . $id . '/' );
 }
 
-/** La URL que dispara el ida y vuelta. */
-function users_dlx_plus_sso_login_url( string $id ): string {
-	return add_query_arg( 'users_dlx_plus_go', 1, users_dlx_plus_sso_redirect_uri( $id ) );
+/** The URL that fires the round trip. */
+function diluxone_users_sso_login_url( string $id ): string {
+	return add_query_arg( 'diluxone_users_go', 1, diluxone_users_sso_redirect_uri( $id ) );
 }
 
-/** La URL de la prueba en vivo, para abrir en una ventana aparte. */
-function users_dlx_plus_sso_test_url( string $id ): string {
+/** The live-test URL, to open in a window of its own. */
+function diluxone_users_sso_test_url( string $id ): string {
 	return wp_nonce_url(
 		add_query_arg(
 			array(
-				'users_dlx_plus_go'   => 1,
-				'users_dlx_plus_test' => 1,
+				'diluxone_users_go'   => 1,
+				'diluxone_users_test' => 1,
 			),
-			users_dlx_plus_sso_redirect_uri( $id )
+			diluxone_users_sso_redirect_uri( $id )
 		),
-		'users_dlx_plus_sso_test_' . $id,
-		'users_dlx_plus_nonce'
+		'diluxone_users_sso_test_' . $id,
+		'diluxone_users_nonce'
 	);
 }
 
-/** La regla que hace posible /sso/<red>/. */
-function users_dlx_plus_sso_rule(): void {
+/** The rule that makes /sso/<network>/ possible. */
+function diluxone_users_sso_rule(): void {
 	add_rewrite_rule(
-		'^' . preg_quote( users_dlx_plus_sso_base(), '/' ) . '/([a-z0-9_-]+)/?$',
-		'index.php?users_dlx_plus_sso=$matches[1]',
+		'^' . preg_quote( diluxone_users_sso_base(), '/' ) . '/([a-z0-9_-]+)/?$',
+		'index.php?diluxone_users_sso=$matches[1]',
 		'top'
 	);
 }
-add_action( 'init', 'users_dlx_plus_sso_rule' );
+add_action( 'init', 'diluxone_users_sso_rule' );
 
-/** Sin esto WordPress descarta el valor que capturó la regla. */
 /**
- * @return array<string, mixed>
- */
-/**
+ * Without this WordPress throws away the value the rule captured.
+ *
  * @param array<int, string> $vars
  * @return array<int, string>
  */
-function users_dlx_plus_sso_query_var( array $vars ): array {
-	$vars[] = 'users_dlx_plus_sso';
+function diluxone_users_sso_query_var( array $vars ): array {
+	$vars[] = 'diluxone_users_sso';
 
 	return $vars;
 }
-add_filter( 'query_vars', 'users_dlx_plus_sso_query_var' );
+add_filter( 'query_vars', 'diluxone_users_sso_query_var' );
 
-/* ── Lectura del perfil de cada proveedor ──────────────────────────── */
+/* ── Reading each provider's profile ───────────────────────────────── */
 
 /**
- * OpenID Connect (Google, Microsoft, LinkedIn, Yahoo, Twitch, GitLab): el
- * perfil ya viene con nombres estándar.
+ * OpenID Connect (Google, Microsoft, LinkedIn, Yahoo, Twitch, GitLab): the
+ * profile already comes with standard names.
  *
  * @param array<string, mixed> $data
  * @return array{id: string, email: string, name: string, last_name: string}
  */
-function users_dlx_plus_sso_map_oidc( array $data, string $token ): array {
+function diluxone_users_sso_map_oidc( array $data, string $token ): array {
 	return array(
 		'id'        => (string) ( $data['sub'] ?? '' ),
 		'email'     => (string) ( $data['email'] ?? '' ),
@@ -222,7 +224,7 @@ function users_dlx_plus_sso_map_oidc( array $data, string $token ): array {
  * @param array<string, mixed> $data
  * @return array<string, mixed>
  */
-function users_dlx_plus_sso_map_facebook( array $data, string $token ): array {
+function diluxone_users_sso_map_facebook( array $data, string $token ): array {
 	return array(
 		'id'        => (string) ( $data['id'] ?? '' ),
 		'email'     => (string) ( $data['email'] ?? '' ),
@@ -232,17 +234,17 @@ function users_dlx_plus_sso_map_facebook( array $data, string $token ): array {
 }
 
 /**
- * GitHub manda un solo campo `name` y esconde el correo si es privado: hay que
- * pedirlo aparte y quedarse con el primario verificado.
+ * GitHub sends a single `name` field and hides the e-mail when it is private:
+ * it has to be asked for separately, keeping the verified primary one.
  *
  * @param array<string, mixed> $data
  * @return array<string, mixed>
  */
-function users_dlx_plus_sso_map_github( array $data, string $token ): array {
+function diluxone_users_sso_map_github( array $data, string $token ): array {
 	$email = (string) ( $data['email'] ?? '' );
 
 	if ( '' === $email ) {
-		foreach ( (array) users_dlx_plus_sso_get( 'https://api.github.com/user/emails', $token ) as $row ) {
+		foreach ( (array) diluxone_users_sso_get( 'https://api.github.com/user/emails', $token ) as $row ) {
 			if ( ! empty( $row['primary'] ) && ! empty( $row['verified'] ) ) {
 				$email = (string) $row['email'];
 				break;
@@ -251,7 +253,7 @@ function users_dlx_plus_sso_map_github( array $data, string $token ): array {
 	}
 
 	return array_merge(
-		users_dlx_plus_sso_split_name( (string) ( $data['name'] ?? '' ) ),
+		diluxone_users_sso_split_name( (string) ( $data['name'] ?? '' ) ),
 		array(
 			'id'    => (string) ( $data['id'] ?? '' ),
 			'email' => $email,
@@ -267,9 +269,9 @@ function users_dlx_plus_sso_map_github( array $data, string $token ): array {
  * @param array<string, mixed> $data
  * @return array<string, mixed>
  */
-function users_dlx_plus_sso_map_wordpress( array $data, string $token ): array {
+function diluxone_users_sso_map_wordpress( array $data, string $token ): array {
 	return array_merge(
-		users_dlx_plus_sso_split_name( (string) ( $data['display_name'] ?? '' ) ),
+		diluxone_users_sso_split_name( (string) ( $data['display_name'] ?? '' ) ),
 		array(
 			'id'    => (string) ( $data['ID'] ?? '' ),
 			'email' => (string) ( $data['email'] ?? '' ),
@@ -277,17 +279,15 @@ function users_dlx_plus_sso_map_wordpress( array $data, string $token ): array {
 	);
 }
 
-/** Discord: el correo viene sólo si se pidió el scope `email`. */
 /**
- * @return array<string, mixed>
- */
-/**
+ * Discord: the e-mail only comes if the `email` scope was asked for.
+ *
  * @param array<string, mixed> $data
  * @return array<string, mixed>
  */
-function users_dlx_plus_sso_map_discord( array $data, string $token ): array {
+function diluxone_users_sso_map_discord( array $data, string $token ): array {
 	return array_merge(
-		users_dlx_plus_sso_split_name( (string) ( $data['global_name'] ?? $data['username'] ?? '' ) ),
+		diluxone_users_sso_split_name( (string) ( $data['global_name'] ?? $data['username'] ?? '' ) ),
 		array(
 			'id'    => (string) ( $data['id'] ?? '' ),
 			'email' => (string) ( $data['email'] ?? '' ),
@@ -303,9 +303,9 @@ function users_dlx_plus_sso_map_discord( array $data, string $token ): array {
  * @param array<string, mixed> $data
  * @return array<string, mixed>
  */
-function users_dlx_plus_sso_map_amazon( array $data, string $token ): array {
+function diluxone_users_sso_map_amazon( array $data, string $token ): array {
 	return array_merge(
-		users_dlx_plus_sso_split_name( (string) ( $data['name'] ?? '' ) ),
+		diluxone_users_sso_split_name( (string) ( $data['name'] ?? '' ) ),
 		array(
 			'id'    => (string) ( $data['user_id'] ?? '' ),
 			'email' => (string) ( $data['email'] ?? '' ),
@@ -314,20 +314,20 @@ function users_dlx_plus_sso_map_amazon( array $data, string $token ): array {
 }
 
 /**
- * X (Twitter) no devuelve el correo por más scope que se le pida.
+ * X (Twitter) does not return the e-mail, no matter what scope it is asked for.
  *
- * Se deja vacío a propósito: el flujo de arriba sabe qué hacer con eso —
- * vincular a una cuenta que ya está adentro sí se puede, crear una cuenta
- * nueva no, porque el correo es la identidad del sitio.
+ * It is left empty on purpose: the flow above knows what to do with that —
+ * linking to an account that is already in is fine, creating a new account is
+ * not, because the e-mail is the site's notion of identity.
  *
  * @param array<string, mixed> $data
  * @return array<string, mixed>
  */
-function users_dlx_plus_sso_map_twitter( array $data, string $token ): array {
+function diluxone_users_sso_map_twitter( array $data, string $token ): array {
 	$user = (array) ( $data['data'] ?? array() );
 
 	return array_merge(
-		users_dlx_plus_sso_split_name( (string) ( $user['name'] ?? '' ) ),
+		diluxone_users_sso_split_name( (string) ( $user['name'] ?? '' ) ),
 		array(
 			'id'    => (string) ( $user['id'] ?? '' ),
 			'email' => '',
@@ -336,11 +336,11 @@ function users_dlx_plus_sso_map_twitter( array $data, string $token ): array {
 }
 
 /**
- * Parte un nombre completo en nombre y apellido.
+ * Splits a full name into first name and last name.
  *
  * @return array{name: string, last_name: string}
  */
-function users_dlx_plus_sso_split_name( string $full ): array {
+function diluxone_users_sso_split_name( string $full ): array {
 	$parts = preg_split( '/\s+/u', trim( $full ) );
 	$parts = is_array( $parts ) ? $parts : array();
 
@@ -350,14 +350,14 @@ function users_dlx_plus_sso_split_name( string $full ): array {
 	);
 }
 
-/* ── El ida y vuelta ───────────────────────────────────────────────── */
+/* ── The round trip ────────────────────────────────────────────────── */
 
 /**
- * Un GET autenticado que devuelve JSON.
+ * An authenticated GET that returns JSON.
  *
  * @return array<string, mixed>
  */
-function users_dlx_plus_sso_get( string $url, string $token ): array {
+function diluxone_users_sso_get( string $url, string $token ): array {
 	$response = wp_remote_get(
 		$url,
 		array(
@@ -365,8 +365,8 @@ function users_dlx_plus_sso_get( string $url, string $token ): array {
 			'headers' => array(
 				'Authorization' => 'Bearer ' . $token,
 				'Accept'        => 'application/json',
-				// GitHub rechaza los pedidos sin user agent.
-				'User-Agent'    => 'users-dlx-plus',
+				// GitHub rejects requests with no user agent.
+				'User-Agent'    => 'diluxone-users',
 			),
 		)
 	);
@@ -378,36 +378,37 @@ function users_dlx_plus_sso_get( string $url, string $token ): array {
 	return (array) json_decode( (string) wp_remote_retrieve_body( $response ), true );
 }
 
-/** Manda a la pantalla del proveedor. */
 /**
+ * Sends them to the provider's screen.
+ *
  * @param array<string, mixed> $provider
  */
-function users_dlx_plus_sso_authorize( string $id, array $provider, bool $test = false ): void {
-	$credentials = users_dlx_plus_sso_credentials( $id );
+function diluxone_users_sso_authorize( string $id, array $provider, bool $test = false ): void {
+	$credentials = diluxone_users_sso_credentials( $id );
 	$state       = wp_generate_password( 24, false, false );
 
-	$guardado = array(
+	$saved = array(
 		'provider' => $id,
 		'test'     => $test ? 1 : 0,
 	);
 
-	// PKCE: en vez del secreto, se manda el hash de un valor al azar y en el
-	// canje se manda el valor. Así el código robado en el camino de vuelta no
-	// le sirve a nadie más. X lo exige; al resto no le molesta.
+	// PKCE: instead of the secret, the hash of a random value is sent, and the
+	// value itself is sent on the exchange. That way a code stolen on the way
+	// back is no use to anyone. X requires it; the rest do not mind.
 	$verifier = empty( $provider['pkce'] ) ? '' : wp_generate_password( 64, false, false );
 
 	if ( '' !== $verifier ) {
-		$guardado['verifier'] = $verifier;
+		$saved['verifier'] = $verifier;
 	}
 
-	// El `state` es lo que impide que alguien fabrique un retorno: se guarda
-	// del lado del servidor y tiene que volver igual.
-	set_transient( 'users_dlx_plus_sso_' . $state, $guardado, 10 * MINUTE_IN_SECONDS );
+	// The `state` is what stops anyone from forging a callback: it is stored
+	// server-side and has to come back identical.
+	set_transient( 'diluxone_users_sso_' . $state, $saved, 10 * MINUTE_IN_SECONDS );
 
 	$args = array_merge(
 		array(
 			'client_id'     => rawurlencode( $credentials['id'] ),
-			'redirect_uri'  => rawurlencode( users_dlx_plus_sso_redirect_uri( $id ) ),
+			'redirect_uri'  => rawurlencode( diluxone_users_sso_redirect_uri( $id ) ),
 			'response_type' => 'code',
 			'scope'         => rawurlencode( $provider['scope'] ),
 			'state'         => $state,
@@ -420,23 +421,24 @@ function users_dlx_plus_sso_authorize( string $id, array $provider, bool $test =
 		$args['code_challenge_method'] = 'S256';
 	}
 
-	// phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- va al proveedor, que es justamente otro dominio: wp_safe_redirect() lo frenaría.
+		// phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- it goes to the provider, which is precisely another domain: wp_safe_redirect() would stop it.
 	wp_redirect( add_query_arg( $args, $provider['authorize'] ) );
 	exit;
 }
 
-/** Cambia el código por un token de acceso. */
 /**
+ * Exchanges the code for an access token.
+ *
  * @param array<string, mixed> $provider
  */
-function users_dlx_plus_sso_token( string $id, array $provider, string $code, string $verifier = '' ): string {
-	$credentials = users_dlx_plus_sso_credentials( $id );
+function diluxone_users_sso_token( string $id, array $provider, string $code, string $verifier = '' ): string {
+	$credentials = diluxone_users_sso_credentials( $id );
 
 	$body = array(
 		'client_id'     => $credentials['id'],
 		'client_secret' => $credentials['secret'],
 		'code'          => $code,
-		'redirect_uri'  => users_dlx_plus_sso_redirect_uri( $id ),
+		'redirect_uri'  => diluxone_users_sso_redirect_uri( $id ),
 		'grant_type'    => 'authorization_code',
 	);
 
@@ -446,7 +448,7 @@ function users_dlx_plus_sso_token( string $id, array $provider, string $code, st
 
 	$headers = array( 'Accept' => 'application/json' );
 
-	// X pide el secreto por Basic auth y no en el cuerpo.
+	// X wants the secret in Basic auth and not in the body.
 	if ( 'twitter' === $id ) {
 		$headers['Authorization'] = 'Basic ' . base64_encode( $credentials['id'] . ':' . $credentials['secret'] );
 		unset( $body['client_secret'] );
@@ -471,16 +473,16 @@ function users_dlx_plus_sso_token( string $id, array $provider, string $code, st
 }
 
 /**
- * Encuentra o crea la cuenta de una identidad social y la vincula.
+ * Finds or creates the account behind a social identity, and links it.
  *
- * La vinculación es por correo, igual que el ajuste "Link accounts by email"
- * de Nextend: si ya hay una cuenta con ese correo, es de la misma persona.
- * Vale porque el correo lo verificó el proveedor, no nosotros.
+ * Linking is by e-mail, the same as Nextend's "Link accounts by email"
+ * setting: if there is already an account with that e-mail, it belongs to the
+ * same person. That holds because the provider verified the e-mail, not us.
  *
  * @param array<string, mixed> $identity
  */
-function users_dlx_plus_sso_user( string $id, array $identity ): int {
-	$meta = 'users_dlx_plus_sso_' . $id;
+function diluxone_users_sso_user( string $id, array $identity ): int {
+	$meta = 'diluxone_users_sso_' . $id;
 
 	$existing = get_users(
 		array(
@@ -492,7 +494,7 @@ function users_dlx_plus_sso_user( string $id, array $identity ): int {
 	);
 
 	if ( $existing ) {
-		return users_dlx_plus_sso_role_blocked( (int) $existing[0] ) ? 0 : (int) $existing[0];
+		return diluxone_users_sso_role_blocked( (int) $existing[0] ) ? 0 : (int) $existing[0];
 	}
 
 	if ( '' === $identity['email'] || ! is_email( $identity['email'] ) ) {
@@ -501,35 +503,35 @@ function users_dlx_plus_sso_user( string $id, array $identity ): int {
 
 	$known = get_user_by( 'email', $identity['email'] );
 
-	// La cuenta ya existe con ese correo pero sin esta red vinculada: es la
-	// misma persona, y se le suma la red. Es lo que hace que entrar con Google
-	// hoy y con GitHub mañana sea la misma cuenta y no dos.
+	// The account already exists with that e-mail but without this network
+	// linked: it is the same person, and the network is added to it. That is
+	// what makes signing in with Google today and GitHub tomorrow one account.
 	if ( $known ) {
-		if ( ! users_dlx_plus_option( 'users_dlx_plus_sso_link_by_email' ) ) {
+		if ( ! diluxone_users_option( 'diluxone_users_sso_link_by_email' ) ) {
 			return 0;
 		}
 
 		$user_id = (int) $known->ID;
 
-		// Igual que con el enlace por correo: en una red hay que sumarlo a
-		// este sitio, o entra y no puede hacer nada.
-		users_dlx_plus_join_site( $user_id );
+		// Same as with the e-mail link: on a network they have to be added to
+		// this site, or they get in and can do nothing.
+		diluxone_users_join_site( $user_id );
 	} else {
-		if ( ! users_dlx_plus_option( 'users_dlx_plus_sso_register' ) ) {
+		if ( ! diluxone_users_option( 'diluxone_users_sso_register' ) ) {
 			return 0;
 		}
 
-		$user_id = users_dlx_plus_user_for( $identity['email'] );
+		$user_id = diluxone_users_user_for( $identity['email'] );
 	}
 
-	if ( $user_id <= 0 || users_dlx_plus_sso_role_blocked( $user_id ) ) {
+	if ( $user_id <= 0 || diluxone_users_sso_role_blocked( $user_id ) ) {
 		return 0;
 	}
 
 	update_user_meta( $user_id, $meta, $identity['id'] );
 
-	// El nombre sólo se completa si estaba vacío: lo que la persona escribió en
-	// el sitio manda sobre lo que diga la red social.
+	// The name is only filled in when it was empty: what the person typed on
+	// the site wins over whatever the social network says.
 	foreach ( array(
 		'first_name' => 'name',
 		'last_name'  => 'last_name',
@@ -543,17 +545,17 @@ function users_dlx_plus_sso_user( string $id, array $identity ): int {
 }
 
 /**
- * ¿Este rol tiene prohibido entrar con una red social?
+ * Is this role forbidden from signing in with a social account?
  *
- * La cuenta con más poder es la que más conviene proteger, y una cuenta de
- * administración que entra por Google depende de que esa cuenta de Google no
- * se pierda. Con el acceso por enlace de correo siempre disponible, cerrarle
- * la puerta social a los roles elegidos no deja a nadie afuera.
+ * The account with the most power is the one most worth protecting, and an
+ * administrator account that gets in through Google depends on that Google
+ * account not being lost. With e-mail-link access always available, closing
+ * the social door to the chosen roles leaves nobody out.
  *
- * @param int $user_id Usuario a revisar.
+ * @param int $user_id User to check.
  */
-function users_dlx_plus_sso_role_blocked( int $user_id ): bool {
-	$blocked = (array) users_dlx_plus_option( 'users_dlx_plus_sso_blocked_roles' );
+function diluxone_users_sso_role_blocked( int $user_id ): bool {
+	$blocked = (array) diluxone_users_option( 'diluxone_users_sso_blocked_roles' );
 
 	if ( array() === $blocked ) {
 		return false;
@@ -565,74 +567,74 @@ function users_dlx_plus_sso_role_blocked( int $user_id ): bool {
 }
 
 /**
- * El pedido tal como llegó.
+ * The request exactly as it arrived.
  *
- * WordPress borra `$_GET['error']` mientras resuelve la URL —lo usa para
- * anotar su propio 404— y un proveedor OAuth contesta justamente con `error`
- * cuando alguien cancela la autorización. Así que la copia se saca temprano,
- * en `init`, que corre antes de que eso pase.
+ * WordPress deletes `$_GET['error']` while it resolves the URL — it uses it
+ * to record its own 404 — and an OAuth provider answers with precisely
+ * `error` when somebody cancels the authorisation. So the copy is taken
+ * early, on `init`, which runs before that happens.
  *
  * @return array<string, mixed>
  */
-function users_dlx_plus_sso_query(): array {
+function diluxone_users_sso_query(): array {
 	static $query = null;
 
 	if ( null === $query ) {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- es la copia, no el uso.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- this is the copy, not the use.
 		$query = wp_unslash( $_GET );
 	}
 
 	return $query;
 }
 
-/** La copia del pedido, tomada temprano. El valor lo lee users_dlx_plus_sso_param(). */
-function users_dlx_plus_sso_query_snapshot(): void {
-	users_dlx_plus_sso_query();
+/** The copy of the request, taken early. diluxone_users_sso_param() reads it. */
+function diluxone_users_sso_query_snapshot(): void {
+	diluxone_users_sso_query();
 }
-add_action( 'init', 'users_dlx_plus_sso_query_snapshot', 0 );
+add_action( 'init', 'diluxone_users_sso_query_snapshot', 0 );
 
-/** Un parámetro del pedido, ya limpio de barras. */
-function users_dlx_plus_sso_param( string $key ): string {
-	$query = users_dlx_plus_sso_query();
+/** One request parameter, already free of slashes. */
+function diluxone_users_sso_param( string $key ): string {
+	$query = diluxone_users_sso_query();
 
 	return isset( $query[ $key ] ) && is_scalar( $query[ $key ] ) ? (string) $query[ $key ] : '';
 }
 
-/** ¿Vino este parámetro, aunque sea vacío? */
-function users_dlx_plus_sso_has( string $key ): bool {
-	return array_key_exists( $key, users_dlx_plus_sso_query() );
+/** Did this parameter arrive at all, even empty? */
+function diluxone_users_sso_has( string $key ): bool {
+	return array_key_exists( $key, diluxone_users_sso_query() );
 }
 
 /**
- * El único punto de entrada: dispara la ida y atiende la vuelta.
+ * The single entry point: fires the outbound trip and handles the return.
  *
- * @param WP|null $wp El objeto que pasa `parse_request`, con la ruta ya resuelta.
+ * @param WP|null $wp The object `parse_request` passes, with the route resolved.
  */
-function users_dlx_plus_sso_handle( $wp = null ): void {
-	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- el `state` cumple ese papel.
-	// La red puede venir de la ruta —/sso/google/— o del parámetro, que es lo
-	// que quedó registrado en las consolas de antes y en los sitios con
-	// enlaces permanentes simples.
-	$ruta = $wp instanceof WP && isset( $wp->query_vars['users_dlx_plus_sso'] );
-	$id   = $ruta
-		? sanitize_key( (string) $wp->query_vars['users_dlx_plus_sso'] )
-		: sanitize_key( users_dlx_plus_sso_param( 'users_dlx_plus_sso' ) );
+function diluxone_users_sso_handle( $wp = null ): void {
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- the `state` plays that part.
+	// The network can come from the route — /sso/google/ — or from the
+	// parameter, which is what stayed registered in the older consoles and on
+	// sites with plain permalinks.
+	$path = $wp instanceof WP && isset( $wp->query_vars['diluxone_users_sso'] );
+	$id   = $path
+		? sanitize_key( (string) $wp->query_vars['diluxone_users_sso'] )
+		: sanitize_key( diluxone_users_sso_param( 'diluxone_users_sso' ) );
 
 	if ( '' === $id ) {
 		return;
 	}
 
-	$providers = users_dlx_plus_sso_providers();
+	$providers = diluxone_users_sso_providers();
 
-	// Alcanza con que tenga credenciales cargadas. Exigir acá que además esté
-	// prendido dejaba la prueba en vivo sin salida: no se puede prender una red
-	// sin probarla, y la prueba no arrancaba porque la red no estaba prendida.
-	// Quién puede disparar cada cosa se decide más abajo.
-	if ( ! isset( $providers[ $id ] ) || ! users_dlx_plus_sso_configured( $id ) ) {
-		// Por la ruta sólo se llega a propósito: un enlace viejo a una red que
-		// ya no está tiene que decirlo, no dibujar la portada.
-		if ( $ruta ) {
-			users_dlx_plus_sso_fail();
+	// Having credentials filled in is enough. Requiring it to be turned on
+	// here left the live test with no way out: a network cannot be turned on
+	// without testing it, and the test would not start because the network was
+	// not turned on. Who may fire what is decided further down.
+	if ( ! isset( $providers[ $id ] ) || ! diluxone_users_sso_configured( $id ) ) {
+		// The route is only reached on purpose: an old link to a network that
+		// is gone has to say so, not draw the front page.
+		if ( $path ) {
+			diluxone_users_sso_fail();
 		}
 
 		return;
@@ -640,141 +642,143 @@ function users_dlx_plus_sso_handle( $wp = null ): void {
 
 	$provider = $providers[ $id ];
 
-	// Modo prueba: sólo para quien administra y con su nonce. No inicia
-	// sesión de nadie; hace el ida y vuelta y cuenta cómo salió.
-	$test = users_dlx_plus_sso_has( 'users_dlx_plus_test' )
+	// Test mode: only for whoever administers the site, and with their nonce.
+	// It signs nobody in; it does the round trip and reports how it went.
+	$test = diluxone_users_sso_has( 'diluxone_users_test' )
 		&& current_user_can( 'manage_options' )
-		&& wp_verify_nonce( sanitize_key( users_dlx_plus_sso_param( 'users_dlx_plus_nonce' ) ), 'users_dlx_plus_sso_test_' . $id );
+		&& wp_verify_nonce( sanitize_key( diluxone_users_sso_param( 'diluxone_users_nonce' ) ), 'diluxone_users_sso_test_' . $id );
 
-	if ( users_dlx_plus_sso_has( 'users_dlx_plus_go' ) ) {
-		// Salir a autorizar es de una red prendida, o de la prueba de quien
-		// administra. Una red a medio configurar no manda a nadie a ningún lado.
-		if ( ! $test && ! users_dlx_plus_sso_ready( $id ) ) {
-			users_dlx_plus_sso_fail();
+	if ( diluxone_users_sso_has( 'diluxone_users_go' ) ) {
+		// Heading out to authorise belongs to a network that is on, or to the
+		// administrator's test. A half-configured network sends nobody anywhere.
+		if ( ! $test && ! diluxone_users_sso_ready( $id ) ) {
+			diluxone_users_sso_fail();
 		}
 
-		users_dlx_plus_sso_authorize( $id, $provider, $test );
+		diluxone_users_sso_authorize( $id, $provider, $test );
 	}
 
-	// En una vuelta el proveedor puede contestar con un error en vez de un
-	// código: mostrarlo es la mitad del valor de la prueba.
-	if ( users_dlx_plus_sso_has( 'error' ) ) {
-		$detalle = sanitize_text_field( '' !== users_dlx_plus_sso_param( 'error_description' ) ? users_dlx_plus_sso_param( 'error_description' ) : users_dlx_plus_sso_param( 'error' ) );
-		$estado  = get_transient( 'users_dlx_plus_sso_' . sanitize_text_field( users_dlx_plus_sso_param( 'state' ) ) );
+	// On a return the provider may answer with an error instead of a code:
+	// showing it is half the value of the test.
+	if ( diluxone_users_sso_has( 'error' ) ) {
+		$detail     = sanitize_text_field( '' !== diluxone_users_sso_param( 'error_description' ) ? diluxone_users_sso_param( 'error_description' ) : diluxone_users_sso_param( 'error' ) );
+		$state_data = get_transient( 'diluxone_users_sso_' . sanitize_text_field( diluxone_users_sso_param( 'state' ) ) );
 
-		if ( is_array( $estado ) && ! empty( $estado['test'] ) ) {
-			users_dlx_plus_sso_test_result( $provider, false, $detalle );
+		if ( is_array( $state_data ) && ! empty( $state_data['test'] ) ) {
+			diluxone_users_sso_test_result( $provider, false, $detail );
 		}
 
-		users_dlx_plus_sso_fail();
+		diluxone_users_sso_fail();
 	}
 
-	$code  = sanitize_text_field( users_dlx_plus_sso_param( 'code' ) );
-	$state = sanitize_text_field( users_dlx_plus_sso_param( 'state' ) );
+	$code  = sanitize_text_field( diluxone_users_sso_param( 'code' ) );
+	$state = sanitize_text_field( diluxone_users_sso_param( 'state' ) );
 
 	if ( '' === $code || '' === $state ) {
 		return;
 	}
 	// phpcs:enable
 
-	$stored = get_transient( 'users_dlx_plus_sso_' . $state );
-	delete_transient( 'users_dlx_plus_sso_' . $state );
+	$stored = get_transient( 'diluxone_users_sso_' . $state );
+	delete_transient( 'diluxone_users_sso_' . $state );
 
 	if ( ! is_array( $stored ) || ( $stored['provider'] ?? '' ) !== $id ) {
-		users_dlx_plus_sso_fail();
+		diluxone_users_sso_fail();
 	}
 
-	$es_prueba = ! empty( $stored['test'] );
+	$is_test = ! empty( $stored['test'] );
 
-	// La vuelta de una red que se apagó entre la ida y la vuelta no entra a
-	// nadie. La prueba sí sigue: es justamente el paso previo a prenderla.
-	if ( ! $es_prueba && ! users_dlx_plus_sso_ready( $id ) ) {
-		users_dlx_plus_sso_fail();
+	// The return of a network that was turned off between the outbound trip
+	// and the return signs nobody in. The test does go on: it is precisely the
+	// step before turning it on.
+	if ( ! $is_test && ! diluxone_users_sso_ready( $id ) ) {
+		diluxone_users_sso_fail();
 	}
 
-	$token = users_dlx_plus_sso_token( $id, $provider, $code, (string) ( $stored['verifier'] ?? '' ) );
+	$token = diluxone_users_sso_token( $id, $provider, $code, (string) ( $stored['verifier'] ?? '' ) );
 
 	if ( '' === $token ) {
-		if ( $es_prueba ) {
-			users_dlx_plus_sso_test_result( $provider, false, __( 'The provider did not hand over an access token. Check the client ID and the secret.', 'users-dlx-plus' ) );
+		if ( $is_test ) {
+			diluxone_users_sso_test_result( $provider, false, __( 'The provider did not hand over an access token. Check the client ID and the secret.', 'diluxone-users' ) );
 		}
 
-		users_dlx_plus_sso_fail();
+		diluxone_users_sso_fail();
 	}
 
-	$identity = call_user_func( $provider['map'], users_dlx_plus_sso_get( $provider['profile'], $token ), $token );
+	$identity = call_user_func( $provider['map'], diluxone_users_sso_get( $provider['profile'], $token ), $token );
 
-	// La prueba termina acá: no entra nadie, sólo se anota que funciona.
-	if ( $es_prueba ) {
+	// The test ends here: nobody is signed in, it is only recorded as working.
+	if ( $is_test ) {
 		if ( '' === $identity['id'] ) {
-			users_dlx_plus_sso_test_result( $provider, false, __( 'The token worked but the profile came back empty. The app is probably missing the permissions this provider needs.', 'users-dlx-plus' ) );
+			diluxone_users_sso_test_result( $provider, false, __( 'The token worked but the profile came back empty. The app is probably missing the permissions this provider needs.', 'diluxone-users' ) );
 		}
 
-		users_dlx_plus_sso_set_tested( $id, true );
-		users_dlx_plus_sso_test_result( $provider, true, $identity['email'] );
+		diluxone_users_sso_set_tested( $id, true );
+		diluxone_users_sso_test_result( $provider, true, $identity['email'] );
 	}
 
-	// Si ya está adentro, esto es una vinculación desde el perfil, no un login.
+	// If they are already in, this is a link from the profile, not a sign-in.
 	if ( is_user_logged_in() ) {
 		if ( '' !== $identity['id'] ) {
-			update_user_meta( get_current_user_id(), 'users_dlx_plus_sso_' . $id, $identity['id'] );
+			update_user_meta( get_current_user_id(), 'diluxone_users_sso_' . $id, $identity['id'] );
 
-			users_dlx_plus_notify_security(
+			diluxone_users_notify_security(
 				get_current_user_id(),
 				sprintf(
-					/* translators: %s: nombre de la red social */
-					__( 'The %s account was linked, and it now gets into this account.', 'users-dlx-plus' ),
+					/* translators: %s: name of the social network */
+					__( 'The %s account was linked, and it now gets into this account.', 'diluxone-users' ),
 					$provider['name']
 				)
 			);
 		}
 
-		$back = (string) get_transient( 'users_dlx_plus_sso_back_' . get_current_user_id() );
-		wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'linked', $back ? $back : home_url( '/' ) ) );
+		$back = (string) get_transient( 'diluxone_users_sso_back_' . get_current_user_id() );
+		wp_safe_redirect( add_query_arg( 'diluxone-users', 'linked', $back ? $back : home_url( '/' ) ) );
 		exit;
 	}
 
-	$user_id = users_dlx_plus_sso_user( $id, $identity );
+	$user_id = diluxone_users_sso_user( $id, $identity );
 
 	if ( $user_id <= 0 ) {
-		users_dlx_plus_sso_fail();
+		diluxone_users_sso_fail();
 	}
 
-	/** Ver el filtro homónimo en includes/login.php. */
-	$redirect = (string) apply_filters( 'users_dlx_plus_login_redirect', home_url( '/' ), $user_id );
+		/** See the filter of the same name in includes/login.php. */
+	$redirect = (string) apply_filters( 'diluxone_users_login_redirect', home_url( '/' ), $user_id );
 
-	// Igual que el enlace por correo: la sesión la abre el camino común, que
-	// es también el que sabe si falta un segundo factor.
-	users_dlx_plus_complete_login( $user_id, 'sso', true, $redirect );
+	// Same as the e-mail link: the session is opened by the common path, which
+	// is also the one that knows whether a second factor is missing.
+	diluxone_users_complete_login( $user_id, 'sso', true, $redirect );
 }
 
 /*
- * Va en `parse_request` y no en `init` porque es ahí donde WordPress ya
- * resolvió la ruta: antes de eso /sso/google/ todavía no es nada.
+ * It goes on `parse_request` and not on `init` because that is where
+ * WordPress has already resolved the route: before that, /sso/google/ is not
+ * anything yet.
  */
-add_action( 'parse_request', 'users_dlx_plus_sso_handle' );
+add_action( 'parse_request', 'diluxone_users_sso_handle' );
 
-/** Vuelve a la pantalla de acceso con el aviso de que no se pudo. */
-function users_dlx_plus_sso_fail(): void {
-	wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'social', users_dlx_plus_login_url() ) );
+/** Back to the sign-in screen with the notice that it did not work. */
+function diluxone_users_sso_fail(): void {
+	wp_safe_redirect( add_query_arg( 'diluxone-users', 'social', diluxone_users_login_url() ) );
 	exit;
 }
 
-/** Desvincula una red del usuario actual. */
-function users_dlx_plus_sso_unlink(): void {
-	check_admin_referer( 'users_dlx_plus_sso_unlink' );
+/** Unlinks a network from the current user. */
+function diluxone_users_sso_unlink(): void {
+	check_admin_referer( 'diluxone_users_sso_unlink' );
 
-	$id = sanitize_key( wp_unslash( $_POST['users_dlx_plus_provider'] ?? '' ) );
+	$id = sanitize_key( wp_unslash( $_POST['diluxone_users_provider'] ?? '' ) );
 
 	if ( '' !== $id && is_user_logged_in() ) {
-		delete_user_meta( get_current_user_id(), 'users_dlx_plus_sso_' . $id );
+		delete_user_meta( get_current_user_id(), 'diluxone_users_sso_' . $id );
 
-		users_dlx_plus_notify_security(
+		diluxone_users_notify_security(
 			get_current_user_id(),
 			sprintf(
-				/* translators: %s: nombre de la red social */
-				__( 'The %s account was unlinked.', 'users-dlx-plus' ),
-				users_dlx_plus_sso_providers()[ $id ]['name'] ?? $id
+					/* translators: %s: name of the social network */
+				__( 'The %s account was unlinked.', 'diluxone-users' ),
+				diluxone_users_sso_providers()[ $id ]['name'] ?? $id
 			)
 		);
 	}
@@ -783,17 +787,18 @@ function users_dlx_plus_sso_unlink(): void {
 	wp_safe_redirect( $back ? $back : home_url( '/' ) );
 	exit;
 }
-add_action( 'admin_post_users_dlx_plus_sso_unlink', 'users_dlx_plus_sso_unlink' );
+add_action( 'admin_post_diluxone_users_sso_unlink', 'diluxone_users_sso_unlink' );
 
-/** ¿Qué redes tiene vinculadas esta persona? */
 /**
+ * Which networks does this person have linked?
+ *
  * @return array<int<0, max>, string>
  */
-function users_dlx_plus_sso_linked( int $user_id ): array {
+function diluxone_users_sso_linked( int $user_id ): array {
 	$linked = array();
 
-	foreach ( array_keys( users_dlx_plus_sso_providers() ) as $id ) {
-		if ( '' !== (string) get_user_meta( $user_id, 'users_dlx_plus_sso_' . $id, true ) ) {
+	foreach ( array_keys( diluxone_users_sso_providers() ) as $id ) {
+		if ( '' !== (string) get_user_meta( $user_id, 'diluxone_users_sso_' . $id, true ) ) {
 			$linked[] = $id;
 		}
 	}
@@ -802,35 +807,35 @@ function users_dlx_plus_sso_linked( int $user_id ): array {
 }
 
 /**
- * El resultado de la prueba, en la ventana que la abrió.
+ * The test result, in the window that opened it.
  *
- * Es una página suelta y no una redirección porque la prueba corre en una
- * ventana aparte: lo que hay que hacer es contar qué pasó y cerrarla.
+ * It is a standalone page and not a redirect because the test runs in a
+ * window of its own: what there is to do is report what happened and close it.
  *
  * @param array<string, mixed> $provider
  * @param bool                 $ok
- * @param string               $detail Correo recibido, o el error.
+ * @param string               $detail E-mail received, or the error.
  */
-function users_dlx_plus_sso_test_result( array $provider, bool $ok, string $detail = '' ): void {
-	$titulo = $ok
-		? __( 'It works', 'users-dlx-plus' )
-		: __( 'It did not work', 'users-dlx-plus' );
+function diluxone_users_sso_test_result( array $provider, bool $ok, string $detail = '' ): void {
+	$title = $ok
+		? __( 'It works', 'diluxone-users' )
+		: __( 'It did not work', 'diluxone-users' );
 
-	$mensaje = $ok
+	$message = $ok
 		? sprintf(
-			/* translators: %s: nombre del proveedor */
-			__( 'The round trip with %s finished correctly. You can enable the button now.', 'users-dlx-plus' ),
+				/* translators: %s: provider name */
+			__( 'The round trip with %s finished correctly. You can enable the button now.', 'diluxone-users' ),
 			$provider['name']
 		)
 		: sprintf(
-			/* translators: %s: nombre del proveedor */
-			__( 'The round trip with %s failed.', 'users-dlx-plus' ),
+				/* translators: %s: provider name */
+			__( 'The round trip with %s failed.', 'diluxone-users' ),
 			$provider['name']
 		);
 
 	if ( $ok && '' !== $detail ) {
-		/* translators: %s: dirección de correo */
-		$detail = sprintf( __( 'The provider handed over this email: %s', 'users-dlx-plus' ), $detail );
+			/* translators: %s: e-mail address */
+		$detail = sprintf( __( 'The provider handed over this email: %s', 'diluxone-users' ), $detail );
 	}
 
 	nocache_headers();
@@ -839,7 +844,7 @@ function users_dlx_plus_sso_test_result( array $provider, bool $ok, string $deta
 	<html <?php language_attributes(); ?>>
 	<head>
 		<meta charset="<?php bloginfo( 'charset' ); ?>">
-		<title><?php echo esc_html( $titulo ); ?></title>
+		<title><?php echo esc_html( $title ); ?></title>
 		<style>
 			body { margin: 0; padding: 40px 32px; font: 15px/1.6 -apple-system, system-ui, sans-serif; color: #1d2327; background: #f0f0f1; }
 			.caja { max-width: 34rem; margin: 0 auto; background: #fff; border: 1px solid #dcdcde; border-radius: 4px; padding: 28px 30px; }
@@ -852,13 +857,13 @@ function users_dlx_plus_sso_test_result( array $provider, bool $ok, string $deta
 	</head>
 	<body>
 		<div class="caja <?php echo $ok ? 'ok' : 'mal'; ?>">
-			<h1><?php echo esc_html( $titulo ); ?></h1>
-			<p><?php echo esc_html( $mensaje ); ?></p>
+			<h1><?php echo esc_html( $title ); ?></h1>
+			<p><?php echo esc_html( $message ); ?></p>
 			<?php if ( '' !== $detail ) : ?>
 				<p class="detalle"><?php echo esc_html( $detail ); ?></p>
 			<?php endif; ?>
 			<button type="button" onclick="if (window.opener) { window.opener.location.reload(); } window.close();">
-				<?php esc_html_e( 'Close', 'users-dlx-plus' ); ?>
+				<?php esc_html_e( 'Close', 'diluxone-users' ); ?>
 			</button>
 		</div>
 	</body>

@@ -1,15 +1,15 @@
 <?php
 /**
- * Comandos de WP-CLI.
+ * WP-CLI commands.
  *
- * Existe por un caso concreto: un sitio sin contraseñas donde el correo no
- * sale. Si ahí alguien se queda afuera —la sesión venció, el proveedor social
- * falla— no hay puerta. Con acceso al servidor, este comando imprime el enlace
- * en la terminal en vez de mandarlo.
+ * It exists for one concrete case: a site without passwords where the mail
+ * does not go out. If somebody is locked out there — the session expired, the
+ * social provider fails — there is no door. With access to the server, this
+ * command prints the link in the terminal instead of sending it.
  *
- *   wp users-dlx-plus login pablo@ejemplo.com
+ *   wp diluxone-users login pablo@example.com
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -19,25 +19,25 @@ if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 }
 
 /**
- * Imprime un enlace de acceso para un correo.
+ * Prints a sign-in link for an e-mail address.
  *
  * ## OPTIONS
  *
- * <correo>
- * : El correo de la cuenta.
+ * <email>
+ * : The account e-mail.
  *
  * [--send]
- * : Además de imprimirlo, mandarlo por correo.
+ * : Besides printing it, send it by e-mail.
  *
  * ## EXAMPLES
  *
- *     wp users-dlx-plus login pablo@ejemplo.com
- *     wp users-dlx-plus login pablo@ejemplo.com --send
+ *     wp diluxone-users login pablo@example.com
+ *     wp diluxone-users login pablo@example.com --send
  *
  * @param array<int, string>    $args
  * @param array<string, string> $options
  */
-function users_dlx_plus_cli_login( array $args, array $options = array() ): void {
+function diluxone_users_cli_login( array $args, array $options = array() ): void {
 	$email = sanitize_email( $args[0] ?? '' );
 
 	if ( '' === $email || ! is_email( $email ) ) {
@@ -50,16 +50,16 @@ function users_dlx_plus_cli_login( array $args, array $options = array() ): void
 		WP_CLI::error( sprintf( 'No existe ninguna cuenta con el correo %s.', $email ) );
 	}
 
-	$token = users_dlx_plus_token_create( (int) $user->ID );
-	$url   = users_dlx_plus_login_link( (int) $user->ID, $token );
+	$token = diluxone_users_token_create( (int) $user->ID );
+	$url   = diluxone_users_login_link( (int) $user->ID, $token );
 
 	if ( ! empty( $options['send'] ) ) {
-		$mandado = users_dlx_plus_login_send( (int) $user->ID, $email, $token );
-		WP_CLI::log( $mandado ? 'Correo enviado.' : 'No se pudo enviar el correo.' );
+		$sent = diluxone_users_login_send( (int) $user->ID, $email, $token );
+		WP_CLI::log( $sent ? 'Correo enviado.' : 'No se pudo enviar el correo.' );
 	}
 
 	WP_CLI::log( $url );
-	WP_CLI::log( sprintf( 'Vence en %d minutos y sirve una sola vez.', users_dlx_plus_login_expiry() ) );
+	WP_CLI::log( sprintf( 'Vence en %d minutos y sirve una sola vez.', diluxone_users_login_expiry() ) );
 }
 
-WP_CLI::add_command( 'users-dlx-plus login', 'users_dlx_plus_cli_login' );
+WP_CLI::add_command( 'diluxone-users login', 'diluxone_users_cli_login' );

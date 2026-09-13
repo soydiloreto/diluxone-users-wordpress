@@ -1,26 +1,26 @@
 <?php
 /**
- * Países, con su código ISO y su prefijo telefónico.
+ * Countries, with their ISO code and their dialling code.
  *
- * Es un archivo de datos y nada más. Existe para que nadie tenga que tipear
- * "Argentina" a mano en un campo de texto: el tipo de campo «país» sale de
- * acá, y el de teléfono usa el prefijo para armar el número completo.
+ * It is a data file and nothing more. It exists so that nobody has to type
+ * "Argentina" by hand into a text field: the "country" field type comes from
+ * here, and the phone one uses the dialling code to assemble the full number.
  *
- * El código ISO es lo que se guarda; el nombre es sólo para mostrar. Así el
- * dato no se rompe si mañana cambia la traducción, y se puede filtrar por país
- * sin comparar cadenas.
+ * The ISO code is what is stored; the name is only for display. That way the
+ * value does not break if the translation changes tomorrow, and filtering by
+ * country needs no string comparison.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Todos los países.
+ * Every country.
  *
- * @return array<string, array{0: string, 1: string}> ISO => [nombre, prefijo].
+ * @return array<string, array{0: string, 1: string}> ISO => [name, dialling code].
  */
-function users_dlx_plus_countries(): array {
+function diluxone_users_countries(): array {
 	static $countries = null;
 
 	if ( null === $countries ) {
@@ -275,43 +275,43 @@ function users_dlx_plus_countries(): array {
 		);
 
 		/**
-		 * Filtra la lista de países.
+		 * Filters the list of countries.
 		 *
-		 * Sirve para acotarla: un sitio regional no necesita los doscientos.
+		 * It is there for narrowing it: a regional site does not need all two hundred.
 		 *
 		 * @param array<string, array{0: string, 1: string}> $countries
 		 */
-		$countries = apply_filters( 'users_dlx_plus_countries', $countries );
+		$countries = apply_filters( 'diluxone_users_countries', $countries );
 	}
 
 	return $countries;
 }
 
-/** El nombre de un país por su código ISO. */
-function users_dlx_plus_country_name( string $iso ): string {
-	$countries = users_dlx_plus_countries();
+/** A country name by its ISO code. */
+function diluxone_users_country_name( string $iso ): string {
+	$countries = diluxone_users_countries();
 
 	return (string) ( $countries[ strtoupper( $iso ) ][0] ?? '' );
 }
 
-/** El prefijo telefónico de un país, sin el "+". */
-function users_dlx_plus_country_dial( string $iso ): string {
-	$countries = users_dlx_plus_countries();
+/** A country's dialling code, without the "+". */
+function diluxone_users_country_dial( string $iso ): string {
+	$countries = diluxone_users_countries();
 
 	return (string) ( $countries[ strtoupper( $iso ) ][1] ?? '' );
 }
 
 /**
- * Los países ordenados por nombre, con los de arriba primero.
+ * The countries sorted by name, with the preferred ones first.
  *
- * El orden alfabético puro deja al país del sitio a mitad de una lista de
- * doscientos. Los que se pasan como preferidos van arriba, separados.
+ * Pure alphabetical order leaves the site's own country halfway down a list
+ * of two hundred. The ones passed as preferred go on top, set apart.
  *
- * @param array<int, string> $first Códigos ISO que van primero.
- * @return array<string, string> ISO => nombre.
+ * @param array<int, string> $first ISO codes that go first.
+ * @return array<string, string> ISO => name.
  */
-function users_dlx_plus_countries_sorted( array $first = array() ): array {
-	$countries = users_dlx_plus_countries();
+function diluxone_users_countries_sorted( array $first = array() ): array {
+	$countries = diluxone_users_countries();
 	$names     = array();
 
 	foreach ( $countries as $iso => $data ) {

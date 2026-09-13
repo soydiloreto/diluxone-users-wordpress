@@ -1,24 +1,24 @@
 <?php
 /**
- * Lo que la persona puede hacer con su propia seguridad.
+ * What the person can do with their own security.
  *
- * Prender el segundo factor, dar de alta su aplicación autenticadora, anotarse
- * los códigos de respaldo y cerrar sesiones. Todo desde el frente, en la
- * página que el sitio haya elegido, sin pasar por el escritorio de WordPress
- * —que la mayoría de la gente de un sitio así nunca ve—.
+ * Turning the second factor on, registering their authenticator app, writing
+ * down their backup codes and closing sessions. All from the front end, on
+ * the page the site has chosen, without going through the WordPress dashboard
+ * — which most people on a site like this never see.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/** ¿El sitio ofrece segundo factor a esta persona? */
-function users_dlx_plus_2fa_offered( int $user_id ): bool {
-	if ( 'off' === (string) users_dlx_plus_option( 'users_dlx_plus_2fa_mode' ) || array() === users_dlx_plus_2fa_methods() ) {
+/** Does the site offer this person a second factor? */
+function diluxone_users_2fa_offered( int $user_id ): bool {
+	if ( 'off' === (string) diluxone_users_option( 'diluxone_users_2fa_mode' ) || array() === diluxone_users_2fa_methods() ) {
 		return false;
 	}
 
-	$roles = (array) users_dlx_plus_option( 'users_dlx_plus_2fa_roles' );
+	$roles = (array) diluxone_users_option( 'diluxone_users_2fa_roles' );
 
 	if ( array() === $roles ) {
 		return true;
@@ -29,124 +29,124 @@ function users_dlx_plus_2fa_offered( int $user_id ): bool {
 	return $user instanceof WP_User && array() !== array_intersect( $roles, (array) $user->roles );
 }
 
-/** ¿Lo tiene prendido? Con el modo obligatorio, siempre. */
-function users_dlx_plus_2fa_on( int $user_id ): bool {
-	if ( ! users_dlx_plus_2fa_offered( $user_id ) ) {
+/** Do they have it turned on? With the required mode, always. */
+function diluxone_users_2fa_on( int $user_id ): bool {
+	if ( ! diluxone_users_2fa_offered( $user_id ) ) {
 		return false;
 	}
 
-	return 'required' === (string) users_dlx_plus_option( 'users_dlx_plus_2fa_mode' )
-		|| (bool) get_user_meta( $user_id, 'users_dlx_plus_2fa_on', true );
+	return 'required' === (string) diluxone_users_option( 'diluxone_users_2fa_mode' )
+		|| (bool) get_user_meta( $user_id, 'diluxone_users_2fa_on', true );
 }
 
-/** ¿Puede apagarlo, o el sitio lo exige? */
-function users_dlx_plus_2fa_can_turn_off( int $user_id ): bool {
-	return 'required' !== (string) users_dlx_plus_option( 'users_dlx_plus_2fa_mode' );
+/** Can they turn it off, or does the site demand it? */
+function diluxone_users_2fa_can_turn_off( int $user_id ): bool {
+	return 'required' !== (string) diluxone_users_option( 'diluxone_users_2fa_mode' );
 }
 
-/** Guarda lo que la persona hizo en su pantalla de seguridad. */
-function users_dlx_plus_security_submit(): void {
+/** Saves what the person did on their security screen. */
+function diluxone_users_security_submit(): void {
 	if ( ! is_user_logged_in() ) {
-		wp_safe_redirect( users_dlx_plus_login_url() );
+		wp_safe_redirect( diluxone_users_login_url() );
 		exit;
 	}
 
-	check_admin_referer( 'users_dlx_plus_security' );
+	check_admin_referer( 'diluxone_users_security' );
 
 	$user_id = get_current_user_id();
-	$destino = users_dlx_plus_account_url( 'security' );
+	$target  = diluxone_users_account_url( 'security' );
 	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verificado arriba.
-	$accion = sanitize_key( wp_unslash( $_POST['users_dlx_plus_security'] ?? '' ) );
+	$action = sanitize_key( wp_unslash( $_POST['diluxone_users_security'] ?? '' ) );
 
-	switch ( $accion ) {
+	switch ( $action ) {
 		case 'on':
-			if ( array() === users_dlx_plus_2fa_available( $user_id ) ) {
-				wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'nomethod', $destino ) );
+			if ( array() === diluxone_users_2fa_available( $user_id ) ) {
+				wp_safe_redirect( add_query_arg( 'diluxone-users', 'nomethod', $target ) );
 				exit;
 			}
 
-			update_user_meta( $user_id, 'users_dlx_plus_2fa_on', 1 );
-			users_dlx_plus_notify_security( $user_id, __( 'Two-step verification was turned on.', 'users-dlx-plus' ) );
+			update_user_meta( $user_id, 'diluxone_users_2fa_on', 1 );
+			diluxone_users_notify_security( $user_id, __( 'Two-step verification was turned on.', 'diluxone-users' ) );
 
-			// Los códigos de respaldo se generan al prender, no después: el
-			// momento de anotarlos es antes de necesitarlos.
-			if ( 0 === users_dlx_plus_backup_left( $user_id ) ) {
-				set_transient( 'users_dlx_plus_backup_' . $user_id, users_dlx_plus_backup_generate( $user_id ), 15 * MINUTE_IN_SECONDS );
+				// The backup codes are generated when it is turned on, not later:
+				// the moment to write them down is before needing them.
+			if ( 0 === diluxone_users_backup_left( $user_id ) ) {
+				set_transient( 'diluxone_users_backup_' . $user_id, diluxone_users_backup_generate( $user_id ), 15 * MINUTE_IN_SECONDS );
 			}
 
-			wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'on', $destino ) );
+			wp_safe_redirect( add_query_arg( 'diluxone-users', 'on', $target ) );
 			exit;
 
 		case 'off':
-			if ( ! users_dlx_plus_2fa_can_turn_off( $user_id ) ) {
-				wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'required', $destino ) );
+			if ( ! diluxone_users_2fa_can_turn_off( $user_id ) ) {
+				wp_safe_redirect( add_query_arg( 'diluxone-users', 'required', $target ) );
 				exit;
 			}
 
-			delete_user_meta( $user_id, 'users_dlx_plus_2fa_on' );
-			users_dlx_plus_notify_security( $user_id, __( 'Two-step verification was turned off.', 'users-dlx-plus' ) );
-			wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'off', $destino ) );
+			delete_user_meta( $user_id, 'diluxone_users_2fa_on' );
+			diluxone_users_notify_security( $user_id, __( 'Two-step verification was turned off.', 'diluxone-users' ) );
+			wp_safe_redirect( add_query_arg( 'diluxone-users', 'off', $target ) );
 			exit;
 
 		case 'totp':
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verificado arriba.
-			$code = sanitize_text_field( wp_unslash( $_POST['users_dlx_plus_code'] ?? '' ) );
+			$code = sanitize_text_field( wp_unslash( $_POST['diluxone_users_code'] ?? '' ) );
 
-			if ( ! users_dlx_plus_totp_activate( $user_id, $code ) ) {
-				wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'badcode', $destino ) );
+			if ( ! diluxone_users_totp_activate( $user_id, $code ) ) {
+				wp_safe_redirect( add_query_arg( 'diluxone-users', 'badcode', $target ) );
 				exit;
 			}
 
-			update_user_meta( $user_id, 'users_dlx_plus_2fa_on', 1 );
-			users_dlx_plus_notify_security( $user_id, __( 'An authenticator app was set up.', 'users-dlx-plus' ) );
+			update_user_meta( $user_id, 'diluxone_users_2fa_on', 1 );
+			diluxone_users_notify_security( $user_id, __( 'An authenticator app was set up.', 'diluxone-users' ) );
 
-			if ( 0 === users_dlx_plus_backup_left( $user_id ) ) {
-				set_transient( 'users_dlx_plus_backup_' . $user_id, users_dlx_plus_backup_generate( $user_id ), 15 * MINUTE_IN_SECONDS );
+			if ( 0 === diluxone_users_backup_left( $user_id ) ) {
+				set_transient( 'diluxone_users_backup_' . $user_id, diluxone_users_backup_generate( $user_id ), 15 * MINUTE_IN_SECONDS );
 			}
 
-			wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'totp', $destino ) );
+			wp_safe_redirect( add_query_arg( 'diluxone-users', 'totp', $target ) );
 			exit;
 
 		case 'totp_off':
-			users_dlx_plus_totp_forget( $user_id );
-			users_dlx_plus_notify_security( $user_id, __( 'The authenticator app was removed.', 'users-dlx-plus' ) );
-			wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'totpoff', $destino ) );
+			diluxone_users_totp_forget( $user_id );
+			diluxone_users_notify_security( $user_id, __( 'The authenticator app was removed.', 'diluxone-users' ) );
+			wp_safe_redirect( add_query_arg( 'diluxone-users', 'totpoff', $target ) );
 			exit;
 
 		case 'backup':
-			set_transient( 'users_dlx_plus_backup_' . $user_id, users_dlx_plus_backup_generate( $user_id ), 15 * MINUTE_IN_SECONDS );
-			wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'backup', $destino ) );
+			set_transient( 'diluxone_users_backup_' . $user_id, diluxone_users_backup_generate( $user_id ), 15 * MINUTE_IN_SECONDS );
+			wp_safe_redirect( add_query_arg( 'diluxone-users', 'backup', $target ) );
 			exit;
 	}
 
-	wp_safe_redirect( $destino );
+	wp_safe_redirect( $target );
 	exit;
 }
-add_action( 'admin_post_users_dlx_plus_security', 'users_dlx_plus_security_submit' );
+add_action( 'admin_post_diluxone_users_security', 'diluxone_users_security_submit' );
 
 /**
- * Los códigos recién generados, si todavía se pueden mostrar.
+ * The freshly generated codes, if they can still be shown.
  *
- * Viven en un transient de quince minutos y no en la user meta: se guardan
- * hasheados, así que ésta es la única ventana para verlos, y esa ventana tiene
- * que cerrarse sola.
+ * They live in a fifteen-minute transient and not in the user meta: they are
+ * stored hashed, so this is the only window for seeing them, and that window
+ * has to close on its own.
  *
  * @return array<int, string>
  */
-function users_dlx_plus_backup_fresh( int $user_id ): array {
-	$codes = get_transient( 'users_dlx_plus_backup_' . $user_id );
+function diluxone_users_backup_fresh( int $user_id ): array {
+	$codes = get_transient( 'diluxone_users_backup_' . $user_id );
 
-	// Sin transient, get_transient() devuelve false, y (array) false es un
-	// array con un elemento vacío adentro: la lista salía con un renglón en
-	// blanco. Se compara antes de castear.
+	// Without a transient, get_transient() returns false, and (array) false is
+	// an array with one empty element inside: the list came out with a blank
+	// row. It is compared before casting.
 	if ( ! is_array( $codes ) || array() === $codes ) {
 		return array();
 	}
 
-	// Y se borra al leerlos. La caja dice «se muestran sólo esta vez», y lo
-	// decía mientras seguían apareciendo en cada recarga durante quince
-	// minutos: o es cierto o no hay que decirlo.
-	delete_transient( 'users_dlx_plus_backup_' . $user_id );
+	// And they are deleted on reading. The box says "shown only this once", and
+	// it was saying it while they went on appearing on every reload for fifteen
+	// minutes: either it is true or it should not be said.
+	delete_transient( 'diluxone_users_backup_' . $user_id );
 
 	return $codes;
 }

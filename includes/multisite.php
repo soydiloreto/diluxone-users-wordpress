@@ -1,28 +1,30 @@
 <?php
 /**
- * Lo que cambia cuando esto corre en una red de sitios.
+ * What changes when this runs on a network of sites.
  *
- * En un WordPress multisitio las cuentas son de la red y los permisos son de
- * cada sitio: alguien puede existir y no ser miembro de acá. Un plugin de
- * usuarios que ignora eso crea cuentas que entran y no pueden hacer nada, o
- * deja afuera a gente que ya existe en el sitio de al lado.
+ * On a WordPress multisite the accounts belong to the network and the
+ * permissions belong to each site: somebody can exist and not be a member
+ * here. A users plugin that ignores that creates accounts that sign in and
+ * can do nothing, or leaves out people who already exist on the site next
+ * door.
  *
- * Los ajustes, en cambio, quedan por sitio a propósito: cada sitio de una red
- * suele tener su propia página de cuenta, sus propios campos y su propio
- * diseño. Un ajuste de red obligaría a que todos los sitios pidan lo mismo.
+ * The settings, on the other hand, stay per site on purpose: each site of a
+ * network usually has its own account page, its own fields and its own
+ * design. A network setting would force every site to ask for the same thing.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Suma a alguien a este sitio si todavía no es miembro.
+ * Adds somebody to this site if they are not a member yet.
  *
- * Se usa el mismo rol que para una cuenta nueva: si el sitio decidió que quien
- * se registra es suscriptor, quien llega desde otro sitio de la red también.
+ * The same role as for a new account is used: if the site decided whoever
+ * registers is a subscriber, whoever arrives from another site of the network
+ * is one too.
  */
-function users_dlx_plus_join_site( int $user_id ): void {
+function diluxone_users_join_site( int $user_id ): void {
 	if ( ! is_multisite() || $user_id <= 0 ) {
 		return;
 	}
@@ -31,56 +33,58 @@ function users_dlx_plus_join_site( int $user_id ): void {
 		return;
 	}
 
-	// Sin registro abierto, existir en la red no alcanza para entrar acá: es
-	// la misma regla que para un correo nuevo, y la decide el mismo ajuste.
-	if ( ! users_dlx_plus_option( 'users_dlx_plus_login_register' ) ) {
+	// Without open registration, existing on the network is not enough to get
+	// in here: it is the same rule as for a new e-mail, and the same setting
+	// decides it.
+	if ( ! diluxone_users_option( 'diluxone_users_login_register' ) ) {
 		return;
 	}
 
-	add_user_to_blog( get_current_blog_id(), $user_id, (string) users_dlx_plus_option( 'users_dlx_plus_login_role' ) );
+	add_user_to_blog( get_current_blog_id(), $user_id, (string) diluxone_users_option( 'diluxone_users_login_role' ) );
 }
 
 /**
- * Los campos de arranque, para los sitios de una red.
+ * The starter fields, for the sites of a network.
  *
- * El hook de activación corre una sola vez cuando el plugin se activa en toda
- * la red, así que un sitio nuevo nacería sin ningún campo. Se siembran la
- * primera vez que alguien los pide, y sólo si la option no existe: una lista
- * vacía a propósito se respeta.
+ * The activation hook runs once when the plugin is activated network-wide, so
+ * a new site would be born with no fields at all. They are seeded the first
+ * time somebody asks for them, and only if the option does not exist: a
+ * deliberately empty list is respected.
  */
-function users_dlx_plus_seed_fields(): void {
-	if ( false === get_option( 'users_dlx_plus_fields', false ) ) {
-		update_option( 'users_dlx_plus_fields', users_dlx_plus_default_fields() );
+function diluxone_users_seed_fields(): void {
+	if ( false === get_option( 'diluxone_users_fields', false ) ) {
+		update_option( 'diluxone_users_fields', diluxone_users_default_fields() );
 
 		return;
 	}
 
-	users_dlx_plus_seed_native_fields();
+	diluxone_users_seed_native_fields();
 }
-add_action( 'wp_initialize_site', 'users_dlx_plus_seed_fields' );
-add_action( 'admin_init', 'users_dlx_plus_seed_fields' );
+add_action( 'wp_initialize_site', 'diluxone_users_seed_fields' );
+add_action( 'admin_init', 'diluxone_users_seed_fields' );
 
 /**
- * Los campos de WordPress, en un sitio que ya tenía la lista armada.
+ * WordPress's own fields, on a site that already had the list assembled.
  *
- * Se agregan al principio y sólo los que falten. Un sitio que ya venía
- * pintando el nombre por su cuenta va a ver dos: eso es correcto y se arregla
- * apagando el suyo, no escondiendo el que WordPress ya tenía.
+ * They are added at the beginning and only the missing ones. A site that was
+ * already drawing the name on its own is going to see two: that is correct
+ * and is fixed by turning its own off, not by hiding the one WordPress
+ * already had.
  */
-function users_dlx_plus_seed_native_fields(): void {
-	$fields = (array) get_option( 'users_dlx_plus_fields', array() );
-	$claves = array_column( $fields, 'key' );
-	$faltan = array();
+function diluxone_users_seed_native_fields(): void {
+	$fields  = (array) get_option( 'diluxone_users_fields', array() );
+	$keys    = array_column( $fields, 'key' );
+	$missing = array();
 
-	foreach ( users_dlx_plus_default_fields() as $field ) {
-		if ( users_dlx_plus_field_is_native( $field['key'] ) && ! in_array( $field['key'], $claves, true ) ) {
-			$faltan[] = $field;
+	foreach ( diluxone_users_default_fields() as $field ) {
+		if ( diluxone_users_field_is_native( $field['key'] ) && ! in_array( $field['key'], $keys, true ) ) {
+			$missing[] = $field;
 		}
 	}
 
-	if ( array() === $faltan ) {
+	if ( array() === $missing ) {
 		return;
 	}
 
-	update_option( 'users_dlx_plus_fields', array_merge( $faltan, $fields ) );
+	update_option( 'diluxone_users_fields', array_merge( $missing, $fields ) );
 }

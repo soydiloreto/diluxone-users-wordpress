@@ -1,27 +1,28 @@
 <?php
 /**
- * La pantalla de campos: un listado y, aparte, la ficha de cada campo.
+ * The fields screen: a listing and, separately, each field's detail.
  *
- * Es el corazón del plugin —qué se le pide a la gente— y por eso no es un
- * acordeón de formularios apilados: se ve la lista de un vistazo y se entra a
- * editar uno solo. Es como funciona cualquier otra lista de WordPress.
+ * It is the heart of the plugin — what people are asked for — and that is why
+ * it is not an accordion of stacked forms: the list is taken in at a glance
+ * and you go in to edit one alone. It is how any other WordPress list works.
  *
- * La clave (`users_dlx_plus_algo`) se propone sola a partir del nombre y después no se
- * puede cambiar: es el nombre con el que el dato quedó guardado en cada
- * persona, y renombrarla sería perder lo que ya está cargado.
+ * The key (`diluxone_users_something`) proposes itself from the name and
+ * afterwards cannot be changed: it is the name the value was stored under on
+ * every person, and renaming it would mean losing what is already there.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/** Convierte un nombre en una clave válida y única. */
 /**
+ * Turns a name into a valid and unique key.
+ *
  * @param array<string, mixed> $used
  */
-function users_dlx_plus_key_from( string $label, array $used ): string {
+function diluxone_users_key_from( string $label, array $used ): string {
 	$base = sanitize_key( remove_accents( $label ) );
-	$base = 'users_dlx_plus_' . ( '' === $base ? 'field' : $base );
+	$base = 'diluxone_users_' . ( '' === $base ? 'field' : $base );
 
 	$key = $base;
 	$n   = 2;
@@ -35,16 +36,16 @@ function users_dlx_plus_key_from( string $label, array $used ): string {
 }
 
 /**
- * De dónde salen las «opciones» de un campo, que cambia según el tipo.
+ * Where a field's "options" come from, which changes with the type.
  *
- * En una lista cerrada son los valores; en un país, los códigos que van
- * arriba; en un teléfono, el país por defecto. En el resto, nada: un campo de
- * fecha no tiene opciones y no tiene sentido mostrarle la caja.
+ * In a closed list they are the values; in a country, the codes pinned to the
+ * top; in a phone, the default country. In the rest, nothing: a date field
+ * has no options and there is no sense in showing it the box.
  *
  * @param array<string, mixed> $input
  * @return array<int, string>
  */
-function users_dlx_plus_field_options_from( string $type, array $input ): array {
+function diluxone_users_field_options_from( string $type, array $input ): array {
 	switch ( $type ) {
 		case 'select':
 		case 'datalist':
@@ -63,12 +64,13 @@ function users_dlx_plus_field_options_from( string $type, array $input ): array 
 	}
 }
 
-/** Guarda un campo (nuevo o existente) y devuelve su clave. */
 /**
+ * Saves a field (new or existing) and returns its key.
+ *
  * @param array<string, mixed> $input
  */
-function users_dlx_plus_field_save( array $input ): string {
-	$fields = users_dlx_plus_fields( '', false );
+function diluxone_users_field_save( array $input ): string {
+	$fields = diluxone_users_fields( '', false );
 	$key    = sanitize_key( (string) ( $input['key'] ?? '' ) );
 	$label  = sanitize_text_field( (string) ( $input['label'] ?? '' ) );
 
@@ -77,10 +79,10 @@ function users_dlx_plus_field_save( array $input ): string {
 	}
 
 	if ( '' === $key ) {
-		$key = users_dlx_plus_key_from( $label, wp_list_pluck( $fields, 'key' ) );
+		$key = diluxone_users_key_from( $label, wp_list_pluck( $fields, 'key' ) );
 	}
 
-	$field = users_dlx_plus_normalize_field(
+	$field = diluxone_users_normalize_field(
 		array(
 			'key'         => $key,
 			'label'       => $label,
@@ -89,97 +91,97 @@ function users_dlx_plus_field_save( array $input ): string {
 			'edit_max'    => (int) ( $input['edit_max'] ?? 1 ),
 			'help'        => (string) ( $input['help'] ?? '' ),
 			'placeholder' => (string) ( $input['placeholder'] ?? '' ),
-			'options'     => users_dlx_plus_field_options_from( (string) ( $input['type'] ?? 'text' ), $input ),
+			'options'     => diluxone_users_field_options_from( (string) ( $input['type'] ?? 'text' ), $input ),
 			'required'    => ! empty( $input['required'] ),
 			'group'       => (string) ( $input['group'] ?? 'optional' ),
 			'active'      => ! empty( $input['active'] ),
 		)
 	);
 
-	$reemplazado = false;
+	$replaced = false;
 
 	foreach ( $fields as $i => $existing ) {
 		if ( $existing['key'] === $key ) {
 			$fields[ $i ] = $field;
-			$reemplazado  = true;
+			$replaced     = true;
 			break;
 		}
 	}
 
-	if ( ! $reemplazado ) {
+	if ( ! $replaced ) {
 		$fields[] = $field;
 	}
 
-	update_option( 'users_dlx_plus_fields', $fields );
+	update_option( 'diluxone_users_fields', $fields );
 
 	return $key;
 }
 
 /**
- * Borra la definición de un campo.
+ * Deletes a field definition.
  *
- * Los valores que la gente ya cargó NO se tocan: si mañana el campo vuelve,
- * vuelven con él. Borrar 25.000 filas por un clic en una pantalla de ajustes
- * sería una sorpresa cara.
+ * The values people have already filled in are NOT touched: if the field
+ * comes back tomorrow, they come back with it. Deleting 25,000 rows over one
+ * click on a settings screen would be an expensive surprise.
  */
-function users_dlx_plus_field_delete( string $key ): void {
+function diluxone_users_field_delete( string $key ): void {
 	$fields = array_values(
 		array_filter(
-			users_dlx_plus_fields( '', false ),
+			diluxone_users_fields( '', false ),
 			static fn( array $f ): bool => $f['key'] !== $key
 		)
 	);
 
-	update_option( 'users_dlx_plus_fields', $fields );
+	update_option( 'diluxone_users_fields', $fields );
 }
 
 /**
- * Guardar, borrar o mover un campo.
+ * Saving, deleting or moving a field.
  *
- * En admin_init, no dentro de la pantalla: para cuando WordPress llama al
- * callback de una página del admin ya imprimió la cabecera, y el redirect
- * termina en un aviso de «headers already sent» en el log.
+ * On admin_init, not inside the screen: by the time WordPress calls the
+ * callback of an admin page it has already printed the headers, and the
+ * redirect ends in a "headers already sent" notice in the log.
  */
-function users_dlx_plus_fields_actions(): void {
+function diluxone_users_fields_actions(): void {
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	if ( 'users-dlx-plus-fields' !== sanitize_key( wp_unslash( $_GET['page'] ?? '' ) ) || ! current_user_can( 'manage_options' ) ) {
+	if ( 'diluxone-users-fields' !== sanitize_key( wp_unslash( $_GET['page'] ?? '' ) ) || ! current_user_can( 'manage_options' ) ) {
 		return;
 	}
 
-	if ( isset( $_POST['users_dlx_plus_field_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['users_dlx_plus_field_nonce'] ) ), 'users_dlx_plus_field' ) ) {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- verificado arriba; lo sanea campo por campo users_dlx_plus_field_save().
-		$key = users_dlx_plus_field_save( (array) wp_unslash( $_POST['users_dlx_plus_field'] ?? array() ) );
+	if ( isset( $_POST['diluxone_users_field_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['diluxone_users_field_nonce'] ) ), 'diluxone_users_field' ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- verified above; diluxone_users_field_save() sanitises it field by field.
+		$key = diluxone_users_field_save( (array) wp_unslash( $_POST['diluxone_users_field'] ?? array() ) );
 
-		wp_safe_redirect( users_dlx_plus_admin_url( 'users-dlx-plus-fields', array( 'users_dlx_plus_done' => '' === $key ? 'nolabel' : 'saved' ) ) );
+		wp_safe_redirect( diluxone_users_admin_url( 'diluxone-users-fields', array( 'diluxone_users_done' => '' === $key ? 'nolabel' : 'saved' ) ) );
 		exit;
 	}
 
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	if ( ! isset( $_GET['users_dlx_plus_action'], $_GET['field'] ) ) {
+	if ( ! isset( $_GET['diluxone_users_action'], $_GET['field'] ) ) {
 		return;
 	}
 
-	check_admin_referer( 'users_dlx_plus_field_action' );
+	check_admin_referer( 'diluxone_users_field_action' );
 
 	$key    = sanitize_key( wp_unslash( $_GET['field'] ) );
-	$accion = sanitize_key( wp_unslash( $_GET['users_dlx_plus_action'] ) );
+	$action = sanitize_key( wp_unslash( $_GET['diluxone_users_action'] ) );
 
-	if ( 'delete' === $accion && ! users_dlx_plus_field_is_native( $key ) ) {
-		users_dlx_plus_field_delete( $key );
-	} elseif ( 'up' === $accion ) {
-		users_dlx_plus_field_move( $key, -1 );
-	} elseif ( 'down' === $accion ) {
-		users_dlx_plus_field_move( $key, 1 );
+	if ( 'delete' === $action && ! diluxone_users_field_is_native( $key ) ) {
+		diluxone_users_field_delete( $key );
+	} elseif ( 'up' === $action ) {
+		diluxone_users_field_move( $key, -1 );
+	} elseif ( 'down' === $action ) {
+		diluxone_users_field_move( $key, 1 );
 	}
 
-	wp_safe_redirect( users_dlx_plus_admin_url( 'users-dlx-plus-fields', array( 'users_dlx_plus_done' => $accion ) ) );
+	wp_safe_redirect( diluxone_users_admin_url( 'diluxone-users-fields', array( 'diluxone_users_done' => $action ) ) );
 	exit;
 }
-add_action( 'admin_init', 'users_dlx_plus_fields_actions' );
+add_action( 'admin_init', 'diluxone_users_fields_actions' );
 
-/** Sube o baja un campo en el orden. */
-function users_dlx_plus_field_move( string $key, int $dir ): void {
-	$fields = users_dlx_plus_fields( '', false );
+/** Moves a field up or down in the order. */
+function diluxone_users_field_move( string $key, int $dir ): void {
+	$fields = diluxone_users_fields( '', false );
 	$keys   = wp_list_pluck( $fields, 'key' );
 	$i      = array_search( $key, $keys, true );
 
@@ -195,132 +197,133 @@ function users_dlx_plus_field_move( string $key, int $dir ): void {
 
 	[ $fields[ $i ], $fields[ $j ] ] = array( $fields[ $j ], $fields[ $i ] );
 
-	update_option( 'users_dlx_plus_fields', $fields );
+	update_option( 'diluxone_users_fields', $fields );
 }
 
-/* ── La pantalla ───────────────────────────────────────────────────── */
+/* ── The screen ────────────────────────────────────────────────────── */
 
-/** La pantalla de campos: el listado, o la ficha de uno. */
-function users_dlx_plus_screen_fields(): void {
+/** The fields screen: the listing, or one field's detail. */
+function diluxone_users_screen_fields(): void {
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	$editing = isset( $_GET['field'] ) ? sanitize_key( wp_unslash( $_GET['field'] ) ) : '';
 
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	$done = isset( $_GET['users_dlx_plus_done'] ) ? sanitize_key( wp_unslash( $_GET['users_dlx_plus_done'] ) ) : '';
+	$done = isset( $_GET['diluxone_users_done'] ) ? sanitize_key( wp_unslash( $_GET['diluxone_users_done'] ) ) : '';
 
-	if ( '' !== $editing || isset( $_GET['users_dlx_plus_new'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		users_dlx_plus_screen_field_edit( $editing );
+	if ( '' !== $editing || isset( $_GET['diluxone_users_new'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		diluxone_users_screen_field_edit( $editing );
 		return;
 	}
 
 	$tabs    = array(
-		'list'  => __( 'Fields', 'users-dlx-plus' ),
-		'usage' => __( 'How to use them', 'users-dlx-plus' ),
+		'list'  => __( 'Fields', 'diluxone-users' ),
+		'usage' => __( 'How to use them', 'diluxone-users' ),
 	);
-	$current = users_dlx_plus_tab( $tabs );
+	$current = diluxone_users_tab( $tabs );
 
-	users_dlx_plus_screen_open( __( 'User fields', 'users-dlx-plus' ), 'users-dlx-plus-fields', $tabs, $current );
+	diluxone_users_screen_open( __( 'User fields', 'diluxone-users' ), 'diluxone-users-fields', $tabs, $current );
 
-	$avisos = array(
-		'saved'   => __( 'Field saved.', 'users-dlx-plus' ),
-		'delete'  => __( 'Field deleted. The data already stored was left alone.', 'users-dlx-plus' ),
-		'nolabel' => __( 'A field needs a name.', 'users-dlx-plus' ),
+	$notices = array(
+		'saved'   => __( 'Field saved.', 'diluxone-users' ),
+		'delete'  => __( 'Field deleted. The data already stored was left alone.', 'diluxone-users' ),
+		'nolabel' => __( 'A field needs a name.', 'diluxone-users' ),
 	);
 
-	if ( isset( $avisos[ $done ] ) ) {
-		users_dlx_plus_notice( $avisos[ $done ], 'nolabel' === $done ? 'error' : 'success' );
+	if ( isset( $notices[ $done ] ) ) {
+		diluxone_users_notice( $notices[ $done ], 'nolabel' === $done ? 'error' : 'success' );
 	}
 
 	if ( 'usage' === $current ) {
-		users_dlx_plus_screen_fields_usage();
+		diluxone_users_screen_fields_usage();
 	} else {
-		users_dlx_plus_screen_fields_list();
+		diluxone_users_screen_fields_list();
 	}
 
-	users_dlx_plus_screen_close();
+	diluxone_users_screen_close();
 }
 
 /** Screen fields list. */
-function users_dlx_plus_screen_fields_list(): void {
-	$fields = users_dlx_plus_fields( '', false );
-	$types  = users_dlx_plus_field_types();
-	$groups = users_dlx_plus_groups();
+function diluxone_users_screen_fields_list(): void {
+	$fields = diluxone_users_fields( '', false );
+	$types  = diluxone_users_field_types();
+	$groups = diluxone_users_groups();
 	?>
-	<div class="users-dlx-plus-donde">
-		<p><strong><?php esc_html_e( 'Where all this lives', 'users-dlx-plus' ); ?></strong></p>
+	<div class="diluxone-users-where">
+		<p><strong><?php esc_html_e( 'Where all this lives', 'diluxone-users' ); ?></strong></p>
 		<p>
 			<?php
 			printf(
-				/* translators: 1: nombre de la option, 2: nombre de la tabla */
-				esc_html__( 'What each field IS —its name, type and behaviour— is one WordPress option, %1$s. What each PERSON answered is user meta: one row per person and per field in %2$s, with the field key as the name. No extra tables.', 'users-dlx-plus' ),
-				'<code>users_dlx_plus_fields</code>',
+					/* translators: 1: option name, 2: table name */
+				esc_html__( 'What each field IS —its name, type and behaviour— is one WordPress option, %1$s. What each PERSON answered is user meta: one row per person and per field in %2$s, with the field key as the name. No extra tables.', 'diluxone-users' ),
+				'<code>diluxone_users_fields</code>',
 				'<code>' . esc_html( $GLOBALS['wpdb']->usermeta ) . '</code>'
 			);
 			?>
-			<?php esc_html_e( 'That is why the key cannot change once the field exists, and why deleting a field leaves the answers alone: they are two different things.', 'users-dlx-plus' ); ?>
+			<?php esc_html_e( 'That is why the key cannot change once the field exists, and why deleting a field leaves the answers alone: they are two different things.', 'diluxone-users' ); ?>
 		</p>
 	</div>
 
-	<p class="users-dlx-plus-admin__acciones">
-		<a class="button button-primary" href="<?php echo esc_url( users_dlx_plus_admin_url( 'users-dlx-plus-fields', array( 'users_dlx_plus_new' => 1 ) ) ); ?>">
-			<?php esc_html_e( 'Add field', 'users-dlx-plus' ); ?>
+	<p class="diluxone-users-admin__actions">
+		<a class="button button-primary" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-fields', array( 'diluxone_users_new' => 1 ) ) ); ?>">
+			<?php esc_html_e( 'Add field', 'diluxone-users' ); ?>
 		</a>
 	</p>
 
-	<table class="wp-list-table widefat fixed striped users-dlx-plus-list">
+	<table class="wp-list-table widefat fixed striped diluxone-users-list">
 		<thead>
 			<tr>
-				<th class="users-dlx-plus-list__name"><?php esc_html_e( 'Name', 'users-dlx-plus' ); ?></th>
-				<th><?php esc_html_e( 'Type', 'users-dlx-plus' ); ?></th>
-				<th><?php esc_html_e( 'Where', 'users-dlx-plus' ); ?></th>
-				<th><?php esc_html_e( 'Required', 'users-dlx-plus' ); ?></th>
-				<th><?php esc_html_e( 'Status', 'users-dlx-plus' ); ?></th>
-				<th class="users-dlx-plus-list__order"><?php esc_html_e( 'Order', 'users-dlx-plus' ); ?></th>
+				<th class="diluxone-users-list__name"><?php esc_html_e( 'Name', 'diluxone-users' ); ?></th>
+				<th><?php esc_html_e( 'Type', 'diluxone-users' ); ?></th>
+				<th><?php esc_html_e( 'Where', 'diluxone-users' ); ?></th>
+				<th><?php esc_html_e( 'Required', 'diluxone-users' ); ?></th>
+				<th><?php esc_html_e( 'Status', 'diluxone-users' ); ?></th>
+				<th class="diluxone-users-list__order"><?php esc_html_e( 'Order', 'diluxone-users' ); ?></th>
 			</tr>
 		</thead>
 		<tbody>
 			<?php if ( array() === $fields ) : ?>
-				<tr><td colspan="6"><?php esc_html_e( 'No fields yet.', 'users-dlx-plus' ); ?></td></tr>
+				<tr><td colspan="6"><?php esc_html_e( 'No fields yet.', 'diluxone-users' ); ?></td></tr>
 			<?php endif; ?>
 
 			<?php
 			foreach ( $fields as $field ) :
-				$edit = users_dlx_plus_admin_url( 'users-dlx-plus-fields', array( 'field' => $field['key'] ) );
+				$edit = diluxone_users_admin_url( 'diluxone-users-fields', array( 'field' => $field['key'] ) );
 				?>
 				<tr>
-					<td class="users-dlx-plus-list__name">
+					<td class="diluxone-users-list__name">
 						<strong><a href="<?php echo esc_url( $edit ); ?>"><?php echo esc_html( $field['label'] ); ?></a></strong>
 						<code><?php echo esc_html( $field['key'] ); ?></code>
 						<div class="row-actions">
-							<span class="edit"><a href="<?php echo esc_url( $edit ); ?>"><?php esc_html_e( 'Edit', 'users-dlx-plus' ); ?></a></span>
+							<span class="edit"><a href="<?php echo esc_url( $edit ); ?>"><?php esc_html_e( 'Edit', 'diluxone-users' ); ?></a></span>
 
 							<?php
 							/*
-							 * Los de WordPress no se borran: el dato existe igual y lo
-							 * usan el escritorio y medio plugin del sitio. Se esconden.
+							 * WordPress's own are not deleted: the value exists all
+							 * the same and the dashboard and half the site's plugins
+							 * use it. They are hidden.
 							 */
 							?>
-							<?php if ( ! users_dlx_plus_field_is_native( $field['key'] ) ) : ?>
+							<?php if ( ! diluxone_users_field_is_native( $field['key'] ) ) : ?>
 								<span class="trash"> |
-									<a class="users-dlx-plus-danger"
+									<a class="diluxone-users-danger"
 										href="
 										<?php
 										echo esc_url(
 											wp_nonce_url(
-												users_dlx_plus_admin_url(
-													'users-dlx-plus-fields',
+												diluxone_users_admin_url(
+													'diluxone-users-fields',
 													array(
 														'field' => $field['key'],
-														'users_dlx_plus_action' => 'delete',
+														'diluxone_users_action' => 'delete',
 													)
 												),
-												'users_dlx_plus_field_action'
+												'diluxone_users_field_action'
 											)
 										);
 										?>
 												"
-										onclick="return confirm(<?php echo esc_attr( (string) wp_json_encode( __( 'Delete this field? The data already stored is kept.', 'users-dlx-plus' ) ) ); ?>);">
-										<?php esc_html_e( 'Delete', 'users-dlx-plus' ); ?>
+										onclick="return confirm(<?php echo esc_attr( (string) wp_json_encode( __( 'Delete this field? The data already stored is kept.', 'diluxone-users' ) ) ); ?>);">
+										<?php esc_html_e( 'Delete', 'diluxone-users' ); ?>
 									</a>
 								</span>
 							<?php endif; ?>
@@ -328,15 +331,15 @@ function users_dlx_plus_screen_fields_list(): void {
 					</td>
 					<td><?php echo esc_html( $types[ $field['type'] ] ?? $field['type'] ); ?></td>
 					<td><?php echo esc_html( $groups[ $field['group'] ] ?? $field['group'] ); ?></td>
-					<td><?php echo $field['required'] ? esc_html__( 'Yes', 'users-dlx-plus' ) : '—'; ?></td>
+					<td><?php echo $field['required'] ? esc_html__( 'Yes', 'diluxone-users' ) : '—'; ?></td>
 					<td>
 						<?php
 						if ( 'never' === $field['edit'] ) {
-							esc_html_e( 'Read only', 'users-dlx-plus' );
+							esc_html_e( 'Read only', 'diluxone-users' );
 						} elseif ( 'limited' === $field['edit'] ) {
 							printf(
-								/* translators: %d: cuántas veces se puede cambiar */
-								esc_html( _n( '%d time', '%d times', (int) $field['edit_max'], 'users-dlx-plus' ) ),
+									/* translators: %d: how many times it can be changed */
+								esc_html( _n( '%d time', '%d times', (int) $field['edit_max'], 'diluxone-users' ) ),
 								(int) $field['edit_max']
 							);
 						} else {
@@ -345,43 +348,43 @@ function users_dlx_plus_screen_fields_list(): void {
 						?>
 					</td>
 					<td>
-						<span class="users-dlx-plus-pill users-dlx-plus-pill--<?php echo $field['active'] ? 'on' : 'off'; ?>">
-							<?php echo $field['active'] ? esc_html__( 'Active', 'users-dlx-plus' ) : esc_html__( 'Hidden', 'users-dlx-plus' ); ?>
+						<span class="diluxone-users-pill diluxone-users-pill--<?php echo $field['active'] ? 'on' : 'off'; ?>">
+							<?php echo $field['active'] ? esc_html__( 'Active', 'diluxone-users' ) : esc_html__( 'Hidden', 'diluxone-users' ); ?>
 						</span>
 					</td>
-					<td class="users-dlx-plus-list__order">
+					<td class="diluxone-users-list__order">
 						<a class="button button-small" href="
 						<?php
 						echo esc_url(
 							wp_nonce_url(
-								users_dlx_plus_admin_url(
-									'users-dlx-plus-fields',
+								diluxone_users_admin_url(
+									'diluxone-users-fields',
 									array(
 										'field' => $field['key'],
-										'users_dlx_plus_action' => 'up',
+										'diluxone_users_action' => 'up',
 									)
 								),
-								'users_dlx_plus_field_action'
+								'diluxone_users_field_action'
 							)
 						);
 						?>
-																" aria-label="<?php esc_attr_e( 'Move up', 'users-dlx-plus' ); ?>">&uarr;</a>
+																" aria-label="<?php esc_attr_e( 'Move up', 'diluxone-users' ); ?>">&uarr;</a>
 						<a class="button button-small" href="
 						<?php
 						echo esc_url(
 							wp_nonce_url(
-								users_dlx_plus_admin_url(
-									'users-dlx-plus-fields',
+								diluxone_users_admin_url(
+									'diluxone-users-fields',
 									array(
 										'field' => $field['key'],
-										'users_dlx_plus_action' => 'down',
+										'diluxone_users_action' => 'down',
 									)
 								),
-								'users_dlx_plus_field_action'
+								'diluxone_users_field_action'
 							)
 						);
 						?>
-																" aria-label="<?php esc_attr_e( 'Move down', 'users-dlx-plus' ); ?>">&darr;</a>
+																" aria-label="<?php esc_attr_e( 'Move down', 'diluxone-users' ); ?>">&darr;</a>
 					</td>
 				</tr>
 			<?php endforeach; ?>
@@ -390,135 +393,135 @@ function users_dlx_plus_screen_fields_list(): void {
 	<?php
 }
 
-/** La ficha de un campo. Con clave vacía, es uno nuevo. */
-function users_dlx_plus_screen_field_edit( string $key ): void {
-	$field = '' === $key ? users_dlx_plus_normalize_field(
+/** A field's detail. With an empty key, it is a new one. */
+function diluxone_users_screen_field_edit( string $key ): void {
+	$field = '' === $key ? diluxone_users_normalize_field(
 		array(
 			'group'  => 'optional',
 			'active' => 1,
 		)
-	) : users_dlx_plus_field( $key );
+	) : diluxone_users_field( $key );
 
 	if ( null === $field ) {
-		users_dlx_plus_screen_open( __( 'User fields', 'users-dlx-plus' ) );
-		users_dlx_plus_notice( __( 'That field does not exist.', 'users-dlx-plus' ), 'error' );
-		users_dlx_plus_screen_close();
+		diluxone_users_screen_open( __( 'User fields', 'diluxone-users' ) );
+		diluxone_users_notice( __( 'That field does not exist.', 'diluxone-users' ), 'error' );
+		diluxone_users_screen_close();
 		return;
 	}
 
-	$nuevo = '' === $key;
+	$fresh = '' === $key;
 
-	users_dlx_plus_screen_open(
-		$nuevo
-		? __( 'New field', 'users-dlx-plus' )
-		: sprintf( /* translators: %s: nombre del campo */ __( 'Field: %s', 'users-dlx-plus' ), $field['label'] )
+	diluxone_users_screen_open(
+		$fresh
+		? __( 'New field', 'diluxone-users' )
+		: sprintf( /* translators: %s: field name */ __( 'Field: %s', 'diluxone-users' ), $field['label'] )
 	);
 	?>
-	<p><a href="<?php echo esc_url( users_dlx_plus_admin_url( 'users-dlx-plus-fields' ) ); ?>">&larr; <?php esc_html_e( 'Back to the list', 'users-dlx-plus' ); ?></a></p>
+	<p><a href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-fields' ) ); ?>">&larr; <?php esc_html_e( 'Back to the list', 'diluxone-users' ); ?></a></p>
 
-	<form method="post" class="users-dlx-plus-form-admin">
-		<?php wp_nonce_field( 'users_dlx_plus_field', 'users_dlx_plus_field_nonce' ); ?>
-		<input type="hidden" name="users_dlx_plus_field[key]" value="<?php echo esc_attr( $field['key'] ); ?>">
+	<form method="post" class="diluxone-users-form-admin">
+		<?php wp_nonce_field( 'diluxone_users_field', 'diluxone_users_field_nonce' ); ?>
+		<input type="hidden" name="diluxone_users_field[key]" value="<?php echo esc_attr( $field['key'] ); ?>">
 
 		<table class="form-table" role="presentation">
 			<tr>
-				<th scope="row"><label for="users-dlx-plus-label"><?php esc_html_e( 'Name', 'users-dlx-plus' ); ?></label></th>
+				<th scope="row"><label for="diluxone-users-label"><?php esc_html_e( 'Name', 'diluxone-users' ); ?></label></th>
 				<td>
-					<input type="text" id="users-dlx-plus-label" name="users_dlx_plus_field[label]" class="regular-text" value="<?php echo esc_attr( $field['label'] ); ?>" required>
-					<?php if ( ! $nuevo ) : ?>
-						<p class="description"><?php esc_html_e( 'Key:', 'users-dlx-plus' ); ?> <code><?php echo esc_html( $field['key'] ); ?></code> — <?php esc_html_e( 'it cannot change: it is the name the data is stored under.', 'users-dlx-plus' ); ?></p>
+					<input type="text" id="diluxone-users-label" name="diluxone_users_field[label]" class="regular-text" value="<?php echo esc_attr( $field['label'] ); ?>" required>
+					<?php if ( ! $fresh ) : ?>
+						<p class="description"><?php esc_html_e( 'Key:', 'diluxone-users' ); ?> <code><?php echo esc_html( $field['key'] ); ?></code> — <?php esc_html_e( 'it cannot change: it is the name the data is stored under.', 'diluxone-users' ); ?></p>
 					<?php else : ?>
-						<p class="description"><?php esc_html_e( 'The key is generated from the name.', 'users-dlx-plus' ); ?></p>
+						<p class="description"><?php esc_html_e( 'The key is generated from the name.', 'diluxone-users' ); ?></p>
 					<?php endif; ?>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><label for="users-dlx-plus-type"><?php esc_html_e( 'Type', 'users-dlx-plus' ); ?></label></th>
+				<th scope="row"><label for="diluxone-users-type"><?php esc_html_e( 'Type', 'diluxone-users' ); ?></label></th>
 				<td>
 					<?php
 					/*
-					 * Los de WordPress vienen con su tipo puesto: cambiarle el
-					 * tipo al nombre no lo mejora, y lo puede romper.
+					 * WordPress's own come with their type set: changing the type
+					 * of the first name does not improve it, and can break it.
 					 */
 					?>
-					<select id="users-dlx-plus-type" name="users_dlx_plus_field[type]" <?php disabled( users_dlx_plus_field_is_native( $field['key'] ) ); ?>>
-						<?php foreach ( users_dlx_plus_field_types() as $value => $name ) : ?>
+					<select id="diluxone-users-type" name="diluxone_users_field[type]" <?php disabled( diluxone_users_field_is_native( $field['key'] ) ); ?>>
+						<?php foreach ( diluxone_users_field_types() as $value => $name ) : ?>
 							<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $field['type'], $value ); ?>><?php echo esc_html( $name ); ?></option>
 						<?php endforeach; ?>
 					</select>
 
-					<?php if ( users_dlx_plus_field_is_native( $field['key'] ) ) : ?>
-						<input type="hidden" name="users_dlx_plus_field[type]" value="<?php echo esc_attr( $field['type'] ); ?>">
-						<p class="description"><?php esc_html_e( 'This one is WordPress’s own: it can be renamed, reordered, made required or hidden, but it keeps its type and cannot be deleted.', 'users-dlx-plus' ); ?></p>
+					<?php if ( diluxone_users_field_is_native( $field['key'] ) ) : ?>
+						<input type="hidden" name="diluxone_users_field[type]" value="<?php echo esc_attr( $field['type'] ); ?>">
+						<p class="description"><?php esc_html_e( 'This one is WordPress’s own: it can be renamed, reordered, made required or hidden, but it keeps its type and cannot be deleted.', 'diluxone-users' ); ?></p>
 					<?php else : ?>
-						<p class="description"><?php esc_html_e( '“Country” shows the full list with its dial codes; “Phone with country code” splits the number in two and stores it in international format.', 'users-dlx-plus' ); ?></p>
+						<p class="description"><?php esc_html_e( '“Country” shows the full list with its dial codes; “Phone with country code” splits the number in two and stores it in international format.', 'diluxone-users' ); ?></p>
 					<?php endif; ?>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php esc_html_e( 'Who can change it', 'users-dlx-plus' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'Who can change it', 'diluxone-users' ); ?></th>
 				<td>
 					<?php
-					$modos = array(
-						'always'  => __( 'Whenever they want', 'users-dlx-plus' ),
-						'limited' => __( 'Only a few times, and then no more', 'users-dlx-plus' ),
-						'never'   => __( 'Never — they can see it, only an administrator changes it', 'users-dlx-plus' ),
+					$modes = array(
+						'always'  => __( 'Whenever they want', 'diluxone-users' ),
+						'limited' => __( 'Only a few times, and then no more', 'diluxone-users' ),
+						'never'   => __( 'Never — they can see it, only an administrator changes it', 'diluxone-users' ),
 					);
 
-					foreach ( $modos as $clave => $rotulo ) :
+					foreach ( $modes as $mode_key => $label ) :
 						?>
-						<label class="users-dlx-plus-roles__item">
-							<input type="radio" name="users_dlx_plus_field[edit]" value="<?php echo esc_attr( $clave ); ?>" <?php checked( $field['edit'], $clave ); ?>>
-							<?php echo esc_html( $rotulo ); ?>
+						<label class="diluxone-users-roles__item">
+							<input type="radio" name="diluxone_users_field[edit]" value="<?php echo esc_attr( $mode_key ); ?>" <?php checked( $field['edit'], $mode_key ); ?>>
+							<?php echo esc_html( $label ); ?>
 						</label>
 					<?php endforeach; ?>
 
-					<p class="users-dlx-plus-si-tipo-edit">
-						<label for="users-dlx-plus-edit-max"><?php esc_html_e( 'How many times', 'users-dlx-plus' ); ?></label>
-						<input type="number" id="users-dlx-plus-edit-max" name="users_dlx_plus_field[edit_max]" min="1" max="99" class="small-text" value="<?php echo esc_attr( (string) $field['edit_max'] ); ?>">
+					<p class="diluxone-users-if-type-edit">
+						<label for="diluxone-users-edit-max"><?php esc_html_e( 'How many times', 'diluxone-users' ); ?></label>
+						<input type="number" id="diluxone-users-edit-max" name="diluxone_users_field[edit_max]" min="1" max="99" class="small-text" value="<?php echo esc_attr( (string) $field['edit_max'] ); ?>">
 					</p>
 
-					<p class="description"><?php esc_html_e( 'This is about the person who owns the data. An administrator can always change it, from the user’s profile: otherwise a one-change field turns into a typo nobody can fix.', 'users-dlx-plus' ); ?></p>
+					<p class="description"><?php esc_html_e( 'This is about the person who owns the data. An administrator can always change it, from the user’s profile: otherwise a one-change field turns into a typo nobody can fix.', 'diluxone-users' ); ?></p>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><label for="users-dlx-plus-group"><?php esc_html_e( 'Where it goes', 'users-dlx-plus' ); ?></label></th>
+				<th scope="row"><label for="diluxone-users-group"><?php esc_html_e( 'Where it goes', 'diluxone-users' ); ?></label></th>
 				<td>
-					<select id="users-dlx-plus-group" name="users_dlx_plus_field[group]">
-						<?php foreach ( users_dlx_plus_groups() as $g => $g_label ) : ?>
+					<select id="diluxone-users-group" name="diluxone_users_field[group]">
+						<?php foreach ( diluxone_users_groups() as $g => $g_label ) : ?>
 							<option value="<?php echo esc_attr( $g ); ?>" <?php selected( $field['group'], $g ); ?>><?php echo esc_html( $g_label ); ?></option>
 						<?php endforeach; ?>
 					</select>
-					<p class="description"><?php esc_html_e( 'The profile form shows two blocks: the essentials first, and underneath the optional ones with their own explanation. This decides which one the field lands in.', 'users-dlx-plus' ); ?></p>
+					<p class="description"><?php esc_html_e( 'The profile form shows two blocks: the essentials first, and underneath the optional ones with their own explanation. This decides which one the field lands in.', 'diluxone-users' ); ?></p>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><label for="users-dlx-plus-help"><?php esc_html_e( 'Help text', 'users-dlx-plus' ); ?></label></th>
+				<th scope="row"><label for="diluxone-users-help"><?php esc_html_e( 'Help text', 'diluxone-users' ); ?></label></th>
 				<td>
-					<input type="text" id="users-dlx-plus-help" name="users_dlx_plus_field[help]" class="large-text" value="<?php echo esc_attr( $field['help'] ); ?>">
-					<p class="description"><?php esc_html_e( 'Why we are asking. Shown under the field.', 'users-dlx-plus' ); ?></p>
+					<input type="text" id="diluxone-users-help" name="diluxone_users_field[help]" class="large-text" value="<?php echo esc_attr( $field['help'] ); ?>">
+					<p class="description"><?php esc_html_e( 'Why we are asking. Shown under the field.', 'diluxone-users' ); ?></p>
 				</td>
 			</tr>
-			<tr class="users-dlx-plus-si-tipo" data-tipo="text textarea email url number datalist phone">
-				<th scope="row"><label for="users-dlx-plus-placeholder"><?php esc_html_e( 'Placeholder text', 'users-dlx-plus' ); ?></label></th>
+			<tr class="diluxone-users-if-type" data-type="text textarea email url number datalist phone">
+				<th scope="row"><label for="diluxone-users-placeholder"><?php esc_html_e( 'Placeholder text', 'diluxone-users' ); ?></label></th>
 				<td>
-					<input type="text" id="users-dlx-plus-placeholder" name="users_dlx_plus_field[placeholder]" class="regular-text" value="<?php echo esc_attr( $field['placeholder'] ); ?>">
-					<p class="description"><?php esc_html_e( 'Shown in grey inside the empty field.', 'users-dlx-plus' ); ?></p>
+					<input type="text" id="diluxone-users-placeholder" name="diluxone_users_field[placeholder]" class="regular-text" value="<?php echo esc_attr( $field['placeholder'] ); ?>">
+					<p class="description"><?php esc_html_e( 'Shown in grey inside the empty field.', 'diluxone-users' ); ?></p>
 				</td>
 			</tr>
-			<tr class="users-dlx-plus-si-tipo" data-tipo="select datalist">
-				<th scope="row"><label for="users-dlx-plus-options"><?php esc_html_e( 'Values', 'users-dlx-plus' ); ?></label></th>
+			<tr class="diluxone-users-if-type" data-type="select datalist">
+				<th scope="row"><label for="diluxone-users-options"><?php esc_html_e( 'Values', 'diluxone-users' ); ?></label></th>
 				<td>
-					<textarea id="users-dlx-plus-options" name="users_dlx_plus_field[options]" class="large-text code" rows="5"><?php echo esc_textarea( implode( "\n", 'country' === $field['type'] || 'phone' === $field['type'] ? array() : $field['options'] ) ); ?></textarea>
-					<p class="description"><?php esc_html_e( 'One per line. In a fixed list they are the only accepted values; in text with suggestions they are just hints and the person can write something else.', 'users-dlx-plus' ); ?></p>
+					<textarea id="diluxone-users-options" name="diluxone_users_field[options]" class="large-text code" rows="5"><?php echo esc_textarea( implode( "\n", 'country' === $field['type'] || 'phone' === $field['type'] ? array() : $field['options'] ) ); ?></textarea>
+					<p class="description"><?php esc_html_e( 'One per line. In a fixed list they are the only accepted values; in text with suggestions they are just hints and the person can write something else.', 'diluxone-users' ); ?></p>
 				</td>
 			</tr>
 
-			<tr class="users-dlx-plus-si-tipo" data-tipo="country">
-				<th scope="row"><label for="users-dlx-plus-preferred"><?php esc_html_e( 'Countries shown first', 'users-dlx-plus' ); ?></label></th>
+			<tr class="diluxone-users-if-type" data-type="country">
+				<th scope="row"><label for="diluxone-users-preferred"><?php esc_html_e( 'Countries shown first', 'diluxone-users' ); ?></label></th>
 				<td>
-					<select id="users-dlx-plus-preferred" name="users_dlx_plus_field[preferred][]" multiple size="8" class="users-dlx-plus-multi">
-						<?php foreach ( users_dlx_plus_countries_sorted() as $iso => $country_name ) : ?>
+					<select id="diluxone-users-preferred" name="diluxone_users_field[preferred][]" multiple size="8" class="diluxone-users-multi">
+						<?php foreach ( diluxone_users_countries_sorted() as $iso => $country_name ) : ?>
 							<option value="<?php echo esc_attr( $iso ); ?>" <?php selected( in_array( $iso, $field['options'], true ) ); ?>>
 								<?php echo esc_html( $country_name ); ?>
 							</option>
@@ -527,62 +530,62 @@ function users_dlx_plus_screen_field_edit( string $key ): void {
 					<p class="description">
 						<?php
 						printf(
-							/* translators: %d: cantidad de países */
-							esc_html__( 'Optional. The list of %d countries comes with the plugin — there is nothing to load. These ones go on top, separated from the rest, so nobody has to scroll to find the one next door.', 'users-dlx-plus' ),
-							count( users_dlx_plus_countries() )
+								/* translators: %d: number of countries */
+							esc_html__( 'Optional. The list of %d countries comes with the plugin — there is nothing to load. These ones go on top, separated from the rest, so nobody has to scroll to find the one next door.', 'diluxone-users' ),
+							count( diluxone_users_countries() )
 						);
 						?>
 					</p>
 				</td>
 			</tr>
 
-			<tr class="users-dlx-plus-si-tipo" data-tipo="phone">
-				<th scope="row"><label for="users-dlx-plus-default-country"><?php esc_html_e( 'Country selected by default', 'users-dlx-plus' ); ?></label></th>
+			<tr class="diluxone-users-if-type" data-type="phone">
+				<th scope="row"><label for="diluxone-users-default-country"><?php esc_html_e( 'Country selected by default', 'diluxone-users' ); ?></label></th>
 				<td>
-					<select id="users-dlx-plus-default-country" name="users_dlx_plus_field[default_country]">
-						<option value=""><?php esc_html_e( '— None —', 'users-dlx-plus' ); ?></option>
-						<?php foreach ( users_dlx_plus_countries_sorted() as $iso => $country_name ) : ?>
+					<select id="diluxone-users-default-country" name="diluxone_users_field[default_country]">
+						<option value=""><?php esc_html_e( '— None —', 'diluxone-users' ); ?></option>
+						<?php foreach ( diluxone_users_countries_sorted() as $iso => $country_name ) : ?>
 							<option value="<?php echo esc_attr( $iso ); ?>" <?php selected( ( $field['options'][0] ?? '' ), $iso ); ?>>
-								<?php echo esc_html( $country_name . ' +' . users_dlx_plus_country_dial( $iso ) ); ?>
+								<?php echo esc_html( $country_name . ' +' . diluxone_users_country_dial( $iso ) ); ?>
 							</option>
 						<?php endforeach; ?>
 					</select>
-					<p class="description"><?php esc_html_e( 'The dial code the field comes with. The person can change it: the full list is always there.', 'users-dlx-plus' ); ?></p>
+					<p class="description"><?php esc_html_e( 'The dial code the field comes with. The person can change it: the full list is always there.', 'diluxone-users' ); ?></p>
 				</td>
 			</tr>
 
 			<tr>
-				<th scope="row"><?php esc_html_e( 'Behaviour', 'users-dlx-plus' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'Behaviour', 'diluxone-users' ); ?></th>
 				<td>
-					<label><input type="checkbox" name="users_dlx_plus_field[required]" value="1" <?php checked( $field['required'], 1 ); ?>> <?php esc_html_e( 'Required', 'users-dlx-plus' ); ?></label><br>
-					<label><input type="checkbox" name="users_dlx_plus_field[active]" value="1" <?php checked( $field['active'], 1 ); ?>> <?php esc_html_e( 'Active: show it in the forms', 'users-dlx-plus' ); ?></label>
+					<label><input type="checkbox" name="diluxone_users_field[required]" value="1" <?php checked( $field['required'], 1 ); ?>> <?php esc_html_e( 'Required', 'diluxone-users' ); ?></label><br>
+					<label><input type="checkbox" name="diluxone_users_field[active]" value="1" <?php checked( $field['active'], 1 ); ?>> <?php esc_html_e( 'Active: show it in the forms', 'diluxone-users' ); ?></label>
 				</td>
 			</tr>
 		</table>
 
-		<?php submit_button( $nuevo ? __( 'Add field', 'users-dlx-plus' ) : __( 'Save field', 'users-dlx-plus' ) ); ?>
+		<?php submit_button( $fresh ? __( 'Add field', 'diluxone-users' ) : __( 'Save field', 'diluxone-users' ) ); ?>
 	</form>
 	<?php
-	users_dlx_plus_screen_close();
+	diluxone_users_screen_close();
 }
 
 /** Screen fields usage. */
-function users_dlx_plus_screen_fields_usage(): void {
-	users_dlx_plus_intro( __( 'The fields show up on their own in the dashboard profile, when adding a user and in the WordPress registration form. On the front end you place them with a shortcode.', 'users-dlx-plus' ) );
+function diluxone_users_screen_fields_usage(): void {
+	diluxone_users_intro( __( 'The fields show up on their own in the dashboard profile, when adding a user and in the WordPress registration form. On the front end you place them with a shortcode.', 'diluxone-users' ) );
 	?>
-	<table class="widefat striped users-dlx-plus-shortcodes">
+	<table class="widefat striped diluxone-users-shortcodes">
 		<tbody>
-			<tr><td><code>[users_dlx_plus_fields]</code></td><td><?php esc_html_e( 'Every field, for the person to edit.', 'users-dlx-plus' ); ?></td></tr>
-			<tr><td><code>[users_dlx_plus_fields group="basic"]</code></td><td><?php esc_html_e( 'Only the basic ones. With group="optional", only the others.', 'users-dlx-plus' ); ?></td></tr>
-			<tr><td><code>[users_dlx_plus_login]</code></td><td><?php esc_html_e( 'The email sign-in form and the social buttons.', 'users-dlx-plus' ); ?></td></tr>
-			<tr><td><code>[users_dlx_plus_accounts]</code></td><td><?php esc_html_e( 'Linked providers, to link or unlink.', 'users-dlx-plus' ); ?></td></tr>
-			<tr><td><code>[users_dlx_plus_sessions]</code></td><td><?php esc_html_e( 'Open sessions, with the button to close them.', 'users-dlx-plus' ); ?></td></tr>
+			<tr><td><code>[diluxone_users_fields]</code></td><td><?php esc_html_e( 'Every field, for the person to edit.', 'diluxone-users' ); ?></td></tr>
+			<tr><td><code>[diluxone_users_fields group="basic"]</code></td><td><?php esc_html_e( 'Only the basic ones. With group="optional", only the others.', 'diluxone-users' ); ?></td></tr>
+			<tr><td><code>[diluxone_users_login]</code></td><td><?php esc_html_e( 'The email sign-in form and the social buttons.', 'diluxone-users' ); ?></td></tr>
+			<tr><td><code>[diluxone_users_accounts]</code></td><td><?php esc_html_e( 'Linked providers, to link or unlink.', 'diluxone-users' ); ?></td></tr>
+			<tr><td><code>[diluxone_users_sessions]</code></td><td><?php esc_html_e( 'Open sessions, with the button to close them.', 'diluxone-users' ); ?></td></tr>
 		</tbody>
 	</table>
 
-	<h2><?php esc_html_e( 'Fitting them into your design', 'users-dlx-plus' ); ?></h2>
-	<p class="users-dlx-plus-admin__intro">
-		<?php esc_html_e( 'Copy any file from the plugin’s templates/ folder into your theme, inside a users-dlx-plus/ folder, and edit it there. The plugin will use yours. You can also turn off its stylesheet in Sign in → Presentation.', 'users-dlx-plus' ); ?>
+	<h2><?php esc_html_e( 'Fitting them into your design', 'diluxone-users' ); ?></h2>
+	<p class="diluxone-users-admin__intro">
+		<?php esc_html_e( 'Copy any file from the plugin’s templates/ folder into your theme, inside a diluxone-users/ folder, and edit it there. The plugin will use yours. You can also turn off its stylesheet in Sign in → Presentation.', 'diluxone-users' ); ?>
 	</p>
 	<?php
 }

@@ -1,29 +1,29 @@
 <?php
 /**
- * ¿Este sitio manda correos?
+ * Does this site send e-mail?
  *
- * La pregunta parece tonta y es la más importante del plugin: el enlace de
- * acceso, el código del segundo factor y la confirmación para borrar una
- * cuenta son todos correos. Si no salen, el sitio no tiene puerta de entrada
- * y nadie se entera hasta que alguien no puede entrar.
+ * The question looks silly and it is the most important one in the plugin:
+ * the sign-in link, the second-factor code and the confirmation for deleting
+ * an account are all e-mails. If they do not go out, the site has no way in
+ * and nobody finds out until somebody cannot get in.
  *
- * La tentación es preguntarle a `has_filter('phpmailer_init')`: si alguien
- * enganchó ahí, hay un servidor configurado. Es mentira —un plugin de correo
- * activo pero mal configurado engancha igual— y es exactamente el error que
- * hacía que esta pantalla dijera «listo» mientras no salía nada.
+ * The temptation is to ask `has_filter('phpmailer_init')`: if somebody hooked
+ * there, a server is configured. That is a lie — a mail plugin that is active
+ * but badly configured hooks all the same — and it is exactly the mistake
+ * that made this screen say "ready" while nothing was going out.
  *
- * Así que no se adivina: se anota lo que pasó de verdad la última vez que
- * WordPress intentó mandar algo, y se ofrece un botón para probarlo.
+ * So nothing is guessed: what really happened the last time WordPress tried
+ * to send something is recorded, and a button is offered to test it.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/** Anota que un envío salió bien. */
-function users_dlx_plus_mail_ok(): void {
+/** Records that a send went through. */
+function diluxone_users_mail_ok(): void {
 	update_option(
-		'users_dlx_plus_mail_last',
+		'diluxone_users_mail_last',
 		array(
 			'ok'    => 1,
 			'time'  => time(),
@@ -31,16 +31,16 @@ function users_dlx_plus_mail_ok(): void {
 		)
 	);
 }
-add_action( 'wp_mail_succeeded', 'users_dlx_plus_mail_ok' );
+add_action( 'wp_mail_succeeded', 'diluxone_users_mail_ok' );
 
 /**
- * Anota que un envío falló, con el motivo.
+ * Records that a send failed, with the reason.
  *
  * @param WP_Error $error
  */
-function users_dlx_plus_mail_failed( $error ): void {
+function diluxone_users_mail_failed( $error ): void {
 	update_option(
-		'users_dlx_plus_mail_last',
+		'diluxone_users_mail_last',
 		array(
 			'ok'    => 0,
 			'time'  => time(),
@@ -48,16 +48,16 @@ function users_dlx_plus_mail_failed( $error ): void {
 		)
 	);
 }
-add_action( 'wp_mail_failed', 'users_dlx_plus_mail_failed' );
+add_action( 'wp_mail_failed', 'diluxone_users_mail_failed' );
 
 /**
- * Lo que se sabe del correo saliente.
+ * What is known about outgoing mail.
  *
  * @return array{state: string, time: int, error: string}
- *         state: 'ok', 'fail' o 'unknown'.
+ *         state: 'ok', 'fail' or 'unknown'.
  */
-function users_dlx_plus_mail_status(): array {
-	$last = get_option( 'users_dlx_plus_mail_last', false );
+function diluxone_users_mail_status(): array {
+	$last = get_option( 'diluxone_users_mail_last', false );
 
 	if ( ! is_array( $last ) ) {
 		return array(
@@ -75,42 +75,43 @@ function users_dlx_plus_mail_status(): array {
 }
 
 /**
- * ¿Se puede contar con que un correo llegue?
+ * Can an e-mail be counted on to arrive?
  *
- * «Todavía no se probó» cuenta como que sí: no hay motivo para asustar a
- * nadie con una sospecha, y el primer envío real va a decir la verdad.
+ * "Not tested yet" counts as yes: there is no reason to frighten anybody with
+ * a suspicion, and the first real send will tell the truth.
  */
-function users_dlx_plus_mail_works(): bool {
-	return 'fail' !== users_dlx_plus_mail_status()['state'];
+function diluxone_users_mail_works(): bool {
+	return 'fail' !== diluxone_users_mail_status()['state'];
 }
 
-/** Manda un correo de prueba a quien lo pidió, desde el admin. */
-function users_dlx_plus_mail_test(): void {
+/** Sends a test e-mail to whoever asked for it, from the admin. */
+function diluxone_users_mail_test(): void {
 	if ( ! current_user_can( 'manage_options' ) ) {
-		wp_die( esc_html__( 'You are not allowed to do this.', 'users-dlx-plus' ) );
+		wp_die( esc_html__( 'You are not allowed to do this.', 'diluxone-users' ) );
 	}
 
-	check_admin_referer( 'users_dlx_plus_mail_test' );
+	check_admin_referer( 'diluxone_users_mail_test' );
 
 	$user = wp_get_current_user();
 
 	$ok = wp_mail(
 		$user->user_email,
 		sprintf(
-			/* translators: %s: nombre del sitio */
-			__( 'Test from %s', 'users-dlx-plus' ),
+				/* translators: %s: site name */
+			__( 'Test from %s', 'diluxone-users' ),
 			wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES )
 		),
-		__( 'If this arrived, the site can send the sign-in links, the second-step codes and the data requests. If it did not, none of those work either.', 'users-dlx-plus' )
+		__( 'If this arrived, the site can send the sign-in links, the second-step codes and the data requests. If it did not, none of those work either.', 'diluxone-users' )
 	);
 
-	// wp_mail() sólo devuelve si lo entregó al servidor; el hook de arriba ya
-	// anotó lo que pasó de verdad. Igual se guarda por si nada disparó.
-	if ( ! $ok && 'fail' !== users_dlx_plus_mail_status()['state'] ) {
-		users_dlx_plus_mail_failed( new WP_Error( 'users_dlx_plus_mail', __( 'wp_mail() returned false and said nothing else.', 'users-dlx-plus' ) ) );
+	// wp_mail() only reports whether it handed the message to the server; the
+	// hook above already recorded what really happened. It is stored anyway in
+	// case nothing fired.
+	if ( ! $ok && 'fail' !== diluxone_users_mail_status()['state'] ) {
+		diluxone_users_mail_failed( new WP_Error( 'diluxone_users_mail', __( 'wp_mail() returned false and said nothing else.', 'diluxone-users' ) ) );
 	}
 
-	wp_safe_redirect( users_dlx_plus_admin_url( 'users-dlx-plus', array( 'users_dlx_plus_mail' => $ok ? 'sent' : 'failed' ) ) );
+	wp_safe_redirect( diluxone_users_admin_url( 'diluxone-users', array( 'diluxone_users_mail' => $ok ? 'sent' : 'failed' ) ) );
 	exit;
 }
-add_action( 'admin_post_users_dlx_plus_mail_test', 'users_dlx_plus_mail_test' );
+add_action( 'admin_post_diluxone_users_mail_test', 'diluxone_users_mail_test' );

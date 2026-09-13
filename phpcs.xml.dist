@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
-<ruleset name="Users+">
+<ruleset name="DiluxOne Users+">
     <description>
-        WordPress Coding Standards configuration for the Users+ plugin.
+        WordPress Coding Standards configuration for the DiluxOne Users+ plugin.
         Strict mode — runs the full WordPress ruleset (Core + Docs + Extra) plus
         PHP 7.4+ compatibility checks. No baseline.
     </description>
 
     <!-- Files / paths to scan -->
-    <file>users-dlx-plus.php</file>
+    <file>diluxone-users.php</file>
     <file>includes/</file>
     <file>templates/</file>
 
@@ -37,8 +37,8 @@
     <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
         <properties>
             <property name="prefixes" type="array">
-                <element value="users_dlx_plus"/>
-                <element value="USERS_DLX_PLUS"/>
+                <element value="diluxone_users"/>
+                <element value="DILUXONE_USERS"/>
             </property>
         </properties>
     </rule>
@@ -48,7 +48,7 @@
          WPCS pide un @param por cada parámetro. La regla viene de cuando PHP
          no tenía tipos: el docblock era el único lugar donde decir que algo
          era un `int`. Este plugin declara PHP 8.0 como mínimo y tipa las
-         firmas de verdad —`function users_dlx_plus_field_editable( array $field, int
+         firmas de verdad —`function diluxone_users_field_editable( array $field, int
          $user_id ): bool`— así que el @param repetiría lo que el intérprete
          ya verifica, y con la desventaja de que un docblock puede quedar
          desactualizado y un tipo nativo no.
@@ -85,7 +85,7 @@
     <rule ref="WordPress.WP.I18n">
         <properties>
             <property name="text_domain" type="array">
-                <element value="users-dlx-plus"/>
+                <element value="diluxone-users"/>
             </property>
         </properties>
     </rule>

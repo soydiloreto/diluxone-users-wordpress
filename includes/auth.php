@@ -1,84 +1,87 @@
 <?php
 /**
- * El centro de la autenticación: qué puertas hay y qué se pide en cada una.
+ * The heart of authentication: which doors exist and what each one asks for.
  *
- * Un sitio no elige «una» forma de entrar: elige un conjunto. Puede tener
- * contraseña y enlace por correo a la vez, puede sumarle redes sociales, y
- * puede pedir un segundo factor en todas, en algunas o en ninguna. Esas
- * combinaciones no se pueden resolver con una cadena de `if`: hace falta un
- * lugar donde estén enumeradas y un solo camino por el que pase todo el mundo.
+ * A site does not choose "one" way in: it chooses a set. It can have a
+ * password and an e-mail link at the same time, it can add social networks on
+ * top, and it can ask for a second factor on all of them, on some, or on
+ * none. Those combinations cannot be resolved with a chain of `if`s: what is
+ * needed is one place where they are enumerated and a single path everybody
+ * goes through.
  *
- * Ese camino es `users_dlx_plus_complete_login()`. La entren como la entren —contraseña,
- * enlace, red social— todos terminan ahí, y ahí se decide si la sesión se abre
- * o si primero hay que probar algo más. Sin eso, agregar un segundo factor
- * significaría acordarse de agregarlo en cada puerta, y la que se olvide queda
- * abierta.
+ * That path is `diluxone_users_complete_login()`. However they get in —
+ * password, link, social network — everyone ends up there, and there it is
+ * decided whether the session opens or whether something else has to be
+ * proved first. Without it, adding a second factor would mean remembering to
+ * add it at every door, and the one that gets forgotten stays open.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/** Cuánto vive un intento de segundo factor a medio terminar. */
-const USERS_DLX_PLUS_2FA_WINDOW = 10 * MINUTE_IN_SECONDS;
+/** How long a half-finished second-factor attempt lives. */
+const DILUXONE_USERS_2FA_WINDOW = 10 * MINUTE_IN_SECONDS;
 
 /* ── Los segundos factores disponibles ─────────────────────────────── */
 
 /*
- * * Una passkey no está en esta lista, y no es un olvido: no es un segundo
- * * factor sino una forma de entrar que ya lleva los dos adentro —algo que se
- * * tiene, el dispositivo, y algo que se es o se sabe, la huella o el PIN—.
- * * Ponerla acá significaría pedir tres cosas a quien ya dio dos.
+ * * A passkey is not on this list, and that is not an oversight: it is not a
+ * * second factor but a way in that already carries both inside — something
+ * * you have, the device, and something you are or know, the fingerprint or
+ * * the PIN. Putting it here would mean asking three things of someone who
+ * * already gave two.
  */
 
 /**
- * Los métodos de segundo factor que el plugin sabe manejar.
+ * The second-factor methods the plugin knows how to handle.
  *
- * Es un registro y no una lista fija: un add-on agrega el suyo sin tocar esto,
- * igual que las secciones del área de cuenta.
+ * It is a registry and not a fixed list: an add-on adds its own without
+ * touching this, the same as the account-area sections do.
  *
- * Cada uno declara:
- *   label     Cómo se llama para la gente.
- *   help      Qué es, en una línea.
- *   ready     Función que dice si ESA persona ya lo tiene configurado.
- *   send      Opcional: qué hacer al empezar el desafío (mandar el correo).
- *   verify    Función que valida lo que escribió la persona.
- *   position  Orden de preferencia cuando hay más de uno.
+ * Each one declares:
+ *   label     What it is called for people.
+ *   help      What it is, in one line.
+ *   ready     Function that says whether THAT person already has it set up.
+ *   send      Optional: what to do when the challenge starts (send the e-mail).
+ *   verify    Function that validates what the person typed.
+ *   position  Preference order when there is more than one.
  *
  * @return array<string, array<string, mixed>>
  */
-function users_dlx_plus_2fa_methods(): array {
+function diluxone_users_2fa_methods(): array {
 	$methods = array(
 		'email' => array(
-			// Por dónde llega el segundo paso. Es lo que permite decidir si
-			// suma algo cuando alguien ya entró por ese mismo canal.
+			// Which channel the second step arrives through. It is what makes it
+			// possible to decide whether it adds anything when someone already
+			// came in through that same channel.
 			'channel'  => 'email',
-			'label'    => __( 'A code by email', 'users-dlx-plus' ),
-			'help'     => __( 'We send a six-digit code to the address on the account. Nothing to install.', 'users-dlx-plus' ),
+			'label'    => __( 'A code by email', 'diluxone-users' ),
+			'help'     => __( 'We send a six-digit code to the address on the account. Nothing to install.', 'diluxone-users' ),
 			'ready'    => static fn( int $user_id ): bool => true,
-			'send'     => 'users_dlx_plus_2fa_email_send',
-			'verify'   => 'users_dlx_plus_2fa_email_verify',
+			'send'     => 'diluxone_users_2fa_email_send',
+			'verify'   => 'diluxone_users_2fa_email_verify',
 			'position' => 20,
 		),
 		'totp'  => array(
 			'channel'  => 'device',
-			'label'    => __( 'An authenticator app', 'users-dlx-plus' ),
-			'help'     => __( 'The six-digit code that changes every thirty seconds, from Google Authenticator, 1Password, Aegis or whichever one you use.', 'users-dlx-plus' ),
-			'ready'    => 'users_dlx_plus_totp_ready',
-			'verify'   => 'users_dlx_plus_totp_verify',
+			'label'    => __( 'An authenticator app', 'diluxone-users' ),
+			'help'     => __( 'The six-digit code that changes every thirty seconds, from Google Authenticator, 1Password, Aegis or whichever one you use.', 'diluxone-users' ),
+			'ready'    => 'diluxone_users_totp_ready',
+			'verify'   => 'diluxone_users_totp_verify',
 			'position' => 10,
 		),
 	);
 
 	/**
-	 * Filtra los métodos de segundo factor.
+	 * Filters the second-factor methods.
 	 *
 	 * @param array<string, array<string, mixed>> $methods
 	 */
-	$methods = (array) apply_filters( 'users_dlx_plus_2fa_methods', $methods );
+	$methods = (array) apply_filters( 'diluxone_users_2fa_methods', $methods );
 
-	// Los que el sitio apagó no existen para nadie.
-	$enabled = (array) users_dlx_plus_option( 'users_dlx_plus_2fa_methods' );
+	// The ones the site turned off do not exist for anybody.
+	$enabled = (array) diluxone_users_option( 'diluxone_users_2fa_methods' );
 
 	$methods = array_filter(
 		$methods,
@@ -92,51 +95,53 @@ function users_dlx_plus_2fa_methods(): array {
 }
 
 /**
- * Los métodos que ESTA persona tiene listos para usar ahora.
+ * The methods THIS person has ready to use right now.
  *
  * @return array<string, array<string, mixed>>
  */
-function users_dlx_plus_2fa_available( int $user_id ): array {
+function diluxone_users_2fa_available( int $user_id ): array {
 	return array_filter(
-		users_dlx_plus_2fa_methods(),
+		diluxone_users_2fa_methods(),
 		static fn( array $m ): bool => is_callable( $m['ready'] ) && call_user_func( $m['ready'], $user_id )
 	);
 }
 
-/* ── La política: a quién se le pide ───────────────────────────────── */
+/* ── The policy: who gets asked ────────────────────────────────────── */
 
 /**
- * ¿Esta persona tiene que pasar por un segundo factor?
+ * Does this person have to go through a second factor?
  *
- * Tres cosas mandan, en este orden:
+ * Three things decide, in this order:
  *
- *   1. El modo del sitio. Apagado no se pide nunca; opcional se pide sólo a
- *      quien lo prendió; obligatorio se pide a todo el mundo.
- *   2. Los roles elegidos, si la lista no está vacía. Sirve para pedírselo a
- *      quien administra y no a los 25.000 que sólo miran un curso.
- *   3. Cómo entró. Un enlace de un solo uso mandado al correo ya prueba que
- *      quien entra tiene ese correo; pedirle además un código al mismo correo
- *      es pedir dos veces lo mismo. Por eso es un ajuste aparte y viene
- *      apagado: un sitio que quiera el segundo factor igual, lo prende.
+ *   1. The site mode. Off is never asked; optional is asked only of whoever
+ *      turned it on; required is asked of everybody.
+ *   2. The chosen roles, when the list is not empty. Useful for asking it of
+ *      whoever administers the site and not of the 25,000 who only watch a
+ *      course.
+ *   3. How they got in. A single-use link sent to their e-mail already proves
+ *      whoever is coming in has that e-mail; asking them on top for a code
+ *      sent to the same e-mail is asking the same thing twice. That is why it
+ *      is a separate setting and comes turned off: a site that wants the
+ *      second factor anyway turns it on.
  *
- * @param string $via 'password', 'link' o 'sso'.
+ * @param string $via 'password', 'link' or 'sso'.
  */
-function users_dlx_plus_2fa_required( int $user_id, string $via ): bool {
-	$mode = (string) users_dlx_plus_option( 'users_dlx_plus_2fa_mode' );
+function diluxone_users_2fa_required( int $user_id, string $via ): bool {
+	$mode = (string) diluxone_users_option( 'diluxone_users_2fa_mode' );
 
 	if ( 'off' === $mode ) {
 		return false;
 	}
 
-	if ( array() === users_dlx_plus_2fa_available( $user_id ) ) {
+	if ( array() === diluxone_users_2fa_available( $user_id ) ) {
 		return false;
 	}
 
-	if ( 'link' === $via && ! users_dlx_plus_2fa_worth_it_on_link( $user_id ) ) {
+	if ( 'link' === $via && ! diluxone_users_2fa_worth_it_on_link( $user_id ) ) {
 		return false;
 	}
 
-	$roles = (array) users_dlx_plus_option( 'users_dlx_plus_2fa_roles' );
+	$roles = (array) diluxone_users_option( 'diluxone_users_2fa_roles' );
 
 	if ( array() !== $roles ) {
 		$user = get_userdata( $user_id );
@@ -150,33 +155,33 @@ function users_dlx_plus_2fa_required( int $user_id, string $via ): bool {
 		return true;
 	}
 
-	// Opcional: sólo a quien lo prendió.
-	return (bool) get_user_meta( $user_id, 'users_dlx_plus_2fa_on', true );
+	// Optional: only for whoever turned it on.
+	return (bool) get_user_meta( $user_id, 'diluxone_users_2fa_on', true );
 }
 
 /**
- * ¿Vale la pena pedir el segundo paso a quien entró por el enlace de correo?
+ * Is it worth asking the second step of someone who came in by e-mail link?
  *
- * En automático, sí sólo cuando hay un método que NO llegue por correo. Un
- * código mandado al mismo buzón que la persona acaba de abrir para seguir el
- * enlace no prueba nada que el enlace no haya probado ya; una aplicación
- * autenticadora o una llave, sí.
+ * On automatic, yes only when there is a method that does NOT arrive by
+ * e-mail. A code sent to the same inbox the person just opened to follow the
+ * link proves nothing the link has not proved already; an authenticator app
+ * or a key does.
  *
- * El sitio puede forzar las dos respuestas, pero el automático es el que
- * evita tanto la puerta abierta como el trámite que no sirve para nada.
+ * The site can force both answers, but automatic is the one that avoids both
+ * the open door and the errand that serves no purpose.
  */
-function users_dlx_plus_2fa_worth_it_on_link( int $user_id ): bool {
-	$modo = (string) users_dlx_plus_option( 'users_dlx_plus_2fa_link' );
+function diluxone_users_2fa_worth_it_on_link( int $user_id ): bool {
+	$mode = (string) diluxone_users_option( 'diluxone_users_2fa_link' );
 
-	if ( 'always' === $modo ) {
+	if ( 'always' === $mode ) {
 		return true;
 	}
 
-	if ( 'never' === $modo ) {
+	if ( 'never' === $mode ) {
 		return false;
 	}
 
-	foreach ( users_dlx_plus_2fa_available( $user_id ) as $method ) {
+	foreach ( diluxone_users_2fa_available( $user_id ) as $method ) {
 		if ( 'email' !== ( $method['channel'] ?? 'email' ) ) {
 			return true;
 		}
@@ -186,32 +191,33 @@ function users_dlx_plus_2fa_worth_it_on_link( int $user_id ): bool {
 }
 
 /**
- * Las formas de entrar que ofrece el sitio, y si a esta persona le piden el
- * segundo paso en cada una.
+ * The ways in the site offers, and whether this person is asked for the
+ * second step on each of them.
  *
- * Existe para que la pantalla de seguridad diga la verdad. «No se te está
- * pidiendo» es falso apenas hay una red social prendida: la excepción del
- * enlace por correo es sólo del enlace por correo, porque ahí el segundo
- * código iría al mismo buzón que la persona acaba de abrir.
+ * It exists so the security screen tells the truth. "You are not being asked"
+ * is false as soon as one social network is on: the e-mail-link exception
+ * belongs to the e-mail link alone, because there the second code would go to
+ * the same inbox the person just opened.
  *
- * Las passkeys no están en la lista porque no pasan por acá: una passkey ya
- * son dos factores en un paso, y eso se cuenta en su propia caja.
+ * Passkeys are not on the list because they do not come through here: a
+ * passkey is already two factors in one step, and that is accounted for in
+ * its own box.
  *
  * @return array<string, array{label: string, asked: bool}>
  */
-function users_dlx_plus_2fa_ways( int $user_id ): array {
+function diluxone_users_2fa_ways( int $user_id ): array {
 	$ways = array();
 
-	if ( users_dlx_plus_login_has_link() ) {
-		$ways['link'] = __( 'the link we email you', 'users-dlx-plus' );
+	if ( diluxone_users_login_has_link() ) {
+		$ways['link'] = __( 'the link we email you', 'diluxone-users' );
 	}
 
-	if ( users_dlx_plus_login_has_password() ) {
-		$ways['password'] = __( 'your password', 'users-dlx-plus' );
+	if ( diluxone_users_login_has_password() ) {
+		$ways['password'] = __( 'your password', 'diluxone-users' );
 	}
 
-	if ( function_exists( 'users_dlx_plus_sso_available' ) && array() !== users_dlx_plus_sso_available() ) {
-		$ways['sso'] = __( 'a social account', 'users-dlx-plus' );
+	if ( function_exists( 'diluxone_users_sso_available' ) && array() !== diluxone_users_sso_available() ) {
+		$ways['sso'] = __( 'a social account', 'diluxone-users' );
 	}
 
 	$out = array();
@@ -219,7 +225,7 @@ function users_dlx_plus_2fa_ways( int $user_id ): array {
 	foreach ( $ways as $via => $label ) {
 		$out[ $via ] = array(
 			'label' => $label,
-			'asked' => users_dlx_plus_2fa_required( $user_id, $via ),
+			'asked' => diluxone_users_2fa_required( $user_id, $via ),
 		);
 	}
 
@@ -227,34 +233,35 @@ function users_dlx_plus_2fa_ways( int $user_id ): array {
 }
 
 /**
- * Las formas de entrar en las que sí se pide el segundo paso.
+ * The ways in where the second step is actually asked for.
  *
  * @return array<int, string>
  */
-function users_dlx_plus_2fa_ways_asked( int $user_id ): array {
+function diluxone_users_2fa_ways_asked( int $user_id ): array {
 	return array_values(
 		wp_list_pluck(
-			array_filter( users_dlx_plus_2fa_ways( $user_id ), static fn( array $w ): bool => $w['asked'] ),
+			array_filter( diluxone_users_2fa_ways( $user_id ), static fn( array $w ): bool => $w['asked'] ),
 			'label'
 		)
 	);
 }
 
 /**
- * ¿Este navegador ya pasó el segundo factor hace poco?
+ * Has this browser passed the second factor recently?
  *
- * La cookie no da acceso: sólo evita repetir el desafío en el mismo navegador
- * durante los días que diga el ajuste. Va firmada con los salts del sitio, así
- * que no se puede fabricar, y lleva el id de quien la pidió.
+ * The cookie grants no access: it only avoids repeating the challenge in the
+ * same browser for as many days as the setting says. It is signed with the
+ * site salts, so it cannot be forged, and it carries the id of whoever asked
+ * for it.
  */
-function users_dlx_plus_2fa_trusted( int $user_id ): bool {
-	$days = (int) users_dlx_plus_option( 'users_dlx_plus_2fa_remember_days' );
+function diluxone_users_2fa_trusted( int $user_id ): bool {
+	$days = (int) diluxone_users_option( 'diluxone_users_2fa_remember_days' );
 
 	if ( $days <= 0 ) {
 		return false;
 	}
 
-	$cookie = isset( $_COOKIE[ 'users_dlx_plus_2fa_' . COOKIEHASH ] ) ? sanitize_text_field( wp_unslash( $_COOKIE[ 'users_dlx_plus_2fa_' . COOKIEHASH ] ) ) : '';
+	$cookie = isset( $_COOKIE[ 'diluxone_users_2fa_' . COOKIEHASH ] ) ? sanitize_text_field( wp_unslash( $_COOKIE[ 'diluxone_users_2fa_' . COOKIEHASH ] ) ) : '';
 
 	if ( '' === $cookie ) {
 		return false;
@@ -269,9 +276,9 @@ function users_dlx_plus_2fa_trusted( int $user_id ): bool {
 	return hash_equals( wp_hash( $user_id . '|' . $expires, 'secure_auth' ), $hash );
 }
 
-/** Deja marcado este navegador para no volver a preguntar por unos días. */
-function users_dlx_plus_2fa_trust( int $user_id ): void {
-	$days = (int) users_dlx_plus_option( 'users_dlx_plus_2fa_remember_days' );
+/** Marks this browser so it is not asked again for a few days. */
+function diluxone_users_2fa_trust( int $user_id ): void {
+	$days = (int) diluxone_users_option( 'diluxone_users_2fa_remember_days' );
 
 	if ( $days <= 0 ) {
 		return;
@@ -281,7 +288,7 @@ function users_dlx_plus_2fa_trust( int $user_id ): void {
 	$value   = $user_id . '|' . $expires . '|' . wp_hash( $user_id . '|' . $expires, 'secure_auth' );
 
 	setcookie(
-		'users_dlx_plus_2fa_' . COOKIEHASH,
+		'diluxone_users_2fa_' . COOKIEHASH,
 		$value,
 		$expires,
 		defined( 'COOKIEPATH' ) ? COOKIEPATH : '/',
@@ -291,70 +298,71 @@ function users_dlx_plus_2fa_trust( int $user_id ): void {
 	);
 }
 
-/* ── El único camino de entrada ────────────────────────────────────── */
+/* ── The single way in ─────────────────────────────────────────────── */
 
 /**
- * Cierra el ingreso de alguien: o abre la sesión, o pide el segundo factor.
+ * Closes somebody's sign-in: either opens the session, or asks for the second
+ * factor.
  *
- * @param int    $user_id  Quién entra.
- * @param string $via      Por qué puerta: 'password', 'link' o 'sso'.
- * @param bool   $remember Sesión larga.
- * @param string $redirect Adónde va después.
+ * @param int    $user_id  Who is coming in.
+ * @param string $via      Through which door: 'password', 'link' or 'sso'.
+ * @param bool   $remember Long session.
+ * @param string $redirect Where they go afterwards.
  */
-function users_dlx_plus_complete_login( int $user_id, string $via, bool $remember = true, string $redirect = '' ): void {
-	$redirect = '' !== $redirect ? $redirect : (string) apply_filters( 'users_dlx_plus_login_redirect', home_url( '/' ), $user_id );
+function diluxone_users_complete_login( int $user_id, string $via, bool $remember = true, string $redirect = '' ): void {
+	$redirect = '' !== $redirect ? $redirect : (string) apply_filters( 'diluxone_users_login_redirect', home_url( '/' ), $user_id );
 
-	// La passkey entra directo: ya probó las dos cosas.
-	if ( 'passkey' === $via || ! users_dlx_plus_2fa_required( $user_id, $via ) || users_dlx_plus_2fa_trusted( $user_id ) ) {
+	// A passkey goes straight in: it already proved both things.
+	if ( 'passkey' === $via || ! diluxone_users_2fa_required( $user_id, $via ) || diluxone_users_2fa_trusted( $user_id ) ) {
 		wp_set_current_user( $user_id );
 		wp_set_auth_cookie( $user_id, $remember );
 
 		/**
-		 * Alguien entró, ya con todo lo que hiciera falta.
+		 * Somebody came in, with everything that was needed already done.
 		 *
 		 * @param int    $user_id
 		 * @param string $via
 		 */
-		do_action( 'users_dlx_plus_logged_in', $user_id, $via );
+		do_action( 'diluxone_users_logged_in', $user_id, $via );
 
 		wp_safe_redirect( $redirect );
 		exit;
 	}
 
-	users_dlx_plus_2fa_challenge( $user_id, $via, $remember, $redirect );
+	diluxone_users_2fa_challenge( $user_id, $via, $remember, $redirect );
 }
 
 /**
- * Guarda el ingreso a medio hacer y manda a la pantalla del segundo factor.
+ * Stores the half-done sign-in and sends them to the second-factor screen.
  *
- * Lo pendiente vive en una user meta y no en la sesión: el intento tiene que
- * sobrevivir a que la persona abra la pantalla en otra pestaña, y no puede
- * depender de una cookie de sesión que todavía no existe.
+ * What is pending lives in a user meta and not in the session: the attempt
+ * has to survive the person opening the screen in another tab, and it cannot
+ * depend on a session cookie that does not exist yet.
  */
-function users_dlx_plus_2fa_challenge( int $user_id, string $via, bool $remember, string $redirect ): void {
-	// Por las dudas: si alguna puerta dejó la cookie puesta, se saca. Una
-	// sesión abierta antes del segundo factor es no tener segundo factor.
+function diluxone_users_2fa_challenge( int $user_id, string $via, bool $remember, string $redirect ): void {
+	// Just in case: if some door left the cookie set, it is taken away. A
+	// session opened before the second factor is having no second factor.
 	wp_clear_auth_cookie();
 
 	$nonce = wp_generate_password( 32, false );
 
 	update_user_meta(
 		$user_id,
-		'users_dlx_plus_2fa_pending',
+		'diluxone_users_2fa_pending',
 		array(
 			'nonce'    => wp_hash( $nonce ),
-			'expires'  => time() + USERS_DLX_PLUS_2FA_WINDOW,
+			'expires'  => time() + DILUXONE_USERS_2FA_WINDOW,
 			'via'      => $via,
 			'remember' => $remember ? 1 : 0,
 			'redirect' => $redirect,
 		)
 	);
 
-	$methods = users_dlx_plus_2fa_available( $user_id );
+	$methods = diluxone_users_2fa_available( $user_id );
 
-	// Entrando por el enlace de correo, se arranca con un método que no sea
-	// otro correo: mandarle un código al buzón que acaba de abrir sería
-	// hacerle repetir el mismo paso.
+		// Coming in by e-mail link, it starts with a method that is not another
+		// e-mail: sending a code to the inbox they just opened would be making
+		// them repeat the same step.
 	if ( 'link' === $via ) {
 		foreach ( $methods as $id => $m ) {
 			if ( 'email' !== ( $m['channel'] ?? 'email' ) ) {
@@ -366,27 +374,28 @@ function users_dlx_plus_2fa_challenge( int $user_id, string $via, bool $remember
 
 	$method = (string) array_key_first( $methods );
 
-	users_dlx_plus_2fa_send( $user_id, $method );
+	diluxone_users_2fa_send( $user_id, $method );
 
 	wp_safe_redirect(
 		add_query_arg(
 			array(
-				'users_dlx_plus_2fa'    => $user_id,
-				'users_dlx_plus_key'    => $nonce,
-				'users_dlx_plus_method' => $method,
+				'diluxone_users_2fa'    => $user_id,
+				'diluxone_users_key'    => $nonce,
+				'diluxone_users_method' => $method,
 			),
-			users_dlx_plus_login_url()
+			diluxone_users_login_url()
 		)
 	);
 	exit;
 }
 
-/** El intento pendiente de alguien, si sigue vivo y el nonce es el suyo. */
 /**
+ * Somebody's pending attempt, if it is still alive and the nonce is theirs.
+ *
  * @return array<string, mixed>
  */
-function users_dlx_plus_2fa_pending( int $user_id, string $nonce ): array {
-	$pending = (array) get_user_meta( $user_id, 'users_dlx_plus_2fa_pending', true );
+function diluxone_users_2fa_pending( int $user_id, string $nonce ): array {
+	$pending = (array) get_user_meta( $user_id, 'diluxone_users_2fa_pending', true );
 
 	if ( array() === $pending || (int) ( $pending['expires'] ?? 0 ) < time() ) {
 		return array();
@@ -395,9 +404,9 @@ function users_dlx_plus_2fa_pending( int $user_id, string $nonce ): array {
 	return hash_equals( (string) ( $pending['nonce'] ?? '' ), wp_hash( $nonce ) ) ? $pending : array();
 }
 
-/** Dispara lo que ese método necesite para empezar (mandar el correo). */
-function users_dlx_plus_2fa_send( int $user_id, string $method ): void {
-	$methods = users_dlx_plus_2fa_available( $user_id );
+/** Fires whatever that method needs in order to start (send the e-mail). */
+function diluxone_users_2fa_send( int $user_id, string $method ): void {
+	$methods = diluxone_users_2fa_available( $user_id );
 
 	if ( isset( $methods[ $method ]['send'] ) && is_callable( $methods[ $method ]['send'] ) ) {
 		call_user_func( $methods[ $method ]['send'], $user_id );
@@ -405,17 +414,17 @@ function users_dlx_plus_2fa_send( int $user_id, string $method ): void {
 }
 
 /**
- * Valida lo que escribió la persona y, si está bien, la deja entrar.
+ * Validates what the person typed and, if it is right, lets them in.
  *
- * Los códigos de respaldo se prueban siempre, sea cual sea el método elegido:
- * son justamente para cuando el método no está a mano.
+ * Backup codes are always tried, whichever method was chosen: they are
+ * precisely for when the method is not at hand.
  */
-function users_dlx_plus_2fa_verify( int $user_id, string $method, string $code ): bool {
-	if ( users_dlx_plus_backup_use( $user_id, $code ) ) {
+function diluxone_users_2fa_verify( int $user_id, string $method, string $code ): bool {
+	if ( diluxone_users_backup_use( $user_id, $code ) ) {
 		return true;
 	}
 
-	$methods = users_dlx_plus_2fa_available( $user_id );
+	$methods = diluxone_users_2fa_available( $user_id );
 
 	if ( ! isset( $methods[ $method ] ) || ! is_callable( $methods[ $method ]['verify'] ) ) {
 		return false;
@@ -425,103 +434,104 @@ function users_dlx_plus_2fa_verify( int $user_id, string $method, string $code )
 }
 
 /**
- * La pantalla del segundo factor y su envío.
+ * The second-factor screen and its submission.
  *
- * Vive en `init` como el resto de las puertas del plugin, para que la página
- * de acceso sea una página del sitio y no wp-login.php.
+ * It lives on `init` like the rest of the plugin's doors, so that the sign-in
+ * page is a page of the site and not wp-login.php.
  */
-function users_dlx_plus_2fa_handle(): void {
-	// phpcs:disable WordPress.Security.NonceVerification -- el nonce propio ES la credencial.
-	if ( ! isset( $_POST['users_dlx_plus_2fa_user'], $_POST['users_dlx_plus_2fa_key'] ) ) {
+function diluxone_users_2fa_handle(): void {
+	// phpcs:disable WordPress.Security.NonceVerification -- our own nonce IS the credential.
+	if ( ! isset( $_POST['diluxone_users_2fa_user'], $_POST['diluxone_users_2fa_key'] ) ) {
 		return;
 	}
 
-	$user_id = absint( $_POST['users_dlx_plus_2fa_user'] );
-	$key     = sanitize_text_field( wp_unslash( $_POST['users_dlx_plus_2fa_key'] ) );
-	$method  = sanitize_key( wp_unslash( $_POST['users_dlx_plus_2fa_method'] ?? '' ) );
-	$code    = sanitize_text_field( wp_unslash( $_POST['users_dlx_plus_2fa_code'] ?? '' ) );
-	$trust   = isset( $_POST['users_dlx_plus_2fa_trust'] );
-	$resend  = isset( $_POST['users_dlx_plus_2fa_resend'] );
+	$user_id = absint( $_POST['diluxone_users_2fa_user'] );
+	$key     = sanitize_text_field( wp_unslash( $_POST['diluxone_users_2fa_key'] ) );
+	$method  = sanitize_key( wp_unslash( $_POST['diluxone_users_2fa_method'] ?? '' ) );
+	$code    = sanitize_text_field( wp_unslash( $_POST['diluxone_users_2fa_code'] ?? '' ) );
+	$trust   = isset( $_POST['diluxone_users_2fa_trust'] );
+	$resend  = isset( $_POST['diluxone_users_2fa_resend'] );
 	// phpcs:enable
 
-	$pending = users_dlx_plus_2fa_pending( $user_id, $key );
+	$pending = diluxone_users_2fa_pending( $user_id, $key );
 
 	if ( array() === $pending ) {
-		wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'expired', users_dlx_plus_login_url() ) );
+		wp_safe_redirect( add_query_arg( 'diluxone-users', 'expired', diluxone_users_login_url() ) );
 		exit;
 	}
 
 	$back = add_query_arg(
 		array(
-			'users_dlx_plus_2fa'    => $user_id,
-			'users_dlx_plus_key'    => $key,
-			'users_dlx_plus_method' => $method,
+			'diluxone_users_2fa'    => $user_id,
+			'diluxone_users_key'    => $key,
+			'diluxone_users_method' => $method,
 		),
-		users_dlx_plus_login_url()
+		diluxone_users_login_url()
 	);
 
 	if ( $resend ) {
-		users_dlx_plus_2fa_send( $user_id, $method );
-		wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'sent', $back ) );
+		diluxone_users_2fa_send( $user_id, $method );
+		wp_safe_redirect( add_query_arg( 'diluxone-users', 'sent', $back ) );
 		exit;
 	}
 
-	if ( '' === $code || ! users_dlx_plus_2fa_verify( $user_id, $method, $code ) ) {
-		wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'code', $back ) );
+	if ( '' === $code || ! diluxone_users_2fa_verify( $user_id, $method, $code ) ) {
+		wp_safe_redirect( add_query_arg( 'diluxone-users', 'code', $back ) );
 		exit;
 	}
 
-	delete_user_meta( $user_id, 'users_dlx_plus_2fa_pending' );
+	delete_user_meta( $user_id, 'diluxone_users_2fa_pending' );
 
 	if ( $trust ) {
-		users_dlx_plus_2fa_trust( $user_id );
+		diluxone_users_2fa_trust( $user_id );
 	}
 
 	wp_set_current_user( $user_id );
 	wp_set_auth_cookie( $user_id, ! empty( $pending['remember'] ) );
 
-	do_action( 'users_dlx_plus_logged_in', $user_id, (string) $pending['via'] );
+	do_action( 'diluxone_users_logged_in', $user_id, (string) $pending['via'] );
 
 	wp_safe_redirect( (string) $pending['redirect'] );
 	exit;
 }
-add_action( 'init', 'users_dlx_plus_2fa_handle', 5 );
+add_action( 'init', 'diluxone_users_2fa_handle', 5 );
 
 /**
- * La contraseña también pasa por acá.
+ * The password goes through here too.
  *
- * WordPress abre la sesión antes de disparar `wp_login`, así que lo que se
- * hace es cerrarla enseguida y mandar al desafío. Es feo y es lo que hay: no
- * hay un hook entre «la contraseña era correcta» y «la cookie está puesta».
+ * WordPress opens the session before firing `wp_login`, so what is done is to
+ * close it again straight away and send them to the challenge. It is ugly and
+ * it is what there is: there is no hook between "the password was right" and
+ * "the cookie is set".
  */
-function users_dlx_plus_2fa_after_password( string $login, WP_User $user ): void {
-	if ( ! users_dlx_plus_2fa_required( (int) $user->ID, 'password' ) || users_dlx_plus_2fa_trusted( (int) $user->ID ) ) {
+function diluxone_users_2fa_after_password( string $login, WP_User $user ): void {
+	if ( ! diluxone_users_2fa_required( (int) $user->ID, 'password' ) || diluxone_users_2fa_trusted( (int) $user->ID ) ) {
 		return;
 	}
 
-	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- lo verificó WordPress al autenticar.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WordPress verified it while authenticating.
 	$redirect = isset( $_POST['redirect_to'] ) ? esc_url_raw( wp_unslash( $_POST['redirect_to'] ) ) : '';
-	$redirect = '' !== $redirect ? $redirect : (string) apply_filters( 'users_dlx_plus_login_redirect', home_url( '/' ), (int) $user->ID );
+	$redirect = '' !== $redirect ? $redirect : (string) apply_filters( 'diluxone_users_login_redirect', home_url( '/' ), (int) $user->ID );
 
 	// phpcs:ignore WordPress.Security.NonceVerification.Missing
 	$remember = ! empty( $_POST['rememberme'] );
 
-	users_dlx_plus_2fa_challenge( (int) $user->ID, 'password', $remember, $redirect );
+	diluxone_users_2fa_challenge( (int) $user->ID, 'password', $remember, $redirect );
 }
-add_action( 'wp_login', 'users_dlx_plus_2fa_after_password', 10, 2 );
+add_action( 'wp_login', 'diluxone_users_2fa_after_password', 10, 2 );
 
-/* ── Códigos de respaldo ───────────────────────────────────────────── */
+/* ── Backup codes ──────────────────────────────────────────────────── */
 
 /**
- * Genera un juego nuevo de códigos de respaldo.
+ * Generates a fresh set of backup codes.
  *
- * Se guardan hasheados, como una contraseña: si alguien se lleva la base, se
- * lleva hashes. Se devuelven en claro una sola vez, que es cuando la persona
- * los tiene que anotar.
+ * They are stored hashed, like a password: if somebody walks off with the
+ * database, they walk off with hashes. They are returned in the clear exactly
+ * once, which is when the person has to write them down.
  *
  * @return array<int, string>
  */
-function users_dlx_plus_backup_generate( int $user_id, int $many = 8 ): array {
+function diluxone_users_backup_generate( int $user_id, int $many = 8 ): array {
 	$plain  = array();
 	$hashes = array();
 
@@ -531,30 +541,30 @@ function users_dlx_plus_backup_generate( int $user_id, int $many = 8 ): array {
 		$hashes[] = wp_hash_password( $code );
 	}
 
-	update_user_meta( $user_id, 'users_dlx_plus_backup_codes', $hashes );
+	update_user_meta( $user_id, 'diluxone_users_backup_codes', $hashes );
 
 	return $plain;
 }
 
-/** Cuántos códigos de respaldo le quedan sin usar. */
-function users_dlx_plus_backup_left( int $user_id ): int {
-	return count( (array) get_user_meta( $user_id, 'users_dlx_plus_backup_codes', true ) );
+/** How many backup codes they have left unused. */
+function diluxone_users_backup_left( int $user_id ): int {
+	return count( (array) get_user_meta( $user_id, 'diluxone_users_backup_codes', true ) );
 }
 
 /**
- * Usa un código de respaldo, si el que escribieron es uno.
+ * Uses a backup code, if what they typed is one.
  *
- * Se borra al usarlo: un código de un solo uso que se puede usar dos veces no
- * es un código de un solo uso.
+ * It is deleted on use: a single-use code that can be used twice is not a
+ * single-use code.
  */
-function users_dlx_plus_backup_use( int $user_id, string $code ): bool {
+function diluxone_users_backup_use( int $user_id, string $code ): bool {
 	$code   = strtolower( trim( str_replace( array( ' ', '-' ), '', $code ) ) );
-	$hashes = (array) get_user_meta( $user_id, 'users_dlx_plus_backup_codes', true );
+	$hashes = (array) get_user_meta( $user_id, 'diluxone_users_backup_codes', true );
 
 	foreach ( $hashes as $i => $hash ) {
 		if ( wp_check_password( $code, (string) $hash, $user_id ) ) {
 			unset( $hashes[ $i ] );
-			update_user_meta( $user_id, 'users_dlx_plus_backup_codes', array_values( $hashes ) );
+			update_user_meta( $user_id, 'diluxone_users_backup_codes', array_values( $hashes ) );
 
 			return true;
 		}

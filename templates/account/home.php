@@ -1,27 +1,27 @@
 <?php
 /**
- * La portada del área de cuenta: el resumen.
+ * The account-area front page: the summary.
  *
  * @var array<int, array<string, string>> $cards
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 ?>
 
 <?php if ( array() === $cards ) : ?>
-	<p><?php esc_html_e( 'Nothing to show yet. The sections above are all yours.', 'users-dlx-plus' ); ?></p>
+	<p><?php esc_html_e( 'Nothing to show yet. The sections above are all yours.', 'diluxone-users' ); ?></p>
 <?php else : ?>
-	<div class="users-dlx-plus-cards">
-		<?php foreach ( $cards as $users_dlx_plus_card ) : ?>
-			<a class="users-dlx-plus-card-resumen" href="<?php echo esc_url( $users_dlx_plus_card['link'] ); ?>">
-				<span class="users-dlx-plus-card-resumen__rotulo"><?php echo esc_html( $users_dlx_plus_card['label'] ); ?></span>
-				<span class="users-dlx-plus-card-resumen__valor"><?php echo esc_html( $users_dlx_plus_card['value'] ); ?></span>
-				<?php if ( '' !== $users_dlx_plus_card['note'] ) : ?>
-					<span class="users-dlx-plus-card-resumen__nota"><?php echo esc_html( $users_dlx_plus_card['note'] ); ?></span>
+	<div class="diluxone-users-cards">
+		<?php foreach ( $cards as $diluxone_users_card ) : ?>
+			<a class="diluxone-users-card-summary" href="<?php echo esc_url( $diluxone_users_card['link'] ); ?>">
+				<span class="diluxone-users-card-summary__label"><?php echo esc_html( $diluxone_users_card['label'] ); ?></span>
+				<span class="diluxone-users-card-summary__value"><?php echo esc_html( $diluxone_users_card['value'] ); ?></span>
+				<?php if ( '' !== $diluxone_users_card['note'] ) : ?>
+					<span class="diluxone-users-card-summary__note"><?php echo esc_html( $diluxone_users_card['note'] ); ?></span>
 				<?php endif; ?>
-				<span class="users-dlx-plus-card-resumen__cta"><?php echo esc_html( $users_dlx_plus_card['cta'] ); ?></span>
+				<span class="diluxone-users-card-summary__cta"><?php echo esc_html( $diluxone_users_card['cta'] ); ?></span>
 			</a>
 		<?php endforeach; ?>
 	</div>

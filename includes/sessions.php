@@ -1,44 +1,46 @@
 <?php
 /**
- * Sesiones abiertas: verlas y cerrarlas.
+ * Open sessions: seeing them and closing them.
  *
- * No hay tabla propia. WordPress ya guarda cada sesión en la user meta
- * `session_tokens` con su IP, su user agent, cuándo empezó y cuándo vence;
- * mantener una copia en una tabla aparte agrega una escritura por request, se
- * desincroniza cuando una sesión vence sola, y obliga a limpiar huérfanos.
- * Acá se lee de donde WordPress lo guarda y listo.
+ * There is no table of our own. WordPress already stores each session in the
+ * `session_tokens` user meta with its IP, its user agent, when it started and
+ * when it expires; keeping a copy in a separate table adds a write per
+ * request, drifts when a session expires on its own, and forces orphan
+ * cleanup. Here it is read from where WordPress stores it and that is that.
  *
- * Lo que sí falta y se calcula al mostrar: de qué navegador y qué sistema es
- * cada sesión, que sale del user agent. No se persiste nada.
+ * What is missing and is worked out at display time: which browser and which
+ * system each session is from, which comes out of the user agent. Nothing is
+ * persisted.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/** Duración de la cookie de sesión, según los ajustes. */
-function users_dlx_plus_session_duration( int $expiracion, int $user_id, bool $recordar ): int {
-	$dias = $recordar
-		? (int) users_dlx_plus_option( 'users_dlx_plus_session_long_days' )
-		: (int) users_dlx_plus_option( 'users_dlx_plus_session_short_days' );
+/** Session cookie lifetime, according to the settings. */
+function diluxone_users_session_duration( int $expiry, int $user_id, bool $remember ): int {
+	$days = $remember
+		? (int) diluxone_users_option( 'diluxone_users_session_long_days' )
+		: (int) diluxone_users_option( 'diluxone_users_session_short_days' );
 
-	return $dias > 0 ? $dias * DAY_IN_SECONDS : $expiracion;
+	return $days > 0 ? $days * DAY_IN_SECONDS : $expiry;
 }
-add_filter( 'auth_cookie_expiration', 'users_dlx_plus_session_duration', 10, 3 );
+add_filter( 'auth_cookie_expiration', 'diluxone_users_session_duration', 10, 3 );
 
 /**
- * De qué navegador, dispositivo y sistema es una sesión.
+ * Which browser, device and system a session is from.
  *
- * Se mira el user agent, que miente si alguien quiere, pero acá no es una
- * medida de seguridad: es para que la persona reconozca cuál sesión es cuál.
+ * The user agent is what is looked at, and it lies if somebody wants it to,
+ * but this is no security measure here: it is so the person recognises which
+ * session is which.
  *
  * @return array{browser: string, os: string, device: string}
  */
-function users_dlx_plus_user_agent( string $ua ): array {
-	$browser = __( 'Unknown browser', 'users-dlx-plus' );
+function diluxone_users_user_agent( string $ua ): array {
+	$browser = __( 'Unknown browser', 'diluxone-users' );
 	$os      = '';
 
-	// El orden importa: Edge y Chrome también dicen "Safari" en su cadena.
+	// The order matters: Edge and Chrome also say "Safari" in their string.
 	$browsers = array(
 		'Edg/'    => 'Edge',
 		'OPR/'    => 'Opera',
@@ -76,28 +78,28 @@ function users_dlx_plus_user_agent( string $ua ): array {
 		'browser' => $browser,
 		'os'      => $os,
 		'device'  => $mobile
-			? __( 'Phone', 'users-dlx-plus' )
-			: __( 'Computer', 'users-dlx-plus' ),
+			? __( 'Phone', 'diluxone-users' )
+			: __( 'Computer', 'diluxone-users' ),
 	);
 }
 
 /**
- * ¿Podemos identificar una sesión suelta para cerrarla?
+ * Can we identify a single session in order to close it?
  *
- * WordPress no expone el verificador de cada sesión: sale de la user meta que
- * usa su gestor por defecto. Si el sitio cambió el gestor —cosa rara pero
- * posible— no tocamos nada y sólo ofrecemos "cerrar las demás".
+ * WordPress does not expose each session's verifier: it comes out of the user
+ * meta its default manager uses. If the site changed the manager — rare but
+ * possible — we touch nothing and only offer "close the others".
  */
-function users_dlx_plus_sessions_addressable(): bool {
+function diluxone_users_sessions_addressable(): bool {
 	return 'WP_User_Meta_Session_Tokens' === get_class( WP_Session_Tokens::get_instance( get_current_user_id() ) );
 }
 
 /**
- * Las sesiones abiertas de una persona, ordenadas de la más reciente.
+ * One person's open sessions, most recent first.
  *
  * @return array<int, array<string, mixed>>
  */
-function users_dlx_plus_sessions( int $user_id ): array {
+function diluxone_users_sessions( int $user_id ): array {
 	$raw     = (array) get_user_meta( $user_id, 'session_tokens', true );
 	$current = get_current_user_id() === $user_id && function_exists( 'wp_get_session_token' )
 		? hash( 'sha256', (string) wp_get_session_token() )
@@ -109,10 +111,10 @@ function users_dlx_plus_sessions( int $user_id ): array {
 		$ua = (string) ( $data['ua'] ?? '' );
 
 		$sessions[] = array_merge(
-			users_dlx_plus_user_agent( $ua ),
+			diluxone_users_user_agent( $ua ),
 			array(
 				'id'      => (string) $verifier,
-				'ip'      => users_dlx_plus_session_ip_of( (array) $data ),
+				'ip'      => diluxone_users_session_ip_of( (array) $data ),
 				'started' => (int) ( $data['login'] ?? 0 ),
 				'expires' => (int) ( $data['expiration'] ?? 0 ),
 				'current' => (string) $verifier === $current,
@@ -126,15 +128,15 @@ function users_dlx_plus_sessions( int $user_id ): array {
 }
 
 /**
- * Cierra una sesión suelta.
+ * Closes a single session.
  *
- * Se escribe la user meta directamente porque WP_Session_Tokens::destroy()
- * pide el token en claro, que sólo tiene el navegador de esa sesión. El
- * formato de esa meta es el del gestor por defecto y por eso se comprueba
- * antes.
+ * The user meta is written directly because WP_Session_Tokens::destroy() asks
+ * for the token in the clear, which only that session's browser has. The
+ * format of that meta is the default manager's, which is why it is checked
+ * first.
  */
-function users_dlx_plus_session_close( int $user_id, string $id ): bool {
-	if ( ! users_dlx_plus_sessions_addressable() ) {
+function diluxone_users_session_close( int $user_id, string $id ): bool {
+	if ( ! diluxone_users_sessions_addressable() ) {
 		return false;
 	}
 
@@ -155,8 +157,8 @@ function users_dlx_plus_session_close( int $user_id, string $id ): bool {
 	return true;
 }
 
-/** Cierra todas menos la que se está usando. */
-function users_dlx_plus_sessions_close_others( int $user_id ): void {
+/** Closes every session but the one in use. */
+function diluxone_users_sessions_close_others( int $user_id ): void {
 	$manager = WP_Session_Tokens::get_instance( $user_id );
 
 	if ( get_current_user_id() === $user_id && function_exists( 'wp_get_session_token' ) ) {
@@ -167,46 +169,47 @@ function users_dlx_plus_sessions_close_others( int $user_id ): void {
 	$manager->destroy_all();
 }
 
-/** Procesa los botones de la lista de sesiones. */
-function users_dlx_plus_sessions_action(): void {
+/** Handles the buttons in the session list. */
+function diluxone_users_sessions_action(): void {
 	if ( ! is_user_logged_in() ) {
-		wp_die( esc_html__( 'You have to sign in first.', 'users-dlx-plus' ) );
+		wp_die( esc_html__( 'You have to sign in first.', 'diluxone-users' ) );
 	}
 
-	check_admin_referer( 'users_dlx_plus_sessions' );
+	check_admin_referer( 'diluxone_users_sessions' );
 
 	$user_id = get_current_user_id();
-	$id      = sanitize_text_field( wp_unslash( $_POST['users_dlx_plus_session'] ?? '' ) );
+	$id      = sanitize_text_field( wp_unslash( $_POST['diluxone_users_session'] ?? '' ) );
 
 	if ( '' !== $id ) {
-		users_dlx_plus_session_close( $user_id, $id );
+		diluxone_users_session_close( $user_id, $id );
 	} else {
-		users_dlx_plus_sessions_close_others( $user_id );
+		diluxone_users_sessions_close_others( $user_id );
 	}
 
 	$back = wp_get_referer();
 
-	wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'sessions', $back ? $back : home_url( '/' ) ) );
+	wp_safe_redirect( add_query_arg( 'diluxone-users', 'sessions', $back ? $back : home_url( '/' ) ) );
 	exit;
 }
-add_action( 'admin_post_users_dlx_plus_sessions', 'users_dlx_plus_sessions_action' );
+add_action( 'admin_post_diluxone_users_sessions', 'diluxone_users_sessions_action' );
 
 /**
- * Los usuarios con sesiones abiertas, buscados y paginados.
+ * The users with open sessions, searched and paginated.
  *
- * No hay combo de usuarios: con 25.000 cuentas, un <select> es medio megabyte
- * de HTML en cada carga de la pantalla. Se busca y se pagina contra la base.
+ * There is no user dropdown: with 25,000 accounts, a <select> is half a
+ * megabyte of HTML on every load of the screen. It is searched and paginated
+ * against the database.
  *
- * La consulta arranca por la user meta `session_tokens`, que tiene índice por
- * meta_key: quien no tiene ninguna sesión abierta ni siquiera tiene la fila, y
- * eso reduce 25.000 usuarios a los pocos que están adentro.
+ * The query starts from the `session_tokens` user meta, which is indexed by
+ * meta_key: whoever has no open session does not even have the row, and that
+ * cuts 25,000 users down to the few who are in.
  *
- * @param string $search Texto libre: correo, usuario o nombre.
- * @param int    $page   Página, desde 1.
- * @param int    $per    Cuántos por página.
+ * @param string $search Free text: e-mail, username or name.
+ * @param int    $page   Page, from 1.
+ * @param int    $per    How many per page.
  * @return array{rows: array<int, array<string, mixed>>, total: int}
  */
-function users_dlx_plus_sessions_search( string $search = '', int $page = 1, int $per = 20 ): array {
+function diluxone_users_sessions_search( string $search = '', int $page = 1, int $per = 20 ): array {
 	global $wpdb;
 
 	$page  = max( 1, $page );
@@ -222,10 +225,10 @@ function users_dlx_plus_sessions_search( string $search = '', int $page = 1, int
 
 	$base = "FROM {$wpdb->usermeta} m INNER JOIN {$wpdb->users} u ON u.ID = m.user_id WHERE {$where}";
 
-	// La tabla de sesiones no tiene una API de WordPress que la consulte, así
-	// que se va al meta directamente. No se cachea a propósito: es una
-	// pantalla de administración que se abre para ver el estado de ahora.
-	// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $where se arma con marcadores y $args los llena.
+	// The sessions table has no WordPress API to query it, so the meta is
+	// reached directly. It is deliberately not cached: this is an admin screen
+	// opened to see the state right now.
+	// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $where is built with placeholders and $args fills them.
 	$total = (int) ( $args
 		? $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) {$base}", $args ) )
 		: $wpdb->get_var( "SELECT COUNT(*) {$base}" ) );
@@ -244,20 +247,20 @@ function users_dlx_plus_sessions_search( string $search = '', int $page = 1, int
 			continue;
 		}
 
-		// La sesión más reciente es la que describe la fila; el resto sólo
-		// cuenta para el número.
+		// The most recent session is the one describing the row; the rest only
+		// count towards the number.
 		usort( $tokens, static fn( $a, $b ): int => (int) ( $b['login'] ?? 0 ) <=> (int) ( $a['login'] ?? 0 ) );
 		$last = $tokens[0];
 
 		$out[] = array_merge(
-			users_dlx_plus_user_agent( (string) ( $last['ua'] ?? '' ) ),
+			diluxone_users_user_agent( (string) ( $last['ua'] ?? '' ) ),
 			array(
 				'user_id'  => (int) $row->ID,
 				'login'    => (string) $row->user_login,
 				'email'    => (string) $row->user_email,
 				'name'     => (string) $row->display_name,
 				'sessions' => count( $tokens ),
-				'ip'       => users_dlx_plus_session_ip_of( (array) $last ),
+				'ip'       => diluxone_users_session_ip_of( (array) $last ),
 				'started'  => (int) ( $last['login'] ?? 0 ),
 				'expires'  => (int) ( $last['expiration'] ?? 0 ),
 			)
@@ -270,22 +273,22 @@ function users_dlx_plus_sessions_search( string $search = '', int $page = 1, int
 	);
 }
 
-/** Cierra todas las sesiones de un usuario. Sólo para quien administra. */
-function users_dlx_plus_sessions_admin_close(): void {
+/** Closes every session of one user. For whoever administers only. */
+function diluxone_users_sessions_admin_close(): void {
 	if ( ! current_user_can( 'edit_users' ) ) {
-		wp_die( esc_html__( 'You are not allowed to do this.', 'users-dlx-plus' ) );
+		wp_die( esc_html__( 'You are not allowed to do this.', 'diluxone-users' ) );
 	}
 
-	check_admin_referer( 'users_dlx_plus_sessions_admin' );
+	check_admin_referer( 'diluxone_users_sessions_admin' );
 
-	$user_id = absint( $_POST['users_dlx_plus_user'] ?? 0 );
+	$user_id = absint( $_POST['diluxone_users_user'] ?? 0 );
 
 	if ( $user_id > 0 ) {
 		WP_Session_Tokens::get_instance( $user_id )->destroy_all();
 	}
 
 	$back = wp_get_referer();
-	wp_safe_redirect( add_query_arg( 'users_dlx_plus_done', 'closed', $back ? $back : admin_url( 'admin.php?page=users-dlx-plus-sessions' ) ) );
+	wp_safe_redirect( add_query_arg( 'diluxone_users_done', 'closed', $back ? $back : admin_url( 'admin.php?page=diluxone-users-sessions' ) ) );
 	exit;
 }
-add_action( 'admin_post_users_dlx_plus_sessions_admin', 'users_dlx_plus_sessions_admin_close' );
+add_action( 'admin_post_diluxone_users_sessions_admin', 'diluxone_users_sessions_admin_close' );

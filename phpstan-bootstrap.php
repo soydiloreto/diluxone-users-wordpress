@@ -3,33 +3,33 @@
  * PHPStan analysis bootstrap.
  *
  * Defines plugin constants that are normally created at runtime by the
- * main plugin file (users-dlx-plus.php). PHPStan analyzes the
+ * main plugin file (diluxone-users.php). PHPStan analyzes the
  * codebase statically without executing anything, so it never sees the
  * `define()` calls there. Without these stubs, every reference to
- * `USERS_DLX_PLUS_DIR` and friends produces "Constant not found".
+ * `DILUXONE_USERS_DIR` and friends produces "Constant not found".
  *
  * This file is referenced from phpstan.neon's `bootstrapFiles:` list.
  * It is excluded from the wp.org deploy via .distignore. It is NOT
  * loaded at plugin runtime — only by PHPStan during analysis.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
-if ( ! defined( 'USERS_DLX_PLUS_VERSION' ) ) {
-	define( 'USERS_DLX_PLUS_VERSION', '0.0.0-phpstan-stub' );
+if ( ! defined( 'DILUXONE_USERS_VERSION' ) ) {
+	define( 'DILUXONE_USERS_VERSION', '0.0.0-phpstan-stub' );
 }
-if ( ! defined( 'USERS_DLX_PLUS_DIR' ) ) {
-	define( 'USERS_DLX_PLUS_DIR', __DIR__ . '/' );
+if ( ! defined( 'DILUXONE_USERS_DIR' ) ) {
+	define( 'DILUXONE_USERS_DIR', __DIR__ . '/' );
 }
-if ( ! defined( 'USERS_DLX_PLUS_URL' ) ) {
-	define( 'USERS_DLX_PLUS_URL', 'https://example.test/wp-content/plugins/users-dlx-plus/' );
+if ( ! defined( 'DILUXONE_USERS_URL' ) ) {
+	define( 'DILUXONE_USERS_URL', 'https://example.test/wp-content/plugins/diluxone-users/' );
 }
-if ( ! defined( 'USERS_DLX_PLUS_FILE' ) ) {
-	define( 'USERS_DLX_PLUS_FILE', __DIR__ . '/users-dlx-plus.php' );
+if ( ! defined( 'DILUXONE_USERS_FILE' ) ) {
+	define( 'DILUXONE_USERS_FILE', __DIR__ . '/diluxone-users.php' );
 }
 
-// Constantes que WordPress define en tiempo de ejecución y que el análisis
-// estático no ve porque salen de wp-includes/default-constants.php.
+// Constants WordPress defines at run time and that static analysis does not
+// see because they come from wp-includes/default-constants.php.
 if ( ! defined( 'COOKIEHASH' ) ) {
 	define( 'COOKIEHASH', 'phpstan' );
 }

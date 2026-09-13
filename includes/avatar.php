@@ -1,33 +1,33 @@
 <?php
 /**
- * La foto de perfil.
+ * The profile picture.
  *
- * WordPress trae un sistema de avatares y lo resuelve con Gravatar: le manda
- * el hash del correo de cada persona a un tercero y trae una imagen. Eso puede
- * estar bien o no según el sitio, así que acá hay tres capas y las tres se
- * prenden y se apagan:
+ * WordPress brings an avatar system and settles it with Gravatar: it sends
+ * each person's e-mail hash to a third party and fetches an image. That may
+ * be fine or not depending on the site, so here there are three layers and
+ * all three can be turned on and off:
  *
- *   1. La foto que la persona subió.
+ *   1. The picture the person uploaded.
  *   2. Gravatar.
- *   3. Sus iniciales sobre el color de acento.
+ *   3. Their initials over the accent colour.
  *
- * La tercera se dibuja como un SVG en un data URI, y no como un `<span>` con
- * letras: el contrato de `get_avatar` es que devuelve una imagen, y medio
- * WordPress —y medio tema— asume eso.
+ * The third one is drawn as an SVG in a data URI, and not as a `<span>` with
+ * letters: the contract of `get_avatar` is that it returns an image, and half
+ * of WordPress — and half of every theme — assumes that.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/** El adjunto que la persona subió, o 0. */
-function users_dlx_plus_avatar_id( int $user_id ): int {
-	return (int) get_user_meta( $user_id, 'users_dlx_plus_avatar', true );
+/** The attachment the person uploaded, or 0. */
+function diluxone_users_avatar_id( int $user_id ): int {
+	return (int) get_user_meta( $user_id, 'diluxone_users_avatar', true );
 }
 
-/** La URL de la foto subida, en el tamaño pedido. Vacío si no hay. */
-function users_dlx_plus_avatar_url( int $user_id, int $size = 96 ): string {
-	$id = users_dlx_plus_avatar_id( $user_id );
+/** The URL of the uploaded picture, at the size asked for. Empty when there is none. */
+function diluxone_users_avatar_url( int $user_id, int $size = 96 ): string {
+	$id = diluxone_users_avatar_id( $user_id );
 
 	if ( $id <= 0 || ! wp_attachment_is_image( $id ) ) {
 		return '';
@@ -38,23 +38,23 @@ function users_dlx_plus_avatar_url( int $user_id, int $size = 96 ): string {
 	return is_array( $src ) ? (string) $src[0] : '';
 }
 
-/** Las iniciales de alguien, para el avatar dibujado. */
-function users_dlx_plus_avatar_initials( int $user_id ): string {
+/** Somebody's initials, for the drawn avatar. */
+function diluxone_users_avatar_initials( int $user_id ): string {
 	$user = get_userdata( $user_id );
 
-	return $user instanceof WP_User ? users_dlx_plus_initials( $user ) : '?';
+	return $user instanceof WP_User ? diluxone_users_initials( $user ) : '?';
 }
 
 /**
- * El avatar dibujado: las iniciales sobre el color de acento.
+ * The drawn avatar: the initials over the accent colour.
  *
- * Va como data URI para que no haya ni una petición más ni un archivo que
- * generar. El color sale del mismo ajuste que el resto de la hoja, así que un
- * sitio que cambia su acento cambia también estos avatares.
+ * It goes as a data URI so there is not one extra request nor a file to
+ * generate. The colour comes from the same setting as the rest of the sheet,
+ * so a site changing its accent changes these avatars too.
  */
-function users_dlx_plus_avatar_svg( int $user_id, int $size ): string {
-	$letters = users_dlx_plus_avatar_initials( $user_id );
-	$accent  = users_dlx_plus_style_accent();
+function diluxone_users_avatar_svg( int $user_id, int $size ): string {
+	$letters = diluxone_users_avatar_initials( $user_id );
+	$accent  = diluxone_users_style_accent();
 
 	$svg = sprintf(
 		'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="%1$d" height="%1$d" role="img" aria-hidden="true">'
@@ -70,15 +70,16 @@ function users_dlx_plus_avatar_svg( int $user_id, int $size ): string {
 }
 
 /**
- * Resuelve a quién corresponde lo que le llega a get_avatar.
+ * Works out who what reaches get_avatar refers to.
  *
- * WordPress lo pasa de cinco formas distintas según quién llame. Sin esto, el
- * avatar aparece en el perfil y no en los comentarios, o al revés.
+ * WordPress passes it in five different ways depending on the caller. Without
+ * this, the avatar shows up in the profile and not in the comments, or the
+ * other way round.
  *
- * @param mixed $id_or_email Lo que haya mandado WordPress: un id, un correo,
- *                           un WP_User, un WP_Comment o un WP_Post.
+ * @param mixed $id_or_email Whatever WordPress sent: an id, an e-mail,
+ *                           a WP_User, a WP_Comment or a WP_Post.
  */
-function users_dlx_plus_avatar_user_id( $id_or_email ): int {
+function diluxone_users_avatar_user_id( $id_or_email ): int {
 	if ( is_numeric( $id_or_email ) ) {
 		return (int) $id_or_email;
 	}
@@ -109,20 +110,20 @@ function users_dlx_plus_avatar_user_id( $id_or_email ): int {
 }
 
 /**
- * La URL del avatar.
+ * The avatar URL.
  *
- * Se filtra `pre_get_avatar_data` y no `get_avatar`, que es donde suele
- * meterse todo el mundo: acá se cambia el dato y el marcado lo sigue armando
- * WordPress, con las clases y los tamaños que espera cada tema. Y no se toca
- * ningún otro filtro: si hay otro plugin de avatares, que se peleen por
- * prioridad como corresponde, no borrándose entre ellos.
+ * `pre_get_avatar_data` is filtered and not `get_avatar`, which is where
+ * everybody usually piles in: here the data is changed and the markup is
+ * still assembled by WordPress, with the classes and sizes every theme
+ * expects. And no other filter is touched: if there is another avatar plugin,
+ * let them fight it out by priority as they should, not by erasing each other.
  *
  * @param array<string, mixed> $args
  * @param mixed                $id_or_email
  * @return array<string, mixed>
  */
-function users_dlx_plus_avatar_data( array $args, $id_or_email ): array {
-	$user_id = users_dlx_plus_avatar_user_id( $id_or_email );
+function diluxone_users_avatar_data( array $args, $id_or_email ): array {
+	$user_id = diluxone_users_avatar_user_id( $id_or_email );
 
 	if ( $user_id <= 0 ) {
 		return $args;
@@ -130,8 +131,8 @@ function users_dlx_plus_avatar_data( array $args, $id_or_email ): array {
 
 	$size = isset( $args['size'] ) ? (int) $args['size'] : 96;
 
-	if ( users_dlx_plus_option( 'users_dlx_plus_avatar_upload' ) ) {
-		$url = users_dlx_plus_avatar_url( $user_id, $size );
+	if ( diluxone_users_option( 'diluxone_users_avatar_upload' ) ) {
+		$url = diluxone_users_avatar_url( $user_id, $size );
 
 		if ( '' !== $url ) {
 			$args['url']          = $url;
@@ -141,63 +142,64 @@ function users_dlx_plus_avatar_data( array $args, $id_or_email ): array {
 		}
 	}
 
-	if ( users_dlx_plus_option( 'users_dlx_plus_avatar_gravatar' ) ) {
+	if ( diluxone_users_option( 'diluxone_users_avatar_gravatar' ) ) {
 		return $args;
 	}
 
-	if ( users_dlx_plus_option( 'users_dlx_plus_avatar_initials' ) ) {
-		$args['url']          = users_dlx_plus_avatar_svg( $user_id, $size );
+	if ( diluxone_users_option( 'diluxone_users_avatar_initials' ) ) {
+		$args['url']          = diluxone_users_avatar_svg( $user_id, $size );
 		$args['found_avatar'] = true;
 	}
 
 	return $args;
 }
-add_filter( 'pre_get_avatar_data', 'users_dlx_plus_avatar_data', 99, 2 );
+add_filter( 'pre_get_avatar_data', 'diluxone_users_avatar_data', 99, 2 );
 
-/* ── Subir y sacar ─────────────────────────────────────────────────── */
+/* ── Uploading and removing ────────────────────────────────────────── */
 
-/** Los tipos que se aceptan. Nada de SVG: es código, no una foto. */
 /**
+ * The accepted types. No SVG: that is code, not a photograph.
+ *
  * @return array<int, string>
  */
-function users_dlx_plus_avatar_types(): array {
+function diluxone_users_avatar_types(): array {
 	return array( 'image/jpeg', 'image/png', 'image/gif', 'image/webp' );
 }
 
 /**
- * Guarda la foto que subió alguien.
+ * Stores the picture somebody uploaded.
  *
  * @param array<string, mixed> $file
- * @return int|WP_Error El id del adjunto.
+ * @return int|WP_Error The attachment id.
  */
-function users_dlx_plus_avatar_upload( int $user_id, array $file ) {
-	if ( ! users_dlx_plus_option( 'users_dlx_plus_avatar_upload' ) ) {
-		return new WP_Error( 'users_dlx_plus_avatar_off', __( 'This site does not accept profile photos.', 'users-dlx-plus' ) );
+function diluxone_users_avatar_upload( int $user_id, array $file ) {
+	if ( ! diluxone_users_option( 'diluxone_users_avatar_upload' ) ) {
+		return new WP_Error( 'diluxone_users_avatar_off', __( 'This site does not accept profile photos.', 'diluxone-users' ) );
 	}
 
 	if ( empty( $file['tmp_name'] ) || ! is_uploaded_file( $file['tmp_name'] ) ) {
-		return new WP_Error( 'users_dlx_plus_avatar_none', __( 'No file arrived.', 'users-dlx-plus' ) );
+		return new WP_Error( 'diluxone_users_avatar_none', __( 'No file arrived.', 'diluxone-users' ) );
 	}
 
-	$max = max( 1, (int) users_dlx_plus_option( 'users_dlx_plus_avatar_max_kb' ) ) * KB_IN_BYTES;
+	$max = max( 1, (int) diluxone_users_option( 'diluxone_users_avatar_max_kb' ) ) * KB_IN_BYTES;
 
 	if ( (int) ( $file['size'] ?? 0 ) > $max ) {
 		return new WP_Error(
-			'users_dlx_plus_avatar_big',
+			'diluxone_users_avatar_big',
 			sprintf(
-				/* translators: %s: tamaño máximo, ya formateado */
-				__( 'The photo is too heavy: at most %s.', 'users-dlx-plus' ),
+					/* translators: %s: maximum size, already formatted */
+				__( 'The photo is too heavy: at most %s.', 'diluxone-users' ),
 				size_format( $max )
 			)
 		);
 	}
 
-	// El tipo se mira por el contenido y no por el nombre del archivo: la
-	// extensión la escribe quien sube.
+	// The type is checked by content and not by file name: the extension is
+	// written by whoever uploads.
 	$type = wp_check_filetype_and_ext( $file['tmp_name'], (string) ( $file['name'] ?? '' ) );
 
-	if ( empty( $type['type'] ) || ! in_array( $type['type'], users_dlx_plus_avatar_types(), true ) ) {
-		return new WP_Error( 'users_dlx_plus_avatar_type', __( 'That is not a photo. It has to be a JPG, PNG, GIF or WebP.', 'users-dlx-plus' ) );
+	if ( empty( $type['type'] ) || ! in_array( $type['type'], diluxone_users_avatar_types(), true ) ) {
+		return new WP_Error( 'diluxone_users_avatar_type', __( 'That is not a photo. It has to be a JPG, PNG, GIF or WebP.', 'diluxone-users' ) );
 	}
 
 	require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -218,20 +220,21 @@ function users_dlx_plus_avatar_upload( int $user_id, array $file ) {
 		return $attachment_id;
 	}
 
-	users_dlx_plus_avatar_delete( $user_id );
-	update_user_meta( $user_id, 'users_dlx_plus_avatar', (int) $attachment_id );
+	diluxone_users_avatar_delete( $user_id );
+	update_user_meta( $user_id, 'diluxone_users_avatar', (int) $attachment_id );
 
 	return (int) $attachment_id;
 }
 
 /**
- * Borra la foto de alguien.
+ * Deletes somebody's picture.
  *
- * Se comprueba que el adjunto sea suyo antes de tocarlo: sin eso, una meta
- * con el id de la foto de otra persona borra la foto de esa otra persona.
+ * It is checked that the attachment is theirs before touching it: without
+ * that, a meta holding another person's picture id deletes that other
+ * person's picture.
  */
-function users_dlx_plus_avatar_delete( int $user_id ): void {
-	$id = users_dlx_plus_avatar_id( $user_id );
+function diluxone_users_avatar_delete( int $user_id ): void {
+	$id = diluxone_users_avatar_id( $user_id );
 
 	if ( $id <= 0 ) {
 		return;
@@ -241,57 +244,57 @@ function users_dlx_plus_avatar_delete( int $user_id ): void {
 		wp_delete_attachment( $id, true );
 	}
 
-	delete_user_meta( $user_id, 'users_dlx_plus_avatar' );
+	delete_user_meta( $user_id, 'diluxone_users_avatar' );
 }
 
-/** El formulario de la foto. Shortcode: [users_dlx_plus_avatar] */
-function users_dlx_plus_shortcode_avatar(): string {
-	if ( ! is_user_logged_in() || ! users_dlx_plus_option( 'users_dlx_plus_avatar_upload' ) ) {
+/** The picture form. Shortcode: [diluxone_users_avatar] */
+function diluxone_users_shortcode_avatar(): string {
+	if ( ! is_user_logged_in() || ! diluxone_users_option( 'diluxone_users_avatar_upload' ) ) {
 		return '';
 	}
 
 	$user = wp_get_current_user();
 
-	return users_dlx_plus_render(
+	return diluxone_users_render(
 		'account/avatar',
 		array(
 			'user'  => $user,
-			'has'   => users_dlx_plus_avatar_id( $user->ID ) > 0,
-			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- sólo elige el mensaje.
-			'error' => isset( $_GET['users_dlx_plus_avatar'] ) ? sanitize_text_field( wp_unslash( $_GET['users_dlx_plus_avatar'] ) ) : '',
+			'has'   => diluxone_users_avatar_id( $user->ID ) > 0,
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- it only picks the message.
+			'error' => isset( $_GET['diluxone_users_avatar'] ) ? sanitize_text_field( wp_unslash( $_GET['diluxone_users_avatar'] ) ) : '',
 		)
 	);
 }
-add_shortcode( 'users_dlx_plus_avatar', 'users_dlx_plus_shortcode_avatar' );
+add_shortcode( 'diluxone_users_avatar', 'diluxone_users_shortcode_avatar' );
 
-/** Recibe la foto o la saca. */
-function users_dlx_plus_avatar_submit(): void {
+/** Receives the picture or removes it. */
+function diluxone_users_avatar_submit(): void {
 	if ( ! is_user_logged_in() ) {
-		wp_safe_redirect( users_dlx_plus_login_url() );
+		wp_safe_redirect( diluxone_users_login_url() );
 		exit;
 	}
 
-	check_admin_referer( 'users_dlx_plus_avatar' );
+	check_admin_referer( 'diluxone_users_avatar' );
 
 	$user_id = get_current_user_id();
-	$destino = users_dlx_plus_account_url( 'details' );
+	$target  = diluxone_users_account_url( 'details' );
 
 	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verificado arriba.
-	if ( isset( $_POST['users_dlx_plus_avatar_remove'] ) ) {
-		users_dlx_plus_avatar_delete( $user_id );
-		wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'saved', $destino ) );
+	if ( isset( $_POST['diluxone_users_avatar_remove'] ) ) {
+		diluxone_users_avatar_delete( $user_id );
+		wp_safe_redirect( add_query_arg( 'diluxone-users', 'saved', $target ) );
 		exit;
 	}
 
-	// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput -- lo valida users_dlx_plus_avatar_upload().
-	$result = users_dlx_plus_avatar_upload( $user_id, (array) ( $_FILES['users_dlx_plus_avatar_file'] ?? array() ) );
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput -- lo valida diluxone_users_avatar_upload().
+	$result = diluxone_users_avatar_upload( $user_id, (array) ( $_FILES['diluxone_users_avatar_file'] ?? array() ) );
 
 	if ( is_wp_error( $result ) ) {
-		wp_safe_redirect( add_query_arg( 'users_dlx_plus_avatar', rawurlencode( $result->get_error_message() ), $destino ) );
+		wp_safe_redirect( add_query_arg( 'diluxone_users_avatar', rawurlencode( $result->get_error_message() ), $target ) );
 		exit;
 	}
 
-	wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'saved', $destino ) );
+	wp_safe_redirect( add_query_arg( 'diluxone-users', 'saved', $target ) );
 	exit;
 }
-add_action( 'admin_post_users_dlx_plus_avatar', 'users_dlx_plus_avatar_submit' );
+add_action( 'admin_post_diluxone_users_avatar', 'diluxone_users_avatar_submit' );

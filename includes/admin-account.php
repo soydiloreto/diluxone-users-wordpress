@@ -1,35 +1,38 @@
 <?php
 /**
- * La pantalla del área de cuenta: qué solapas hay y cómo se ordenan.
+ * The account-area screen: which tabs exist and how they are ordered.
  *
- * Todo lo que se ve en «mi cuenta» se administra desde acá: las que trae el
- * plugin, las que agregan otros plugins (LifterLMS y compañía) y las que
- * agrega el sitio con su propio texto o el shortcode de otro plugin. Se
- * prenden, se apagan, se renombran y se ordenan sin tocar una línea de código.
+ * Everything seen in "my account" is administered from here: the ones the
+ * plugin ships, the ones other plugins add (LifterLMS and company) and the
+ * ones the site adds with its own text or another plugin's shortcode. They
+ * are turned on, turned off, renamed and reordered without touching a line of
+ * code.
  *
- * Las de código se pueden apagar pero no borrar: el código que las pinta sigue
- * ahí, y borrarlas de la option las haría volver en el próximo pedido.
+ * The ones from code can be turned off but not deleted: the code that draws
+ * them is still there, and deleting them from the option would bring them
+ * back on the next request.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/** Guarda la configuración de una sección, mezclándola con la que ya había. */
 /**
+ * Saves one section's configuration, merging it with what was already there.
+ *
  * @param array<string, mixed> $config
  */
-function users_dlx_plus_section_config_save( string $id, array $config ): void {
-	$all = (array) users_dlx_plus_option( 'users_dlx_plus_account_sections' );
+function diluxone_users_section_config_save( string $id, array $config ): void {
+	$all = (array) diluxone_users_option( 'diluxone_users_account_sections' );
 
 	$all[ $id ] = array_merge( (array) ( $all[ $id ] ?? array() ), $config );
 
-	update_option( 'users_dlx_plus_account_sections', $all );
+	update_option( 'diluxone_users_account_sections', $all );
 }
 
-/** Saca una sección propia. Las de código no se tocan. */
-function users_dlx_plus_section_delete( string $id ): void {
-	$all = (array) users_dlx_plus_option( 'users_dlx_plus_account_sections' );
+/** Removes one of the site's own sections. The ones from code are left alone. */
+function diluxone_users_section_delete( string $id ): void {
+	$all = (array) diluxone_users_option( 'diluxone_users_account_sections' );
 
 	if ( empty( $all[ $id ]['custom'] ) ) {
 		return;
@@ -37,46 +40,46 @@ function users_dlx_plus_section_delete( string $id ): void {
 
 	unset( $all[ $id ] );
 
-	update_option( 'users_dlx_plus_account_sections', $all );
+	update_option( 'diluxone_users_account_sections', $all );
 }
 
 /**
- * Reordena las secciones con la lista que llegó del arrastre.
+ * Reorders the sections with the list that arrived from the drag.
  *
- * Se reescriben todas las posiciones de una, con huecos de 10, en vez de
- * tocar sólo las que se movieron: si dos secciones registradas comparten
- * posición —cosa que pasa cuando un plugin no la declara— reacomodar sólo un
- * par no movería nada y el arrastre parecería roto.
+ * Every position is rewritten at once, in gaps of 10, instead of touching
+ * only the ones that moved: if two registered sections share a position —
+ * which happens when a plugin does not declare one — rearranging just a pair
+ * would move nothing and the drag would look broken.
  *
  * @param array<int, string> $ids
  */
-function users_dlx_plus_section_reorder( array $ids ): void {
-	$conocidas = users_dlx_plus_sections( true );
-	$orden     = 0;
+function diluxone_users_section_reorder( array $ids ): void {
+	$known = diluxone_users_sections( true );
+	$order = 0;
 
 	foreach ( $ids as $id ) {
-		if ( ! isset( $conocidas[ $id ] ) ) {
+		if ( ! isset( $known[ $id ] ) ) {
 			continue;
 		}
 
-		++$orden;
-		users_dlx_plus_section_config_save( $id, array( 'position' => $orden * 10 ) );
+		++$order;
+		diluxone_users_section_config_save( $id, array( 'position' => $order * 10 ) );
 	}
 }
 
 /**
- * Guarda una sección desde el formulario del detalle.
+ * Saves a section from the detail form.
  *
- * Sirve para las dos cosas —crear y editar— porque son la misma: una sección
- * es un nombre, una dirección y algo para mostrar. Devuelve el identificador,
- * o '' si no se pudo.
+ * It serves both purposes — creating and editing — because they are the same
+ * one: a section is a name, an address and something to show. It returns the
+ * identifier, or '' when it could not be done.
  *
  * @param array<string, mixed> $input
  */
-function users_dlx_plus_section_save( array $input ): string {
+function diluxone_users_section_save( array $input ): string {
 	$id     = sanitize_key( (string) ( $input['id'] ?? '' ) );
-	$existe = users_dlx_plus_sections( true );
-	$nueva  = '' === $id || ! isset( $existe[ $id ] );
+	$exists = diluxone_users_sections( true );
+	$fresh  = '' === $id || ! isset( $exists[ $id ] );
 	$label  = sanitize_text_field( (string) ( $input['label'] ?? '' ) );
 
 	if ( '' === $label ) {
@@ -86,12 +89,12 @@ function users_dlx_plus_section_save( array $input ): string {
 	$slug = sanitize_title( (string) ( $input['slug'] ?? '' ) );
 	$slug = '' === $slug ? sanitize_title( $label ) : $slug;
 
-	if ( $nueva ) {
+	if ( $fresh ) {
 		$id = '' === $id ? $slug : $id;
 
-		// Una sección propia no puede pisar a una de código: quedarían dos con
-		// la misma dirección y ganaría cualquiera.
-		if ( '' === $id || isset( $existe[ $id ] ) ) {
+			// One of the site's own sections cannot tread on one from code: there
+			// would be two with the same address and either could win.
+		if ( '' === $id || isset( $exists[ $id ] ) ) {
 			return '';
 		}
 	}
@@ -106,28 +109,28 @@ function users_dlx_plus_section_save( array $input ): string {
 		'roles'     => array_values( array_filter( array_map( 'sanitize_key', (array) ( $input['roles'] ?? array() ) ) ) ),
 	);
 
-	if ( $nueva ) {
+	if ( $fresh ) {
 		$config['custom']   = true;
 		$config['enabled']  = 1;
 		$config['position'] = 900;
 	}
 
-	users_dlx_plus_section_config_save( $id, $config );
+	diluxone_users_section_config_save( $id, $config );
 
 	return $id;
 }
 
 /**
- * Prender, apagar, mover o borrar una sección.
+ * Turning a section on, off, moving it or deleting it.
  *
- * Va en admin_init y no dentro de la pantalla: cuando WordPress llama al
- * callback de una página del admin ya imprimió la cabecera, y ahí un
- * wp_safe_redirect() no puede hacer nada más que un aviso de «headers already
- * sent» en el log.
+ * It goes on admin_init and not inside the screen: by the time WordPress
+ * calls the callback of an admin page it has already printed the headers, and
+ * there a wp_safe_redirect() can do nothing but a "headers already sent"
+ * notice in the log.
  */
-function users_dlx_plus_account_actions(): void {
+function diluxone_users_account_actions(): void {
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	if ( 'users-dlx-plus-account' !== sanitize_key( wp_unslash( $_GET['page'] ?? '' ) ) || ! isset( $_GET['users_dlx_plus_action'], $_GET['section'] ) ) {
+	if ( 'diluxone-users-account' !== sanitize_key( wp_unslash( $_GET['page'] ?? '' ) ) || ! isset( $_GET['diluxone_users_action'], $_GET['section'] ) ) {
 		return;
 	}
 
@@ -135,99 +138,99 @@ function users_dlx_plus_account_actions(): void {
 		return;
 	}
 
-	check_admin_referer( 'users_dlx_plus_section_action' );
+	check_admin_referer( 'diluxone_users_section_action' );
 
 	$id     = sanitize_key( wp_unslash( $_GET['section'] ) );
-	$accion = sanitize_key( wp_unslash( $_GET['users_dlx_plus_action'] ) );
+	$action = sanitize_key( wp_unslash( $_GET['diluxone_users_action'] ) );
 
-	$volver = array( 'section' => $id );
+	$back = array( 'section' => $id );
 
-	if ( 'delete' === $accion ) {
-		users_dlx_plus_section_delete( $id );
-		$volver = array();
-	} elseif ( 'on' === $accion || 'off' === $accion ) {
-		users_dlx_plus_section_config_save( $id, array( 'enabled' => 'on' === $accion ? 1 : 0 ) );
+	if ( 'delete' === $action ) {
+		diluxone_users_section_delete( $id );
+		$back = array();
+	} elseif ( 'on' === $action || 'off' === $action ) {
+		diluxone_users_section_config_save( $id, array( 'enabled' => 'on' === $action ? 1 : 0 ) );
 	}
 
-	// Se vuelve a la misma sección: quien prende una y la pantalla lo devuelve
-	// a la primera de la lista tiene que buscarla de nuevo cada vez.
-	wp_safe_redirect( users_dlx_plus_admin_url( 'users-dlx-plus-account', $volver ) );
+	// It comes back to the same section: whoever turns one on and gets sent
+	// back to the first of the list has to find it again every time.
+	wp_safe_redirect( diluxone_users_admin_url( 'diluxone-users-account', $back ) );
 	exit;
 }
-add_action( 'admin_init', 'users_dlx_plus_account_actions' );
+add_action( 'admin_init', 'diluxone_users_account_actions' );
 
-/** La pantalla del área de cuenta: sus dos solapas. */
-function users_dlx_plus_screen_account(): void {
+/** The account-area screen: its two tabs. */
+function diluxone_users_screen_account(): void {
 	$tabs = array(
-		'sections' => __( 'Sections', 'users-dlx-plus' ),
-		'layout'   => __( 'Where it lives', 'users-dlx-plus' ),
+		'sections' => __( 'Sections', 'diluxone-users' ),
+		'layout'   => __( 'Where it lives', 'diluxone-users' ),
 	);
 
-	$current = users_dlx_plus_tab( $tabs );
+	$current = diluxone_users_tab( $tabs );
 
-	users_dlx_plus_account_notice();
-	users_dlx_plus_screen_open( __( 'Account area', 'users-dlx-plus' ), 'users-dlx-plus-account', $tabs, $current );
+	diluxone_users_account_notice();
+	diluxone_users_screen_open( __( 'Account area', 'diluxone-users' ), 'diluxone-users-account', $tabs, $current );
 
 	if ( 'layout' === $current ) {
-		users_dlx_plus_screen_account_layout();
+		diluxone_users_screen_account_layout();
 	} else {
-		users_dlx_plus_screen_account_sections();
+		diluxone_users_screen_account_sections();
 	}
 
-	users_dlx_plus_screen_close();
+	diluxone_users_screen_close();
 }
 
 /**
- * Guarda lo que se mandó desde la pantalla.
+ * Saves whatever was submitted from the screen.
  *
- * Va en admin_init, igual que las acciones de un clic, para poder redirigir:
- * cuando WordPress llama al callback de una página ya imprimió la cabecera.
- * Y redirigir hace falta —no es sólo higiene— porque después de crear una
- * sección hay que abrirla, y porque recargar no tiene que volver a mandar el
- * formulario.
+ * It goes on admin_init, like the one-click actions, so it can redirect: by
+ * the time WordPress calls a page callback it has already printed the
+ * headers. And redirecting is needed — it is not only hygiene — because after
+ * creating a section it has to be opened, and because reloading must not
+ * submit the form again.
  */
-function users_dlx_plus_account_post(): void {
-	// phpcs:disable WordPress.Security.NonceVerification -- cada rama verifica el suyo.
-	if ( 'users-dlx-plus-account' !== sanitize_key( wp_unslash( $_GET['page'] ?? '' ) ) || ! current_user_can( 'manage_options' ) ) {
+function diluxone_users_account_post(): void {
+	// phpcs:disable WordPress.Security.NonceVerification -- each branch verifies its own.
+	if ( 'diluxone-users-account' !== sanitize_key( wp_unslash( $_GET['page'] ?? '' ) ) || ! current_user_can( 'manage_options' ) ) {
 		return;
 	}
 
-	$abierta = sanitize_key( wp_unslash( $_GET['section'] ?? '' ) );
+	$open_box = sanitize_key( wp_unslash( $_GET['section'] ?? '' ) );
 
-	if ( isset( $_POST['users_dlx_plus_orden_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['users_dlx_plus_orden_nonce'] ) ), 'users_dlx_plus_orden' ) ) {
-		users_dlx_plus_section_reorder( array_map( 'sanitize_key', (array) wp_unslash( $_POST['users_dlx_plus_orden'] ?? array() ) ) );
+	if ( isset( $_POST['diluxone_users_orden_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['diluxone_users_orden_nonce'] ) ), 'diluxone_users_orden' ) ) {
+		diluxone_users_section_reorder( array_map( 'sanitize_key', (array) wp_unslash( $_POST['diluxone_users_orden'] ?? array() ) ) );
 
-		users_dlx_plus_account_back( 'orden', $abierta );
+		diluxone_users_account_back( 'order', $open_box );
 	}
 
-	if ( isset( $_POST['users_dlx_plus_seccion_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['users_dlx_plus_seccion_nonce'] ) ), 'users_dlx_plus_seccion' ) ) {
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- lo sanea campo por campo users_dlx_plus_section_save().
-		$guardada = users_dlx_plus_section_save( (array) wp_unslash( $_POST['users_dlx_plus_seccion'] ?? array() ) );
+	if ( isset( $_POST['diluxone_users_seccion_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['diluxone_users_seccion_nonce'] ) ), 'diluxone_users_seccion' ) ) {
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- diluxone_users_section_save() sanitises it field by field.
+		$saved = diluxone_users_section_save( (array) wp_unslash( $_POST['diluxone_users_seccion'] ?? array() ) );
 
-		users_dlx_plus_account_back(
-			'' === $guardada ? 'error' : 'guardada',
-			'' === $guardada ? $abierta : $guardada
+		diluxone_users_account_back(
+			'' === $saved ? 'error' : 'guardada',
+			'' === $saved ? $open_box : $saved
 		);
 	}
 
-	if ( isset( $_POST['users_dlx_plus_layout_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['users_dlx_plus_layout_nonce'] ) ), 'users_dlx_plus_layout' ) ) {
-		users_dlx_plus_save_options(
+	if ( isset( $_POST['diluxone_users_layout_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['diluxone_users_layout_nonce'] ) ), 'diluxone_users_layout' ) ) {
+		diluxone_users_save_options(
 			array(
-				'users_dlx_plus_account_page'   => absint( wp_unslash( $_POST['users_dlx_plus_account_page'] ?? 0 ) ),
-				'users_dlx_plus_account_layout' => sanitize_key( wp_unslash( $_POST['users_dlx_plus_account_layout'] ?? 'tabs' ) ),
-				'users_dlx_plus_account_header' => isset( $_POST['users_dlx_plus_account_header'] ) ? 1 : 0,
+				'diluxone_users_account_page'   => absint( wp_unslash( $_POST['diluxone_users_account_page'] ?? 0 ) ),
+				'diluxone_users_account_layout' => sanitize_key( wp_unslash( $_POST['diluxone_users_account_layout'] ?? 'tabs' ) ),
+				'diluxone_users_account_header' => isset( $_POST['diluxone_users_account_header'] ) ? 1 : 0,
 			)
 		);
 
-		// La página cambió: las reglas de /cuenta/<seccion>/ hay que rehacerlas.
-		delete_option( 'users_dlx_plus_rewrite_version' );
+			// The page changed: the /account/<section>/ rules have to be rebuilt.
+		delete_option( 'diluxone_users_rewrite_version' );
 
 		wp_safe_redirect(
-			users_dlx_plus_admin_url(
-				'users-dlx-plus-account',
+			diluxone_users_admin_url(
+				'diluxone-users-account',
 				array(
 					'tab'                => 'layout',
-					'users_dlx_plus_msg' => 'guardada',
+					'diluxone_users_msg' => 'guardada',
 				)
 			)
 		);
@@ -235,91 +238,91 @@ function users_dlx_plus_account_post(): void {
 	}
 	// phpcs:enable
 }
-add_action( 'admin_init', 'users_dlx_plus_account_post' );
+add_action( 'admin_init', 'diluxone_users_account_post' );
 
-/** Vuelve a la pantalla, en la sección que corresponda, con el aviso puesto. */
-function users_dlx_plus_account_back( string $msg, string $section = '' ): void {
-	$args = array( 'users_dlx_plus_msg' => $msg );
+/** Back to the screen, on the right section, with the notice in place. */
+function diluxone_users_account_back( string $msg, string $section = '' ): void {
+	$args = array( 'diluxone_users_msg' => $msg );
 
 	if ( '' !== $section ) {
 		$args['section'] = $section;
 	}
 
-	wp_safe_redirect( users_dlx_plus_admin_url( 'users-dlx-plus-account', $args ) );
+	wp_safe_redirect( diluxone_users_admin_url( 'diluxone-users-account', $args ) );
 	exit;
 }
 
-/** El aviso de lo que acaba de pasar. */
-function users_dlx_plus_account_notice(): void {
-	$avisos = array(
-		'orden'    => array( 'success', __( 'New order saved.', 'users-dlx-plus' ) ),
-		'guardada' => array( 'success', __( 'Section saved.', 'users-dlx-plus' ) ),
-		'borrada'  => array( 'success', __( 'Section removed.', 'users-dlx-plus' ) ),
-		'error'    => array( 'error', __( 'That section needs a name, and an address that is not taken.', 'users-dlx-plus' ) ),
+/** The notice about what just happened. */
+function diluxone_users_account_notice(): void {
+	$notices = array(
+		'order'    => array( 'success', __( 'New order saved.', 'diluxone-users' ) ),
+		'guardada' => array( 'success', __( 'Section saved.', 'diluxone-users' ) ),
+		'borrada'  => array( 'success', __( 'Section removed.', 'diluxone-users' ) ),
+		'error'    => array( 'error', __( 'That section needs a name, and an address that is not taken.', 'diluxone-users' ) ),
 	);
 
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- sólo elige el mensaje.
-	$msg = isset( $_GET['users_dlx_plus_msg'] ) ? sanitize_key( wp_unslash( $_GET['users_dlx_plus_msg'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- it only picks the message.
+	$msg = isset( $_GET['diluxone_users_msg'] ) ? sanitize_key( wp_unslash( $_GET['diluxone_users_msg'] ) ) : '';
 
-	if ( isset( $avisos[ $msg ] ) ) {
-		users_dlx_plus_notice( $avisos[ $msg ][1], $avisos[ $msg ][0] );
+	if ( isset( $notices[ $msg ] ) ) {
+		diluxone_users_notice( $notices[ $msg ][1], $notices[ $msg ][0] );
 	}
 }
 
 /**
- * Las secciones: la lista a la izquierda y el detalle de una a la derecha.
+ * The sections: the list on the left and the detail of one on the right.
  *
- * Es una pantalla de dos paneles y no una tabla porque son dos cosas
- * distintas: el orden, que se ve de un vistazo y se arrastra, y lo que una
- * sección es, que son ocho campos y un editor. Meter los ocho campos adentro
- * de una fila deformaba la tabla y escondía el orden.
+ * It is a two-panel screen and not a table because they are two different
+ * things: the order, which is taken in at a glance and dragged, and what a
+ * section is, which is eight fields and an editor. Putting the eight fields
+ * inside a row warped the table and hid the order.
  */
-function users_dlx_plus_screen_account_sections(): void {
-	$sections = users_dlx_plus_sections( true );
-	$page     = users_dlx_plus_account_page_id();
-	$actual   = users_dlx_plus_screen_account_current( $sections );
+function diluxone_users_screen_account_sections(): void {
+	$sections = diluxone_users_sections( true );
+	$page     = diluxone_users_account_page_id();
+	$actual   = diluxone_users_screen_account_current( $sections );
 	?>
 	<?php if ( $page <= 0 ) : ?>
-		<div class="notice notice-warning inline users-dlx-plus-estado-caja">
-			<p><strong><?php esc_html_e( 'There is no account page yet', 'users-dlx-plus' ); ?></strong></p>
-			<p><?php esc_html_e( 'Pick the page that has the [users_dlx_plus_account] shortcode, under “Where it lives”. Until then the links below go nowhere.', 'users-dlx-plus' ); ?></p>
+		<div class="notice notice-warning inline diluxone-users-state-box">
+			<p><strong><?php esc_html_e( 'There is no account page yet', 'diluxone-users' ); ?></strong></p>
+			<p><?php esc_html_e( 'Pick the page that has the [diluxone_users_account] shortcode, under “Where it lives”. Until then the links below go nowhere.', 'diluxone-users' ); ?></p>
 		</div>
 	<?php endif; ?>
 
-	<div class="users-dlx-plus-endpoints">
-		<div class="users-dlx-plus-endpoints__cabeza">
-			<h2><?php esc_html_e( 'The sections of “my account”', 'users-dlx-plus' ); ?></h2>
-			<a class="button button-primary" href="<?php echo esc_url( users_dlx_plus_admin_url( 'users-dlx-plus-account', array( 'section' => 'users-dlx-plus-new' ) ) ); ?>"><?php esc_html_e( 'Add section', 'users-dlx-plus' ); ?></a>
+	<div class="diluxone-users-endpoints">
+		<div class="diluxone-users-endpoints__head">
+			<h2><?php esc_html_e( 'The sections of “my account”', 'diluxone-users' ); ?></h2>
+			<a class="button button-primary" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-account', array( 'section' => 'diluxone-users-new' ) ) ); ?>"><?php esc_html_e( 'Add section', 'diluxone-users' ); ?></a>
 		</div>
 
-		<div class="users-dlx-plus-endpoints__cuerpo">
-			<form class="users-dlx-plus-endpoints__orden" method="post">
-				<?php wp_nonce_field( 'users_dlx_plus_orden', 'users_dlx_plus_orden_nonce' ); ?>
+		<div class="diluxone-users-endpoints__body">
+			<form class="diluxone-users-endpoints__order" method="post">
+				<?php wp_nonce_field( 'diluxone_users_orden', 'diluxone_users_orden_nonce' ); ?>
 
-				<ul class="users-dlx-plus-endpoints__lista" data-users-dlx-plus-sortable>
+				<ul class="diluxone-users-endpoints__list" data-diluxone-users-sortable>
 					<?php foreach ( $sections as $id => $section ) : ?>
-						<li class="users-dlx-plus-endpoint <?php echo $id === $actual ? 'is-current' : ''; ?> <?php echo $section['enabled'] && users_dlx_plus_section_available( $section ) ? '' : 'is-off'; ?>">
-							<input type="hidden" name="users_dlx_plus_orden[]" value="<?php echo esc_attr( $id ); ?>">
-							<a class="users-dlx-plus-endpoint__nombre" href="<?php echo esc_url( users_dlx_plus_admin_url( 'users-dlx-plus-account', array( 'section' => $id ) ) ); ?>"><?php echo esc_html( $section['label'] ); ?></a>
-							<span class="users-dlx-plus-endpoint__agarre" aria-hidden="true"></span>
+						<li class="diluxone-users-endpoint <?php echo $id === $actual ? 'is-current' : ''; ?> <?php echo $section['enabled'] && diluxone_users_section_available( $section ) ? '' : 'is-off'; ?>">
+							<input type="hidden" name="diluxone_users_orden[]" value="<?php echo esc_attr( $id ); ?>">
+							<a class="diluxone-users-endpoint__name" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-account', array( 'section' => $id ) ) ); ?>"><?php echo esc_html( $section['label'] ); ?></a>
+							<span class="diluxone-users-endpoint__grip" aria-hidden="true"></span>
 						</li>
 					<?php endforeach; ?>
 				</ul>
 
 				<?php
 				/*
-				 * Sin JavaScript no hay arrastre, así que queda el botón: una
-				 * pantalla que sólo se puede usar con arrastre no se puede usar
-				 * con el teclado.
+				 * Without JavaScript there is no dragging, so the button stays: a
+				 * screen that can only be used by dragging cannot be used with
+				 * the keyboard.
 				 */
 				?>
-				<p class="users-dlx-plus-endpoints__guardar-orden">
-					<button type="submit" class="button"><?php esc_html_e( 'Save the order', 'users-dlx-plus' ); ?></button>
+				<p class="diluxone-users-endpoints__save-order">
+					<button type="submit" class="button"><?php esc_html_e( 'Save the order', 'diluxone-users' ); ?></button>
 				</p>
 			</form>
 
-			<div class="users-dlx-plus-endpoints__detalle">
-				<?php users_dlx_plus_screen_account_section( $actual, $sections, $page ); ?>
+			<div class="diluxone-users-endpoints__detail">
+				<?php diluxone_users_screen_account_section( $actual, $sections, $page ); ?>
 			</div>
 		</div>
 	</div>
@@ -327,32 +330,32 @@ function users_dlx_plus_screen_account_sections(): void {
 }
 
 /**
- * Cuál sección se está mirando.
+ * Which section is being looked at.
  *
- * Sin nada pedido, la primera: una pantalla de dos paneles con el derecho en
- * blanco parece rota.
+ * With nothing asked for, the first one: a two-panel screen with a blank
+ * right-hand side looks broken.
  *
  * @param array<string, array<string, mixed>> $sections
  */
-function users_dlx_plus_screen_account_current( array $sections ): string {
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- sólo elige qué pintar.
-	$pedida = isset( $_GET['section'] ) ? sanitize_key( wp_unslash( $_GET['section'] ) ) : '';
+function diluxone_users_screen_account_current( array $sections ): string {
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- it only picks what to draw.
+	$requested = isset( $_GET['section'] ) ? sanitize_key( wp_unslash( $_GET['section'] ) ) : '';
 
-	if ( 'users-dlx-plus-new' === $pedida || isset( $sections[ $pedida ] ) ) {
-		return $pedida;
+	if ( 'diluxone-users-new' === $requested || isset( $sections[ $requested ] ) ) {
+		return $requested;
 	}
 
-	return (string) ( array_key_first( $sections ) ?? 'users-dlx-plus-new' );
+	return (string) ( array_key_first( $sections ) ?? 'diluxone-users-new' );
 }
 
 /**
- * El detalle de una sección.
+ * The detail of one section.
  *
  * @param array<string, array<string, mixed>> $sections
  */
-function users_dlx_plus_screen_account_section( string $id, array $sections, int $page ): void {
-	$nueva   = ! isset( $sections[ $id ] );
-	$section = $nueva
+function diluxone_users_screen_account_section( string $id, array $sections, int $page ): void {
+	$fresh   = ! isset( $sections[ $id ] );
+	$section = $fresh
 		? array(
 			'label'     => '',
 			'slug'      => '',
@@ -368,140 +371,140 @@ function users_dlx_plus_screen_account_section( string $id, array $sections, int
 		)
 		: $sections[ $id ];
 
-	$con_codigo = ! $nueva && users_dlx_plus_section_has_code( $section );
+	$with_code = ! $fresh && diluxone_users_section_has_code( $section );
 	?>
-	<form method="post" class="users-dlx-plus-endpoint-form">
-		<?php wp_nonce_field( 'users_dlx_plus_seccion', 'users_dlx_plus_seccion_nonce' ); ?>
-		<input type="hidden" name="users_dlx_plus_seccion[id]" value="<?php echo esc_attr( $nueva ? '' : $id ); ?>">
+	<form method="post" class="diluxone-users-endpoint-form">
+		<?php wp_nonce_field( 'diluxone_users_seccion', 'diluxone_users_seccion_nonce' ); ?>
+		<input type="hidden" name="diluxone_users_seccion[id]" value="<?php echo esc_attr( $fresh ? '' : $id ); ?>">
 
-		<div class="users-dlx-plus-endpoint-form__cabeza">
-			<h3><?php echo esc_html( $nueva ? __( 'New section', 'users-dlx-plus' ) : $section['label'] ); ?></h3>
+		<div class="diluxone-users-endpoint-form__head">
+			<h3><?php echo esc_html( $fresh ? __( 'New section', 'diluxone-users' ) : $section['label'] ); ?></h3>
 
-			<?php if ( ! $nueva ) : ?>
-				<a class="users-dlx-plus-toggle <?php echo $section['enabled'] ? 'is-on' : ''; ?>"
+			<?php if ( ! $fresh ) : ?>
+				<a class="diluxone-users-toggle <?php echo $section['enabled'] ? 'is-on' : ''; ?>"
 					href="
 					<?php
 					echo esc_url(
 						wp_nonce_url(
-							users_dlx_plus_admin_url(
-								'users-dlx-plus-account',
+							diluxone_users_admin_url(
+								'diluxone-users-account',
 								array(
 									'section' => $id,
-									'users_dlx_plus_action' => $section['enabled'] ? 'off' : 'on',
+									'diluxone_users_action' => $section['enabled'] ? 'off' : 'on',
 								)
 							),
-							'users_dlx_plus_section_action'
+							'diluxone_users_section_action'
 						)
 					);
 					?>
 							">
-					<span class="users-dlx-plus-toggle__perilla" aria-hidden="true"></span>
-					<?php echo $section['enabled'] ? esc_html__( 'Showing', 'users-dlx-plus' ) : esc_html__( 'Hidden', 'users-dlx-plus' ); ?>
+					<span class="diluxone-users-toggle__knob" aria-hidden="true"></span>
+					<?php echo $section['enabled'] ? esc_html__( 'Showing', 'diluxone-users' ) : esc_html__( 'Hidden', 'diluxone-users' ); ?>
 				</a>
 
 				<?php if ( ! empty( $section['custom'] ) ) : ?>
-					<a class="button users-dlx-plus-danger"
+					<a class="button diluxone-users-danger"
 						href="
 						<?php
 						echo esc_url(
 							wp_nonce_url(
-								users_dlx_plus_admin_url(
-									'users-dlx-plus-account',
+								diluxone_users_admin_url(
+									'diluxone-users-account',
 									array(
 										'section' => $id,
-										'users_dlx_plus_action' => 'delete',
+										'diluxone_users_action' => 'delete',
 									)
 								),
-								'users_dlx_plus_section_action'
+								'diluxone_users_section_action'
 							)
 						);
 						?>
 								"
-						onclick="return confirm(<?php echo esc_attr( (string) (string) wp_json_encode( __( 'Delete this section?', 'users-dlx-plus' ) ) ); ?>);">
-						<?php esc_html_e( 'Remove', 'users-dlx-plus' ); ?>
+						onclick="return confirm(<?php echo esc_attr( (string) (string) wp_json_encode( __( 'Delete this section?', 'diluxone-users' ) ) ); ?>);">
+						<?php esc_html_e( 'Remove', 'diluxone-users' ); ?>
 					</a>
 				<?php endif; ?>
 			<?php endif; ?>
 		</div>
 
-		<?php if ( ! $nueva && $section['enabled'] && ! users_dlx_plus_section_available( $section ) ) : ?>
-			<div class="notice notice-info inline users-dlx-plus-estado-caja">
-				<p><strong><?php esc_html_e( 'It is on, but it is not showing', 'users-dlx-plus' ); ?></strong></p>
+		<?php if ( ! $fresh && $section['enabled'] && ! diluxone_users_section_available( $section ) ) : ?>
+			<div class="notice notice-info inline diluxone-users-state-box">
+				<p><strong><?php esc_html_e( 'It is on, but it is not showing', 'diluxone-users' ); ?></strong></p>
 				<p><?php echo esc_html( (string) $section['why'] ); ?></p>
 			</div>
 		<?php endif; ?>
 
 		<table class="form-table" role="presentation">
 			<tr>
-				<th scope="row"><label for="users-dlx-plus-seccion-label"><?php esc_html_e( 'Name', 'users-dlx-plus' ); ?></label></th>
+				<th scope="row"><label for="diluxone-users-section-label"><?php esc_html_e( 'Name', 'diluxone-users' ); ?></label></th>
 				<td>
-					<input type="text" id="users-dlx-plus-seccion-label" class="regular-text" name="users_dlx_plus_seccion[label]" value="<?php echo esc_attr( $section['label'] ); ?>" required>
-					<p class="description"><?php esc_html_e( 'What people read in the menu, and the title of the section.', 'users-dlx-plus' ); ?></p>
+					<input type="text" id="diluxone-users-section-label" class="regular-text" name="diluxone_users_seccion[label]" value="<?php echo esc_attr( $section['label'] ); ?>" required>
+					<p class="description"><?php esc_html_e( 'What people read in the menu, and the title of the section.', 'diluxone-users' ); ?></p>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><label for="users-dlx-plus-seccion-slug"><?php esc_html_e( 'Address', 'users-dlx-plus' ); ?></label></th>
+				<th scope="row"><label for="diluxone-users-section-slug"><?php esc_html_e( 'Address', 'diluxone-users' ); ?></label></th>
 				<td>
-					<input type="text" id="users-dlx-plus-seccion-slug" class="regular-text code" name="users_dlx_plus_seccion[slug]" value="<?php echo esc_attr( $section['slug'] ?? '' ); ?>" placeholder="<?php esc_attr_e( 'made from the name', 'users-dlx-plus' ); ?>">
-					<?php if ( ! $nueva && $page > 0 ) : ?>
+					<input type="text" id="diluxone-users-section-slug" class="regular-text code" name="diluxone_users_seccion[slug]" value="<?php echo esc_attr( $section['slug'] ?? '' ); ?>" placeholder="<?php esc_attr_e( 'made from the name', 'diluxone-users' ); ?>">
+					<?php if ( ! $fresh && $page > 0 ) : ?>
 						<p class="description">
-							<a href="<?php echo esc_url( users_dlx_plus_account_url( $id ) ); ?>" target="_blank" rel="noopener"><?php echo esc_html( str_replace( home_url(), '', users_dlx_plus_account_url( $id ) ) ); ?></a>
+							<a href="<?php echo esc_url( diluxone_users_account_url( $id ) ); ?>" target="_blank" rel="noopener"><?php echo esc_html( str_replace( home_url(), '', diluxone_users_account_url( $id ) ) ); ?></a>
 						</p>
 					<?php endif; ?>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php esc_html_e( 'Who sees it', 'users-dlx-plus' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'Who sees it', 'diluxone-users' ); ?></th>
 				<td>
 					<?php $roles = (array) ( $section['roles'] ?? array() ); ?>
-					<?php foreach ( wp_roles()->get_names() as $rol => $rotulo ) : ?>
-						<label class="users-dlx-plus-roles__item">
-							<input type="checkbox" name="users_dlx_plus_seccion[roles][]" value="<?php echo esc_attr( $rol ); ?>" <?php checked( in_array( $rol, $roles, true ) ); ?>>
-							<?php echo esc_html( translate_user_role( $rotulo ) ); ?>
+					<?php foreach ( wp_roles()->get_names() as $role => $label ) : ?>
+						<label class="diluxone-users-roles__item">
+							<input type="checkbox" name="diluxone_users_seccion[roles][]" value="<?php echo esc_attr( $role ); ?>" <?php checked( in_array( $role, $roles, true ) ); ?>>
+							<?php echo esc_html( translate_user_role( $label ) ); ?>
 						</label>
 					<?php endforeach; ?>
-					<p class="description"><?php esc_html_e( 'Tick nothing and everybody with an account sees it. Tick roles and only those do.', 'users-dlx-plus' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Tick nothing and everybody with an account sees it. Tick roles and only those do.', 'diluxone-users' ); ?></p>
 				</td>
 			</tr>
 
-			<?php if ( $con_codigo ) : ?>
+			<?php if ( $with_code ) : ?>
 				<tr>
-					<th scope="row"><label for="users-dlx-plus-seccion-placement"><?php esc_html_e( 'Where your content goes', 'users-dlx-plus' ); ?></label></th>
+					<th scope="row"><label for="diluxone-users-section-placement"><?php esc_html_e( 'Where your content goes', 'diluxone-users' ); ?></label></th>
 					<td>
-						<select id="users-dlx-plus-seccion-placement" name="users_dlx_plus_seccion[placement]">
+						<select id="diluxone-users-section-placement" name="diluxone_users_seccion[placement]">
 							<?php
-							$donde = array(
-								'after'   => __( 'After what the plugin shows', 'users-dlx-plus' ),
-								'before'  => __( 'Before what the plugin shows', 'users-dlx-plus' ),
-								'replace' => __( 'Instead of it — your content replaces the section', 'users-dlx-plus' ),
+							$where = array(
+								'after'   => __( 'After what the plugin shows', 'diluxone-users' ),
+								'before'  => __( 'Before what the plugin shows', 'diluxone-users' ),
+								'replace' => __( 'Instead of it — your content replaces the section', 'diluxone-users' ),
 							);
 
-							foreach ( $donde as $clave => $rotulo ) {
+							foreach ( $where as $key => $label ) {
 								printf(
 									'<option value="%1$s"%2$s>%3$s</option>',
-									esc_attr( $clave ),
-									selected( $section['placement'], $clave, false ),
-									esc_html( $rotulo )
+									esc_attr( $key ),
+									selected( $section['placement'], $key, false ),
+									esc_html( $label )
 								);
 							}
 							?>
 						</select>
-						<p class="description"><?php esc_html_e( 'This section is drawn by code. What you write below is added to it — unless you say it replaces it.', 'users-dlx-plus' ); ?></p>
+						<p class="description"><?php esc_html_e( 'This section is drawn by code. What you write below is added to it — unless you say it replaces it.', 'diluxone-users' ); ?></p>
 					</td>
 				</tr>
 			<?php else : ?>
-				<input type="hidden" name="users_dlx_plus_seccion[placement]" value="replace">
+				<input type="hidden" name="diluxone_users_seccion[placement]" value="replace">
 			<?php endif; ?>
 
 			<tr>
-				<th scope="row"><label for="users-dlx-plus-seccion-contenido"><?php esc_html_e( 'Your content', 'users-dlx-plus' ); ?></label></th>
+				<th scope="row"><label for="diluxone-users-section-content"><?php esc_html_e( 'Your content', 'diluxone-users' ); ?></label></th>
 				<td>
 					<?php
 					wp_editor(
 						(string) $section['content'],
-						'users-dlx-plus-seccion-contenido',
+						'diluxone-users-section-content',
 						array(
-							'textarea_name' => 'users_dlx_plus_seccion[content]',
+							'textarea_name' => 'diluxone_users_seccion[content]',
 							'textarea_rows' => 10,
 							'media_buttons' => true,
 						)
@@ -509,102 +512,102 @@ function users_dlx_plus_screen_account_section( string $id, array $sections, int
 					?>
 					<p class="description">
 						<?php
-						echo $con_codigo
-							? esc_html__( 'Text, HTML, or the shortcode of another plugin. Leave it empty and the section stays as the plugin draws it.', 'users-dlx-plus' )
-							: esc_html__( 'Text, HTML, or the shortcode of another plugin — a course plugin, a membership, a support desk. This is the whole section.', 'users-dlx-plus' );
+						echo $with_code
+							? esc_html__( 'Text, HTML, or the shortcode of another plugin. Leave it empty and the section stays as the plugin draws it.', 'diluxone-users' )
+							: esc_html__( 'Text, HTML, or the shortcode of another plugin — a course plugin, a membership, a support desk. This is the whole section.', 'diluxone-users' );
 						?>
 					</p>
 				</td>
 			</tr>
 
-			<?php if ( ! $nueva && '' !== (string) $section['source'] ) : ?>
+			<?php if ( ! $fresh && '' !== (string) $section['source'] ) : ?>
 				<tr>
-					<th scope="row"><?php esc_html_e( 'Comes from', 'users-dlx-plus' ); ?></th>
+					<th scope="row"><?php esc_html_e( 'Comes from', 'diluxone-users' ); ?></th>
 					<td>
 						<p><?php echo esc_html( $section['source'] ); ?> <code><?php echo esc_html( $id ); ?></code></p>
 						<?php if ( empty( $section['custom'] ) ) : ?>
-							<p class="description"><?php esc_html_e( 'It comes from code, so it cannot be deleted —the code that draws it is still there and it would come back— but it can be hidden.', 'users-dlx-plus' ); ?></p>
+							<p class="description"><?php esc_html_e( 'It comes from code, so it cannot be deleted —the code that draws it is still there and it would come back— but it can be hidden.', 'diluxone-users' ); ?></p>
 						<?php endif; ?>
 					</td>
 				</tr>
 			<?php endif; ?>
 		</table>
 
-		<?php submit_button( $nueva ? __( 'Add section', 'users-dlx-plus' ) : __( 'Save section', 'users-dlx-plus' ) ); ?>
+		<?php submit_button( $fresh ? __( 'Add section', 'diluxone-users' ) : __( 'Save section', 'diluxone-users' ) ); ?>
 	</form>
 	<?php
 }
 
-/** Dónde vive el área de cuenta y cómo se navega. */
-function users_dlx_plus_screen_account_layout(): void {
-	users_dlx_plus_intro( __( 'Which page is “my account”, and how people move between its sections.', 'users-dlx-plus' ) );
+/** Where the account area lives and how it is navigated. */
+function diluxone_users_screen_account_layout(): void {
+	diluxone_users_intro( __( 'Which page is “my account”, and how people move between its sections.', 'diluxone-users' ) );
 	?>
 	<form method="post">
-		<?php wp_nonce_field( 'users_dlx_plus_layout', 'users_dlx_plus_layout_nonce' ); ?>
+		<?php wp_nonce_field( 'diluxone_users_layout', 'diluxone_users_layout_nonce' ); ?>
 		<table class="form-table" role="presentation">
 			<tr>
-				<th scope="row"><label for="users_dlx_plus_account_page"><?php esc_html_e( 'The account page', 'users-dlx-plus' ); ?></label></th>
+				<th scope="row"><label for="diluxone_users_account_page"><?php esc_html_e( 'The account page', 'diluxone-users' ); ?></label></th>
 				<td>
 					<?php
 					/*
-					 * El array va por una variable porque el tipado de
-					 * wp_dropdown_pages() no incluye `option_none_value`, que
-					 * WordPress sí acepta y es lo que hace que «ninguna»
-					 * valga 0 en vez de -1.
+					 * The array goes through a variable because the typing of
+					 * wp_dropdown_pages() does not include `option_none_value`,
+					 * which WordPress does accept and which is what makes "none"
+					 * worth 0 instead of -1.
 					 */
-					/** @var array<string, mixed> $users_dlx_plus_dropdown */
-					$users_dlx_plus_dropdown = array(
-						'name'              => 'users_dlx_plus_account_page',
-						'id'                => 'users_dlx_plus_account_page',
-						'selected'          => (int) users_dlx_plus_account_page_id(),
-						'show_option_none'  => __( '— none —', 'users-dlx-plus' ),
+					/** @var array<string, mixed> $diluxone_users_dropdown */
+					$diluxone_users_dropdown = array(
+						'name'              => 'diluxone_users_account_page',
+						'id'                => 'diluxone_users_account_page',
+						'selected'          => (int) diluxone_users_account_page_id(),
+						'show_option_none'  => __( '— none —', 'diluxone-users' ),
 						'option_none_value' => 0,
 					);
 
-					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_dropdown_pages() escapa lo suyo y pinta él.
-					wp_dropdown_pages( $users_dlx_plus_dropdown );
+						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_dropdown_pages() escapes its own and prints it.
+					wp_dropdown_pages( $diluxone_users_dropdown );
 					?>
 					<p class="description">
 						<?php
 						printf(
-							/* translators: %s: el shortcode, literal */
-							esc_html__( 'The page with %s in it. Declaring it here is what lets everything else —a certificate, a course, a forum— send people to the right place.', 'users-dlx-plus' ),
-							'<code>[users_dlx_plus_account]</code>'
+							/* translators: %s: the shortcode, literal */
+							esc_html__( 'The page with %s in it. Declaring it here is what lets everything else —a certificate, a course, a forum— send people to the right place.', 'diluxone-users' ),
+							'<code>[diluxone_users_account]</code>'
 						);
 						?>
 					</p>
 					<?php if ( '' === (string) get_option( 'permalink_structure' ) ) : ?>
-						<p class="description"><?php esc_html_e( 'With plain permalinks the sections go as ?seccion=…; turn on pretty permalinks in Settings → Permalinks and they become /page/section/ on their own.', 'users-dlx-plus' ); ?></p>
+						<p class="description"><?php esc_html_e( 'With plain permalinks the sections go as ?seccion=…; turn on pretty permalinks in Settings → Permalinks and they become /page/section/ on their own.', 'diluxone-users' ); ?></p>
 					<?php endif; ?>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php esc_html_e( 'The menu', 'users-dlx-plus' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'The menu', 'diluxone-users' ); ?></th>
 				<td>
-					<?php users_dlx_plus_forzado_aviso( 'users_dlx_plus_account_layout' ); ?>
+					<?php diluxone_users_forzado_aviso( 'diluxone_users_account_layout' ); ?>
 
 					<?php
 					$layouts = array(
-						'tabs' => __( 'Tabs across the top', 'users-dlx-plus' ),
-						'side' => __( 'A menu down the side', 'users-dlx-plus' ),
-						'none' => __( 'No menu — the site places it with [users_dlx_plus_account_nav]', 'users-dlx-plus' ),
+						'tabs' => __( 'Tabs across the top', 'diluxone-users' ),
+						'side' => __( 'A menu down the side', 'diluxone-users' ),
+						'none' => __( 'No menu — the site places it with [diluxone_users_account_nav]', 'diluxone-users' ),
 					);
 
-					foreach ( $layouts as $clave => $rotulo ) :
+					foreach ( $layouts as $key => $label ) :
 						?>
-						<label class="users-dlx-plus-roles__item">
-							<input type="radio" name="users_dlx_plus_account_layout" value="<?php echo esc_attr( $clave ); ?>" <?php checked( users_dlx_plus_option( 'users_dlx_plus_account_layout' ), $clave ); ?>>
-							<?php echo esc_html( $rotulo ); ?>
+						<label class="diluxone-users-roles__item">
+							<input type="radio" name="diluxone_users_account_layout" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_account_layout' ), $key ); ?>>
+							<?php echo esc_html( $label ); ?>
 						</label>
 					<?php endforeach; ?>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php esc_html_e( 'The header', 'users-dlx-plus' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'The header', 'diluxone-users' ); ?></th>
 				<td>
 					<label>
-						<input type="checkbox" name="users_dlx_plus_account_header" value="1" <?php checked( users_dlx_plus_option( 'users_dlx_plus_account_header' ), 1 ); ?>>
-						<?php esc_html_e( 'Show the name and the initials at the top', 'users-dlx-plus' ); ?>
+						<input type="checkbox" name="diluxone_users_account_header" value="1" <?php checked( diluxone_users_option( 'diluxone_users_account_header' ), 1 ); ?>>
+						<?php esc_html_e( 'Show the name and the initials at the top', 'diluxone-users' ); ?>
 					</label>
 				</td>
 			</tr>

@@ -1,112 +1,114 @@
 <?php
 /**
- * Las secciones que trae el plugin.
+ * The sections the plugin ships.
  *
- * Cada una se registra igual que lo haría cualquier otro plugin: no hay una
- * lista privilegiada. Lo único propio es que no se pueden borrar desde el
- * admin —apagar sí— porque el código que las pinta sigue estando.
+ * Each one registers itself exactly as any other plugin would: there is no
+ * privileged list. The only thing of their own is that they cannot be deleted
+ * from the admin — turned off, yes — because the code that draws them is
+ * still there.
  *
- * @package UsersDlxPlus
+ * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/** Registra las secciones propias del plugin. */
-function users_dlx_plus_register_own_sections(): void {
-	users_dlx_plus_register_section(
+/** Registers the plugin's own sections. */
+function diluxone_users_register_own_sections(): void {
+	diluxone_users_register_section(
 		'home',
 		array(
-			'label'    => __( 'Home', 'users-dlx-plus' ),
+			'label'    => __( 'Home', 'diluxone-users' ),
 			'position' => 10,
-			'render'   => 'users_dlx_plus_section_home',
+			'render'   => 'diluxone_users_section_home',
 		)
 	);
 
-	users_dlx_plus_register_section(
+	diluxone_users_register_section(
 		'details',
 		array(
-			'label'    => __( 'Your details', 'users-dlx-plus' ),
+			'label'    => __( 'Your details', 'diluxone-users' ),
 			'position' => 30,
-			'render'   => 'users_dlx_plus_section_details',
-			'summary'  => 'users_dlx_plus_summary_details',
+			'render'   => 'diluxone_users_section_details',
+			'summary'  => 'diluxone_users_summary_details',
 		)
 	);
 
-	users_dlx_plus_register_section(
+	diluxone_users_register_section(
 		'accounts',
 		array(
-			'label'     => __( 'Linked accounts', 'users-dlx-plus' ),
+			'label'     => __( 'Linked accounts', 'diluxone-users' ),
 			'position'  => 40,
-			'render'    => 'users_dlx_plus_section_accounts',
-			'summary'   => 'users_dlx_plus_summary_accounts',
-			'available' => 'users_dlx_plus_sso_any',
-			'why'       => __( 'There is no social network turned on, so there is nothing to link.', 'users-dlx-plus' ),
+			'render'    => 'diluxone_users_section_accounts',
+			'summary'   => 'diluxone_users_summary_accounts',
+			'available' => 'diluxone_users_sso_any',
+			'why'       => __( 'There is no social network turned on, so there is nothing to link.', 'diluxone-users' ),
 		)
 	);
 
-	users_dlx_plus_register_section(
+	diluxone_users_register_section(
 		'security',
 		array(
-			'label'    => __( 'Security', 'users-dlx-plus' ),
+			'label'    => __( 'Security', 'diluxone-users' ),
 			'position' => 50,
-			'render'   => 'users_dlx_plus_section_security',
-			'summary'  => 'users_dlx_plus_summary_security',
+			'render'   => 'diluxone_users_section_security',
+			'summary'  => 'diluxone_users_summary_security',
 		)
 	);
 
-	users_dlx_plus_register_section(
+	diluxone_users_register_section(
 		'notifications',
 		array(
-			'label'     => __( 'Notifications', 'users-dlx-plus' ),
+			'label'     => __( 'Notifications', 'diluxone-users' ),
 			'position'  => 60,
-			'render'    => 'users_dlx_plus_section_notifications',
-			'available' => 'users_dlx_plus_notifications_any',
-			'why'       => __( 'There is nothing to turn on or off: no notification is registered.', 'users-dlx-plus' ),
+			'render'    => 'diluxone_users_section_notifications',
+			'available' => 'diluxone_users_notifications_any',
+			'why'       => __( 'There is nothing to turn on or off: no notification is registered.', 'diluxone-users' ),
 		)
 	);
 
-	users_dlx_plus_register_section(
+	diluxone_users_register_section(
 		'privacy',
 		array(
-			'label'     => __( 'Your data', 'users-dlx-plus' ),
+			'label'     => __( 'Your data', 'diluxone-users' ),
 			'position'  => 70,
-			'render'    => 'users_dlx_plus_section_privacy',
-			'available' => 'users_dlx_plus_privacy_any',
-			'why'       => __( 'Neither downloading your data nor deleting your account is allowed, so there is nothing to do here.', 'users-dlx-plus' ),
+			'render'    => 'diluxone_users_section_privacy',
+			'available' => 'diluxone_users_privacy_any',
+			'why'       => __( 'Neither downloading your data nor deleting your account is allowed, so there is nothing to do here.', 'diluxone-users' ),
 		)
 	);
 }
-add_action( 'users_dlx_plus_register_sections', 'users_dlx_plus_register_own_sections' );
+add_action( 'diluxone_users_register_sections', 'diluxone_users_register_own_sections' );
 
-/** ¿Hay alguna red social prendida? */
-function users_dlx_plus_sso_any(): bool {
-	return function_exists( 'users_dlx_plus_sso_available' ) && array() !== users_dlx_plus_sso_available();
+/** Is any social network turned on? */
+function diluxone_users_sso_any(): bool {
+	return function_exists( 'diluxone_users_sso_available' ) && array() !== diluxone_users_sso_available();
 }
 
-/** ¿Hay algún aviso que ofrecer? */
-function users_dlx_plus_notifications_any(): bool {
-	return array() !== users_dlx_plus_notification_prefs();
+/** Is there any notice to offer? */
+function diluxone_users_notifications_any(): bool {
+	return array() !== diluxone_users_notification_prefs();
 }
 
-/** ¿Se le permite a alguien hacer algo con sus datos? */
-function users_dlx_plus_privacy_any(): bool {
-	return (bool) users_dlx_plus_option( 'users_dlx_plus_privacy_export' ) || (bool) users_dlx_plus_option( 'users_dlx_plus_privacy_delete' );
+/** Is anybody allowed to do anything with their data? */
+function diluxone_users_privacy_any(): bool {
+	return (bool) diluxone_users_option( 'diluxone_users_privacy_export' ) || (bool) diluxone_users_option( 'diluxone_users_privacy_delete' );
 }
 
 /* ── Portada ───────────────────────────────────────────────────────── */
 
 /**
- * Las tarjetas del resumen.
+ * The summary cards.
  *
- * Las arma cada sección con lo que sabe. La portada no conoce ninguna: si
- * mañana LifterLMS agrega «cursos en progreso», aparece sola.
+ * Each section builds its own out of what it knows. The front page knows none
+ * of them: if LifterLMS adds "courses in progress" tomorrow, it appears on
+ * its own.
  *
  * @return array<int, array<string, string>>
  */
-function users_dlx_plus_summaries(): array {
+function diluxone_users_summaries(): array {
 	$cards = array();
 
-	foreach ( users_dlx_plus_sections() as $id => $section ) {
+	foreach ( diluxone_users_sections() as $id => $section ) {
 		if ( '' === $section['summary'] || ! is_callable( $section['summary'] ) ) {
 			continue;
 		}
@@ -123,70 +125,70 @@ function users_dlx_plus_summaries(): array {
 				'label' => $section['label'],
 				'value' => '',
 				'note'  => '',
-				'link'  => users_dlx_plus_account_url( $id ),
-				'cta'   => __( 'Open', 'users-dlx-plus' ),
+				'link'  => diluxone_users_account_url( $id ),
+				'cta'   => __( 'Open', 'diluxone-users' ),
 			)
 		);
 	}
 
 	/**
-	 * Filtra las tarjetas del resumen de la cuenta.
+	 * Filters the account summary cards.
 	 *
 	 * @param array<int, array<string, string>> $cards
 	 */
-	return apply_filters( 'users_dlx_plus_summaries', $cards );
+	return apply_filters( 'diluxone_users_summaries', $cards );
 }
 
 /**
- * En la portada el título saluda.
+ * On the front page the heading says hello.
  *
- * Es un filtro y no un <h2> propio de la plantilla a propósito: así sigue
- * habiendo un solo lugar donde se escribe el título de una sección.
+ * It is a filter and not an <h2> of the template's own on purpose: that way
+ * there is still a single place where a section heading is written.
  */
-function users_dlx_plus_account_heading_home( string $heading, string $id, WP_User $user ): string {
+function diluxone_users_account_heading_home( string $heading, string $id, WP_User $user ): string {
 	return 'home' === $id
 		? sprintf(
-			/* translators: %s: nombre de pila */
-			__( 'Hello, %s', 'users-dlx-plus' ),
-			users_dlx_plus_first_name( $user )
+			/* translators: %s: first name */
+			__( 'Hello, %s', 'diluxone-users' ),
+			diluxone_users_first_name( $user )
 		)
 		: $heading;
 }
-add_filter( 'users_dlx_plus_account_heading', 'users_dlx_plus_account_heading_home', 10, 3 );
+add_filter( 'diluxone_users_account_heading', 'diluxone_users_account_heading_home', 10, 3 );
 
 /** Section home. */
-function users_dlx_plus_section_home( WP_User $user ): void {
-	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- plantilla, ya escapada.
-	echo users_dlx_plus_render(
+function diluxone_users_section_home( WP_User $user ): void {
+	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- template, already escaped.
+	echo diluxone_users_render(
 		'account/home',
 		array(
 			'user'  => $user,
-			'cards' => users_dlx_plus_summaries(),
+			'cards' => diluxone_users_summaries(),
 		)
 	); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- plantilla, ya escapada.
 }
 
 /* ── Datos personales ──────────────────────────────────────────────── */
 
-/** Pinta la sección de datos personales. */
-function users_dlx_plus_section_details( WP_User $user ): void {
-	echo users_dlx_plus_render( 'account/details', array( 'user' => $user ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- plantilla, ya escapada.
+/** Draws the personal-details section. */
+function diluxone_users_section_details( WP_User $user ): void {
+	echo diluxone_users_render( 'account/details', array( 'user' => $user ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- plantilla, ya escapada.
 }
 
 /** Summary details. */
 /**
  * @return array<string, mixed>
  */
-function users_dlx_plus_summary_details(): array {
-	$user   = wp_get_current_user();
-	$total  = 0;
-	$hechos = 0;
+function diluxone_users_summary_details(): array {
+	$user  = wp_get_current_user();
+	$total = 0;
+	$done  = 0;
 
-	foreach ( users_dlx_plus_fields() as $field ) {
+	foreach ( diluxone_users_fields() as $field ) {
 		++$total;
 
-		if ( '' !== (string) users_dlx_plus_value( $user->ID, $field['key'] ) ) {
-			++$hechos;
+		if ( '' !== (string) diluxone_users_value( $user->ID, $field['key'] ) ) {
+			++$done;
 		}
 	}
 
@@ -195,154 +197,158 @@ function users_dlx_plus_summary_details(): array {
 	}
 
 	return array(
-		'value' => sprintf( '%d/%d', $hechos, $total ),
-		'note'  => __( 'fields filled in', 'users-dlx-plus' ),
-		'cta'   => __( 'Edit', 'users-dlx-plus' ),
+		'value' => sprintf( '%d/%d', $done, $total ),
+		'note'  => __( 'fields filled in', 'diluxone-users' ),
+		'cta'   => __( 'Edit', 'diluxone-users' ),
 	);
 }
 
 /* ── Cuentas vinculadas ────────────────────────────────────────────── */
 
-/** Pinta la sección de cuentas vinculadas. */
-function users_dlx_plus_section_accounts( WP_User $user ): void {
-	echo users_dlx_plus_render( 'account/accounts', array( 'user' => $user ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- plantilla, ya escapada.
+/** Draws the linked-accounts section. */
+function diluxone_users_section_accounts( WP_User $user ): void {
+	echo diluxone_users_render( 'account/accounts', array( 'user' => $user ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- plantilla, ya escapada.
 }
 
 /** Summary accounts. */
 /**
  * @return array<string, mixed>
  */
-function users_dlx_plus_summary_accounts(): array {
-	if ( array() === users_dlx_plus_sso_available() ) {
+function diluxone_users_summary_accounts(): array {
+	if ( array() === diluxone_users_sso_available() ) {
 		return array();
 	}
 
-	$linked = count( users_dlx_plus_sso_linked( get_current_user_id() ) );
+	$linked = count( diluxone_users_sso_linked( get_current_user_id() ) );
 
 	return array(
 		'value' => number_format_i18n( $linked ),
-		'note'  => _n( 'network linked', 'networks linked', $linked, 'users-dlx-plus' ),
-		'cta'   => __( 'Manage', 'users-dlx-plus' ),
+		'note'  => _n( 'network linked', 'networks linked', $linked, 'diluxone-users' ),
+		'cta'   => __( 'Manage', 'diluxone-users' ),
 	);
 }
 
 /* ── Seguridad ─────────────────────────────────────────────────────── */
 
-/** Pinta la sección de seguridad. */
-function users_dlx_plus_section_security( WP_User $user ): void {
-	echo users_dlx_plus_render( 'account/security', array( 'user' => $user ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- plantilla, ya escapada.
+/** Draws the security section. */
+function diluxone_users_section_security( WP_User $user ): void {
+	echo diluxone_users_render( 'account/security', array( 'user' => $user ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- plantilla, ya escapada.
 }
 
 /** Summary security. */
 /**
  * @return array<string, mixed>
  */
-function users_dlx_plus_summary_security(): array {
-	$open = count( users_dlx_plus_sessions( get_current_user_id() ) );
+function diluxone_users_summary_security(): array {
+	$open = count( diluxone_users_sessions( get_current_user_id() ) );
 
 	return array(
 		'value' => number_format_i18n( $open ),
-		'note'  => _n( 'open session', 'open sessions', $open, 'users-dlx-plus' ),
-		'cta'   => __( 'Review', 'users-dlx-plus' ),
+		'note'  => _n( 'open session', 'open sessions', $open, 'diluxone-users' ),
+		'cta'   => __( 'Review', 'diluxone-users' ),
 	);
 }
 
 /* ── Notificaciones ────────────────────────────────────────────────── */
 
 /**
- * Las preferencias de notificación.
+ * The notification preferences.
  *
- * El plugin no sabe de qué avisa este sitio, así que no inventa ninguna: pone
- * la pantalla y quien tenga algo que avisar registra su preferencia acá.
+ * The plugin does not know what this site notifies about, so it invents none:
+ * it puts the screen up and whoever has something to notify registers their
+ * preference here.
  *
  * @return array<string, array<string, string>>
  */
-function users_dlx_plus_notification_prefs(): array {
+function diluxone_users_notification_prefs(): array {
 	/**
-	 * Filtra las preferencias de notificación.
+	 * Filters the notification preferences.
 	 *
-	 * Llega con las del plugin puestas —las de la cuenta y la seguridad, que
-	 * las manda él— y esto es para lo que el sitio quiera sumarle: una
-	 * transmisión, un curso, un foro. Nada de eso es de un plugin de usuarios.
+	 * It arrives with the plugin's own already in place — the account and
+	 * security ones, which it sends itself — and this is for whatever the site
+	 * wants to add on top: a broadcast, a course, a forum. None of that
+	 * belongs to a users plugin.
 	 *
-	 * Cada una: clave => array( 'label' => …, 'help' => …, 'default' => '1' ).
-	 * El valor se guarda en la user meta con esa misma clave.
+	 * Each one: key => array( 'label' => …, 'help' => …, 'default' => '1' ).
+	 * The value is stored in the user meta under that same key.
 	 *
 	 * @param array<string, array<string, string>> $prefs
 	 */
-	return (array) apply_filters( 'users_dlx_plus_notification_prefs', users_dlx_plus_default_notifications() );
+	return (array) apply_filters( 'diluxone_users_notification_prefs', diluxone_users_default_notifications() );
 }
 
 /** Section notifications. */
-function users_dlx_plus_section_notifications( WP_User $user ): void {
-	echo do_shortcode( '[users_dlx_plus_notifications]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode propio.
+function diluxone_users_section_notifications( WP_User $user ): void {
+	echo do_shortcode( '[diluxone_users_notifications]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode propio.
 }
 
 /**
- * Las preferencias de notificación, también sueltas.
+ * The notification preferences, on their own as well.
  *
- * Shortcode: [users_dlx_plus_notifications]. La pantalla es del plugin; de qué avisa el
- * sitio lo registra quien tenga algo que avisar, con el filtro de arriba.
+ * Shortcode: [diluxone_users_notifications]. The screen belongs to the
+ * plugin; what the site notifies about is registered by whoever has something
+ * to notify, with the filter above.
  */
-function users_dlx_plus_shortcode_notifications(): string {
+function diluxone_users_shortcode_notifications(): string {
 	if ( ! is_user_logged_in() ) {
 		return '';
 	}
 
-	users_dlx_plus_enqueue_styles();
+	diluxone_users_enqueue_styles();
 
-	return users_dlx_plus_render(
+	return diluxone_users_render(
 		'account/notifications',
 		array(
 			'user'  => wp_get_current_user(),
-			'prefs' => users_dlx_plus_notification_prefs(),
+			'prefs' => diluxone_users_notification_prefs(),
 		)
 	);
 }
-add_shortcode( 'users_dlx_plus_notifications', 'users_dlx_plus_shortcode_notifications' );
+add_shortcode( 'diluxone_users_notifications', 'diluxone_users_shortcode_notifications' );
 
-/** Guarda las preferencias de notificación. */
-function users_dlx_plus_notifications_save(): void {
+/** Saves the notification preferences. */
+function diluxone_users_notifications_save(): void {
 	if ( ! is_user_logged_in() ) {
-		wp_safe_redirect( users_dlx_plus_login_url() );
+		wp_safe_redirect( diluxone_users_login_url() );
 		exit;
 	}
 
-	check_admin_referer( 'users_dlx_plus_notifications' );
+	check_admin_referer( 'diluxone_users_notifications' );
 
 	$user_id = get_current_user_id();
 
-	foreach ( users_dlx_plus_notification_prefs() as $key => $pref ) {
+	foreach ( diluxone_users_notification_prefs() as $key => $pref ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verificado arriba.
 		update_user_meta( $user_id, $key, isset( $_POST[ $key ] ) ? '1' : '0' );
 	}
 
-	wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'saved', users_dlx_plus_account_url( 'notifications' ) ) );
+	wp_safe_redirect( add_query_arg( 'diluxone-users', 'saved', diluxone_users_account_url( 'notifications' ) ) );
 	exit;
 }
-add_action( 'admin_post_users_dlx_plus_notifications', 'users_dlx_plus_notifications_save' );
+add_action( 'admin_post_diluxone_users_notifications', 'diluxone_users_notifications_save' );
 
 /* ── Tus datos ─────────────────────────────────────────────────────── */
 
 /**
- * ¿Esta cuenta puede pedir que la borren?
+ * Can this account ask to be deleted?
  *
- * Una cuenta con permisos de administración no se borra sola: se le baja el
- * rol primero. Si no, el sitio se queda sin quien lo administre por un clic.
+ * An account with administration rights does not delete itself: its role is
+ * lowered first. Otherwise the site is left with nobody to administer it,
+ * one click away.
  */
-function users_dlx_plus_can_request_erase( int $user_id ): bool {
+function diluxone_users_can_request_erase( int $user_id ): bool {
 	$user = get_userdata( $user_id );
 
 	return $user instanceof WP_User && ! user_can( $user, 'manage_options' );
 }
 
 /**
- * Las solicitudes de datos que hizo esta persona, de un tipo.
+ * The data requests this person made, of one kind.
  *
- * @param string $kind 'export_personal_data' o 'remove_personal_data'.
+ * @param string $kind 'export_personal_data' or 'remove_personal_data'.
  * @return array<int, WP_Post>
  */
-function users_dlx_plus_data_requests( string $email, string $kind = '' ): array {
+function diluxone_users_data_requests( string $email, string $kind = '' ): array {
 	$found = get_posts(
 		array(
 			'post_type'      => 'user_request',
@@ -359,92 +365,92 @@ function users_dlx_plus_data_requests( string $email, string $kind = '' ): array
 }
 
 /**
- * El archivo listo de una solicitud de exportación, si lo hay.
+ * The finished file of an export request, when there is one.
  *
- * WordPress guarda la URL al terminar de armar el ZIP; que exista es la única
- * señal fiable de que hay algo para bajar.
+ * WordPress stores the URL when it finishes assembling the ZIP; its existence
+ * is the only reliable sign that there is something to download.
  */
-function users_dlx_plus_data_file( WP_Post $request ): string {
+function diluxone_users_data_file( WP_Post $request ): string {
 	return 'export_personal_data' === $request->post_name
 		? (string) get_post_meta( $request->ID, '_export_file_url', true )
 		: '';
 }
 
 /**
- * Cómo se llama cada estado, en castellano y sin jerga.
+ * What each state is called, in plain words and without jargon.
  *
- * @return array<string, array{0: string, 1: string}> estado => [tono, texto]
+ * @return array<string, array{0: string, 1: string}> state => [tone, text]
  */
-function users_dlx_plus_data_states(): array {
+function diluxone_users_data_states(): array {
 	return array(
-		'request-pending'   => array( 'pending', __( 'Waiting for you to confirm by email', 'users-dlx-plus' ) ),
-		'request-confirmed' => array( 'pending', __( 'Confirmed — we are preparing it', 'users-dlx-plus' ) ),
-		'request-completed' => array( 'ok', __( 'Ready', 'users-dlx-plus' ) ),
-		'request-failed'    => array( 'off', __( 'Failed', 'users-dlx-plus' ) ),
+		'request-pending'   => array( 'pending', __( 'Waiting for you to confirm by email', 'diluxone-users' ) ),
+		'request-confirmed' => array( 'pending', __( 'Confirmed — we are preparing it', 'diluxone-users' ) ),
+		'request-completed' => array( 'ok', __( 'Ready', 'diluxone-users' ) ),
+		'request-failed'    => array( 'off', __( 'Failed', 'diluxone-users' ) ),
 	);
 }
 
 /**
- * ¿Este sitio puede mandar el correo de confirmación?
+ * Can this site send the confirmation e-mail?
  *
- * Sin él, la solicitud se crea y se queda esperando para siempre. Lo que se
- * mira es lo que pasó la última vez que se intentó mandar algo, no si hay un
- * plugin de correo instalado: eso último es lo que hacía que esta pantalla
- * dijera que todo bien mientras no salía nada.
+ * Without it, the request is created and waits forever. What is looked at is
+ * what happened the last time something was sent, not whether a mail plugin
+ * is installed: that last one is what made this screen say all was well while
+ * nothing was going out.
  */
-function users_dlx_plus_data_mail_ready(): bool {
-	return users_dlx_plus_mail_works();
+function diluxone_users_data_mail_ready(): bool {
+	return diluxone_users_mail_works();
 }
 
 /** Section privacy. */
-function users_dlx_plus_section_privacy( WP_User $user ): void {
-	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- plantilla, ya escapada.
-	echo users_dlx_plus_render(
+function diluxone_users_section_privacy( WP_User $user ): void {
+	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- template, already escaped.
+	echo diluxone_users_render(
 		'account/privacy',
 		array(
 			'user'      => $user,
-			'exports'   => users_dlx_plus_data_requests( $user->user_email, 'export_personal_data' ),
-			'erasures'  => users_dlx_plus_data_requests( $user->user_email, 'remove_personal_data' ),
-			'can_erase' => users_dlx_plus_can_request_erase( $user->ID ),
+			'exports'   => diluxone_users_data_requests( $user->user_email, 'export_personal_data' ),
+			'erasures'  => diluxone_users_data_requests( $user->user_email, 'remove_personal_data' ),
+			'can_erase' => diluxone_users_can_request_erase( $user->ID ),
 		)
 	);
 }
 
 /**
- * Crea la solicitud de exportar o borrar.
+ * Creates the export or erasure request.
  *
- * Se usan las solicitudes nativas de WordPress y no un exportador propio: ésas
- * ya mandan el correo de confirmación, arman el ZIP, y —lo importante— llaman
- * a los exportadores y borradores que registran los demás plugins. Un
- * exportador escrito acá devolvería la mitad de los datos de la persona.
+ * WordPress's own requests are used and not an exporter of our own: those
+ * already send the confirmation e-mail, assemble the ZIP, and — the important
+ * part — call the exporters and erasers other plugins register. An exporter
+ * written here would return half of the person's data.
  */
-function users_dlx_plus_data_request(): void {
+function diluxone_users_data_request(): void {
 	if ( ! is_user_logged_in() ) {
-		wp_safe_redirect( users_dlx_plus_login_url() );
+		wp_safe_redirect( diluxone_users_login_url() );
 		exit;
 	}
 
-	check_admin_referer( 'users_dlx_plus_data_request' );
+	check_admin_referer( 'diluxone_users_data_request' );
 
 	$user = wp_get_current_user();
 	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verificado arriba.
-	$kind = 'erase' === sanitize_key( wp_unslash( $_POST['users_dlx_plus_request'] ?? '' ) ) ? 'remove_personal_data' : 'export_personal_data';
+	$kind = 'erase' === sanitize_key( wp_unslash( $_POST['diluxone_users_request'] ?? '' ) ) ? 'remove_personal_data' : 'export_personal_data';
 
-	if ( 'remove_personal_data' === $kind && ! users_dlx_plus_can_request_erase( $user->ID ) ) {
-		wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'admin', users_dlx_plus_account_url( 'privacy' ) ) );
+	if ( 'remove_personal_data' === $kind && ! diluxone_users_can_request_erase( $user->ID ) ) {
+		wp_safe_redirect( add_query_arg( 'diluxone-users', 'admin', diluxone_users_account_url( 'privacy' ) ) );
 		exit;
 	}
 
 	$request_id = wp_create_user_request( $user->user_email, $kind );
 
 	if ( is_wp_error( $request_id ) ) {
-		wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'error', users_dlx_plus_account_url( 'privacy' ) ) );
+		wp_safe_redirect( add_query_arg( 'diluxone-users', 'error', diluxone_users_account_url( 'privacy' ) ) );
 		exit;
 	}
 
 	wp_send_user_request( $request_id );
 
-	wp_safe_redirect( add_query_arg( 'users-dlx-plus', 'requested', users_dlx_plus_account_url( 'privacy' ) ) );
+	wp_safe_redirect( add_query_arg( 'diluxone-users', 'requested', diluxone_users_account_url( 'privacy' ) ) );
 	exit;
 }
-add_action( 'admin_post_users_dlx_plus_data_request', 'users_dlx_plus_data_request' );
+add_action( 'admin_post_diluxone_users_data_request', 'diluxone_users_data_request' );
