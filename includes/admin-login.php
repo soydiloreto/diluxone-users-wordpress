@@ -89,12 +89,15 @@ function diluxone_users_screen_login_save( string $tab ): void {
 
 	if ( '2fa' === $tab ) {
 		diluxone_users_save_options(
-			array(
-				'diluxone_users_2fa_mode'          => sanitize_key( wp_unslash( $_POST['diluxone_users_2fa_mode'] ?? 'optional' ) ),
-				'diluxone_users_2fa_methods'       => array_map( 'sanitize_key', (array) wp_unslash( $_POST['diluxone_users_2fa_methods'] ?? array() ) ),
-				'diluxone_users_2fa_roles'         => array_map( 'sanitize_key', (array) wp_unslash( $_POST['diluxone_users_2fa_roles'] ?? array() ) ),
-				'diluxone_users_2fa_link'          => sanitize_key( wp_unslash( $_POST['diluxone_users_2fa_link'] ?? 'auto' ) ),
-				'diluxone_users_2fa_remember_days' => absint( wp_unslash( $_POST['diluxone_users_2fa_remember_days'] ?? 30 ) ),
+			array_merge(
+				diluxone_users_scope_posted( 'diluxone_users_2fa' ),
+				array(
+					'diluxone_users_2fa_mode'          => sanitize_key( wp_unslash( $_POST['diluxone_users_2fa_mode'] ?? 'optional' ) ),
+					'diluxone_users_2fa_methods'       => array_map( 'sanitize_key', (array) wp_unslash( $_POST['diluxone_users_2fa_methods'] ?? array() ) ),
+
+					'diluxone_users_2fa_link'          => sanitize_key( wp_unslash( $_POST['diluxone_users_2fa_link'] ?? 'auto' ) ),
+					'diluxone_users_2fa_remember_days' => absint( wp_unslash( $_POST['diluxone_users_2fa_remember_days'] ?? 30 ) ),
+				)
 			)
 		);
 
@@ -125,7 +128,7 @@ function diluxone_users_screen_login_save( string $tab ): void {
 				'diluxone_users_login_role'      => sanitize_key( wp_unslash( $_POST['diluxone_users_login_role'] ?? 'subscriber' ) ),
 				'diluxone_users_wp_registration' => sanitize_key( wp_unslash( $_POST['diluxone_users_wp_registration'] ?? 'site' ) ),
 				'diluxone_users_wp_profile'      => sanitize_key( wp_unslash( $_POST['diluxone_users_wp_profile'] ?? 'allow' ) ),
-			)
+			) + diluxone_users_scope_posted( 'diluxone_users_wp_profile' )
 		);
 
 		return;
@@ -425,7 +428,18 @@ function diluxone_users_screen_login_registration(): void {
 					</label>
 				<?php endforeach; ?>
 				<p class="description"><?php esc_html_e( 'A site that built its account area on the front does not want half the data edited on another screen, with another look and other rules: the edit limits and the required fields set up here do not apply there.', 'diluxone-users' ); ?></p>
-				<p class="description"><?php esc_html_e( 'It never applies to whoever administers: that is the person who has to be able to fix what broke, and the desktop profile is where it gets fixed.', 'diluxone-users' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'And to whom', 'diluxone-users' ); ?></th>
+			<td>
+				<?php
+				diluxone_users_scope_control(
+					'diluxone_users_wp_profile',
+					__( 'Who the choice above reaches. Leaving somebody out means their dashboard profile keeps working as WordPress ships it.', 'diluxone-users' ),
+					__( 'Whoever can edit users is never reached by this, whatever is chosen: that is the person who has to be able to fix what broke, and the dashboard profile is where it gets fixed. On a network, the super admin.', 'diluxone-users' )
+				);
+				?>
 			</td>
 		</tr>
 		<tr>
@@ -494,13 +508,12 @@ function diluxone_users_screen_login_2fa(): void {
 		<tr>
 			<th scope="row"><?php esc_html_e( 'To whom', 'diluxone-users' ); ?></th>
 			<td>
-				<?php foreach ( wp_roles()->get_names() as $role => $label ) : ?>
-					<label class="diluxone-users-roles__item">
-						<input type="checkbox" name="diluxone_users_2fa_roles[]" value="<?php echo esc_attr( $role ); ?>" <?php checked( in_array( $role, $roles, true ) ); ?>>
-						<?php echo esc_html( translate_user_role( $label ) ); ?>
-					</label>
-				<?php endforeach; ?>
-				<p class="description"><?php esc_html_e( 'None ticked means everybody. Ticking only the roles that can change things is the usual middle ground: the second step where it is worth the friction.', 'diluxone-users' ); ?></p>
+				<?php
+				diluxone_users_scope_control(
+					'diluxone_users_2fa',
+					__( 'Asking only the roles that can change things is the usual middle ground: the second step where the friction is worth it.', 'diluxone-users' )
+				);
+				?>
 			</td>
 		</tr>
 		<tr>

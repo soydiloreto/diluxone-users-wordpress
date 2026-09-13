@@ -180,3 +180,35 @@
 		} );
 	} );
 }() );
+
+/**
+ * "To everybody" hides the list of roles; "only to some" shows it.
+ *
+ * Without JavaScript the list is simply always there, and the radio above is
+ * what the server reads: the screen is usable either way, which is the same
+ * rule the rest of this admin follows.
+ */
+( function () {
+	'use strict';
+
+	document.querySelectorAll( '[data-diluxone-users-scope]' ).forEach( function ( box ) {
+		var roles  = box.querySelector( '[data-diluxone-users-scope-roles]' );
+		var radios = box.querySelectorAll( 'input[type="radio"]' );
+
+		if ( ! roles || ! radios.length ) {
+			return;
+		}
+
+		function sync() {
+			var some = box.querySelector( 'input[type="radio"][value="some"]' );
+
+			roles.hidden = ! ( some && some.checked );
+		}
+
+		radios.forEach( function ( radio ) {
+			radio.addEventListener( 'change', sync );
+		} );
+
+		sync();
+	} );
+}() );

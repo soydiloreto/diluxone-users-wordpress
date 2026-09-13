@@ -123,6 +123,7 @@ function diluxone_users_option_defaults(): array {
 		// The methods this site offers. Empty is equivalent to off.
 		'diluxone_users_2fa_methods'        => array( 'totp', 'email' ),
 		// Roles it is asked of. Empty = everybody.
+		'diluxone_users_2fa_scope'          => 'all',
 		'diluxone_users_2fa_roles'          => array(),
 		// What to do when somebody comes in by e-mail link:
 		// 'auto'   ask only if the second step is NOT another e-mail. A code
@@ -162,7 +163,57 @@ function diluxone_users_option_defaults(): array {
 		// 'allow' nothing, 'redirect' sends them to the site account area,
 		// 'block' tells them no. It never reaches whoever administers.
 		'diluxone_users_wp_profile'         => 'allow',
+		'diluxone_users_wp_profile_scope'   => 'all',
+		'diluxone_users_wp_profile_roles'   => array(),
 	);
+}
+
+/**
+ * Whether a setting applies to everybody or only to some roles.
+ *
+ * The answer used to be inferred from an empty list of ticked roles, which is
+ * the kind of thing only the person who wrote it knows: a screen full of
+ * unticked boxes reads as "nobody", and it meant "everybody".
+ *
+ * Sites configured before the choice existed have no answer stored, so it is
+ * derived from what they ticked: roles ticked means they meant some.
+ *
+ * @param string $prefix Option prefix, e.g. 'diluxone_users_2fa'.
+ * @return string 'all' or 'some'
+ */
+function diluxone_users_scope( string $prefix ): string {
+	$stored = get_option( $prefix . '_scope', '' );
+
+	if ( 'all' === $stored || 'some' === $stored ) {
+		return $stored;
+	}
+
+	return array() === (array) diluxone_users_option( $prefix . '_roles' ) ? 'all' : 'some';
+}
+
+/**
+ * Does this setting reach this person?
+ *
+ * @param int    $user_id Who is being checked.
+ * @param string $prefix  Option prefix, e.g. 'diluxone_users_2fa'.
+ */
+function diluxone_users_scope_includes( int $user_id, string $prefix ): bool {
+	if ( 'all' === diluxone_users_scope( $prefix ) ) {
+		return true;
+	}
+
+	$roles = (array) diluxone_users_option( $prefix . '_roles' );
+
+	if ( array() === $roles ) {
+		// "Some" with nothing chosen reaches nobody. That is the literal
+		// reading, and the screen says as much rather than quietly meaning
+		// everybody like the old empty list did.
+		return false;
+	}
+
+	$user = get_userdata( $user_id );
+
+	return $user instanceof WP_User && array() !== array_intersect( $roles, (array) $user->roles );
 }
 
 /**

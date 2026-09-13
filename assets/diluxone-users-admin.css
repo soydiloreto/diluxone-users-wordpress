@@ -182,6 +182,10 @@
 
 .diluxone-users-state-box { max-width: 900px; margin: 18px 0 24px; padding: 6px 14px; }
 
+/* The "to everybody / to some roles" control: the roles hang under the radio
+   they belong to, indented enough to read as its consequence. */
+.diluxone-users-scope__roles { margin: 6px 0 0 22px; }
+
 /* The social-login role list: in a column, not in a running line. */
 .diluxone-users-roles__item { display: block; margin-bottom: 4px; }
 

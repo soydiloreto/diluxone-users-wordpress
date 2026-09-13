@@ -173,6 +173,75 @@ function diluxone_users_screen_close(): void {
 	echo '</div>';
 }
 
+/**
+ * The "to everybody / to some roles" control.
+ *
+ * One control written once and used by every setting that needs it: the
+ * second factor, the dashboard profile, and whatever comes next. The list of
+ * roles is always drawn — without JavaScript there is nothing to reveal it —
+ * and the radio above is what rules when the form is saved.
+ *
+ * @param string $prefix Option prefix, e.g. 'diluxone_users_2fa'.
+ * @param string $help   A line under the control, or '' for none.
+ * @param string $spared Who this can never reach, or '' when it can reach anybody.
+ */
+function diluxone_users_scope_control( string $prefix, string $help = '', string $spared = '' ): void {
+	$scope = diluxone_users_scope( $prefix );
+	$roles = (array) diluxone_users_option( $prefix . '_roles' );
+	?>
+	<fieldset data-diluxone-users-scope="<?php echo esc_attr( $prefix ); ?>">
+		<label>
+			<input type="radio" name="<?php echo esc_attr( $prefix ); ?>_scope" value="all" <?php checked( 'all', $scope ); ?>>
+			<?php esc_html_e( 'To everybody', 'diluxone-users' ); ?>
+		</label>
+		<br>
+		<label>
+			<input type="radio" name="<?php echo esc_attr( $prefix ); ?>_scope" value="some" <?php checked( 'some', $scope ); ?>>
+			<?php esc_html_e( 'Only to some roles', 'diluxone-users' ); ?>
+		</label>
+
+		<div class="diluxone-users-scope__roles" data-diluxone-users-scope-roles>
+			<?php foreach ( wp_roles()->get_names() as $role => $label ) : ?>
+				<label class="diluxone-users-roles__item">
+					<input type="checkbox" name="<?php echo esc_attr( $prefix ); ?>_roles[]" value="<?php echo esc_attr( $role ); ?>" <?php checked( in_array( $role, $roles, true ) ); ?>>
+					<?php echo esc_html( translate_user_role( $label ) ); ?>
+				</label>
+			<?php endforeach; ?>
+		</div>
+
+		<?php if ( '' !== $help ) : ?>
+			<p class="description"><?php echo esc_html( $help ); ?></p>
+		<?php endif; ?>
+
+		<?php if ( '' !== $spared ) : ?>
+			<p class="description"><strong><?php echo esc_html( $spared ); ?></strong></p>
+		<?php endif; ?>
+	</fieldset>
+	<?php
+}
+
+/**
+ * Reads the control back out of a submitted form.
+ *
+ * @param string $prefix Option prefix.
+ * @return array<string, mixed>
+ */
+function diluxone_users_scope_posted( string $prefix ): array {
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the caller verifies it.
+	$scope = sanitize_key( wp_unslash( $_POST[ $prefix . '_scope' ] ?? 'all' ) );
+	$roles = array_map( 'sanitize_key', (array) wp_unslash( $_POST[ $prefix . '_roles' ] ?? array() ) );
+	// phpcs:enable
+
+	$scope = 'some' === $scope ? 'some' : 'all';
+
+	return array(
+		$prefix . '_scope' => $scope,
+		// Roles kept even when it applies to everybody: switching back and
+		// forth should not throw away what was chosen.
+		$prefix . '_roles' => $roles,
+	);
+}
+
 /** A short notice at the top of the screen. */
 function diluxone_users_notice( string $text, string $type = 'success' ): void {
 	printf(

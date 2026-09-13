@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-13T21:09:04+00:00\n"
+"POT-Creation-Date: 2026-09-13T21:27:49+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: diluxone-users\n"
@@ -837,12 +837,12 @@ msgstr ""
 
 #: includes/admin-home.php:276
 #: includes/admin-home.php:305
-#: includes/admin-login.php:169
+#: includes/admin-login.php:172
 msgid "How people get in"
 msgstr ""
 
 #: includes/admin-home.php:281
-#: includes/admin-login.php:151
+#: includes/admin-login.php:154
 #: includes/admin-status.php:118
 msgid "Sign-in page"
 msgstr ""
@@ -1015,421 +1015,429 @@ msgstr ""
 msgid "Registration and login"
 msgstr ""
 
-#: includes/admin-login.php:147
+#: includes/admin-login.php:150
 msgid "The person types their email and gets a single-use link. There is no password to choose, to remember or to steal. Put the [diluxone_users_login] shortcode on the page you pick below."
 msgstr ""
 
-#: includes/admin-login.php:158
+#: includes/admin-login.php:161
 msgid "— Use wp-login.php —"
 msgstr ""
 
-#: includes/admin-login.php:165
+#: includes/admin-login.php:168
 msgid "The page holding the form. Without it, passwordless mode is not applied: it would leave the site with no way in."
 msgstr ""
 
-#: includes/admin-login.php:175
+#: includes/admin-login.php:178
 msgid "Both: the link, and username and password underneath"
 msgstr ""
 
-#: includes/admin-login.php:176
+#: includes/admin-login.php:179
 msgid "Only a link sent to their email — no passwords on this site"
 msgstr ""
 
-#: includes/admin-login.php:177
+#: includes/admin-login.php:180
 msgid "Only the WordPress username and password"
 msgstr ""
 
-#: includes/admin-login.php:188
+#: includes/admin-login.php:191
 msgid "Only the first option closes anything: with “only a link”, wp-login.php stops showing its form and the native registration is switched off, because otherwise both would still be there and the choice would be a decoration."
 msgstr ""
 
 #. translators: %s: URL of the escape hatch
-#: includes/admin-login.php:193
+#: includes/admin-login.php:196
 #, php-format
 msgid "Even then there is an emergency way in for administrators: %s"
 msgstr ""
 
-#: includes/admin-login.php:201
+#: includes/admin-login.php:204
 msgid "The link expires after"
 msgstr ""
 
-#: includes/admin-login.php:204
+#: includes/admin-login.php:207
 msgid "minutes"
 msgstr ""
 
-#: includes/admin-login.php:208
+#: includes/admin-login.php:211
 msgid "Wait between requests"
 msgstr ""
 
-#: includes/admin-login.php:211
+#: includes/admin-login.php:214
 msgid "seconds, for the same email address"
 msgstr ""
 
-#: includes/admin-login.php:212
+#: includes/admin-login.php:215
 msgid "Stops the form being used as a machine for emailing third parties."
 msgstr ""
 
-#: includes/admin-login.php:221
+#: includes/admin-login.php:224
 msgid "This is what lands in the inbox. Leave it empty to use the text the plugin ships with."
 msgstr ""
 
-#: includes/admin-login.php:225
+#: includes/admin-login.php:228
 msgid "Subject"
 msgstr ""
 
-#: includes/admin-login.php:229
+#: includes/admin-login.php:232
 msgid "Message"
 msgstr ""
 
 #. translators: 1 and 2: placeholders that get replaced
-#: includes/admin-login.php:236
+#: includes/admin-login.php:239
 #, php-format
 msgid "%1$s and %2$s are replaced. Empty uses the text above."
 msgstr ""
 
-#: includes/admin-login.php:254
+#: includes/admin-login.php:257
 msgid "The email is the identity and nobody chooses it. This is the short name people see, the one that goes in the address of their profile."
 msgstr ""
 
-#: includes/admin-login.php:258
+#: includes/admin-login.php:261
 msgid "Offer it"
 msgstr ""
 
-#: includes/admin-login.php:262
+#: includes/admin-login.php:265
 msgid "Let people choose their public name"
 msgstr ""
 
-#: includes/admin-login.php:264
+#: includes/admin-login.php:267
 msgid "Turned off, the name comes from what they wrote as their first and last name, and the profile address is made from that."
 msgstr ""
 
-#: includes/admin-login.php:268
+#: includes/admin-login.php:271
 msgid "Sign in with it"
 msgstr ""
 
-#: includes/admin-login.php:272
+#: includes/admin-login.php:275
 msgid "Accept the public name in the sign-in box, as well as the email"
 msgstr ""
 
-#: includes/admin-login.php:274
+#: includes/admin-login.php:277
 msgid "The link still goes to the email on the account, never to something typed at that moment: this opens no new door, it only saves people from remembering which address they used."
 msgstr ""
 
-#: includes/admin-login.php:278
+#: includes/admin-login.php:281
 msgid "Length"
 msgstr ""
 
-#: includes/admin-login.php:281
+#: includes/admin-login.php:284
 msgid "to"
 msgstr ""
 
-#: includes/admin-login.php:283
+#: includes/admin-login.php:286
 msgid "characters"
 msgstr ""
 
-#: includes/admin-login.php:287
+#: includes/admin-login.php:290
 msgid "Letters"
 msgstr ""
 
-#: includes/admin-login.php:291
+#: includes/admin-login.php:294
 msgid "Plain: a–z, digits, dot, dash and underscore"
 msgstr ""
 
-#: includes/admin-login.php:292
+#: includes/admin-login.php:295
 msgid "Also accents and ñ"
 msgstr ""
 
-#: includes/admin-login.php:302
+#: includes/admin-login.php:305
 msgid "Whatever is typed is turned into the same thing WordPress would put in a URL, so what passes here is exactly what ends up in the address. Anything that does not fit —punctuation, symbols, emoji— is dropped, and the person sees what it turned into before saving."
 msgstr ""
 
-#: includes/admin-login.php:306
+#: includes/admin-login.php:309
 msgid "Spaces"
 msgstr ""
 
-#: includes/admin-login.php:310
+#: includes/admin-login.php:313
 msgid "Turn them into dashes: “Ana Gómez” becomes ana-gomez"
 msgstr ""
 
-#: includes/admin-login.php:311
+#: includes/admin-login.php:314
 msgid "Refuse them and say so"
 msgstr ""
 
-#: includes/admin-login.php:321
+#: includes/admin-login.php:324
 msgid "A web address cannot have spaces, so one of the two has to happen. The first is what almost everybody expects; the second is for a site that would rather nobody ends up with a name they did not type."
 msgstr ""
 
-#: includes/admin-login.php:325
+#: includes/admin-login.php:328
 msgid "Taken names"
 msgstr ""
 
 #. translators: 1: user_nicename, 2: user_login
-#: includes/admin-login.php:331
+#: includes/admin-login.php:334
 #, php-format
 msgid "Always checked, and against two things: the public names already in use (%1$s) and the usernames that came with the accounts (%2$s). The second one matters because a site that lets people sign in by public name would otherwise have two people answering to the same text, and the link would go to the wrong account."
 msgstr ""
 
-#: includes/admin-login.php:340
+#: includes/admin-login.php:343
 msgid "How often it can change"
 msgstr ""
 
-#: includes/admin-login.php:343
+#: includes/admin-login.php:346
 msgid "days between one change and the next"
 msgstr ""
 
-#: includes/admin-login.php:344
+#: includes/admin-login.php:347
 msgid "0 means whenever they like. A name that changes every day does not identify anybody, and the old address stops working each time."
 msgstr ""
 
-#: includes/admin-login.php:348
+#: includes/admin-login.php:351
 msgid "Names nobody can take"
 msgstr ""
 
-#: includes/admin-login.php:351
+#: includes/admin-login.php:354
 msgid "One per line, or separated by commas. The obvious ones —admin, support, api, login— are already blocked; these are yours to add."
 msgstr ""
 
-#: includes/admin-login.php:366
+#: includes/admin-login.php:369
 msgid "Who gets an account on this site, and what that account can do. Everything else —how they get in afterwards— is on the next tab."
 msgstr ""
 
-#: includes/admin-login.php:370
+#: includes/admin-login.php:373
 msgid "Create the account"
 msgstr ""
 
-#: includes/admin-login.php:374
+#: includes/admin-login.php:377
 msgid "If the email does not exist, register it in the same step"
 msgstr ""
 
-#: includes/admin-login.php:376
+#: includes/admin-login.php:379
 msgid "With this, signing in and signing up are the same thing and no separate registration form is needed."
 msgstr ""
 
-#: includes/admin-login.php:377
+#: includes/admin-login.php:380
 msgid "Turned off, only people who already have an account can get in — and somebody has to create the accounts from Users."
 msgstr ""
 
-#: includes/admin-login.php:381
+#: includes/admin-login.php:384
 msgid "Role for new accounts"
 msgstr ""
 
-#: includes/admin-login.php:386
+#: includes/admin-login.php:389
 msgid "The same one for everybody, whether they come in by email or by a social network: a role per provider is a quiet way of handing out privileges."
 msgstr ""
 
-#: includes/admin-login.php:390
+#: includes/admin-login.php:393
 msgid "The WordPress registration form"
 msgstr ""
 
-#: includes/admin-login.php:394
+#: includes/admin-login.php:397
 msgid "Whatever Settings → General says"
 msgstr ""
 
-#: includes/admin-login.php:395
+#: includes/admin-login.php:398
 msgid "Open, whatever that setting says"
 msgstr ""
 
-#: includes/admin-login.php:396
+#: includes/admin-login.php:399
 msgid "Closed, whatever that setting says"
 msgstr ""
 
-#: includes/admin-login.php:406
+#: includes/admin-login.php:409
 msgid "This is wp-login.php?action=register and wp-signup.php, the ones WordPress brings. They are decided here because this is where the accounts are administered; leaving that in another screen is how a site ends up with a registration form nobody remembers is open."
 msgstr ""
 
-#: includes/admin-login.php:407
+#: includes/admin-login.php:410
 msgid "With “only a link” as the way in, it stays closed no matter what: it would hand out accounts with a password through a door the site closed."
 msgstr ""
 
-#: includes/admin-login.php:411
+#: includes/admin-login.php:414
 msgid "The WordPress profile screen"
 msgstr ""
 
-#: includes/admin-login.php:415
+#: includes/admin-login.php:418
 msgid "Leave it alone"
 msgstr ""
 
-#: includes/admin-login.php:416
+#: includes/admin-login.php:419
 msgid "Send them to their account on the site"
 msgstr ""
 
-#: includes/admin-login.php:417
+#: includes/admin-login.php:420
 msgid "Close it: their details are edited on the site"
 msgstr ""
 
-#: includes/admin-login.php:427
+#: includes/admin-login.php:430
 msgid "A site that built its account area on the front does not want half the data edited on another screen, with another look and other rules: the edit limits and the required fields set up here do not apply there."
 msgstr ""
 
-#: includes/admin-login.php:428
-msgid "It never applies to whoever administers: that is the person who has to be able to fix what broke, and the desktop profile is where it gets fixed."
+#: includes/admin-login.php:434
+msgid "And to whom"
 msgstr ""
 
-#: includes/admin-login.php:432
+#: includes/admin-login.php:439
+msgid "Who the choice above reaches. Leaving somebody out means their dashboard profile keeps working as WordPress ships it."
+msgstr ""
+
+#: includes/admin-login.php:440
+msgid "Whoever can edit users is never reached by this, whatever is chosen: that is the person who has to be able to fix what broke, and the dashboard profile is where it gets fixed. On a network, the super admin."
+msgstr ""
+
+#: includes/admin-login.php:446
 msgid "How the account ends up"
 msgstr ""
 
-#: includes/admin-login.php:434
+#: includes/admin-login.php:448
 msgid "The email is the username and it never changes —WordPress does not allow it. There is no password at all, not even one nobody knows. The name shown comes from what the person writes, and the fields they are asked for are the ones on the User fields screen."
 msgstr ""
 
-#: includes/admin-login.php:448
+#: includes/admin-login.php:462
 msgid "One more thing after the password or the link: a code that only that person has. Whoever gets hold of an email still does not get in."
 msgstr ""
 
-#: includes/admin-login.php:455
+#: includes/admin-login.php:469
 #: includes/auth.php:59
 msgid "A code by email"
 msgstr ""
 
-#: includes/admin-login.php:456
+#: includes/admin-login.php:470
 #: includes/auth.php:68
 msgid "An authenticator app"
 msgstr ""
 
-#: includes/admin-login.php:464
+#: includes/admin-login.php:478
 msgid "When it is asked for"
 msgstr ""
 
-#: includes/admin-login.php:468
+#: includes/admin-login.php:482
 msgid "Optional: whoever wants it turns it on from their profile"
 msgstr ""
 
-#: includes/admin-login.php:469
+#: includes/admin-login.php:483
 msgid "Required: everybody who can use it has to"
 msgstr ""
 
-#: includes/admin-login.php:470
+#: includes/admin-login.php:484
 msgid "Off: it is not offered at all"
 msgstr ""
 
-#: includes/admin-login.php:483
+#: includes/admin-login.php:497
 msgid "With what"
 msgstr ""
 
-#: includes/admin-login.php:491
+#: includes/admin-login.php:505
 msgid "The app is the stronger one: the code never travels. The email is the one people actually turn on, because there is nothing to install."
 msgstr ""
 
-#: includes/admin-login.php:495
+#: includes/admin-login.php:509
 msgid "To whom"
 msgstr ""
 
-#: includes/admin-login.php:503
-msgid "None ticked means everybody. Ticking only the roles that can change things is the usual middle ground: the second step where it is worth the friction."
+#: includes/admin-login.php:514
+msgid "Asking only the roles that can change things is the usual middle ground: the second step where the friction is worth it."
 msgstr ""
 
-#: includes/admin-login.php:507
+#: includes/admin-login.php:520
 msgid "Coming in by email link"
 msgstr ""
 
-#: includes/admin-login.php:511
+#: includes/admin-login.php:524
 msgid "Work it out: ask, unless the second step is another email"
 msgstr ""
 
-#: includes/admin-login.php:512
+#: includes/admin-login.php:525
 msgid "Always ask"
 msgstr ""
 
-#: includes/admin-login.php:513
+#: includes/admin-login.php:526
 msgid "Never ask"
 msgstr ""
 
-#: includes/admin-login.php:523
+#: includes/admin-login.php:536
 msgid "A code sent to the same inbox the person just opened to follow the link does not prove anything the link did not prove already. An authenticator app does. That is the whole rule, and it is why the first option exists: it asks when asking is worth something."
 msgstr ""
 
-#: includes/admin-login.php:527
+#: includes/admin-login.php:540
 msgid "Remember the browser"
 msgstr ""
 
-#: includes/admin-login.php:530
+#: includes/admin-login.php:543
 msgid "days — 0 to ask every time"
 msgstr ""
 
-#: includes/admin-login.php:531
+#: includes/admin-login.php:544
 msgid "A signed cookie, no more: it does not let anybody in, it only saves repeating the step on a browser that already passed it."
 msgstr ""
 
-#: includes/admin-login.php:547
+#: includes/admin-login.php:560
 msgid "What each person can do with their own data from the site, without asking anybody."
 msgstr ""
 
-#: includes/admin-login.php:551
+#: includes/admin-login.php:564
 msgid "Their data"
 msgstr ""
 
-#: includes/admin-login.php:555
+#: includes/admin-login.php:568
 msgid "They can ask for a copy of everything and download it"
 msgstr ""
 
-#: includes/admin-login.php:557
+#: includes/admin-login.php:570
 msgid "It is the export WordPress already knows how to make: it asks for confirmation by email and leaves the file ready."
 msgstr ""
 
-#: includes/admin-login.php:561
+#: includes/admin-login.php:574
 msgid "Their account"
 msgstr ""
 
-#: includes/admin-login.php:565
+#: includes/admin-login.php:578
 msgid "They can ask for their account to be deleted"
 msgstr ""
 
-#: includes/admin-login.php:567
+#: includes/admin-login.php:580
 msgid "Also confirmed by email, and never for an account that administers the site: it would leave the site with nobody in charge."
 msgstr ""
 
-#: includes/admin-login.php:572
+#: includes/admin-login.php:585
 msgid "With both off, the “Your data” section stops showing: an empty section is worse than no section."
 msgstr ""
 
-#: includes/admin-login.php:578
+#: includes/admin-login.php:591
 msgid "A passkey is a private key that lives on the person’s device or keychain and never leaves it. There is nothing on this side worth stealing, nothing to reuse on another site, and it cannot be phished: the browser refuses to sign for a domain that is not the one it was made for."
 msgstr ""
 
-#: includes/admin-login.php:582
+#: includes/admin-login.php:595
 msgid "Offer them"
 msgstr ""
 
-#: includes/admin-login.php:586
+#: includes/admin-login.php:599
 msgid "People can add passkeys and sign in with them"
 msgstr ""
 
 #. translators: %s: the domain the passkeys end up tied to
-#: includes/admin-login.php:592
+#: includes/admin-login.php:605
 #, php-format
 msgid "They get tied to %s. If the site moves to another domain, the passkeys made here stop working and have to be added again — there is no way around that, and it is exactly what makes them unphishable."
 msgstr ""
 
-#: includes/admin-login.php:598
+#: includes/admin-login.php:611
 msgid "This site is not on HTTPS. Browsers will refuse passkeys until it is."
 msgstr ""
 
-#: includes/admin-login.php:603
+#: includes/admin-login.php:616
 msgid "Which ones"
 msgstr ""
 
-#: includes/admin-login.php:607
+#: includes/admin-login.php:620
 msgid "Any: the device being used, a USB key, or another phone"
 msgstr ""
 
-#: includes/admin-login.php:608
+#: includes/admin-login.php:621
 msgid "Only the device being used"
 msgstr ""
 
-#: includes/admin-login.php:618
+#: includes/admin-login.php:631
 msgid "The first one lets somebody register from their laptop using their phone, and lets a hardware key work. The second keeps everything on the machine in front of them, which some organisations require and everybody else finds annoying."
 msgstr ""
 
-#: includes/admin-login.php:622
+#: includes/admin-login.php:635
 msgid "Ask who they are"
 msgstr ""
 
-#: includes/admin-login.php:626
+#: includes/admin-login.php:639
 msgid "Require the fingerprint, the face or the PIN"
 msgstr ""
 
-#: includes/admin-login.php:628
+#: includes/admin-login.php:641
 msgid "This is what makes a passkey count as two things at once: something they have and something they are. With it off, whoever is holding an unlocked device gets in, and the passkey is worth one factor."
 msgstr ""
 
@@ -2253,11 +2261,19 @@ msgstr ""
 msgid "Overview"
 msgstr ""
 
+#: includes/admin.php:195
+msgid "To everybody"
+msgstr ""
+
 #: includes/admin.php:200
+msgid "Only to some roles"
+msgstr ""
+
+#: includes/admin.php:269
 msgid "This site fixes this from code: whatever is chosen here, it stays as it is."
 msgstr ""
 
-#: includes/admin.php:203
+#: includes/admin.php:272
 msgid "It is filtered here — open the file to change it or take it out:"
 msgstr ""
 
@@ -2340,16 +2356,16 @@ msgstr ""
 msgid "The six-digit code that changes every thirty seconds, from Google Authenticator, 1Password, Aegis or whichever one you use."
 msgstr ""
 
-#: includes/auth.php:212
+#: includes/auth.php:206
 msgid "the link we email you"
 msgstr ""
 
-#: includes/auth.php:216
+#: includes/auth.php:210
 #: includes/notify.php:177
 msgid "your password"
 msgstr ""
 
-#: includes/auth.php:220
+#: includes/auth.php:214
 #: includes/notify.php:178
 msgid "a social account"
 msgstr ""
@@ -2644,11 +2660,11 @@ msgstr ""
 msgid "This site signs you in without a password: with your email or with a social account."
 msgstr ""
 
-#: includes/passwordless.php:163
+#: includes/passwordless.php:171
 msgid "Your details are edited from your account on the site, not from here."
 msgstr ""
 
-#: includes/passwordless.php:164
+#: includes/passwordless.php:172
 msgid "Not from here"
 msgstr ""
 

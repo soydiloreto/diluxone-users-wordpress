@@ -868,11 +868,11 @@ msgid "Set them up"
 msgstr "Configurá-los"
 
 #: includes/admin-home.php:276 includes/admin-home.php:305
-#: includes/admin-login.php:169
+#: includes/admin-login.php:172
 msgid "How people get in"
 msgstr "Como as pessoas entram"
 
-#: includes/admin-home.php:281 includes/admin-login.php:151
+#: includes/admin-home.php:281 includes/admin-login.php:154
 #: includes/admin-status.php:118
 msgid "Sign-in page"
 msgstr "Página de acesso"
@@ -1052,7 +1052,7 @@ msgstr "Definições guardadas."
 msgid "Registration and login"
 msgstr "Registo e acesso"
 
-#: includes/admin-login.php:147
+#: includes/admin-login.php:150
 msgid ""
 "The person types their email and gets a single-use link. There is no "
 "password to choose, to remember or to steal. Put the [diluxone_users_login] "
@@ -1062,11 +1062,11 @@ msgstr ""
 "passe para escolher, para lembrar nem para roubar. Coloque o shortcode "
 "[diluxone_users_login] na página que você escolher abaixo."
 
-#: includes/admin-login.php:158
+#: includes/admin-login.php:161
 msgid "— Use wp-login.php —"
 msgstr "— Usar wp-login.php —"
 
-#: includes/admin-login.php:165
+#: includes/admin-login.php:168
 msgid ""
 "The page holding the form. Without it, passwordless mode is not applied: it "
 "would leave the site with no way in."
@@ -1074,19 +1074,19 @@ msgstr ""
 "A página com o formulário. Sem ela, o modo sem palavra-passe não é aplicado:"
 " deixaria o site sem porta de entrada."
 
-#: includes/admin-login.php:175
+#: includes/admin-login.php:178
 msgid "Both: the link, and username and password underneath"
 msgstr "Os dois: o link, e utilizador e palavra-passe embaixo"
 
-#: includes/admin-login.php:176
+#: includes/admin-login.php:179
 msgid "Only a link sent to their email — no passwords on this site"
 msgstr "Só um link enviado para o e-mail — sem palavras-passe neste site"
 
-#: includes/admin-login.php:177
+#: includes/admin-login.php:180
 msgid "Only the WordPress username and password"
 msgstr "Só o utilizador e a palavra-passe do WordPress"
 
-#: includes/admin-login.php:188
+#: includes/admin-login.php:191
 msgid ""
 "Only the first option closes anything: with “only a link”, wp-login.php "
 "stops showing its form and the native registration is switched off, because "
@@ -1097,33 +1097,33 @@ msgstr ""
 "senão as duas portas continuariam abertas e a escolha seria enfeite."
 
 #. translators: %s: URL of the escape hatch
-#: includes/admin-login.php:193
+#: includes/admin-login.php:196
 #, php-format
 msgid "Even then there is an emergency way in for administrators: %s"
 msgstr "Mesmo assim existe uma saída de emergência para administradores: %s"
 
-#: includes/admin-login.php:201
+#: includes/admin-login.php:204
 msgid "The link expires after"
 msgstr "O link expira em"
 
-#: includes/admin-login.php:204
+#: includes/admin-login.php:207
 msgid "minutes"
 msgstr "minutos"
 
-#: includes/admin-login.php:208
+#: includes/admin-login.php:211
 msgid "Wait between requests"
 msgstr "Espera entre pedidos"
 
-#: includes/admin-login.php:211
+#: includes/admin-login.php:214
 msgid "seconds, for the same email address"
 msgstr "segundos, para o mesmo endereço de e-mail"
 
-#: includes/admin-login.php:212
+#: includes/admin-login.php:215
 msgid "Stops the form being used as a machine for emailing third parties."
 msgstr ""
 "Evita que o formulário vire uma máquina de mandar e-mail para terceiros."
 
-#: includes/admin-login.php:221
+#: includes/admin-login.php:224
 msgid ""
 "This is what lands in the inbox. Leave it empty to use the text the plugin "
 "ships with."
@@ -1131,21 +1131,21 @@ msgstr ""
 "É isto que chega na caixa de entrada. Deixe vazio para usar o texto que vem "
 "com o plugin."
 
-#: includes/admin-login.php:225
+#: includes/admin-login.php:228
 msgid "Subject"
 msgstr "Assunto"
 
-#: includes/admin-login.php:229
+#: includes/admin-login.php:232
 msgid "Message"
 msgstr "Mensagem"
 
 #. translators: 1 and 2: placeholders that get replaced
-#: includes/admin-login.php:236
+#: includes/admin-login.php:239
 #, php-format
 msgid "%1$s and %2$s are replaced. Empty uses the text above."
 msgstr "%1$s e %2$s são substituídos. Vazio usa o texto acima."
 
-#: includes/admin-login.php:254
+#: includes/admin-login.php:257
 msgid ""
 "The email is the identity and nobody chooses it. This is the short name "
 "people see, the one that goes in the address of their profile."
@@ -1153,15 +1153,15 @@ msgstr ""
 "O e-mail é a identidade e ninguém o escolhe. Este é o nome curto que as "
 "pessoas veem, o que vai no endereço do perfil."
 
-#: includes/admin-login.php:258
+#: includes/admin-login.php:261
 msgid "Offer it"
 msgstr "Oferecer"
 
-#: includes/admin-login.php:262
+#: includes/admin-login.php:265
 msgid "Let people choose their public name"
 msgstr "Deixar as pessoas escolherem o seu nome público"
 
-#: includes/admin-login.php:264
+#: includes/admin-login.php:267
 msgid ""
 "Turned off, the name comes from what they wrote as their first and last "
 "name, and the profile address is made from that."
@@ -1169,15 +1169,15 @@ msgstr ""
 "Desativado, o nome sai do que escreveram como nome e sobrenome, e o endereço"
 " do perfil é montado com isso."
 
-#: includes/admin-login.php:268
+#: includes/admin-login.php:271
 msgid "Sign in with it"
 msgstr "Entrar com ele"
 
-#: includes/admin-login.php:272
+#: includes/admin-login.php:275
 msgid "Accept the public name in the sign-in box, as well as the email"
 msgstr "Aceitar o nome público na caixa de acesso, além do e-mail"
 
-#: includes/admin-login.php:274
+#: includes/admin-login.php:277
 msgid ""
 "The link still goes to the email on the account, never to something typed at"
 " that moment: this opens no new door, it only saves people from remembering "
@@ -1187,31 +1187,31 @@ msgstr ""
 "hora: isto não abre nenhuma porta nova, só evita que a pessoa tenha que "
 "lembrar qual endereço usou."
 
-#: includes/admin-login.php:278
+#: includes/admin-login.php:281
 msgid "Length"
 msgstr "Comprimento"
 
-#: includes/admin-login.php:281
+#: includes/admin-login.php:284
 msgid "to"
 msgstr "a"
 
-#: includes/admin-login.php:283
+#: includes/admin-login.php:286
 msgid "characters"
 msgstr "caracteres"
 
-#: includes/admin-login.php:287
+#: includes/admin-login.php:290
 msgid "Letters"
 msgstr "Letras"
 
-#: includes/admin-login.php:291
+#: includes/admin-login.php:294
 msgid "Plain: a–z, digits, dot, dash and underscore"
 msgstr "Simples: a–z, dígitos, ponto, hífen e sublinhado"
 
-#: includes/admin-login.php:292
+#: includes/admin-login.php:295
 msgid "Also accents and ñ"
 msgstr "Também acentos e ñ"
 
-#: includes/admin-login.php:302
+#: includes/admin-login.php:305
 msgid ""
 "Whatever is typed is turned into the same thing WordPress would put in a "
 "URL, so what passes here is exactly what ends up in the address. Anything "
@@ -1223,19 +1223,19 @@ msgstr ""
 "couber —pontuação, símbolos, emoji— cai, e a pessoa vê no que virou antes de"
 " guardar."
 
-#: includes/admin-login.php:306
+#: includes/admin-login.php:309
 msgid "Spaces"
 msgstr "Espaços"
 
-#: includes/admin-login.php:310
+#: includes/admin-login.php:313
 msgid "Turn them into dashes: “Ana Gómez” becomes ana-gomez"
 msgstr "Transformá-los em hifens: “Ana Gómez” vira ana-gomez"
 
-#: includes/admin-login.php:311
+#: includes/admin-login.php:314
 msgid "Refuse them and say so"
 msgstr "Recusá-los e avisar"
 
-#: includes/admin-login.php:321
+#: includes/admin-login.php:324
 msgid ""
 "A web address cannot have spaces, so one of the two has to happen. The first"
 " is what almost everybody expects; the second is for a site that would "
@@ -1245,12 +1245,12 @@ msgstr ""
 "acontecer. A primeira é o que quase todo mundo espera; a segunda é para um "
 "site que prefere que ninguém fique com um nome que não digitou."
 
-#: includes/admin-login.php:325
+#: includes/admin-login.php:328
 msgid "Taken names"
 msgstr "Nomes em uso"
 
 #. translators: 1: user_nicename, 2: user_login
-#: includes/admin-login.php:331
+#: includes/admin-login.php:334
 #, php-format
 msgid ""
 "Always checked, and against two things: the public names already in use "
@@ -1264,15 +1264,15 @@ msgstr ""
 "porque, em um site que deixa entrar pelo nome público, haveria duas pessoas "
 "respondendo pelo mesmo texto e o link iria para a conta errada."
 
-#: includes/admin-login.php:340
+#: includes/admin-login.php:343
 msgid "How often it can change"
 msgstr "Com que frequência pode mudar"
 
-#: includes/admin-login.php:343
+#: includes/admin-login.php:346
 msgid "days between one change and the next"
 msgstr "dias entre uma mudança e a seguinte"
 
-#: includes/admin-login.php:344
+#: includes/admin-login.php:347
 msgid ""
 "0 means whenever they like. A name that changes every day does not identify "
 "anybody, and the old address stops working each time."
@@ -1280,11 +1280,11 @@ msgstr ""
 "0 significa quando quiserem. Um nome que muda todo dia não identifica "
 "ninguém, e o endereço antigo deixa de funcionar a cada vez."
 
-#: includes/admin-login.php:348
+#: includes/admin-login.php:351
 msgid "Names nobody can take"
 msgstr "Nomes que ninguém pode usar"
 
-#: includes/admin-login.php:351
+#: includes/admin-login.php:354
 msgid ""
 "One per line, or separated by commas. The obvious ones —admin, support, api,"
 " login— are already blocked; these are yours to add."
@@ -1292,7 +1292,7 @@ msgstr ""
 "Um por linha, ou separados por vírgulas. Os óbvios —admin, suporte, api, "
 "login— já estão bloqueados; estes são os seus."
 
-#: includes/admin-login.php:366
+#: includes/admin-login.php:369
 msgid ""
 "Who gets an account on this site, and what that account can do. Everything "
 "else —how they get in afterwards— is on the next tab."
@@ -1300,15 +1300,15 @@ msgstr ""
 "Quem tem conta neste site, e o que essa conta pode fazer. Todo o resto —como"
 " a pessoa entra depois— está na separador seguinte."
 
-#: includes/admin-login.php:370
+#: includes/admin-login.php:373
 msgid "Create the account"
 msgstr "Criar a conta"
 
-#: includes/admin-login.php:374
+#: includes/admin-login.php:377
 msgid "If the email does not exist, register it in the same step"
 msgstr "Se o e-mail não existir, cadastrá-lo na mesma etapa"
 
-#: includes/admin-login.php:376
+#: includes/admin-login.php:379
 msgid ""
 "With this, signing in and signing up are the same thing and no separate "
 "registration form is needed."
@@ -1316,7 +1316,7 @@ msgstr ""
 "Com isto, entrar e se registar são a mesma coisa e não é preciso um "
 "formulário de registo separado."
 
-#: includes/admin-login.php:377
+#: includes/admin-login.php:380
 msgid ""
 "Turned off, only people who already have an account can get in — and "
 "somebody has to create the accounts from Users."
@@ -1324,11 +1324,11 @@ msgstr ""
 "Desativado, só entra quem já tem conta — e alguém precisa criar as contas em"
 " Utilizadores."
 
-#: includes/admin-login.php:381
+#: includes/admin-login.php:384
 msgid "Role for new accounts"
 msgstr "Função das contas novas"
 
-#: includes/admin-login.php:386
+#: includes/admin-login.php:389
 msgid ""
 "The same one for everybody, whether they come in by email or by a social "
 "network: a role per provider is a quiet way of handing out privileges."
@@ -1336,23 +1336,23 @@ msgstr ""
 "A mesma para todo mundo, venha por e-mail ou por uma rede social: uma função"
 " por provedor é um jeito silencioso de distribuir privilégios."
 
-#: includes/admin-login.php:390
+#: includes/admin-login.php:393
 msgid "The WordPress registration form"
 msgstr "O formulário de registo do WordPress"
 
-#: includes/admin-login.php:394
+#: includes/admin-login.php:397
 msgid "Whatever Settings → General says"
 msgstr "O que disser Definições → Geral"
 
-#: includes/admin-login.php:395
+#: includes/admin-login.php:398
 msgid "Open, whatever that setting says"
 msgstr "Aberto, independentemente dessa definição"
 
-#: includes/admin-login.php:396
+#: includes/admin-login.php:399
 msgid "Closed, whatever that setting says"
 msgstr "Fechado, independentemente dessa definição"
 
-#: includes/admin-login.php:406
+#: includes/admin-login.php:409
 msgid ""
 "This is wp-login.php?action=register and wp-signup.php, the ones WordPress "
 "brings. They are decided here because this is where the accounts are "
@@ -1364,7 +1364,7 @@ msgstr ""
 "deixar isso em outra ecrã é como um site acseparador com um formulário de "
 "registo aberto de que ninguém se lembra."
 
-#: includes/admin-login.php:407
+#: includes/admin-login.php:410
 msgid ""
 "With “only a link” as the way in, it stays closed no matter what: it would "
 "hand out accounts with a password through a door the site closed."
@@ -1372,23 +1372,23 @@ msgstr ""
 "Com “só um link” como forma de entrar, ele fica fechado de qualquer jeito: "
 "entregaria contas com palavra-passe por uma porta que o site fechou."
 
-#: includes/admin-login.php:411
+#: includes/admin-login.php:414
 msgid "The WordPress profile screen"
 msgstr "A ecrã de perfil do WordPress"
 
-#: includes/admin-login.php:415
+#: includes/admin-login.php:418
 msgid "Leave it alone"
 msgstr "Deixar como está"
 
-#: includes/admin-login.php:416
+#: includes/admin-login.php:419
 msgid "Send them to their account on the site"
 msgstr "Mandar a pessoa para a sua conta no site"
 
-#: includes/admin-login.php:417
+#: includes/admin-login.php:420
 msgid "Close it: their details are edited on the site"
 msgstr "Fechar: os dados são editados no site"
 
-#: includes/admin-login.php:427
+#: includes/admin-login.php:430
 msgid ""
 "A site that built its account area on the front does not want half the data "
 "edited on another screen, with another look and other rules: the edit limits"
@@ -1398,19 +1398,11 @@ msgstr ""
 " seja editada em outra ecrã, com outra cara e outras regras: os limites de "
 "edição e os campos obrigatórios configurados aqui não valem lá."
 
-#: includes/admin-login.php:428
-msgid ""
-"It never applies to whoever administers: that is the person who has to be "
-"able to fix what broke, and the desktop profile is where it gets fixed."
-msgstr ""
-"Nunca vale para quem administra: é a pessoa que precisa poder consertar o "
-"que quebrou, e o perfil do painel é onde se conserta."
-
-#: includes/admin-login.php:432
+#: includes/admin-login.php:446
 msgid "How the account ends up"
 msgstr "Como a conta fica"
 
-#: includes/admin-login.php:434
+#: includes/admin-login.php:448
 msgid ""
 "The email is the username and it never changes —WordPress does not allow it."
 " There is no password at all, not even one nobody knows. The name shown "
@@ -1422,7 +1414,7 @@ msgstr ""
 "que a pessoa escreve, e os campos pedidos são os da ecrã Campos de "
 "utilizador."
 
-#: includes/admin-login.php:448
+#: includes/admin-login.php:462
 msgid ""
 "One more thing after the password or the link: a code that only that person "
 "has. Whoever gets hold of an email still does not get in."
@@ -1430,35 +1422,35 @@ msgstr ""
 "Mais uma coisa depois da palavra-passe ou do link: um código que só aquela "
 "pessoa tem. Quem se apoderar de um e-mail ainda assim não entra."
 
-#: includes/admin-login.php:455 includes/auth.php:59
+#: includes/admin-login.php:469 includes/auth.php:59
 msgid "A code by email"
 msgstr "Um código por e-mail"
 
-#: includes/admin-login.php:456 includes/auth.php:68
+#: includes/admin-login.php:470 includes/auth.php:68
 msgid "An authenticator app"
 msgstr "Um aplicação autenticador"
 
-#: includes/admin-login.php:464
+#: includes/admin-login.php:478
 msgid "When it is asked for"
 msgstr "Quando é pedido"
 
-#: includes/admin-login.php:468
+#: includes/admin-login.php:482
 msgid "Optional: whoever wants it turns it on from their profile"
 msgstr "Opcional: quem quiser ativa no seu perfil"
 
-#: includes/admin-login.php:469
+#: includes/admin-login.php:483
 msgid "Required: everybody who can use it has to"
 msgstr "Obrigatório: todo mundo que puder usar tem que usar"
 
-#: includes/admin-login.php:470
+#: includes/admin-login.php:484
 msgid "Off: it is not offered at all"
 msgstr "Desativado: não é oferecido"
 
-#: includes/admin-login.php:483
+#: includes/admin-login.php:497
 msgid "With what"
 msgstr "Com o quê"
 
-#: includes/admin-login.php:491
+#: includes/admin-login.php:505
 msgid ""
 "The app is the stronger one: the code never travels. The email is the one "
 "people actually turn on, because there is nothing to install."
@@ -1466,35 +1458,27 @@ msgstr ""
 "O aplicação é o mais forte: o código não viaja. O e-mail é o que as pessoas "
 "realmente ativam, porque não há nada para instalar."
 
-#: includes/admin-login.php:495
+#: includes/admin-login.php:509
 msgid "To whom"
 msgstr "Para quem"
 
-#: includes/admin-login.php:503
-msgid ""
-"None ticked means everybody. Ticking only the roles that can change things "
-"is the usual middle ground: the second step where it is worth the friction."
-msgstr ""
-"Nenhuma marcada significa todo mundo. Marcar só as funções que podem mudar "
-"coisas é o meio-termo de sempre: a segunda etapa onde o atrito vale a pena."
-
-#: includes/admin-login.php:507
+#: includes/admin-login.php:520
 msgid "Coming in by email link"
 msgstr "Entrando pelo link por e-mail"
 
-#: includes/admin-login.php:511
+#: includes/admin-login.php:524
 msgid "Work it out: ask, unless the second step is another email"
 msgstr "Decidir: pedir, a menos que a segunda etapa seja outro e-mail"
 
-#: includes/admin-login.php:512
+#: includes/admin-login.php:525
 msgid "Always ask"
 msgstr "Pedir sempre"
 
-#: includes/admin-login.php:513
+#: includes/admin-login.php:526
 msgid "Never ask"
 msgstr "Nunca pedir"
 
-#: includes/admin-login.php:523
+#: includes/admin-login.php:536
 msgid ""
 "A code sent to the same inbox the person just opened to follow the link does"
 " not prove anything the link did not prove already. An authenticator app "
@@ -1506,15 +1490,15 @@ msgstr ""
 "aplicação autenticador prova. Essa é a regra inteira, e é por isso que a "
 "primeira opção existe: ela pede quando pedir vale alguma coisa."
 
-#: includes/admin-login.php:527
+#: includes/admin-login.php:540
 msgid "Remember the browser"
 msgstr "Lembrar o navegador"
 
-#: includes/admin-login.php:530
+#: includes/admin-login.php:543
 msgid "days — 0 to ask every time"
 msgstr "dias — 0 para pedir sempre"
 
-#: includes/admin-login.php:531
+#: includes/admin-login.php:544
 msgid ""
 "A signed cookie, no more: it does not let anybody in, it only saves "
 "repeating the step on a browser that already passed it."
@@ -1522,7 +1506,7 @@ msgstr ""
 "Um cookie assinado, nada mais: não deixa ninguém entrar, só evita repetir a "
 "etapa em um navegador que já passou por ela."
 
-#: includes/admin-login.php:547
+#: includes/admin-login.php:560
 msgid ""
 "What each person can do with their own data from the site, without asking "
 "anybody."
@@ -1530,15 +1514,15 @@ msgstr ""
 "O que cada pessoa pode fazer com os seus dados a partir do site, sem pedir a"
 " ninguém."
 
-#: includes/admin-login.php:551
+#: includes/admin-login.php:564
 msgid "Their data"
 msgstr "Os dados dela"
 
-#: includes/admin-login.php:555
+#: includes/admin-login.php:568
 msgid "They can ask for a copy of everything and download it"
 msgstr "Pode pedir uma cópia de tudo e baixá-la"
 
-#: includes/admin-login.php:557
+#: includes/admin-login.php:570
 msgid ""
 "It is the export WordPress already knows how to make: it asks for "
 "confirmation by email and leaves the file ready."
@@ -1546,15 +1530,15 @@ msgstr ""
 "É a exportação que o WordPress já sabe fazer: pede confirmação por e-mail e "
 "deixa o ficheiro pronto."
 
-#: includes/admin-login.php:561
+#: includes/admin-login.php:574
 msgid "Their account"
 msgstr "A conta dela"
 
-#: includes/admin-login.php:565
+#: includes/admin-login.php:578
 msgid "They can ask for their account to be deleted"
 msgstr "Pode pedir que a sua conta seja eliminada"
 
-#: includes/admin-login.php:567
+#: includes/admin-login.php:580
 msgid ""
 "Also confirmed by email, and never for an account that administers the site:"
 " it would leave the site with nobody in charge."
@@ -1562,7 +1546,7 @@ msgstr ""
 "Também confirmado por e-mail, e nunca para uma conta que administra o site: "
 "deixaria o site sem ninguém no comando."
 
-#: includes/admin-login.php:572
+#: includes/admin-login.php:585
 msgid ""
 "With both off, the “Your data” section stops showing: an empty section is "
 "worse than no section."
@@ -1570,7 +1554,7 @@ msgstr ""
 "Com os dois desativados, a seção “Seus dados” deixa de aparecer: uma seção "
 "vazia é pior do que nenhuma seção."
 
-#: includes/admin-login.php:578
+#: includes/admin-login.php:591
 msgid ""
 "A passkey is a private key that lives on the person’s device or keychain and"
 " never leaves it. There is nothing on this side worth stealing, nothing to "
@@ -1583,16 +1567,16 @@ msgstr ""
 "se recusa a assinar para um domínio que não seja aquele para o qual ela foi "
 "criada."
 
-#: includes/admin-login.php:582
+#: includes/admin-login.php:595
 msgid "Offer them"
 msgstr "Oferecê-las"
 
-#: includes/admin-login.php:586
+#: includes/admin-login.php:599
 msgid "People can add passkeys and sign in with them"
 msgstr "As pessoas podem adicionar passkeys e entrar com elas"
 
 #. translators: %s: the domain the passkeys end up tied to
-#: includes/admin-login.php:592
+#: includes/admin-login.php:605
 #, php-format
 msgid ""
 "They get tied to %s. If the site moves to another domain, the passkeys made "
@@ -1603,25 +1587,25 @@ msgstr ""
 " deixam de funcionar e têm que ser adicionadas de novo — não há como evitar "
 "isso, e é justamente o que as torna imunes a phishing."
 
-#: includes/admin-login.php:598
+#: includes/admin-login.php:611
 msgid "This site is not on HTTPS. Browsers will refuse passkeys until it is."
 msgstr ""
 "Este site não está em HTTPS. Os navegadores vão recusar as passkeys enquanto"
 " não estiver."
 
-#: includes/admin-login.php:603
+#: includes/admin-login.php:616
 msgid "Which ones"
 msgstr "Quais"
 
-#: includes/admin-login.php:607
+#: includes/admin-login.php:620
 msgid "Any: the device being used, a USB key, or another phone"
 msgstr "Qualquer uma: o dispositivo em uso, uma chave USB, ou outro telefone"
 
-#: includes/admin-login.php:608
+#: includes/admin-login.php:621
 msgid "Only the device being used"
 msgstr "Só o dispositivo em uso"
 
-#: includes/admin-login.php:618
+#: includes/admin-login.php:631
 msgid ""
 "The first one lets somebody register from their laptop using their phone, "
 "and lets a hardware key work. The second keeps everything on the machine in "
@@ -1633,15 +1617,15 @@ msgstr ""
 "pessoa tem na frente, que é o que algumas organizações exigem e o que o "
 "resto acha incômodo."
 
-#: includes/admin-login.php:622
+#: includes/admin-login.php:635
 msgid "Ask who they are"
 msgstr "Perguntar quem é"
 
-#: includes/admin-login.php:626
+#: includes/admin-login.php:639
 msgid "Require the fingerprint, the face or the PIN"
 msgstr "Exigir a impressão digital, o rosto ou o PIN"
 
-#: includes/admin-login.php:628
+#: includes/admin-login.php:641
 msgid ""
 "This is what makes a passkey count as two things at once: something they "
 "have and something they are. With it off, whoever is holding an unlocked "
@@ -2622,14 +2606,14 @@ msgstr "DiluxOne Users+"
 msgid "Overview"
 msgstr "Visão geral"
 
-#: includes/admin.php:200
+#: includes/admin.php:269
 msgid ""
 "This site fixes this from code: whatever is chosen here, it stays as it is."
 msgstr ""
 "Este site fixa isto pelo código: seja o que for escolhido aqui, fica como "
 "está."
 
-#: includes/admin.php:203
+#: includes/admin.php:272
 msgid "It is filtered here — open the file to change it or take it out:"
 msgstr "É filtrado aqui — abra o ficheiro para mudar ou tirar:"
 
@@ -2724,15 +2708,15 @@ msgstr ""
 "O código de seis dígitos que muda a cada trinta segundos, do Google "
 "Authenticator, 1Password, Aegis ou o que você usar."
 
-#: includes/auth.php:212
+#: includes/auth.php:206
 msgid "the link we email you"
 msgstr "o link que enviamos por e-mail"
 
-#: includes/auth.php:216 includes/notify.php:177
+#: includes/auth.php:210 includes/notify.php:177
 msgid "your password"
 msgstr "sua palavra-passe"
 
-#: includes/auth.php:220 includes/notify.php:178
+#: includes/auth.php:214 includes/notify.php:178
 msgid "a social account"
 msgstr "uma conta social"
 
@@ -3082,11 +3066,11 @@ msgstr ""
 "Este site deixa você entrar sem palavra-passe: com o seu e-mail ou com uma "
 "conta social."
 
-#: includes/passwordless.php:163
+#: includes/passwordless.php:171
 msgid "Your details are edited from your account on the site, not from here."
 msgstr "Seus dados são editados na sua conta no site, não por aqui."
 
-#: includes/passwordless.php:164
+#: includes/passwordless.php:172
 msgid "Not from here"
 msgstr "Por aqui não"
 
@@ -4599,6 +4583,58 @@ msgstr ""
 #, php-format
 msgid "The message could not be sent: %s"
 msgstr "Não foi possível enviar a mensagem: %s"
+
+#: includes/admin-login.php:434
+msgid "And to whom"
+msgstr "E a quem"
+
+#: includes/admin-login.php:439
+msgid ""
+"Who the choice above reaches. Leaving somebody out means their dashboard "
+"profile keeps working as WordPress ships it."
+msgstr ""
+"A quem alcança o que escolheu acima. Deixar alguém de fora significa que o "
+"perfil dele no painel continua a funcionar como o WordPress o entrega."
+
+#: includes/admin-login.php:440
+msgid ""
+"Whoever can edit users is never reached by this, whatever is chosen: that is"
+" the person who has to be able to fix what broke, and the dashboard profile "
+"is where it gets fixed. On a network, the super admin."
+msgstr ""
+"Quem pode editar utilizadores nunca é alcançado por isto, seja qual for a "
+"escolha: é a pessoa que precisa de poder reparar o que se partiu, e o perfil"
+" do painel é onde se repara. Numa rede, o super admin."
+
+#: includes/admin-login.php:514
+msgid ""
+"Asking only the roles that can change things is the usual middle ground: the"
+" second step where the friction is worth it."
+msgstr ""
+"Pedir só aos papéis que podem mudar coisas é o meio-termo de sempre: a "
+"segunda etapa onde o atrito vale a pena."
+
+#: includes/admin.php:195
+msgid "To everybody"
+msgstr "A toda a gente"
+
+#: includes/admin.php:200
+msgid "Only to some roles"
+msgstr "Só a alguns papéis"
+
+#~ msgid ""
+#~ "It never applies to whoever administers: that is the person who has to be "
+#~ "able to fix what broke, and the desktop profile is where it gets fixed."
+#~ msgstr ""
+#~ "Nunca vale para quem administra: é a pessoa que precisa poder consertar o "
+#~ "que quebrou, e o perfil do painel é onde se conserta."
+
+#~ msgid ""
+#~ "None ticked means everybody. Ticking only the roles that can change things "
+#~ "is the usual middle ground: the second step where it is worth the friction."
+#~ msgstr ""
+#~ "Nenhuma marcada significa todo mundo. Marcar só as funções que podem mudar "
+#~ "coisas é o meio-termo de sempre: a segunda etapa onde o atrito vale a pena."
 
 #, php-format
 #~ msgid "“%1$s” does not contain %2$s, so the page renders empty."

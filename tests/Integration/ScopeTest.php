@@ -1,0 +1,60 @@
+<?php
+/**
+ * "To everybody" or "only to some roles".
+ *
+ * The old shape of this was a list of tick boxes where none ticked meant
+ * everybody — which is the opposite of what the screen looked like it was
+ * saying. These tests pin the new reading down, including the one case that
+ * changed meaning: some roles chosen and none of them ticked now reaches
+ * nobody, literally, instead of quietly reaching all.
+ */
+
+namespace Tests\Integration;
+
+class ScopeTest extends IntegrationTestCase {
+
+	private const PREFIX = 'diluxone_users_2fa';
+
+	protected function setUp(): void {
+		parent::setUp();
+
+		delete_option( self::PREFIX . '_scope' );
+		delete_option( self::PREFIX . '_roles' );
+	}
+
+	public function test_to_everybody_reaches_everybody(): void {
+		update_option( self::PREFIX . '_scope', 'all' );
+		update_option( self::PREFIX . '_roles', array( 'administrator' ) );
+
+		$this->assertTrue(
+			diluxone_users_scope_includes( $this->make_user( 'subscriber' ), self::PREFIX ),
+			'A subscriber is reached even though only administrator is ticked: the radio rules, not the list.'
+		);
+	}
+
+	public function test_to_some_reaches_only_those(): void {
+		update_option( self::PREFIX . '_scope', 'some' );
+		update_option( self::PREFIX . '_roles', array( 'editor' ) );
+
+		$this->assertTrue( diluxone_users_scope_includes( $this->make_user( 'editor' ), self::PREFIX ) );
+		$this->assertFalse( diluxone_users_scope_includes( $this->make_user( 'subscriber' ), self::PREFIX ) );
+	}
+
+	public function test_to_some_with_nothing_chosen_reaches_nobody(): void {
+		update_option( self::PREFIX . '_scope', 'some' );
+		update_option( self::PREFIX . '_roles', array() );
+
+		$this->assertFalse( diluxone_users_scope_includes( $this->make_user( 'administrator' ), self::PREFIX ) );
+	}
+
+	/** A site configured before the radio existed keeps the meaning it had. */
+	public function test_a_site_with_no_answer_stored_keeps_what_it_meant(): void {
+		delete_option( self::PREFIX . '_scope' );
+
+		update_option( self::PREFIX . '_roles', array() );
+		$this->assertSame( 'all', diluxone_users_scope( self::PREFIX ), 'No roles ticked used to mean everybody.' );
+
+		update_option( self::PREFIX . '_roles', array( 'editor' ) );
+		$this->assertSame( 'some', diluxone_users_scope( self::PREFIX ), 'Roles ticked used to mean only those.' );
+	}
+}

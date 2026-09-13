@@ -142,7 +142,15 @@ add_filter( 'option_users_can_register', 'diluxone_users_block_registration' );
 function diluxone_users_wp_profile_guard(): void {
 	$mode = (string) diluxone_users_option( 'diluxone_users_wp_profile' );
 
+	// Whoever can edit users is never reached by this, whatever is configured:
+	// they are the person who has to be able to fix what broke, and the
+	// dashboard profile is where it gets fixed. On a network that is the super
+	// admin; on a single site, the administrator.
 	if ( 'allow' === $mode || current_user_can( 'edit_users' ) ) {
+		return;
+	}
+
+	if ( ! diluxone_users_scope_includes( get_current_user_id(), 'diluxone_users_wp_profile' ) ) {
 		return;
 	}
 

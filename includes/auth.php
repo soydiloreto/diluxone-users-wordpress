@@ -141,14 +141,8 @@ function diluxone_users_2fa_required( int $user_id, string $via ): bool {
 		return false;
 	}
 
-	$roles = (array) diluxone_users_option( 'diluxone_users_2fa_roles' );
-
-	if ( array() !== $roles ) {
-		$user = get_userdata( $user_id );
-
-		if ( ! $user instanceof WP_User || array() === array_intersect( $roles, (array) $user->roles ) ) {
-			return false;
-		}
+	if ( ! diluxone_users_scope_includes( $user_id, 'diluxone_users_2fa' ) ) {
+		return false;
 	}
 
 	if ( 'required' === $mode ) {
