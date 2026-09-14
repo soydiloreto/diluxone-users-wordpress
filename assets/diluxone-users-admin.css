@@ -6,8 +6,11 @@
  * the provider grid, the state pills and a couple of reading-width fixes.
  */
 
-.diluxone-users-admin { max-width: 1200px; }
-.diluxone-users-admin__intro { max-width: 72ch; }
+/* No reading-width cap anywhere on these screens. A paragraph that stops
+   at 72 characters in the middle of a 1400px screen reads as a broken
+   layout, not as typography — it was asked for and taken out more than
+   once, and every one of these was a separate place it came back from. */
+.diluxone-users-admin__intro { margin-bottom: 14px; }
 .diluxone-users-admin__actions { margin: 16px 0; }
 
 /* ── State pills ──────────────────────────────────────────────────── */
@@ -34,9 +37,9 @@
 .diluxone-users-search__refresh .dashicons { font-size: 16px; width: 16px; height: 16px; line-height: 1; }
 .diluxone-users-search__account { margin-left: auto; color: #646970; }
 
-.diluxone-users-shortcodes { max-width: 860px; }
+
 .diluxone-users-shortcodes td:first-child { width: 260px; }
-.diluxone-users-detail { max-width: 860px; }
+
 .diluxone-users-detail th { width: 220px; text-align: left; }
 
 /* ── The provider grid ────────────────────────────────────────────── */
@@ -67,7 +70,7 @@
 .diluxone-users-card__actions { display: flex; gap: 6px; }
 
 /* ── Getting started ──────────────────────────────────────────────── */
-.diluxone-users-steps { max-width: 80ch; margin: 20px 0 32px; padding-left: 20px; }
+.diluxone-users-steps { margin: 20px 0 32px; padding-left: 20px; }
 .diluxone-users-steps li { margin-bottom: 22px; }
 .diluxone-users-steps strong { display: block; font-size: 14px; margin-bottom: 4px; }
 .diluxone-users-steps p { margin: 4px 0; }
@@ -77,7 +80,6 @@
 .diluxone-users-steps--numbers li { margin-bottom: 12px; line-height: 1.6; }
 
 .diluxone-users-url-redirect {
-	max-width: 80ch;
 	margin: 20px 0 28px;
 	padding: 16px 20px;
 	background: #fff;
@@ -92,7 +94,6 @@
 .diluxone-users-url-redirect input { padding: 8px 10px; line-height: 1.6; }
 
 .diluxone-users-eye {
-	max-width: 80ch;
 	margin: 0 0 28px;
 	padding: 12px 16px;
 	background: #fcf9e8;
@@ -148,7 +149,7 @@
 /* What people use: the label and the count on one line, the bar under them
    at full width, and the explanation under that. Read top to bottom, each
    row answers "how many" before it answers "of what". */
-.diluxone-users-usage { margin: 12px 0 0; padding: 0; list-style: none; max-width: 900px; }
+.diluxone-users-usage { margin: 12px 0 0; padding: 0; list-style: none; }
 .diluxone-users-usage__row {
 	padding: 14px 0; border-bottom: 1px solid #f0f0f1;
 }
@@ -166,9 +167,9 @@
 .diluxone-users-usage__fill {
 	display: block; height: 100%; background: var(--diluxone-users-accent, #2271b1);
 }
-.diluxone-users-usage__detail { margin: 8px 0 0; color: #50575e; max-width: 80ch; }
+.diluxone-users-usage__detail { margin: 8px 0 0; color: #50575e; }
 
-.diluxone-users-state { max-width: 900px; }
+
 .diluxone-users-state th { width: 280px; text-align: left; }
 /* The note at the foot of a screen: what it explains is already above it, so
    it takes the whole width rather than a reading column. A column here left
@@ -290,10 +291,10 @@
 .diluxone-users-step:last-child { padding-bottom: 0; }
 .diluxone-users-step:last-child::after { display: none; }
 .diluxone-users-step__body strong { display: block; font-size: 14px; }
-.diluxone-users-step__body p { margin: 2px 0 8px; color: #50575e; max-width: 70ch; }
+.diluxone-users-step__body p { margin: 2px 0 8px; color: #50575e; }
 .diluxone-users-step.is-done .diluxone-users-step__body strong { color: #50575e; }
 
-.diluxone-users-state-box { max-width: 900px; margin: 18px 0 24px; padding: 6px 14px; }
+.diluxone-users-state-box { margin: 18px 0 24px; padding: 6px 14px; }
 
 /* Every way in, with its state: the pill column is narrow and fixed so the
    states line up and the eye can run down them. */
@@ -366,14 +367,14 @@
 
 /* The box explaining where each section comes from: it is documentation, not
    a setting, so it is set apart from the tables above. */
-.diluxone-users-explain { max-width: 80ch; margin: 28px 0; padding: 4px 20px 16px; background: #fff; border: 1px solid #dcdcde; border-radius: 6px; }
+.diluxone-users-explain { margin: 28px 0; padding: 4px 20px 16px; background: #fff; border: 1px solid #dcdcde; border-radius: 6px; }
 .diluxone-users-explain ul { margin: 10px 0 14px; padding-left: 18px; list-style: disc; }
 .diluxone-users-explain li { margin-bottom: 10px; line-height: 1.6; }
 
 /* A setting the site pins from code: the control is visible, and it says it
    does not rule. That beats hiding it — whoever looks for it has to find it. */
 .diluxone-users-forced {
-	max-width: 60ch; margin: 0 0 10px; padding: 8px 12px;
+	margin: 0 0 10px; padding: 8px 12px;
 	background: #fcf9e8; border-left: 3px solid #dba617;
 }
 
