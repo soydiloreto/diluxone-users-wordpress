@@ -30,6 +30,52 @@ defined( 'ABSPATH' ) || exit;
 const DILUXONE_USERS_LOGIN_ALLOWED = array( 'logout', 'postpass', 'rp', 'resetpass', 'confirmaction' );
 
 /**
+ * Sends the "choose a new password" link to the site's own page.
+ *
+ * WordPress builds that address itself and offers no clean filter for it, so
+ * the link still points at wp-login.php — and this catches it there and hands
+ * it on, arguments and all. One screen fewer that looks like somebody else's
+ * site at the moment somebody is worried about their account.
+ *
+ * Only when the site has a page to hand it to, and only when the site has
+ * said it wants its own screens: left alone means left alone.
+ */
+function diluxone_users_reset_to_site(): void {
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- the key is the credential and is checked on arrival.
+	$action = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
+
+	if ( ! in_array( $action, array( 'rp', 'resetpass' ), true ) ) {
+		return;
+	}
+
+	if ( isset( $_GET['diluxone-users-admin'] ) || ! diluxone_users_wp_screens_taken() ) {
+		return;
+	}
+
+	$page = (int) diluxone_users_option( 'diluxone_users_login_page' );
+
+	if ( $page <= 0 || ! isset( $_GET['key'], $_GET['login'] ) ) {
+		return;
+	}
+
+	$key   = sanitize_text_field( wp_unslash( $_GET['key'] ) );
+	$login = sanitize_user( wp_unslash( $_GET['login'] ) );
+	// phpcs:enable
+
+	wp_safe_redirect(
+		add_query_arg(
+			array(
+				'diluxone_users_key'   => rawurlencode( $key ),
+				'diluxone_users_login' => rawurlencode( $login ),
+			),
+			(string) get_permalink( $page )
+		)
+	);
+	exit;
+}
+add_action( 'login_init', 'diluxone_users_reset_to_site', 5 );
+
+/**
  * Does this request have to be taken out of wp-login.php?
  *
  * A pure function on purpose: it decides from the action and the query alone,

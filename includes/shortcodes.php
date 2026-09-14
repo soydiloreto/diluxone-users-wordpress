@@ -84,6 +84,21 @@ function diluxone_users_shortcode_login( $atts = array() ): string {
 	diluxone_users_login_frame_close();
 	$close = (string) ob_get_clean();
 
+	// Halfway there in a different way: a password reset in progress. It comes
+	// before the second factor because somebody who cannot get in at all is
+	// not halfway through signing in.
+	$resetting = function_exists( 'diluxone_users_reset_user' ) ? diluxone_users_reset_user() : null;
+
+	if ( $resetting instanceof WP_User ) {
+		return $frame . diluxone_users_render(
+			'login-reset',
+			array(
+				'user'  => $resetting,
+				'state' => diluxone_users_state(),
+			)
+		) . $close;
+	}
+
 	// Halfway there: the second factor is missing and nothing else.
 	$challenge = diluxone_users_login_challenge();
 

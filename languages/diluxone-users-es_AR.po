@@ -842,10 +842,10 @@ msgstr "Registro"
 
 #: includes/admin-home.php:292
 #: includes/admin-login.php:647
-#: includes/passwordless.php:128
+#: includes/passwordless.php:174
 #: templates/account-guest.php:15
 #: templates/login.php:75
-#: templates/login.php:149
+#: templates/login.php:151
 #: templates/register.php:40
 #: templates/register.php:125
 msgid "Sign in"
@@ -2139,7 +2139,7 @@ msgid "Long text"
 msgstr "Texto largo"
 
 #: includes/fields.php:24
-#: templates/login.php:123
+#: templates/login.php:125
 #: templates/register.php:87
 msgid "Email address"
 msgstr "Correo electrónico"
@@ -2423,15 +2423,15 @@ msgstr ""
 "Si fuiste vos, no hay nada que hacer. Si no, revisá tu seguridad acá:\n"
 "%3$s"
 
-#: includes/passwordless.php:127
+#: includes/passwordless.php:173
 msgid "This site signs you in without a password: with your email or with a social account."
 msgstr "En este sitio se entra sin contraseña: con tu correo o con una red social."
 
-#: includes/passwordless.php:215
+#: includes/passwordless.php:261
 msgid "Your details are edited from your account on the site, not from here."
 msgstr "Tus datos se editan desde tu cuenta en el sitio, no desde acá."
 
-#: includes/passwordless.php:216
+#: includes/passwordless.php:262
 msgid "Not from here"
 msgstr "Desde acá no"
 
@@ -2448,7 +2448,7 @@ msgid "Computer"
 msgstr "Computadora"
 
 #: includes/sessions.php:175
-#: includes/shortcodes.php:152
+#: includes/shortcodes.php:167
 msgid "You have to sign in first."
 msgstr "Hay que entrar primero."
 
@@ -3120,7 +3120,7 @@ msgid "Email"
 msgstr "Correo"
 
 #: templates/account/security.php:54
-#: templates/login.php:148
+#: templates/login.php:150
 msgid "Password"
 msgstr "Contraseña"
 
@@ -3350,56 +3350,56 @@ msgstr "Hacé clic en el enlace y entrás directo. Vence en %d minutos y sirve u
 msgid "Did not arrive? Check your spam or promotions folder."
 msgstr "¿No llegó? Fijate en spam o en la pestaña de promociones."
 
-#: templates/login.php:84
+#: templates/login.php:86
 msgid "That link expired or was already used. Ask for a new one."
 msgstr "Ese enlace ya venció o se usó. Pedí uno nuevo."
 
-#: templates/login.php:86
+#: templates/login.php:88
 #: templates/register.php:63
 msgid "That email address does not look valid."
 msgstr "Ese correo no parece válido."
 
-#: templates/login.php:88
+#: templates/login.php:90
 msgid "We could not finish signing you in with that provider. Try again or use your email."
 msgstr "No pudimos completar el ingreso con esa red. Probá de nuevo o usá tu correo."
 
-#: templates/login.php:90
+#: templates/login.php:92
 #: templates/register.php:67
 msgid "Something went wrong. Try again."
 msgstr "Algo salió mal. Probá de nuevo."
 
-#: templates/login.php:100
+#: templates/login.php:102
 msgid "Sign in with a passkey"
 msgstr "Entrar con una passkey"
 
-#: templates/login.php:101
+#: templates/login.php:103
 msgid "or"
 msgstr "o"
 
-#: templates/login.php:111
+#: templates/login.php:113
 #: templates/register.php:73
 msgid "or with your email"
 msgstr "o con tu correo"
 
-#: templates/login.php:112
-#: templates/login.php:137
+#: templates/login.php:114
+#: templates/login.php:139
 msgid "or with your password"
 msgstr "o con tu contraseña"
 
-#: templates/login.php:126
+#: templates/login.php:128
 msgid "Send me the sign-in link"
 msgstr "Enviarme el enlace de acceso"
 
-#: templates/login.php:131
+#: templates/login.php:133
 #: templates/register.php:120
 msgid "You get an email with a link. Click it and you are in: no password to choose or type."
 msgstr "Te llega un correo con un enlace. Hacés clic y ya estás adentro: no tenés que elegir ni escribir ninguna contraseña."
 
-#: templates/login.php:147
+#: templates/login.php:149
 msgid "Email or username"
 msgstr "Correo o nombre de usuario"
 
-#: templates/login.php:155
+#: templates/login.php:157
 msgid "I forgot my password"
 msgstr "Me olvidé la contraseña"
 
@@ -3785,7 +3785,7 @@ msgstr "Lo mismo, con un título «Entrar» arriba — para donde el título de 
 msgid "Copy any file from the plugin’s templates/ folder into your theme, inside a diluxone-users/ folder, and edit it there. The plugin will use yours. You can also turn off its stylesheet in Account area → How it looks."
 msgstr "Copiá cualquier archivo de la carpeta templates/ del plugin a tu tema, dentro de una carpeta diluxone-users/, y editalo ahí. El plugin usa el tuyo. También podés apagar su hoja de estilos en Área de cuenta → Cómo se ve."
 
-#: templates/login.php:124
+#: templates/login.php:126
 #: templates/register.php:90
 msgctxt "placeholder for the e-mail field"
 msgid "you@example.com"
@@ -4620,3 +4620,37 @@ msgstr "La exportación y el borrado que corre WordPress cuando alguien pide sus
 #: includes/admin-notices.php:139
 msgid "Send myself a test"
 msgstr "Mandarme una prueba"
+
+#: templates/login-reset.php:21
+msgid "Choose a new password"
+msgstr "Elegí una contraseña nueva"
+
+#. translators: %s: the account's e-mail address
+#: templates/login-reset.php:27
+#, php-format
+msgid "For %s"
+msgstr "Para %s"
+
+#: templates/login-reset.php:34
+msgid "The two passwords are not the same. Try again."
+msgstr "Las dos contraseñas no son iguales. Probá de nuevo."
+
+#: templates/login-reset.php:42
+msgid "New password"
+msgstr "Contraseña nueva"
+
+#: templates/login-reset.php:47
+msgid "And again"
+msgstr "Y de nuevo"
+
+#: templates/login-reset.php:51
+msgid "Save it"
+msgstr "Guardarla"
+
+#: templates/login-reset.php:57
+msgid "You do not have to do this: on this site a link by email gets you in without a password at all."
+msgstr "No hace falta que hagas esto: en este sitio un enlace por correo te hace entrar sin ninguna contraseña."
+
+#: templates/login.php:84
+msgid "Your password is changed. You can sign in with it now."
+msgstr "Tu contraseña quedó cambiada. Ya podés entrar con ella."

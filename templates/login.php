@@ -80,7 +80,9 @@ defined( 'ABSPATH' ) || exit;
 			<p class="diluxone-users-login__intro"><?php echo esc_html( $diluxone_users_intro ); ?></p>
 		<?php endif; ?>
 
-		<?php if ( 'expired' === $state ) : ?>
+		<?php if ( 'changed' === $state ) : ?>
+			<p class="diluxone-users-notice diluxone-users-notice--ok"><?php esc_html_e( 'Your password is changed. You can sign in with it now.', 'diluxone-users' ); ?></p>
+		<?php elseif ( 'expired' === $state ) : ?>
 			<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'That link expired or was already used. Ask for a new one.', 'diluxone-users' ); ?></p>
 		<?php elseif ( 'email' === $state ) : ?>
 			<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'That email address does not look valid.', 'diluxone-users' ); ?></p>
