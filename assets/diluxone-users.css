@@ -604,6 +604,22 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	max-width: none;
 }
 
+/* The column beside a section. It only exists when something is in it, so
+   there is no empty-state to style: either the content runs full width, or it
+   shares the row. Under 900px it goes below — a 200px column of panels next
+   to a form is worse than the same panels underneath it. */
+.diluxone-users-account__main.has-aside {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+	gap: 32px;
+	align-items: start;
+}
+.diluxone-users-account__aside { min-width: 0; }
+
+@media (max-width: 900px) {
+	.diluxone-users-account__main.has-aside { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+}
+
 /* Menu at the side: the navigation becomes a column and the content sits beside it. */
 .diluxone-users-account--side .diluxone-users-account__body {
 	display: grid;

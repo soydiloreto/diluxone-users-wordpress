@@ -103,7 +103,7 @@ function diluxone_users_section_save( array $input ): string {
 		'label'      => $label,
 		'slug'       => $slug,
 		'content'    => wp_kses_post( (string) ( $input['content'] ?? '' ) ),
-		'placement'  => in_array( $input['placement'] ?? '', array( 'before', 'after', 'replace' ), true )
+		'placement'  => in_array( $input['placement'] ?? '', array( 'before', 'after', 'replace', 'aside' ), true )
 			? (string) $input['placement']
 			: 'after',
 		'roles'      => array_values( array_filter( array_map( 'sanitize_key', (array) ( $input['roles'] ?? array() ) ) ) ),
@@ -524,6 +524,7 @@ function diluxone_users_screen_account_section( string $id, array $sections, int
 								'after'   => __( 'After what the plugin shows', 'diluxone-users' ),
 								'before'  => __( 'Before what the plugin shows', 'diluxone-users' ),
 								'replace' => __( 'Instead of it — your content replaces the section', 'diluxone-users' ),
+								'aside'   => __( 'In a column at the side, next to it', 'diluxone-users' ),
 							);
 
 							foreach ( $where as $key => $label ) {
@@ -537,6 +538,7 @@ function diluxone_users_screen_account_section( string $id, array $sections, int
 							?>
 						</select>
 						<p class="description"><?php esc_html_e( 'This section is drawn by code. What you write below is added to it — unless you say it replaces it.', 'diluxone-users' ); ?></p>
+						<p class="description"><?php esc_html_e( 'The column at the side appears only when there is something in it, and drops under the content on a narrow screen. It is the place for what goes with the section without being it: a summary, an activity panel, a reminder.', 'diluxone-users' ); ?></p>
 					</td>
 				</tr>
 			<?php else : ?>
