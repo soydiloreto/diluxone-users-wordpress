@@ -77,14 +77,15 @@ diluxoneUsersFieldTypes( document );
 		open( link );
 	} );
 
+	/*
+	 * Only the close button and Cancel close it. A click on the greyed-out
+	 * page does not: this dialog holds a form somebody is halfway through
+	 * filling in, and a stray click outside it should not throw that away.
+	 * Escape still works — it is what a keyboard expects, and it is deliberate
+	 * in a way a misplaced click is not.
+	 */
 	dialog.addEventListener( 'click', function ( event ) {
 		if ( event.target.closest( '[data-diluxone-users-dialog-close]' ) ) {
-			dialog.close();
-			return;
-		}
-
-		// A click on the backdrop lands on the dialog itself, outside its box.
-		if ( event.target === dialog ) {
 			dialog.close();
 		}
 	} );
