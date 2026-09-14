@@ -630,16 +630,76 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 .diluxone-users-account__name { margin: 0; font-size: 1.5em; }
 .diluxone-users-account__since { margin: 2px 0 0; color: var(--diluxone-users-muted); }
 
-.diluxone-users-account__nav { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 24px; }
+/* ── The menu ────────────────────────────────────────────────────────────
+   Two questions, asked separately and answered separately: where it goes —
+   across the top or down the side — and what it looks like. They used to be
+   one: the cover template quietly turned the pills into underlined tabs, and
+   down the side that underline came out as a line across the whole menu
+   under every item, with sixteen pixels of air above and below each one.
+   Nobody could have predicted either from the control they pressed.
+
+   So: direction is `--row` or `--column`, look is `--pills`, `--underline` or
+   `--plain`, and every pair of the six is written out. */
+.diluxone-users-account__nav { display: flex; margin-bottom: 24px; }
+.diluxone-users-account__nav--row { flex-wrap: wrap; gap: 4px; }
+.diluxone-users-account__nav--column { flex-direction: column; flex-wrap: nowrap; gap: 2px; margin: 0; }
+
 .diluxone-users-account__tab {
-	padding: 10px 16px;
-	border-radius: var(--diluxone-users-radius-sm);
 	color: var(--diluxone-users-muted);
 	text-decoration: none;
 	font-weight: 600;
+	padding: 10px 16px;
+	border-radius: var(--diluxone-users-radius-sm);
 }
-.diluxone-users-account__tab:hover { background: var(--diluxone-users-surface-alt); color: var(--diluxone-users-text); }
-.diluxone-users-account__tab.is-current { background: var(--diluxone-users-accent-bg); color: var(--diluxone-users-accent-ink); }
+.diluxone-users-account__tab:hover { color: var(--diluxone-users-text); }
+/* Down the side the whole row is the target, and the words line up on the
+   left: a menu item centred in its own column is a button that happens to be
+   stacked, not a menu. */
+.diluxone-users-account__nav--column .diluxone-users-account__tab { text-align: left; }
+
+/* Filled: the open one is a block of colour. */
+.diluxone-users-account__nav--pills .diluxone-users-account__tab:hover { background: var(--diluxone-users-surface-alt); }
+.diluxone-users-account__nav--pills .diluxone-users-account__tab.is-current {
+	background: var(--diluxone-users-accent-bg);
+	color: var(--diluxone-users-accent-ink);
+}
+
+/* Underlined, across: a strip with the open one underlined. The line under
+   the whole menu is on the menu and not on the bar around it, so it is there
+   whether or not the area drew a bar. */
+.diluxone-users-account__nav--underline.diluxone-users-account__nav--row {
+	gap: 20px;
+	border-bottom: 1px solid var(--diluxone-users-border);
+}
+.diluxone-users-account__nav--underline.diluxone-users-account__nav--row .diluxone-users-account__tab {
+	padding: 14px 2px;
+	border-radius: 0;
+	border-bottom: 3px solid transparent;
+	margin-bottom: -1px;
+}
+.diluxone-users-account__nav--underline.diluxone-users-account__nav--row .diluxone-users-account__tab.is-current {
+	color: var(--diluxone-users-accent);
+	border-bottom-color: var(--diluxone-users-accent);
+}
+
+/* Underlined, down the side: the same idea rotated a quarter turn. A rule
+   down the left of the column, and the open item's piece of it in colour. */
+.diluxone-users-account__nav--underline.diluxone-users-account__nav--column { gap: 0; }
+.diluxone-users-account__nav--underline.diluxone-users-account__nav--column .diluxone-users-account__tab {
+	padding: 10px 14px;
+	border-radius: 0;
+	border-left: 3px solid var(--diluxone-users-border);
+}
+.diluxone-users-account__nav--underline.diluxone-users-account__nav--column .diluxone-users-account__tab.is-current {
+	color: var(--diluxone-users-accent);
+	border-left-color: var(--diluxone-users-accent);
+	background: var(--diluxone-users-surface-alt);
+}
+
+/* Plain: the words, and the open one in colour. */
+.diluxone-users-account__nav--plain .diluxone-users-account__tab { padding: 8px 2px; border-radius: 0; }
+.diluxone-users-account__nav--plain.diluxone-users-account__nav--row { gap: 18px; }
+.diluxone-users-account__nav--plain .diluxone-users-account__tab.is-current { color: var(--diluxone-users-accent); }
 
 .diluxone-users-account__title { margin: 0 0 6px; font-size: 1.35em; }
 
@@ -675,31 +735,17 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 .diluxone-users-account--cover .diluxone-users-account__name { font-size: 2.2em; line-height: 1.15; color: inherit; }
 .diluxone-users-account--cover .diluxone-users-account__since { color: inherit; opacity: .85; }
 
-/* The tab bar under the cover: a strip across the area, with the open tab
-   underlined rather than filled — a filled pill directly under a filled band
-   is two blocks of colour fighting. */
-.diluxone-users-account--cover .diluxone-users-account__bar {
-	border-bottom: 1px solid var(--diluxone-users-border);
-	margin-bottom: 28px;
-}
-.diluxone-users-account--cover .diluxone-users-account__nav { gap: 20px; margin-bottom: -1px; }
-.diluxone-users-account--cover .diluxone-users-account__tab {
-	padding: 16px 2px;
-	border-radius: 0;
-	border-bottom: 3px solid transparent;
-}
-.diluxone-users-account--cover .diluxone-users-account__tab:hover { background: none; }
-.diluxone-users-account--cover .diluxone-users-account__tab.is-current {
-	background: none;
-	color: var(--diluxone-users-accent);
-	border-bottom-color: var(--diluxone-users-accent);
-}
+/* The bar under the cover is a strip across the area. What the menu inside it
+   looks like is not decided here: that is its own setting, and the cover
+   deciding it was how pressing "with a cover" silently changed the shape of
+   every button in the menu. */
+.diluxone-users-account--cover .diluxone-users-account__bar { margin-bottom: 28px; }
 
 @media (max-width: 640px) {
 	.diluxone-users-account--cover .diluxone-users-account__header { padding-top: 28px; padding-bottom: 28px; }
 	.diluxone-users-account--cover .diluxone-users-account__header-inner { flex-wrap: wrap; gap: 16px; }
 	.diluxone-users-account--cover .diluxone-users-account__name { font-size: 1.6em; }
-	.diluxone-users-account--cover .diluxone-users-account__nav { overflow-x: auto; flex-wrap: nowrap; }
+	.diluxone-users-account--cover .diluxone-users-account__nav--row { overflow-x: auto; flex-wrap: nowrap; }
 }
 
 /* How wide the content runs. "Contained" holds it to a reading column and
@@ -710,15 +756,12 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	margin-right: auto;
 }
 .diluxone-users-account--contained .diluxone-users-account__header-inner,
-.diluxone-users-account--contained .diluxone-users-account__nav {
+.diluxone-users-account--contained .diluxone-users-account__nav--row {
 	max-width: 980px;
 	margin-left: auto;
 	margin-right: auto;
 }
-/* The side menu is part of the body grid, so its own centring would fight it. */
-.diluxone-users-account--contained.diluxone-users-account--side .diluxone-users-account__nav {
-	max-width: none;
-}
+
 
 /* Menu at the side: the navigation becomes a column and the content sits beside it. */
 .diluxone-users-account--side .diluxone-users-account__body {
@@ -727,11 +770,23 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	gap: 32px;
 	align-items: start;
 }
-.diluxone-users-account--side .diluxone-users-account__nav { flex-direction: column; flex-wrap: nowrap; margin: 0; }
-
+/* On a phone there is no room for two columns, so the menu goes back across
+   the top — and with it the direction it is drawn in. */
 @media (max-width: 782px) {
 	.diluxone-users-account--side .diluxone-users-account__body { grid-template-columns: minmax(0, 1fr); gap: 20px; }
-	.diluxone-users-account--side .diluxone-users-account__nav { flex-direction: row; flex-wrap: wrap; }
+	.diluxone-users-account--side .diluxone-users-account__nav--column {
+		flex-direction: row;
+		flex-wrap: wrap;
+		gap: 4px;
+		margin-bottom: 4px;
+	}
+	.diluxone-users-account--side .diluxone-users-account__nav--underline.diluxone-users-account__nav--column .diluxone-users-account__tab {
+		border-left: 0;
+		border-bottom: 3px solid transparent;
+	}
+	.diluxone-users-account--side .diluxone-users-account__nav--underline.diluxone-users-account__nav--column .diluxone-users-account__tab.is-current {
+		border-bottom-color: var(--diluxone-users-accent);
+	}
 }
 
 /* ── The front-page summary ─────────────────────────────────────────── */

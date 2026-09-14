@@ -71,65 +71,16 @@ function diluxone_users_style_presets(): array {
  * in its theme sees its own account.php here, and does not spend an evening
  * wondering why the site and this screen disagree.
  *
- * The colours travel as inline custom properties, exactly how they travel on
- * the front end, and the admin script rewrites them — and the shape classes —
- * as the fields change.
+ * It renders into the preview's own document, which is where the colour and
+ * the corners arrive as custom properties — the same way they arrive on the
+ * front end.
  */
 function diluxone_users_style_preview(): void {
-	?>
-	<div class="diluxone-users-preview" data-diluxone-users-preview-box>
-		<p class="description"><?php esc_html_e( 'Your account area, as the site serves it right now:', 'diluxone-users' ); ?></p>
-
-		<?php
-		// Inert, and not only because a preview should not be clickable: the
-		// account area has forms of its own, and a form inside the settings
-		// form would be thrown away by the browser and its fields posted with
-		// the settings. Outside the form and inert, it is a picture that
-		// happens to be the real thing.
-		?>
-		<?php
-		/*
-		 * The colour and the corners travel on the element and not in the
-		 * stylesheet. On the front end they are added to the sheet, which is
-		 * fine there — but here the sheet is already loaded and a redraw
-		 * cannot change it, so a colour picked a second ago would show the
-		 * colour saved a week ago. On the element they arrive with the HTML.
-		 */
-		$diluxone_users_tokens = '';
-		$diluxone_users_accent = sanitize_hex_color( diluxone_users_style_accent() );
-		$diluxone_users_radius = (string) diluxone_users_option( 'diluxone_users_style_radius' );
-
-		if ( null !== $diluxone_users_accent && '' !== $diluxone_users_accent ) {
-			$diluxone_users_tokens .= '--diluxone-users-accent:' . $diluxone_users_accent . ';';
-			$diluxone_users_tokens .= '--diluxone-users-accent-bg:' . $diluxone_users_accent . ';';
-		}
-
-		if ( '' !== trim( $diluxone_users_radius ) ) {
-			$diluxone_users_tokens .= '--diluxone-users-radius:' . (int) $diluxone_users_radius . 'px;';
-			$diluxone_users_tokens .= '--diluxone-users-radius-sm:' . max( 0, (int) $diluxone_users_radius - 4 ) . 'px;';
-		}
-		?>
-		<div class="diluxone-users-preview__frame" inert>
-			<div data-diluxone-users-preview-skin<?php echo '' === $diluxone_users_tokens ? '' : ' style="' . esc_attr( $diluxone_users_tokens ) . '"'; ?>>
-				<?php
-				// The shortcode, not a copy of it. It renders for whoever is
-				// looking — the sections they can see, their own name and
-				// picture — because an account area shown with somebody else's
-				// data would be a different kind of lie.
-				echo do_shortcode( '[diluxone_users_account]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the shortcode escapes its own output.
-				?>
-			</div>
-		</div>
-
-		<p class="description">
-			<?php esc_html_e( 'It is the real thing and not a drawing, so a template your theme has replaced shows up here as it does on the site. It cannot be used from here: open the account page for that.', 'diluxone-users' ); ?>
-		</p>
-
-		<p class="description" data-diluxone-users-preview-bare hidden>
-			<?php esc_html_e( 'With the stylesheet off this is what your theme receives: plain markup with the diluxone-users-* classes on it, and nothing else.', 'diluxone-users' ); ?>
-		</p>
-	</div>
-	<?php
+	// The shortcode, not a copy of it. It renders for whoever is looking —
+	// the sections they can see, their own name and picture — because an
+	// account area shown with somebody else's data would be a different kind
+	// of lie.
+	echo do_shortcode( '[diluxone_users_account]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the shortcode escapes its own output.
 }
 
 /**
@@ -150,24 +101,30 @@ function diluxone_users_style_preview(): void {
 function diluxone_users_account_templates(): array {
 	$templates = array(
 		'plain' => array(
-			'label'  => __( 'Simple', 'diluxone-users' ),
-			'help'   => __( 'A panel in the page, the way a settings screen looks. It sits quietly inside whatever the theme already draws.', 'diluxone-users' ),
-			'layout' => 'tabs',
-			'header' => 1,
-			'avatar' => 1,
-			'since'  => 1,
-			'action' => 0,
-			'width'  => 'contained',
+			'label'     => __( 'Simple', 'diluxone-users' ),
+			'help'      => __( 'A panel in the page, the way a settings screen looks. It sits quietly inside whatever the theme already draws.', 'diluxone-users' ),
+			'layout'    => 'tabs',
+			'nav_style' => 'pills',
+			'header'    => 1,
+			'avatar'    => 1,
+			'since'     => 1,
+			'action'    => 0,
+			'width'     => 'contained',
 		),
 		'cover' => array(
-			'label'  => __( 'With a cover', 'diluxone-users' ),
-			'help'   => __( 'The person on a coloured band the full width of the window, with the menu in a bar of its own underneath. The way a profile looks.', 'diluxone-users' ),
-			'layout' => 'tabs',
-			'header' => 1,
-			'avatar' => 1,
-			'since'  => 1,
-			'action' => 1,
-			'width'  => 'contained',
+			'label'     => __( 'With a cover', 'diluxone-users' ),
+			'help'      => __( 'The person on a coloured band the full width of the window, with the menu in a bar of its own underneath. The way a profile looks.', 'diluxone-users' ),
+			'layout'    => 'tabs',
+			// Underlined and not filled, because a filled block directly under
+			// a filled band is two blocks of colour fighting. It is filled in
+			// here as a starting point, where it can be seen and changed —
+			// not applied behind the back of the control that shows it.
+			'nav_style' => 'underline',
+			'header'    => 1,
+			'avatar'    => 1,
+			'since'     => 1,
+			'action'    => 1,
+			'width'     => 'contained',
 		),
 	);
 
@@ -259,6 +216,26 @@ function diluxone_users_screen_appearance_template(): void {
 					<label class="diluxone-users-roles__item">
 						<input type="radio" name="diluxone_users_account_layout" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_account_layout' ), $key ); ?> data-diluxone-users-piece="layout">
 						<?php echo esc_html( $label ); ?>
+					</label>
+				<?php endforeach; ?>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'What the menu looks like', 'diluxone-users' ); ?></th>
+			<td>
+				<?php
+				/*
+				 * Its own question, and not a consequence of the template.
+				 * Until now the cover turned the menu into underlined tabs on
+				 * its way past, so the same three sections changed shape
+				 * because of a decision about the header.
+				 */
+				foreach ( diluxone_users_account_nav_styles() as $diluxone_users_key => $diluxone_users_style ) :
+					?>
+					<label class="diluxone-users-roles__item">
+						<input type="radio" name="diluxone_users_account_nav_style" value="<?php echo esc_attr( $diluxone_users_key ); ?>" <?php checked( diluxone_users_account_nav_style(), $diluxone_users_key ); ?> data-diluxone-users-piece="nav_style">
+						<strong><?php echo esc_html( $diluxone_users_style['label'] ); ?></strong>
+						<span class="description"> — <?php echo esc_html( $diluxone_users_style['help'] ); ?></span>
 					</label>
 				<?php endforeach; ?>
 			</td>

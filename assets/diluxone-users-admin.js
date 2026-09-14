@@ -328,6 +328,239 @@ diluxoneUsersFieldTypes( document );
 }() );
 
 /**
+ * A template is a starting point: pressing one fills in the pieces below it.
+ *
+ * The screen has said so since it was written and it was not true — the
+ * pieces stayed where they were and the area changed shape anyway, because
+ * the shape was being decided twice: once by the control you pressed and once
+ * by a stylesheet reading the template's name. Nothing showed the second one.
+ *
+ * Now pressing a template moves the controls, in front of you, and they are
+ * what decides. Every one of them is still yours to change afterwards, which
+ * is what "a starting point" is supposed to mean.
+ */
+( function () {
+	'use strict';
+
+	var templates = document.querySelectorAll( '[data-diluxone-users-template]' );
+
+	if ( ! templates.length ) {
+		return;
+	}
+
+	templates.forEach( function ( radio ) {
+		radio.addEventListener( 'change', function () {
+			if ( ! radio.checked ) {
+				return;
+			}
+
+			document.querySelectorAll( '.diluxone-users-templates__one' ).forEach( function ( one ) {
+				one.classList.toggle( 'is-chosen', one.contains( radio ) );
+			} );
+
+			var pieces;
+
+			try {
+				pieces = JSON.parse( radio.dataset.diluxoneUsersTemplatePieces || '{}' );
+			} catch ( error ) {
+				return;
+			}
+
+			Object.keys( pieces ).forEach( function ( piece ) {
+				var fields = document.querySelectorAll( '[data-diluxone-users-piece="' + piece + '"]' );
+				var wanted = String( pieces[ piece ] );
+
+				fields.forEach( function ( field ) {
+					if ( 'checkbox' === field.type ) {
+						field.checked = '1' === wanted;
+					} else if ( 'radio' === field.type ) {
+						field.checked = field.value === wanted;
+					} else {
+						field.value = wanted;
+					}
+				} );
+			} );
+
+			// The preview listens on the form, and a value set from here does
+			// not announce itself.
+			radio.form.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+		} );
+	} );
+}() );
+
+/**
+ * The preview window, and what size of window it is pretending to be.
+ *
+ * The preview is a document in an iframe, so `50vw` inside it means half of
+ * the preview rather than half of the admin — which is the whole reason the
+ * sign-in frames used to come out with the photo over everything and the form
+ * off the side. Here the page is laid out at its real width and then shrunk
+ * to fit the column, which is a picture of the page and not a squeezed one.
+ *
+ * Two widths and not a slider: the two questions asked of a design are
+ * whether it holds together wide and whether it survives a phone.
+ */
+( function () {
+	'use strict';
+
+	var stage = document.querySelector( '[data-diluxone-users-stage]' );
+
+	if ( ! stage ) {
+		return;
+	}
+
+	var canvas = stage.querySelector( '[data-diluxone-users-stage-canvas]' );
+	var frame  = stage.querySelector( '[data-diluxone-users-stage-frame]' );
+
+	if ( ! canvas || ! frame ) {
+		return;
+	}
+
+	// The second number is a starting height, not a limit: what is taller
+	// than it — an account area with every section on — grows past it.
+	var sizes = { 1200: 820, 390: 780 };
+	var width = 1200;
+
+	/**
+	 * How tall the page inside actually is.
+	 *
+	 * Measured in two passes and never in a loop: the frame is put at the
+	 * window's height first, because a cover that asks for 80vh has to be
+	 * given a viewport before it can answer, and only then is the content
+	 * measured. Growing afterwards cannot shrink anything back.
+	 */
+	function measure() {
+		var base = sizes[ width ];
+
+		frame.style.height = base + 'px';
+
+		try {
+			var doc = frame.contentDocument;
+
+			if ( doc && doc.body ) {
+				return Math.max( base, Math.min( 3000, doc.body.scrollHeight ) );
+			}
+		} catch ( error ) {
+			// Another origin, which should not happen: the starting height
+			// is still a reasonable window.
+		}
+
+		return base;
+	}
+
+	function fit() {
+		var room = canvas.clientWidth;
+
+		if ( ! room ) {
+			return;
+		}
+
+		// Never blown up past its own size: a phone at 390px stays 390px wide
+		// and sits in the middle, rather than being stretched into a lie.
+		var scale = Math.min( 1, room / width );
+		var tall  = measure();
+
+		frame.style.width     = width + 'px';
+		frame.style.height    = tall + 'px';
+		frame.style.transform = 'scale(' + scale + ')';
+		frame.style.marginLeft = Math.max( 0, Math.round( ( room - ( width * scale ) ) / 2 ) ) + 'px';
+
+		canvas.style.height = Math.round( tall * scale ) + 'px';
+	}
+
+	stage.querySelectorAll( '[data-diluxone-users-device]' ).forEach( function ( button ) {
+		button.addEventListener( 'click', function () {
+			width = parseInt( button.dataset.diluxoneUsersDevice, 10 ) || 1200;
+
+			stage.querySelectorAll( '[data-diluxone-users-device]' ).forEach( function ( other ) {
+				other.classList.toggle( 'is-on', other === button );
+			} );
+
+			stage.classList.toggle( 'is-phone', 1200 !== width );
+			fit();
+		} );
+	} );
+
+	frame.addEventListener( 'load', fit );
+	window.addEventListener( 'resize', fit );
+	fit();
+
+	/*
+	 * The same page, out of the column. What is shown is copied across rather
+	 * than the iframe being moved: moving one reloads it, and a preview that
+	 * blinks every time it is opened is a worse preview.
+	 */
+	( function () {
+		var open   = stage.querySelector( '[data-diluxone-users-zoom]' );
+		var box    = document.querySelector( '[data-diluxone-users-zoom-box]' );
+
+		if ( ! open || ! box || ! box.showModal ) {
+			if ( open ) {
+				open.hidden = true;
+			}
+
+			return;
+		}
+
+		var canvas = box.querySelector( '[data-diluxone-users-zoom-canvas]' );
+		var big    = box.querySelector( '[data-diluxone-users-zoom-frame]' );
+		var close  = box.querySelector( '[data-diluxone-users-zoom-close]' );
+
+		function fill() {
+			var room = canvas.clientWidth;
+			// Never past its own size: a phone stays a phone.
+			var scale = Math.min( 1, room / width );
+			var tall  = sizes[ width ];
+
+			big.style.width  = width + 'px';
+			big.style.height = tall + 'px';
+			big.style.transform = 'scale(' + scale + ')';
+			big.style.marginLeft = Math.max( 0, Math.round( ( room - ( width * scale ) ) / 2 ) ) + 'px';
+
+			try {
+				var doc = big.contentDocument;
+
+				if ( doc && doc.body ) {
+					tall = Math.max( tall, Math.min( 4000, doc.body.scrollHeight ) );
+					big.style.height = tall + 'px';
+				}
+			} catch ( error ) {
+				// The starting height is still a window.
+			}
+
+			canvas.style.height = Math.round( tall * scale ) + 'px';
+		}
+
+		open.addEventListener( 'click', function () {
+			if ( frame.getAttribute( 'src' ) ) {
+				big.src = frame.getAttribute( 'src' );
+			} else {
+				big.srcdoc = frame.srcdoc;
+			}
+
+			box.showModal();
+			fill();
+		} );
+
+		big.addEventListener( 'load', fill );
+		close.addEventListener( 'click', function () {
+			box.close();
+		} );
+	}() );
+
+	/*
+	 * How the live preview hands over a new drawing. It is a whole document,
+	 * so it is written as one; `srcdoc` and not `document.write` because the
+	 * second one leaves the old document's styles behind.
+	 */
+	window.diluxoneUsersStage = {
+		show: function ( html ) {
+			frame.srcdoc = html;
+		},
+	};
+}() );
+
+/**
  * The preview follows the fields, and the server draws it.
  *
  * It used to be done here: move a class, hide an element. That works for a
@@ -428,7 +661,9 @@ diluxoneUsersFieldTypes( document );
 					return;
 				}
 
-				box.innerHTML = answer.data;
+				if ( window.diluxoneUsersStage ) {
+					window.diluxoneUsersStage.show( answer.data );
+				}
 			} )
 			.catch( function () {
 				// The preview stays as it was, which is the last true thing

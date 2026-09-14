@@ -57,9 +57,9 @@ function diluxone_users_panel_registry( string $screen = '', string $id = '', ?a
  * that sorts before this one would be calling a function that does not exist
  * yet. It did, and it took the whole site down with it.
  *
- * @param string                                                                                                   $screen Which screen, e.g. 'diluxone-users-login'.
- * @param string                                                                                                   $id     The tab's slug, which ends up in the URL.
- * @param array{label: string, render: callable, save?: callable, preview?: callable, position?: int, form?: bool} $panel
+ * @param string                                                                                                                                        $screen Which screen, e.g. 'diluxone-users-login'.
+ * @param string                                                                                                                                        $id     The tab's slug, which ends up in the URL.
+ * @param array{label: string, render: callable, save?: callable, preview?: callable, preview_src?: string, note?: string, position?: int, form?: bool} $panel
  */
 function diluxone_users_register_panel( string $screen, string $id, array $panel ): void {
 	diluxone_users_panel_registry(
@@ -68,16 +68,24 @@ function diluxone_users_register_panel( string $screen, string $id, array $panel
 		wp_parse_args(
 			$panel,
 			array(
-				'label'    => $id,
-				'render'   => '',
+				'label'       => $id,
+				'render'      => '',
 				// A panel with nothing to save — a summary, a preview — says
 				// so, and the screen leaves out the form and the button.
-				'save'     => '',
+				'save'        => '',
 				// What goes in the column beside the fields. A panel without
 				// one runs the full width.
-				'preview'  => '',
-				'form'     => true,
-				'position' => 50,
+				'preview'     => '',
+				// A whole page of its own to show instead — wp-login.php is
+				// one. It is a URL, so nothing is redrawn as the fields move:
+				// the page is what it is until it is saved.
+				'preview_src' => '',
+				// A line under the preview, in the admin's voice. It lives out
+				// here and not inside the preview because inside the preview
+				// it would be part of what is being previewed.
+				'note'        => '',
+				'form'        => true,
+				'position'    => 50,
 			)
 		)
 	);
@@ -142,7 +150,7 @@ function diluxone_users_screen_panels( string $screen, string $title ): void {
 	diluxone_users_screen_open( $title, $screen, count( $labels ) > 1 ? $labels : array(), $current );
 
 	$form    = ! empty( $panel['form'] ) && is_callable( $panel['save'] );
-	$preview = is_callable( $panel['preview'] );
+	$preview = is_callable( $panel['preview'] ) || '' !== $panel['preview_src'];
 
 	/*
 	 * With a preview, the two columns wrap the form rather than the other way
@@ -176,7 +184,7 @@ function diluxone_users_screen_panels( string $screen, string $title ): void {
 			esc_attr( $screen ),
 			esc_attr( wp_create_nonce( 'diluxone_users_preview' ) )
 		);
-		call_user_func( $panel['preview'] );
+		diluxone_users_preview_stage( $panel );
 		echo '</div></div>';
 	}
 
@@ -211,6 +219,171 @@ function diluxone_users_panels_ready(): void {
 	do_action( 'diluxone_users_register_panels' );
 }
 add_action( 'admin_init', 'diluxone_users_panels_ready', 1 );
+
+/**
+ * The two values the admin picks, as custom properties.
+ *
+ * On the front end they are added to the stylesheet. Here they cannot be: the
+ * sheet is one file inside the preview's document and a colour chosen a second
+ * ago would show as the colour saved a week ago. So they ride with the markup.
+ */
+function diluxone_users_preview_tokens(): string {
+	$tokens = '';
+	$accent = sanitize_hex_color( diluxone_users_style_accent() );
+	$radius = (string) diluxone_users_option( 'diluxone_users_style_radius' );
+
+	if ( null !== $accent && '' !== $accent ) {
+		$tokens .= '--diluxone-users-accent:' . $accent . ';';
+		$tokens .= '--diluxone-users-accent-bg:' . $accent . ';';
+	}
+
+	if ( '' !== trim( $radius ) ) {
+		$tokens .= '--diluxone-users-radius:' . (int) $radius . 'px;';
+		$tokens .= '--diluxone-users-radius-sm:' . max( 0, (int) $radius - 4 ) . 'px;';
+	}
+
+	return $tokens;
+}
+
+/**
+ * A preview, as a page of its own.
+ *
+ * This is the whole reason the previews are in an iframe. The sign-in frames
+ * break out to the full width of the window the way any cover does, with
+ * `calc(50% - 50vw)` — and a preview drawn inside the admin column reads the
+ * *admin's* window: half of 1900px of photo inside a 460px box, with the form
+ * pushed off the side and clipped. Nothing was wrong with the markup; it was
+ * being shown a window that was not its own.
+ *
+ * In here `50vw` is half of the preview, because the preview is the window.
+ *
+ * @param string $body The preview's markup.
+ * @return string A complete document.
+ */
+function diluxone_users_preview_document( string $body ): string {
+	$sheets = array( DILUXONE_USERS_URL . 'assets/diluxone-users.css' => 'assets/diluxone-users.css' );
+
+	// The social buttons come with their own sheet on the front end too.
+	$sheets[ DILUXONE_USERS_URL . 'assets/diluxone-users-social.css' ] = 'assets/diluxone-users-social.css';
+
+	$links = '';
+
+	foreach ( $sheets as $url => $file ) {
+		$links .= sprintf(
+			// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- a document of its own, with no queue to enqueue into.
+			'<link rel="stylesheet" href="%s">',
+			esc_url( add_query_arg( 'ver', diluxone_users_asset_version( $file ), $url ) )
+		);
+	}
+
+	$tokens = diluxone_users_preview_tokens();
+
+	/*
+	 * The padding is the page's margin and it is what the breakout undoes: a
+	 * cover reaches the edge of this document exactly as it reaches the edge
+	 * of the browser on the site.
+	 */
+	$style = 'html{background:#fff}'
+		. 'body{margin:0;padding:40px 24px;background:#fff;color:#1e1e1e;'
+		. 'font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}'
+		. ( '' === $tokens ? '' : ':root{' . $tokens . '}' );
+
+	return '<!DOCTYPE html><html ' . get_language_attributes( 'html' ) . '><head><meta charset="'
+		. esc_attr( get_bloginfo( 'charset' ) ) . '">'
+		. $links
+		. '<style>' . $style . '</style></head><body>'
+		. $body
+		. '</body></html>';
+}
+
+/**
+ * The preview column: a window with the page inside it, to scale.
+ *
+ * Two sizes and not a slider, because there are two questions being asked of
+ * a design — does it hold together wide, and does it survive a phone — and a
+ * slider makes you find the answer instead of handing it over. The scaling
+ * itself is the browser's, from the script: the column's width divided by the
+ * width being pretended at.
+ *
+ * @param array<string, mixed> $panel
+ */
+function diluxone_users_preview_stage( array $panel ): void {
+	$src = (string) $panel['preview_src'];
+
+	if ( '' === $src ) {
+		ob_start();
+		call_user_func( $panel['preview'] );
+		$document = diluxone_users_preview_document( (string) ob_get_clean() );
+	}
+	?>
+	<div class="diluxone-users-stage" data-diluxone-users-stage>
+		<div class="diluxone-users-stage__bar">
+			<?php
+			// With a context, because "Phone" is also the name of a field
+			// type: one is a width and the other is a box somebody types a
+			// number into, and a translator seeing the bare word gets it
+			// wrong exactly half the time.
+			?>
+			<button type="button" class="diluxone-users-stage__device is-on" data-diluxone-users-device="1200">
+				<?php echo esc_html_x( 'Desktop', 'the preview at desktop width', 'diluxone-users' ); ?>
+			</button>
+			<button type="button" class="diluxone-users-stage__device" data-diluxone-users-device="390">
+				<?php echo esc_html_x( 'Phone', 'the preview at phone width', 'diluxone-users' ); ?>
+			</button>
+
+			<?php
+			// Beside the column the page is a thumbnail, which answers "does
+			// it hold together" and not "is that line too long". This is the
+			// same page, big.
+			?>
+			<button type="button" class="diluxone-users-stage__zoom" data-diluxone-users-zoom>
+				<?php esc_html_e( 'See it big', 'diluxone-users' ); ?>
+			</button>
+		</div>
+
+		<div class="diluxone-users-stage__canvas" data-diluxone-users-stage-canvas>
+			<?php
+			/*
+			 * Not clickable and not reachable by the keyboard: it is the real
+			 * page, with the real forms in it, and it is here to be looked at.
+			 */
+			?>
+			<iframe
+				class="diluxone-users-stage__frame"
+				data-diluxone-users-stage-frame
+				title="<?php esc_attr_e( 'Preview', 'diluxone-users' ); ?>"
+				tabindex="-1"
+				scrolling="no"
+				<?php if ( '' !== $src ) : ?>
+					src="<?php echo esc_url( $src ); ?>"
+				<?php else : ?>
+					srcdoc="<?php echo esc_attr( $document ); ?>"
+				<?php endif; ?>
+				></iframe>
+		</div>
+	</div>
+
+	<?php if ( '' !== (string) $panel['note'] ) : ?>
+		<p class="description diluxone-users-stage__note"><?php echo esc_html( (string) $panel['note'] ); ?></p>
+	<?php endif; ?>
+
+	<?php
+	// Empty on purpose: what is in it is whatever the preview is showing at
+	// the moment it is opened, copied across by the script. Two iframes and
+	// not one moved around, because moving an iframe in the DOM reloads it
+	// and a preview that flickers every time it is opened is a worse preview.
+	?>
+	<dialog class="diluxone-users-zoom" data-diluxone-users-zoom-box>
+		<div class="diluxone-users-zoom__bar">
+			<span class="diluxone-users-zoom__what"><?php echo esc_html( (string) $panel['label'] ); ?></span>
+			<button type="button" class="button" data-diluxone-users-zoom-close><?php esc_html_e( 'Close', 'diluxone-users' ); ?></button>
+		</div>
+		<div class="diluxone-users-zoom__canvas" data-diluxone-users-zoom-canvas>
+			<iframe class="diluxone-users-zoom__frame" data-diluxone-users-zoom-frame title="<?php esc_attr_e( 'Preview', 'diluxone-users' ); ?>" tabindex="-1" scrolling="no"></iframe>
+		</div>
+	</dialog>
+	<?php
+}
 
 /**
  * Redraws a preview with settings that have not been saved.
@@ -267,8 +440,12 @@ function diluxone_users_preview_request(): void {
 	call_user_func( $panels[ $id ]['preview'] );
 	$html = (string) ob_get_clean();
 
+	// The document is built while the override is still in place: the colour
+	// and the corners are read from the form too.
+	$document = diluxone_users_preview_document( $html );
+
 	remove_filter( 'diluxone_users_option', $override, 999 );
 
-	wp_send_json_success( $html );
+	wp_send_json_success( $document );
 }
 add_action( 'wp_ajax_diluxone_users_preview', 'diluxone_users_preview_request' );

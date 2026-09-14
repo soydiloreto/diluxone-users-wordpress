@@ -516,6 +516,11 @@ function diluxone_users_account_nav( ?array $sections = null, string $current = 
 		array(
 			'sections' => $sections,
 			'current'  => $current,
+			'style'    => diluxone_users_account_nav_style(),
+			// The menu can be placed on its own with the shortcode, far from
+			// the area it navigates, so it carries its own direction rather
+			// than waiting to be told by a parent that may not be there.
+			'column'   => 'side' === (string) diluxone_users_option( 'diluxone_users_account_layout' ),
 		)
 	);
 }
@@ -538,6 +543,60 @@ function diluxone_users_account_template(): string {
 		: array( 'plain', 'cover' );
 
 	return in_array( $template, $known, true ) ? $template : 'plain';
+}
+
+/**
+ * What the menu looks like: pills, underlined tabs, or plain text.
+ *
+ * Down the side an underline would be a line across the whole menu under each
+ * item, so the stylesheet turns it into a bar down the left — the same idea,
+ * rotated. The answer stored is the same either way: the site chose a look,
+ * not a set of borders.
+ */
+function diluxone_users_account_nav_style(): string {
+	$style = (string) diluxone_users_option( 'diluxone_users_account_nav_style' );
+
+	$known = diluxone_users_account_nav_styles();
+
+	return isset( $known[ $style ] ) ? $style : 'pills';
+}
+
+/**
+ * The looks the menu comes in, and what each one is for.
+ *
+ * Three and not thirty: they are the three ways a menu of sections is drawn
+ * on the web, and a fourth would be a variation on one of them. An add-on
+ * with a fourth adds it here and writes the rules for its own class.
+ *
+ * @return array<string, array<string, string>>
+ */
+function diluxone_users_account_nav_styles(): array {
+	$styles = array(
+		'pills'     => array(
+			'label' => __( 'Filled', 'diluxone-users' ),
+			'help'  => __( 'The open section is a filled block in your colour. The clearest of the three, and the one that reads as a menu rather than as a row of links.', 'diluxone-users' ),
+		),
+		'underline' => array(
+			'label' => __( 'Underlined', 'diluxone-users' ),
+			'help'  => __( 'A line under the open section. Down the side it becomes a bar down the left, because a line under a stacked item runs across the whole menu.', 'diluxone-users' ),
+		),
+		'plain'     => array(
+			'label' => __( 'Plain text', 'diluxone-users' ),
+			'help'  => __( 'Nothing but the words, with the open one in your colour. For a site whose own design already says where you are.', 'diluxone-users' ),
+		),
+	);
+
+	/**
+	 * Filters the looks the account menu comes in.
+	 *
+	 * The stylesheet styles `.diluxone-users-account__nav--<slug>`, so a look
+	 * added here is a look somebody has written the rules for.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, array<string, string>> $styles Keyed by slug.
+	 */
+	return (array) apply_filters( 'diluxone_users_account_nav_styles', $styles );
 }
 
 /** How wide the content runs. */

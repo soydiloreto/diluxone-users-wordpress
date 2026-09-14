@@ -79,14 +79,15 @@ function diluxone_users_design_account_save(): void {
 	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the panel verifies it.
 	diluxone_users_save_options(
 		array(
-			'diluxone_users_account_template' => 'cover' === sanitize_key( wp_unslash( $_POST['diluxone_users_account_template'] ?? '' ) ) ? 'cover' : 'plain',
-			'diluxone_users_account_layout'   => sanitize_key( wp_unslash( $_POST['diluxone_users_account_layout'] ?? 'tabs' ) ),
-			'diluxone_users_account_width'    => 'full' === sanitize_key( wp_unslash( $_POST['diluxone_users_account_width'] ?? '' ) ) ? 'full' : 'contained',
-			'diluxone_users_account_header'   => isset( $_POST['diluxone_users_account_header'] ) ? 1 : 0,
-			'diluxone_users_account_avatar'   => isset( $_POST['diluxone_users_account_avatar'] ) ? 1 : 0,
-			'diluxone_users_account_since'    => isset( $_POST['diluxone_users_account_since'] ) ? 1 : 0,
-			'diluxone_users_account_action'   => isset( $_POST['diluxone_users_account_action'] ) ? 1 : 0,
-			'diluxone_users_account_cover'    => sanitize_hex_color( wp_unslash( $_POST['diluxone_users_account_cover'] ?? '' ) ) ?? '',
+			'diluxone_users_account_template'  => 'cover' === sanitize_key( wp_unslash( $_POST['diluxone_users_account_template'] ?? '' ) ) ? 'cover' : 'plain',
+			'diluxone_users_account_layout'    => sanitize_key( wp_unslash( $_POST['diluxone_users_account_layout'] ?? 'tabs' ) ),
+			'diluxone_users_account_nav_style' => sanitize_key( wp_unslash( $_POST['diluxone_users_account_nav_style'] ?? 'pills' ) ),
+			'diluxone_users_account_width'     => 'full' === sanitize_key( wp_unslash( $_POST['diluxone_users_account_width'] ?? '' ) ) ? 'full' : 'contained',
+			'diluxone_users_account_header'    => isset( $_POST['diluxone_users_account_header'] ) ? 1 : 0,
+			'diluxone_users_account_avatar'    => isset( $_POST['diluxone_users_account_avatar'] ) ? 1 : 0,
+			'diluxone_users_account_since'     => isset( $_POST['diluxone_users_account_since'] ) ? 1 : 0,
+			'diluxone_users_account_action'    => isset( $_POST['diluxone_users_account_action'] ) ? 1 : 0,
+			'diluxone_users_account_cover'     => sanitize_hex_color( wp_unslash( $_POST['diluxone_users_account_cover'] ?? '' ) ) ?? '',
 		)
 	);
 	// phpcs:enable
@@ -153,6 +154,7 @@ function diluxone_users_design_panels(): void {
 			'position' => 10,
 			'render'   => 'diluxone_users_screen_design_brand',
 			'preview'  => 'diluxone_users_style_preview',
+			'note'     => __( 'Your account area, as the site serves it. It is the real thing and not a drawing, so a template your theme has replaced shows up here as it does on the site.', 'diluxone-users' ),
 			'save'     => 'diluxone_users_design_brand_save',
 		)
 	);
@@ -167,6 +169,7 @@ function diluxone_users_design_panels(): void {
 			'position' => 20,
 			'render'   => 'diluxone_users_design_login',
 			'preview'  => 'diluxone_users_login_preview',
+			'note'     => __( 'The sign-in page, at the width shown. The theme’s own fonts are not in here: what this shows is the plugin’s part of the page.', 'diluxone-users' ),
 			'save'     => 'diluxone_users_design_login_save',
 		)
 	);
@@ -178,6 +181,7 @@ function diluxone_users_design_panels(): void {
 			'position' => 25,
 			'render'   => 'diluxone_users_design_register',
 			'preview'  => 'diluxone_users_register_preview',
+			'note'     => __( 'The registration form, in the frame the sign-in tab chose for both.', 'diluxone-users' ),
 			'save'     => 'diluxone_users_design_register_save',
 		)
 	);
@@ -190,6 +194,7 @@ function diluxone_users_design_panels(): void {
 			'position' => 30,
 			'render'   => 'diluxone_users_screen_appearance_template',
 			'preview'  => 'diluxone_users_style_preview',
+			'note'     => __( 'The account area as you would meet it, with your own name and picture and the sections your account can see.', 'diluxone-users' ),
 			'save'     => 'diluxone_users_design_account_save',
 		)
 	);
@@ -217,11 +222,14 @@ function diluxone_users_design_panels(): void {
 		DILUXONE_USERS_DESIGN,
 		'wp',
 		array(
-			'label'    => __( 'The WordPress screen', 'diluxone-users' ),
-			'position' => 60,
-			'render'   => 'diluxone_users_screen_login_wp',
-			'preview'  => 'diluxone_users_wp_login_preview',
-			'save'     => 'diluxone_users_design_wp_save',
+			'label'       => __( 'The WordPress screen', 'diluxone-users' ),
+			'position'    => 60,
+			'render'      => 'diluxone_users_screen_login_wp',
+			// The page itself and not a rendering of it, so it only changes
+			// once it is saved.
+			'preview_src' => wp_login_url() . '?diluxone-users-admin=1',
+			'note'        => __( 'wp-login.php as it is right now. Save to see the changes: this is the page itself, not a drawing of it.', 'diluxone-users' ),
+			'save'        => 'diluxone_users_design_wp_save',
 		)
 	);
 }

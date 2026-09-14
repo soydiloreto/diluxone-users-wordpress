@@ -314,19 +314,98 @@
 .diluxone-users-pieces .diluxone-users-roles__item,
 .form-table fieldset > .diluxone-users-roles__item { display: block; margin-bottom: 4px; }
 
-/* A whole page shown as itself: wp-login.php in a frame. Scaled down so the
-   form fits the column, and inert — it is to be looked at. */
-.diluxone-users-preview__frame--page { padding: 0; overflow: hidden; }
-.diluxone-users-preview__frame--page iframe {
-	display: block;
-	width: 200%;
-	height: 900px;
+/* ── The preview: a window of its own, to scale ──────────────────────────
+   The previews used to be drawn straight into this column, and the sign-in
+   frames came out broken: they break out to the width of the window with
+   `calc(50% - 50vw)`, and the window they were reading was the admin's. Half
+   a photo of 1900px inside a 460px box, with the form off the side.
+   Now each preview is a document in an iframe with its own width, shrunk to
+   fit by the script. Nothing is cut and nothing lies about its proportions. */
+.diluxone-users-stage {
+	margin-top: 6px;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	overflow: hidden;
+	background: #f6f7f7;
+}
+.diluxone-users-stage__bar {
+	display: flex;
+	gap: 2px;
+	padding: 6px;
+	border-bottom: 1px solid #dcdcde;
+	background: #fff;
+}
+.diluxone-users-stage__device {
 	border: 0;
-	transform: scale(.5);
+	background: none;
+	padding: 4px 10px;
+	border-radius: 3px;
+	cursor: pointer;
+	font-size: 12px;
+	color: #646970;
+}
+.diluxone-users-stage__device:hover { background: #f0f0f1; color: #1d2327; }
+.diluxone-users-stage__device.is-on { background: #f0f0f1; color: #1d2327; font-weight: 600; }
+/* Pushed to the far end: it is not one of the two widths, it is a way out of
+   the column altogether. */
+.diluxone-users-stage__zoom {
+	margin-left: auto;
+	border: 0;
+	background: none;
+	padding: 4px 8px;
+	cursor: pointer;
+	font-size: 12px;
+	color: #2271b1;
+	text-decoration: underline;
+}
+.diluxone-users-stage__zoom:hover { color: #135e96; }
+/* The window itself. Its height is set by the script, from the height of what
+   is inside it: a fixed one either cuts the page or leaves a grey gap. */
+.diluxone-users-stage__canvas {
+	position: relative;
+	overflow: hidden;
+	background: #fff;
+	transition: height .12s ease;
+}
+.diluxone-users-stage__frame {
+	display: block;
+	border: 0;
 	transform-origin: 0 0;
-	margin-bottom: -450px;
+	/* It is the real page with the real forms in it, and it is here to be
+	   looked at. */
 	pointer-events: none;
 }
+/* On a phone the page is narrower than the column, so it is centred rather
+   than blown up past its own size. */
+.diluxone-users-stage.is-phone .diluxone-users-stage__canvas { background: #f6f7f7; }
+.diluxone-users-stage__note { margin-top: 8px; }
+
+/* The same page, out of the column and as big as the window allows. Beside
+   the fields a preview answers "does this hold together"; it takes this to
+   answer "is that line too long", and both questions are real. */
+.diluxone-users-zoom {
+	width: min(1320px, 94vw);
+	max-width: none;
+	max-height: 92vh;
+	padding: 0;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+	background: #fff;
+	overflow: hidden;
+}
+.diluxone-users-zoom::backdrop { background: rgba(0, 0, 0, .6); }
+.diluxone-users-zoom__bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 10px 14px;
+	border-bottom: 1px solid #dcdcde;
+	background: #f6f7f7;
+}
+.diluxone-users-zoom__what { font-weight: 600; }
+.diluxone-users-zoom__canvas { overflow: auto; max-height: calc(92vh - 52px); background: #fff; }
+.diluxone-users-zoom__frame { display: block; border: 0; transform-origin: 0 0; pointer-events: none; }
 
 /* ── A screen with a preview beside it ──────────────────────────────────
    Settings on the left, what they do on the right, and the right-hand side
@@ -336,7 +415,7 @@
    The buttons screen was the first to do this; now every design tab does. */
 .diluxone-users-studio {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) minmax(340px, 460px);
+	grid-template-columns: minmax(0, 1fr) minmax(360px, 620px);
 	gap: 32px;
 	align-items: start;
 	margin-top: 8px;
@@ -352,9 +431,7 @@
 /* While the server is drawing it again. Not a spinner: the old preview is
    still true until the new one lands, so it fades rather than disappears. */
 .diluxone-users-studio__preview.is-working { opacity: .55; transition: opacity .12s ease; }
-.diluxone-users-studio .diluxone-users-preview { margin: 0; }
-/* The frame no longer needs a width of its own: the column is the width. */
-.diluxone-users-studio .diluxone-users-preview__frame { padding: 16px; }
+.diluxone-users-studio .diluxone-users-stage { margin-top: 0; }
 
 @media screen and (max-width: 960px) {
 	.diluxone-users-studio { grid-template-columns: minmax(0, 1fr); gap: 24px; }
@@ -436,7 +513,7 @@
    carries a small drawing of itself above its name. */
 .diluxone-users-templates {
 	display: grid; gap: 12px;
-	grid-template-columns: repeat(auto-fit, minmax(230px, 260px));
+	grid-template-columns: repeat(auto-fit, minmax(190px, 250px));
 }
 .diluxone-users-templates__one {
 	display: block; padding: 12px; cursor: pointer;
@@ -516,25 +593,6 @@
 
 /* The pieces a header is made of hang under the box that turns it on. */
 .diluxone-users-pieces { margin: 6px 0 0 22px; }
-
-.diluxone-users-preview { margin: 24px 0 0; }
-.diluxone-users-preview__frame {
-	margin-top: 6px; padding: 24px; border: 1px solid #dcdcde; border-radius: 4px;
-	/* The real account area is in here and it is not to be used from here.
-	   `inert` does the work; this is for browsers that do not have it yet. */
-	pointer-events: none;
-	/* A cover breaks out to the width of the window with a negative margin.
-	   Inside a preview box that would run off the screen, so the box is the
-	   window as far as it is concerned. */
-	overflow: hidden;
-	/* A page-ish ground, so the panels inside are seen against something
-	   other than the admin's own grey. */
-	background: #fff;
-}
-/* With the stylesheet off, the preview drops it too: the markup comes out as
-   the theme would receive it, which is the point of that choice. */
-.diluxone-users-preview.is-bare .diluxone-users-account,
-.diluxone-users-preview.is-bare .diluxone-users-account * { all: revert; }
 
 /* ── The account sections: list and detail ──────────────────────────── */
 

@@ -144,28 +144,22 @@ function diluxone_users_screen_register_form_save(): void {
 
 /** The form as the site serves it. */
 function diluxone_users_register_preview(): void {
-	?>
-	<div class="diluxone-users-preview" data-diluxone-users-preview-box>
-		<p class="description"><?php esc_html_e( 'The registration form, as the site serves it:', 'diluxone-users' ); ?></p>
+	// The same frame the sign-in page wears: it is the same page with other
+	// fields in it, and previewing it bare would preview something else.
+	diluxone_users_login_frame_open();
 
-		<div class="diluxone-users-preview__frame" inert>
-			<div data-diluxone-users-preview-skin>
-				<?php
-				echo diluxone_users_render( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the template escapes its own output.
-					'register.php',
-					array(
-						'state'     => '',
-						'email'     => '',
-						'fields'    => diluxone_users_register_fields(),
-						'open'      => 'closed' !== diluxone_users_register_mode(),
-						'providers' => diluxone_users_sso_for_login(),
-					)
-				);
-				?>
-			</div>
-		</div>
-	</div>
-	<?php
+	echo diluxone_users_render( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the template escapes its own output.
+		'register.php',
+		array(
+			'state'     => '',
+			'email'     => '',
+			'fields'    => diluxone_users_register_fields(),
+			'open'      => 'closed' !== diluxone_users_register_mode(),
+			'providers' => diluxone_users_sso_for_login(),
+		)
+	);
+
+	diluxone_users_login_frame_close();
 }
 
 /**

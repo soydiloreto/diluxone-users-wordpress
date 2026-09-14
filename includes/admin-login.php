@@ -579,38 +579,24 @@ function diluxone_users_screen_login_privacy(): void {
  * preview is worth looking at.
  */
 function diluxone_users_login_preview(): void {
-	?>
-	<div class="diluxone-users-preview" data-diluxone-users-preview-box>
-		<?php
-		// Inert and outside any settings form: the sign-in form is a form.
-		?>
-		<div class="diluxone-users-preview__frame" inert>
-			<div data-diluxone-users-preview-skin>
-				<?php
-				// The same frame and the same template the front end uses,
-				// in the same order: a preview that skips the frame previews
-				// a page that does not exist.
-				diluxone_users_login_frame_open();
+	// The same frame and the same template the front end uses, in the same
+	// order: a preview that skips the frame previews a page that does not
+	// exist.
+	diluxone_users_login_frame_open();
 
-				echo diluxone_users_render( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the template escapes its own output.
-					'login.php',
-					array(
-						'state'     => diluxone_users_state(),
-						'email'     => '',
-						'providers' => diluxone_users_sso_for_login(),
-						'minutes'   => diluxone_users_login_expiry(),
-						'title'     => false,
-					)
-				);
+	echo diluxone_users_render( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the template escapes its own output.
+		'login.php',
+		array(
+			'state'     => diluxone_users_state(),
+			'email'     => '',
+			'providers' => diluxone_users_sso_for_login(),
+			'minutes'   => diluxone_users_login_expiry(),
+			'title'     => false,
+		)
+	);
 
-				diluxone_users_login_frame_close();
-				?>
-			</div>
-		</div>
-	</div>
-	<?php
+	diluxone_users_login_frame_close();
 }
-
 
 /**
  * One field of the wording tab.
@@ -804,33 +790,6 @@ function diluxone_users_screen_login_shape(): void {
 			</td>
 		</tr>
 	</table>
-	<?php
-}
-
-/**
- * WordPress's own screen, in a frame.
- *
- * It cannot be drawn from here — it is a whole page with its own stylesheet —
- * so it is shown as itself, in an iframe, with the escape-hatch argument so
- * it renders the form even on a site that sends everybody elsewhere. Same
- * origin, so the browser allows it; and it is the only preview in the plugin
- * that is literally the page.
- */
-function diluxone_users_wp_login_preview(): void {
-	?>
-	<div class="diluxone-users-preview">
-		<p class="description"><?php esc_html_e( 'wp-login.php as it is right now:', 'diluxone-users' ); ?></p>
-
-		<div class="diluxone-users-preview__frame diluxone-users-preview__frame--page">
-			<iframe
-				src="<?php echo esc_url( wp_login_url() . '?diluxone-users-admin=1' ); ?>"
-				title="<?php esc_attr_e( 'wp-login.php', 'diluxone-users' ); ?>"
-				loading="lazy"
-				tabindex="-1"></iframe>
-		</div>
-
-		<p class="description"><?php esc_html_e( 'Save to see the changes: this is the page itself, not a drawing of it.', 'diluxone-users' ); ?></p>
-	</div>
 	<?php
 }
 

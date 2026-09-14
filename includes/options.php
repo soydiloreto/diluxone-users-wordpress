@@ -155,6 +155,12 @@ function diluxone_users_option_defaults(): array {
 		// Where the navigation goes: on top, down the side, or nowhere at all
 		// because the site places it with [diluxone_users_account_nav].
 		'diluxone_users_account_layout'     => 'tabs',
+		// And what the menu looks like, which is a different question from
+		// where it goes and from which header the area has. It used to come
+		// out of the template — the cover quietly turned the pills into
+		// underlined tabs — and a look that changes as a side effect of a
+		// choice about the header is a look nobody can predict.
+		'diluxone_users_account_nav_style'  => 'pills',
 		// The front page with avatar, name and member-since date.
 		'diluxone_users_account_header'     => 1,
 		// And what that header is made of. They are separate options and not
