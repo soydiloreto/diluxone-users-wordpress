@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-14T01:45:22+00:00\n"
+"POT-Creation-Date: 2026-09-14T01:47:02+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: diluxone-users\n"
@@ -2795,6 +2795,14 @@ msgstr ""
 
 #: includes/admin-status.php:429
 msgid "Copy this into a support message and half the back-and-forth disappears."
+msgstr ""
+
+#: includes/admin-status.php:448
+msgid "Templates a theme can replace"
+msgstr ""
+
+#: includes/admin-status.php:449
+msgid "Copy any file from the plugin’s templates/ folder into the folder below and edit it there. The plugin will use yours."
 msgstr ""
 
 #: includes/admin-tools.php:53

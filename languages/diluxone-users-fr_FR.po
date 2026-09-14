@@ -4399,3 +4399,11 @@ msgstr "Changer son apparence"
 #: includes/admin.php:77
 msgid "Design"
 msgstr "Design"
+
+#: includes/admin-status.php:448
+msgid "Templates a theme can replace"
+msgstr "Modèles qu'un thème peut remplacer"
+
+#: includes/admin-status.php:449
+msgid "Copy any file from the plugin’s templates/ folder into the folder below and edit it there. The plugin will use yours."
+msgstr "Copiez n'importe quel fichier du dossier templates/ de l'extension dans le dossier ci-dessous et modifiez-le là. L'extension utilisera le vôtre."

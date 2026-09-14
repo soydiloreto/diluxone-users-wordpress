@@ -439,5 +439,23 @@ function diluxone_users_screen_status(): void {
 
 	echo '</tbody></table>';
 
+	/*
+	 * The templates a theme can replace. It used to sit among the colour
+	 * settings, where it was the only row that changed nothing: it is
+	 * documentation for whoever writes the theme, and this is the screen that
+	 * gets pasted into a support message.
+	 */
+	printf( '<h2>%s</h2>', esc_html__( 'Templates a theme can replace', 'diluxone-users' ) );
+	diluxone_users_intro( __( 'Copy any file from the plugin’s templates/ folder into the folder below and edit it there. The plugin will use yours.', 'diluxone-users' ) );
+	printf( '<p><code>%s</code></p>', esc_html( 'wp-content/themes/' . get_stylesheet() . '/diluxone-users/' ) );
+
+	echo '<p class="description">';
+
+	$diluxone_users_files = array( 'account.php', 'account-nav.php', 'account/*.php', 'login.php', 'login-2fa.php', 'fields.php', 'accounts.php', 'sessions.php' );
+
+	echo wp_kses_post( '<code>' . implode( '</code> · <code>', $diluxone_users_files ) . '</code>' );
+
+	echo '</p>';
+
 	diluxone_users_screen_close();
 }

@@ -4399,3 +4399,11 @@ msgstr "Aussehen ändern"
 #: includes/admin.php:77
 msgid "Design"
 msgstr "Design"
+
+#: includes/admin-status.php:448
+msgid "Templates a theme can replace"
+msgstr "Templates, die ein Theme ersetzen kann"
+
+#: includes/admin-status.php:449
+msgid "Copy any file from the plugin’s templates/ folder into the folder below and edit it there. The plugin will use yours."
+msgstr "Kopiere eine beliebige Datei aus dem Ordner templates/ des Plugins in den Ordner unten und bearbeite sie dort. Das Plugin nimmt dann deine."

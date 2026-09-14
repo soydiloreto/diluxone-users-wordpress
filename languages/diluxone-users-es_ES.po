@@ -4398,3 +4398,11 @@ msgstr "Cambiar cómo se ve"
 #: includes/admin.php:77
 msgid "Design"
 msgstr "Diseño"
+
+#: includes/admin-status.php:448
+msgid "Templates a theme can replace"
+msgstr "Plantillas que un tema puede reemplazar"
+
+#: includes/admin-status.php:449
+msgid "Copy any file from the plugin’s templates/ folder into the folder below and edit it there. The plugin will use yours."
+msgstr "Copia cualquier archivo de la carpeta templates/ del plugin a la carpeta de abajo y edítalo ahí. El plugin usará el tuyo."
