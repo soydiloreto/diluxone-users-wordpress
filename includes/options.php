@@ -152,6 +152,11 @@ function diluxone_users_option_defaults(): array {
 		// called, what order it goes in, and the site's own added sections. It
 		// is a list because the saving treats it separately.
 		'diluxone_users_account_sections'   => array(),
+		// The summary cards the front page has been told NOT to show. Stored
+		// the other way round from the screen on purpose: a card that appears
+		// tomorrow because a plugin was installed shows up by itself, instead
+		// of waiting for somebody to remember to tick it.
+		'diluxone_users_home_cards_off'     => array(),
 
 		// ── The public name ───────────────────────────────────────────
 		// The e-mail is the identity and is not chosen; this is the short name

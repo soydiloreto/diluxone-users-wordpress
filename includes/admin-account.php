@@ -102,8 +102,9 @@ function diluxone_users_section_save( array $input ): string {
 	$config = array(
 		'label'      => $label,
 		'slug'       => $slug,
+		'intro'      => sanitize_text_field( (string) ( $input['intro'] ?? '' ) ),
 		'content'    => wp_kses_post( (string) ( $input['content'] ?? '' ) ),
-		'placement'  => in_array( $input['placement'] ?? '', array( 'before', 'after', 'replace', 'aside' ), true )
+		'placement'  => in_array( $input['placement'] ?? '', array( 'before', 'after', 'replace' ), true )
 			? (string) $input['placement']
 			: 'after',
 		'roles'      => array_values( array_filter( array_map( 'sanitize_key', (array) ( $input['roles'] ?? array() ) ) ) ),
@@ -119,6 +120,25 @@ function diluxone_users_section_save( array $input ): string {
 	}
 
 	diluxone_users_section_config_save( $id, $config );
+
+	/*
+	 * The cards are not part of the section: they belong to the front page as
+	 * a whole, and a card can come from a section that is not this one. So
+	 * they are saved as their own option, and only from the form that draws
+	 * them — otherwise editing any other section would wipe the list.
+	 */
+	if ( 'home' === $id && ! empty( $input['cards_shown'] ) ) {
+		$shown = array_map( 'sanitize_key', (array) ( $input['cards'] ?? array() ) );
+		$off   = array();
+
+		foreach ( diluxone_users_summary_cards() as $card ) {
+			if ( ! in_array( (string) $card['id'], $shown, true ) ) {
+				$off[] = (string) $card['id'];
+			}
+		}
+
+		update_option( 'diluxone_users_home_cards_off', $off );
+	}
 
 	return $id;
 }
@@ -493,6 +513,49 @@ function diluxone_users_screen_account_section( string $id, array $sections, int
 					<?php endif; ?>
 				</td>
 			</tr>
+			<?php if ( 'home' === $id ) : ?>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'The cards it shows', 'diluxone-users' ); ?></th>
+					<td>
+						<?php
+						/*
+						 * What is stored is the list of cards turned OFF, so a
+						 * card that turns up tomorrow because a plugin was
+						 * installed appears by itself. The screen asks the
+						 * question the other way round because "show this" is
+						 * what somebody is actually deciding.
+						 */
+						$diluxone_users_off = diluxone_users_summaries_hidden();
+						$diluxone_users_all = diluxone_users_summary_cards();
+						?>
+
+						<?php
+						// A marker, because a form with every box unticked
+						// sends no "cards" at all — and without something
+						// saying the list was on screen, "show none" would be
+						// indistinguishable from "this form never had it".
+						?>
+						<input type="hidden" name="diluxone_users_seccion[cards_shown]" value="1">
+
+						<?php if ( array() === $diluxone_users_all ) : ?>
+							<p class="description"><?php esc_html_e( 'No section offers a card yet, so the front page is empty. Sections bring their own, and so does anything else installed on the site.', 'diluxone-users' ); ?></p>
+						<?php endif; ?>
+
+						<?php foreach ( $diluxone_users_all as $diluxone_users_card ) : ?>
+							<label class="diluxone-users-roles__item">
+								<input type="checkbox" name="diluxone_users_seccion[cards][]" value="<?php echo esc_attr( (string) $diluxone_users_card['id'] ); ?>" <?php checked( ! in_array( (string) $diluxone_users_card['id'], $diluxone_users_off, true ) ); ?>>
+								<?php echo esc_html( (string) $diluxone_users_card['label'] ); ?>
+								<?php if ( '' === (string) $diluxone_users_card['value'] ) : ?>
+									<span class="description">— <?php esc_html_e( 'nothing to show right now', 'diluxone-users' ); ?></span>
+								<?php endif; ?>
+							</label>
+						<?php endforeach; ?>
+
+						<p class="description"><?php esc_html_e( 'The front page is a summary: each section offers one card and the site can add its own. Untick one and it stops being shown — the section itself is untouched, and a card that has nothing to say today is left out on its own anyway.', 'diluxone-users' ); ?></p>
+					</td>
+				</tr>
+			<?php endif; ?>
+
 			<tr>
 				<th scope="row"><label for="diluxone-users-section-intro"><?php esc_html_e( 'The line under the title', 'diluxone-users' ); ?></label></th>
 				<td>
@@ -527,7 +590,6 @@ function diluxone_users_screen_account_section( string $id, array $sections, int
 								'after'   => __( 'After what the plugin shows', 'diluxone-users' ),
 								'before'  => __( 'Before what the plugin shows', 'diluxone-users' ),
 								'replace' => __( 'Instead of it — your content replaces the section', 'diluxone-users' ),
-								'aside'   => __( 'In a column at the side, next to it', 'diluxone-users' ),
 							);
 
 							foreach ( $where as $key => $label ) {
@@ -541,7 +603,6 @@ function diluxone_users_screen_account_section( string $id, array $sections, int
 							?>
 						</select>
 						<p class="description"><?php esc_html_e( 'This section is drawn by code. What you write below is added to it — unless you say it replaces it.', 'diluxone-users' ); ?></p>
-						<p class="description"><?php esc_html_e( 'The column at the side appears only when there is something in it, and drops under the content on a narrow screen. It is the place for what goes with the section without being it: a summary, an activity panel, a reminder.', 'diluxone-users' ); ?></p>
 					</td>
 				</tr>
 			<?php else : ?>

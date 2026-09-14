@@ -88,28 +88,13 @@ $diluxone_users_classes = array(
 			<?php echo diluxone_users_account_nav( $sections, $current ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own markup, already escaped. ?>
 		<?php endif; ?>
 
-		<?php
-		$diluxone_users_section = $sections[ $current ];
-		$diluxone_users_aside   = diluxone_users_account_aside_html( $diluxone_users_section, $current, $user );
-		?>
-
-		<div class="diluxone-users-account__main<?php echo '' !== $diluxone_users_aside ? ' has-aside' : ''; ?>">
-			<div class="diluxone-users-account__section">
-				<?php
-				echo diluxone_users_account_heading_html( $diluxone_users_section, $current, $user ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
-				echo diluxone_users_account_section_html( $diluxone_users_section, $user ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitised inside.
-				?>
-			</div>
-
+		<div class="diluxone-users-account__section">
 			<?php
-			// The column exists when there is something in it and not before:
-			// an empty box beside the content is worse than no column.
+			$diluxone_users_section = $sections[ $current ];
+
+			echo diluxone_users_account_heading_html( $diluxone_users_section, $current, $user ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
+			echo diluxone_users_account_section_html( $diluxone_users_section, $user ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitised inside.
 			?>
-			<?php if ( '' !== $diluxone_users_aside ) : ?>
-				<aside class="diluxone-users-account__aside">
-					<?php echo $diluxone_users_aside; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitised inside. ?>
-				</aside>
-			<?php endif; ?>
 		</div>
 	</div>
 </div>

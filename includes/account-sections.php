@@ -97,15 +97,20 @@ function diluxone_users_privacy_any(): bool {
 /* ── Portada ───────────────────────────────────────────────────────── */
 
 /**
- * The summary cards.
+ * Every summary card there is, shown or not.
  *
  * Each section builds its own out of what it knows. The front page knows none
  * of them: if LifterLMS adds "courses in progress" tomorrow, it appears on
  * its own.
  *
+ * Each card carries an id, which is what the front page remembers when
+ * somebody turns one off. A card arriving from the filter without one gets an
+ * id made from its label — good enough, and it costs nothing to declare a
+ * real one instead.
+ *
  * @return array<int, array<string, string>>
  */
-function diluxone_users_summaries(): array {
+function diluxone_users_summary_cards(): array {
 	$cards = array();
 
 	foreach ( diluxone_users_sections() as $id => $section ) {
@@ -115,13 +120,14 @@ function diluxone_users_summaries(): array {
 
 		$card = call_user_func( $section['summary'] );
 
-		if ( ! is_array( $card ) || '' === ( $card['value'] ?? '' ) ) {
+		if ( ! is_array( $card ) ) {
 			continue;
 		}
 
 		$cards[] = wp_parse_args(
 			$card,
 			array(
+				'id'    => $id,
 				'label' => $section['label'],
 				'value' => '',
 				'note'  => '',
@@ -136,7 +142,51 @@ function diluxone_users_summaries(): array {
 	 *
 	 * @param array<int, array<string, string>> $cards
 	 */
-	return apply_filters( 'diluxone_users_summaries', $cards );
+	$cards = (array) apply_filters( 'diluxone_users_summaries', $cards );
+
+	foreach ( $cards as $i => $card ) {
+		if ( '' === (string) ( $card['id'] ?? '' ) ) {
+			$cards[ $i ]['id'] = sanitize_title( (string) ( $card['label'] ?? '' ) );
+		}
+	}
+
+	return $cards;
+}
+
+/**
+ * Which cards the front page has been told not to show.
+ *
+ * Stored the other way round on purpose — what is hidden, not what is shown.
+ * A card that appears tomorrow because a plugin was installed shows up by
+ * itself, and nobody has to remember to go and tick it.
+ *
+ * @return array<int, string>
+ */
+function diluxone_users_summaries_hidden(): array {
+	return array_values( array_filter( array_map( 'sanitize_key', (array) diluxone_users_option( 'diluxone_users_home_cards_off' ) ) ) );
+}
+
+/**
+ * The cards the front page actually draws.
+ *
+ * A card with nothing to say is dropped here and not in the admin: "linked
+ * accounts" on a site with no provider set up has no number to show, but it
+ * should still be on the list of what can be turned off, or the list changes
+ * shape depending on who is looking at it.
+ *
+ * @return array<int, array<string, string>>
+ */
+function diluxone_users_summaries(): array {
+	$hidden = diluxone_users_summaries_hidden();
+
+	return array_values(
+		array_filter(
+			diluxone_users_summary_cards(),
+			static function ( array $card ) use ( $hidden ): bool {
+				return '' !== (string) $card['value'] && ! in_array( (string) $card['id'], $hidden, true );
+			}
+		)
+	);
 }
 
 /**

@@ -273,11 +273,9 @@ function diluxone_users_account_section_html( array $section, WP_User $user ): s
 		$code = (string) ob_get_clean();
 	}
 
-	// Content placed at the side is not part of this column at all: it is
-	// fetched separately by the template, which puts it in the other one.
-	$own = 'aside' === (string) $section['placement']
+	$own = '' === (string) $section['content']
 		? ''
-		: diluxone_users_section_content( $section );
+		: do_shortcode( wp_kses_post( (string) $section['content'] ) );
 
 	if ( '' === $code || '' === $own ) {
 		return $code . $own;
@@ -293,52 +291,6 @@ function diluxone_users_account_section_html( array $section, WP_User $user ): s
 		default:
 			return $code . $own;
 	}
-}
-
-/**
- * Whatever the site wrote into a section, shortcodes run.
- *
- * @param array<string, mixed> $section
- */
-function diluxone_users_section_content( array $section ): string {
-	$content = (string) ( $section['content'] ?? '' );
-
-	return '' === $content ? '' : do_shortcode( wp_kses_post( $content ) );
-}
-
-/**
- * The column beside a section, if there is anything to put in it.
- *
- * Two ways in, one zone. A site that can express what it wants as a shortcode
- * writes it in the admin and picks "at the side" — no PHP. A site that needs
- * to decide with code (only on the front page, only for somebody enrolled in
- * a course, only when they are one lesson from a certificate) hooks the
- * action, which is the same thing WooCommerce and LifterLMS do for their own
- * dashboards.
- *
- * There is no setting turning the column on: it exists when something is in
- * it. A switch for something the code already knows is a switch that will
- * eventually lie.
- *
- * @param array<string, mixed> $section
- */
-function diluxone_users_account_aside_html( array $section, string $id, WP_User $user ): string {
-	$html = 'aside' === (string) ( $section['placement'] ?? '' )
-		? diluxone_users_section_content( $section )
-		: '';
-
-	ob_start();
-
-	/**
-	 * Fires in the column beside the account section being shown.
-	 *
-	 * @param string  $id      Which section is open.
-	 * @param WP_User $user    Whose account it is.
-	 * @param array<string, mixed> $section The section itself.
-	 */
-	do_action( 'diluxone_users_account_aside', $id, $user, $section );
-
-	return $html . (string) ob_get_clean();
 }
 
 /** The first section shown when arriving without asking for one. */
