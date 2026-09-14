@@ -314,6 +314,50 @@
 .diluxone-users-pieces .diluxone-users-roles__item,
 .form-table fieldset > .diluxone-users-roles__item { display: block; margin-bottom: 4px; }
 
+/* A whole page shown as itself: wp-login.php in a frame. Scaled down so the
+   form fits the column, and inert — it is to be looked at. */
+.diluxone-users-preview__frame--page { padding: 0; overflow: hidden; }
+.diluxone-users-preview__frame--page iframe {
+	display: block;
+	width: 200%;
+	height: 900px;
+	border: 0;
+	transform: scale(.5);
+	transform-origin: 0 0;
+	margin-bottom: -450px;
+	pointer-events: none;
+}
+
+/* ── A screen with a preview beside it ──────────────────────────────────
+   Settings on the left, what they do on the right, and the right-hand side
+   stays put while the left one scrolls: a preview at the foot of the page is
+   something you scroll to and then cannot see the control you just moved.
+   Below 960px it goes under, because two columns of 400px are neither.
+   The buttons screen was the first to do this; now every design tab does. */
+.diluxone-users-studio {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(340px, 460px);
+	gap: 32px;
+	align-items: start;
+	margin-top: 8px;
+}
+.diluxone-users-studio__fields { min-width: 0; }
+.diluxone-users-studio__fields .form-table th { width: 200px; }
+.diluxone-users-studio__preview {
+	position: sticky;
+	top: 46px;
+	min-width: 0;
+}
+.diluxone-users-studio__preview h2 { margin-top: 0; }
+.diluxone-users-studio .diluxone-users-preview { margin: 0; }
+/* The frame no longer needs a width of its own: the column is the width. */
+.diluxone-users-studio .diluxone-users-preview__frame { padding: 16px; }
+
+@media screen and (max-width: 960px) {
+	.diluxone-users-studio { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+	.diluxone-users-studio__preview { position: static; }
+}
+
 /* ── The buttons screen ─────────────────────────────────────────────────
    Settings on the left, preview on the right and always in view: if the
    preview goes to the bottom you have to scroll to see what you just chose,

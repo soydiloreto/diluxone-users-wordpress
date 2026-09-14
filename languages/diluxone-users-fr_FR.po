@@ -337,11 +337,11 @@ msgstr "L’en-tête"
 msgid "Styles"
 msgstr "Styles"
 
-#: includes/admin-design.php:28
+#: includes/admin-design.php:198
 msgid "Profile photo"
 msgstr "Photo de profil"
 
-#: includes/admin-design.php:36
+#: includes/admin-panels.php:135
 #: templates/account/notifications.php:16
 #: templates/fields.php:30
 msgid "Saved."
@@ -3874,7 +3874,6 @@ msgid "The person on a coloured band the full width of the window, with the menu
 msgstr "La personne sur une bande de couleur occupant toute la largeur de la fenêtre, avec le menu dans une barre à lui en dessous. Comme un profil."
 
 #: includes/admin-appearance.php:153
-#: includes/admin-design.php:26
 msgid "The account area"
 msgstr "L'espace compte"
 
@@ -4276,39 +4275,39 @@ msgstr "Votre marque"
 msgid "Above the form, in every template. Somebody who arrived from an e-mail link should be able to tell whose site this is before typing their address into it."
 msgstr "Au-dessus du formulaire, dans tous les modèles. Quelqu'un arrivé par un lien de courriel devrait pouvoir savoir de quel site il s'agit avant d'y taper son adresse."
 
-#: includes/admin-login.php:972
+#: includes/admin-login.php:999
 msgid "WordPress’s own screen"
 msgstr "L'écran propre de WordPress"
 
-#: includes/admin-login.php:974
+#: includes/admin-login.php:1001
 msgid "Even with everybody sent to the page above, this one is still shown to somebody: an administrator coming in through the emergency door, and anybody finishing a password reset — WordPress builds that link and it goes here and nowhere else. Left alone it is a grey box with the WordPress logo on it."
 msgstr "Même avec tout le monde envoyé vers la page ci-dessus, celui-ci reste vu par quelqu'un : un administrateur entrant par la porte de secours, et quiconque termine une réinitialisation de mot de passe — ce lien-là, c'est WordPress qui le construit et il mène ici et nulle part ailleurs. Sans y toucher, c'est une boîte grise avec le logo de WordPress dessus."
 
-#: includes/admin-login.php:978
+#: includes/admin-login.php:1005
 msgid "Your face on it"
 msgstr "Votre visage dessus"
 
-#: includes/admin-login.php:982
+#: includes/admin-login.php:1009
 msgid "Put the site’s name, mark and colour on wp-login.php"
 msgstr "Mettre le nom, la marque et la couleur du site sur wp-login.php"
 
-#: includes/admin-login.php:984
+#: includes/admin-login.php:1011
 msgid "Off by default: a plugin that repaints a screen nobody asked it about is a plugin that gets blamed for the repaint."
 msgstr "Désactivé par défaut : une extension qui repeint un écran sur lequel on ne lui a rien demandé est une extension à qui on reprochera la peinture."
 
-#: includes/admin-login.php:988
+#: includes/admin-login.php:1015
 msgid "The mark there"
 msgstr "La marque là"
 
-#: includes/admin-login.php:993
+#: includes/admin-login.php:1020
 msgid "Replaces the WordPress logo above the box. Without one, the site’s name is written there instead — which is still better than somebody else’s logo."
 msgstr "Remplace le logo de WordPress au-dessus de la boîte. Sans image, le nom du site est écrit à la place — ce qui vaut toujours mieux que le logo de quelqu'un d'autre."
 
-#: includes/admin-login.php:999
+#: includes/admin-login.php:1026
 msgid "The colour there"
 msgstr "La couleur là"
 
-#: includes/admin-login.php:1002
+#: includes/admin-login.php:1029
 msgid "Left as the accent colour it follows the accent, instead of becoming a second colour that drifts from the first."
 msgstr "Laissée sur la couleur d'accent, elle suit l'accent au lieu de devenir une seconde couleur qui s'écarte de la première."
 
@@ -4364,19 +4363,11 @@ msgstr "Utiliser une autre adresse"
 msgid "Shown above the sign-in form. Somebody who arrived from an e-mail link should be able to tell whose site this is before typing their address into it."
 msgstr "Affichée au-dessus du formulaire de connexion. Quelqu'un arrivé par un lien de courriel devrait pouvoir savoir de quel site il s'agit avant d'y taper son adresse."
 
-#: includes/admin-design.php:24
+#: includes/admin-design.php:152
 msgid "Your brand"
 msgstr "Votre marque"
 
-#: includes/admin-design.php:25
-msgid "Sign in and registration"
-msgstr "Connexion et inscription"
-
-#: includes/admin-design.php:27
-msgid "Social buttons"
-msgstr "Boutons sociaux"
-
-#: includes/admin-design.php:29
+#: includes/admin-design.php:208
 msgid "The WordPress screen"
 msgstr "L'écran de WordPress"
 
@@ -4407,3 +4398,15 @@ msgstr "Modèles qu'un thème peut remplacer"
 #: includes/admin-status.php:449
 msgid "Copy any file from the plugin’s templates/ folder into the folder below and edit it there. The plugin will use yours."
 msgstr "Copiez n'importe quel fichier du dossier templates/ de l'extension dans le dossier ci-dessous et modifiez-le là. L'extension utilisera le vôtre."
+
+#: includes/admin-login.php:981
+msgid "wp-login.php as it is right now:"
+msgstr "wp-login.php telle qu'elle est en ce moment :"
+
+#: includes/admin-login.php:986
+msgid "wp-login.php"
+msgstr "wp-login.php"
+
+#: includes/admin-login.php:991
+msgid "Save to see the changes: this is the page itself, not a drawing of it."
+msgstr "Enregistrez pour voir les changements : c'est la page elle-même, pas un dessin de celle-ci."

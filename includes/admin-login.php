@@ -966,6 +966,33 @@ function diluxone_users_screen_login_shape(): void {
 	<?php
 }
 
+/**
+ * WordPress's own screen, in a frame.
+ *
+ * It cannot be drawn from here — it is a whole page with its own stylesheet —
+ * so it is shown as itself, in an iframe, with the escape-hatch argument so
+ * it renders the form even on a site that sends everybody elsewhere. Same
+ * origin, so the browser allows it; and it is the only preview in the plugin
+ * that is literally the page.
+ */
+function diluxone_users_wp_login_preview(): void {
+	?>
+	<div class="diluxone-users-preview">
+		<p class="description"><?php esc_html_e( 'wp-login.php as it is right now:', 'diluxone-users' ); ?></p>
+
+		<div class="diluxone-users-preview__frame diluxone-users-preview__frame--page">
+			<iframe
+				src="<?php echo esc_url( wp_login_url() . '?diluxone-users-admin=1' ); ?>"
+				title="<?php esc_attr_e( 'wp-login.php', 'diluxone-users' ); ?>"
+				loading="lazy"
+				tabindex="-1"></iframe>
+		</div>
+
+		<p class="description"><?php esc_html_e( 'Save to see the changes: this is the page itself, not a drawing of it.', 'diluxone-users' ); ?></p>
+	</div>
+	<?php
+}
+
 /** WordPress's own sign-in screen, which somebody still sees. */
 function diluxone_users_screen_login_wp(): void {
 	?>
