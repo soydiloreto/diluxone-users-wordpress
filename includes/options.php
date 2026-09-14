@@ -61,6 +61,20 @@ function diluxone_users_option_defaults(): array {
 		'diluxone_users_login_image'        => 0,
 		'diluxone_users_login_logo'         => 0,
 
+		// ── wp-login.php, the screen WordPress brings ────────────────
+		// Even a site that sends everybody to its own page still shows this
+		// one: an administrator coming in through the emergency door, and
+		// anybody finishing a password reset, both land here. WordPress's grey
+		// box with its own logo on it is the kind of detail that makes a
+		// person wonder whether the site is the one it says it is.
+		'diluxone_users_wp_login_brand'     => 0,
+		'diluxone_users_wp_login_logo'      => 0,
+		'diluxone_users_wp_login_bg'        => '',
+		// Where "I forgot my password" goes. On a site where an e-mail link
+		// signs people in, the link IS the way back in, and the reset screen
+		// only asks for the same address twice.
+		'diluxone_users_lost_password'      => 'wp',
+
 		// ── What the sign-in screen says ──────────────────────────────
 		// Empty means the plugin's own wording. A site that wants to greet
 		// people in its own voice — or that has to print a line about its
