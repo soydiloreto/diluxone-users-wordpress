@@ -14,26 +14,14 @@ defined( 'ABSPATH' ) || exit;
 
 /** The registration screen, with its tabs. */
 function diluxone_users_screen_register(): void {
-	$tabs = array(
-		'who'  => __( 'Who gets an account', 'diluxone-users' ),
-		'look' => __( 'How it looks', 'diluxone-users' ),
-	);
-
-	$current = diluxone_users_tab( $tabs );
-
 	if ( isset( $_POST['diluxone_users_options_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['diluxone_users_options_nonce'] ) ), 'diluxone_users_options' ) ) {
 		diluxone_users_screen_register_save();
 		diluxone_users_notice( __( 'Settings saved.', 'diluxone-users' ) );
 	}
 
-	diluxone_users_screen_open( diluxone_users_screens()['diluxone-users-register'], 'diluxone-users-register', $tabs, $current );
-
-	if ( 'look' === $current ) {
-		diluxone_users_screen_register_look();
-		diluxone_users_screen_close();
-
-		return;
-	}
+	// One question, so no tabs: what the form looks like is on Design, with
+	// the sign-in screen it shares.
+	diluxone_users_screen_open( diluxone_users_screens()['diluxone-users-register'] );
 
 	echo '<form method="post">';
 	wp_nonce_field( 'diluxone_users_options', 'diluxone_users_options_nonce' );
@@ -163,21 +151,5 @@ function diluxone_users_screen_register_who(): void {
 			</td>
 		</tr>
 	</table>
-	<?php
-}
-
-/** What somebody signing up actually sees. */
-function diluxone_users_screen_register_look(): void {
-	diluxone_users_intro( __( 'With signing in and signing up being the same step, this is the form a new person meets: the same one on the Sign in screen, which is the point — nobody is sent to a different door for being new.', 'diluxone-users' ) );
-
-	diluxone_users_login_preview();
-
-	diluxone_users_intro( __( 'The fields they are asked to fill in afterwards are the required ones on the User fields screen, and the buttons are the ones on Social login.', 'diluxone-users' ) );
-	?>
-	<p class="diluxone-users-panel__actions">
-		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-login' ) ); ?>"><?php echo esc_html( diluxone_users_screens()['diluxone-users-login'] ); ?></a>
-		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-fields' ) ); ?>"><?php esc_html_e( 'User fields', 'diluxone-users' ); ?></a>
-		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-social' ) ); ?>"><?php esc_html_e( 'Social login', 'diluxone-users' ); ?></a>
-	</p>
 	<?php
 }

@@ -41,9 +41,11 @@ function diluxone_users_screen_social(): void {
 		exit;
 	}
 
+	// What the buttons look like is not here: it is on the Design screen with
+	// everything else the plugin draws. This screen answers who can get in
+	// with a network and how the accounts are joined up.
 	$tabs = array(
 		'providers' => __( 'Providers', 'diluxone-users' ),
-		'buttons'   => __( 'Buttons', 'diluxone-users' ),
 		'general'   => __( 'Global settings', 'diluxone-users' ),
 	);
 
@@ -64,32 +66,10 @@ function diluxone_users_screen_social(): void {
 		diluxone_users_notice( __( 'Settings saved.', 'diluxone-users' ) );
 	}
 
-	if ( isset( $_POST['diluxone_users_buttons_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['diluxone_users_buttons_nonce'] ) ), 'diluxone_users_buttons' ) ) {
-		diluxone_users_save_options(
-			array(
-				// phpcs:disable WordPress.Security.NonceVerification.Missing -- verificado arriba.
-				'diluxone_users_sso_button_skin'    => sanitize_key( wp_unslash( $_POST['diluxone_users_sso_button_skin'] ?? 'brand' ) ),
-				'diluxone_users_sso_button_shape'   => sanitize_key( wp_unslash( $_POST['diluxone_users_sso_button_shape'] ?? 'rounded' ) ),
-				'diluxone_users_sso_button_show'    => sanitize_key( wp_unslash( $_POST['diluxone_users_sso_button_show'] ?? 'icon-text' ) ),
-				'diluxone_users_sso_button_text'    => sanitize_text_field( wp_unslash( $_POST['diluxone_users_sso_button_text'] ?? '' ) ),
-				'diluxone_users_sso_button_columns' => absint( wp_unslash( $_POST['diluxone_users_sso_button_columns'] ?? 2 ) ),
-				// phpcs:enable
-			)
-		);
-
-		diluxone_users_notice( __( 'Buttons saved.', 'diluxone-users' ) );
-	}
-
 	diluxone_users_screen_open( __( 'Social login', 'diluxone-users' ), 'diluxone-users-social', $tabs, $current );
 
 	if ( 'general' === $current ) {
 		diluxone_users_screen_social_general();
-		diluxone_users_screen_close();
-		return;
-	}
-
-	if ( 'buttons' === $current ) {
-		diluxone_users_screen_social_buttons( $providers );
 		diluxone_users_screen_close();
 		return;
 	}
@@ -175,6 +155,28 @@ function diluxone_users_sso_state_pill( string $state ): void {
  *
  * @param array<string, array<string, mixed>> $providers Every provider.
  */
+/**
+ * What the buttons read back out of the form that draws them.
+ *
+ * @return array<string, mixed>
+ */
+function diluxone_users_sso_buttons_posted(): array {
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the caller verifies it.
+	return array(
+		'diluxone_users_sso_button_skin'    => sanitize_key( wp_unslash( $_POST['diluxone_users_sso_button_skin'] ?? 'brand' ) ),
+		'diluxone_users_sso_button_shape'   => sanitize_key( wp_unslash( $_POST['diluxone_users_sso_button_shape'] ?? 'rounded' ) ),
+		'diluxone_users_sso_button_show'    => sanitize_key( wp_unslash( $_POST['diluxone_users_sso_button_show'] ?? 'icon-text' ) ),
+		'diluxone_users_sso_button_text'    => sanitize_text_field( wp_unslash( $_POST['diluxone_users_sso_button_text'] ?? '' ) ),
+		'diluxone_users_sso_button_columns' => absint( wp_unslash( $_POST['diluxone_users_sso_button_columns'] ?? 2 ) ),
+	);
+	// phpcs:enable
+}
+
+/**
+ * How the buttons look, on the Design screen.
+ *
+ * @param array<string, array<string, mixed>> $providers Every network, for the preview.
+ */
 function diluxone_users_screen_social_buttons( array $providers ): void {
 	diluxone_users_intro( __( 'How the buttons look on the sign-in page. It is the same markup and the same stylesheet the site uses, so the preview is the real thing.', 'diluxone-users' ) );
 
@@ -182,8 +184,8 @@ function diluxone_users_screen_social_buttons( array $providers ): void {
 	// go over the whole list.
 	$preview = array_slice( $providers, 0, 4, true );
 	?>
-	<form method="post" class="diluxone-users-buttons">
-		<?php wp_nonce_field( 'diluxone_users_buttons', 'diluxone_users_buttons_nonce' ); ?>
+	<?php // No form of its own: the Design screen it lives on provides one. ?>
+	<div class="diluxone-users-buttons">
 
 		<div class="diluxone-users-buttons__fields">
 			<table class="form-table" role="presentation">
@@ -265,7 +267,7 @@ function diluxone_users_screen_social_buttons( array $providers ): void {
 			</div>
 			<p class="description"><?php esc_html_e( 'These buttons do nothing: they are here to be looked at.', 'diluxone-users' ); ?></p>
 		</div>
-	</form>
+	</div>
 	<?php
 }
 

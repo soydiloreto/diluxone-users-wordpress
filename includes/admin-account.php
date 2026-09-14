@@ -184,11 +184,11 @@ add_action( 'admin_init', 'diluxone_users_account_actions' );
 
 /** The account-area screen: its two tabs. */
 function diluxone_users_screen_account(): void {
+	// How it looks is on the Design screen, with everything else the plugin
+	// draws. What is left here is what the account area IS.
 	$tabs = array(
-		'sections'   => __( 'Sections', 'diluxone-users' ),
-		'layout'     => __( 'Where it lives', 'diluxone-users' ),
-		'appearance' => __( 'How it looks', 'diluxone-users' ),
-		'photo'      => __( 'Profile photo', 'diluxone-users' ),
+		'sections' => __( 'Sections', 'diluxone-users' ),
+		'layout'   => __( 'Where it lives', 'diluxone-users' ),
 	);
 
 	$current = diluxone_users_tab( $tabs );
@@ -199,36 +199,6 @@ function diluxone_users_screen_account(): void {
 	switch ( $current ) {
 		case 'layout':
 			diluxone_users_screen_account_layout();
-			break;
-
-		case 'appearance':
-		case 'photo':
-			// These two carry their own form and their own nonce: the sections
-			// tab posts to admin_post and redirects, and mixing the two ways of
-			// saving in one form is how a screen ends up saving twice.
-			if ( isset( $_POST['diluxone_users_appearance_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['diluxone_users_appearance_nonce'] ) ), 'diluxone_users_appearance' ) ) {
-				diluxone_users_screen_appearance_save( $current );
-				diluxone_users_notice( __( 'Saved.', 'diluxone-users' ) );
-			}
-
-			echo '<form method="post">';
-			wp_nonce_field( 'diluxone_users_appearance', 'diluxone_users_appearance_nonce' );
-
-			if ( 'photo' === $current ) {
-				diluxone_users_screen_appearance_photo();
-			} else {
-				diluxone_users_screen_appearance_styles();
-			}
-
-			submit_button();
-			echo '</form>';
-
-			// Outside the form: the account area has forms of its own, and a
-			// form inside a form is thrown away by the browser.
-			if ( 'photo' !== $current ) {
-				diluxone_users_style_preview();
-			}
-
 			break;
 
 		default:

@@ -15,14 +15,19 @@ defined( 'ABSPATH' ) || exit;
 
 /** The registration and sign-in screen, with its tabs. */
 function diluxone_users_screen_login(): void {
+	/*
+	 * One question per tab, and the first one asks none: it is the map. The
+	 * screen used to open with that table on top of the settings it
+	 * summarises, which meant scrolling past the answer to reach the
+	 * question — and "how it looks" carried two different screens at once.
+	 */
 	$tabs = array(
+		'doors'    => __( 'Overview', 'diluxone-users' ),
 		'link'     => __( 'Getting in', 'diluxone-users' ),
 		'email'    => __( 'The email', 'diluxone-users' ),
 		'handle'   => __( 'Public name', 'diluxone-users' ),
 		'2fa'      => __( 'Two-step verification', 'diluxone-users' ),
 		'passkeys' => __( 'Passkeys', 'diluxone-users' ),
-		'words'    => __( 'What it says', 'diluxone-users' ),
-		'look'     => __( 'How it looks', 'diluxone-users' ),
 	);
 
 	$current = diluxone_users_tab( $tabs );
@@ -39,15 +44,9 @@ function diluxone_users_screen_login(): void {
 	 * the preview holds the real sign-in form, and a form inside a form is
 	 * thrown away by the browser.
 	 */
-	if ( 'look' === $current ) {
-		echo '<form method="post">';
-		wp_nonce_field( 'diluxone_users_options', 'diluxone_users_options_nonce' );
-		diluxone_users_screen_login_shape();
-		diluxone_users_screen_login_wp();
-		submit_button();
-		echo '</form>';
-
-		diluxone_users_screen_login_look();
+	// Nothing to save on the summary: it reads the settings the other tabs write.
+	if ( 'doors' === $current ) {
+		diluxone_users_screen_login_doors();
 		diluxone_users_screen_close();
 
 		return;
@@ -73,10 +72,6 @@ function diluxone_users_screen_login(): void {
 			diluxone_users_screen_login_passkeys();
 			break;
 
-		case 'words':
-			diluxone_users_screen_login_words();
-			break;
-
 		default:
 			diluxone_users_screen_login_link();
 	}
@@ -95,41 +90,6 @@ function diluxone_users_screen_login_save( string $tab ): void {
 			array(
 				'diluxone_users_login_subject' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_login_subject'] ?? '' ) ),
 				'diluxone_users_login_body'    => sanitize_textarea_field( wp_unslash( $_POST['diluxone_users_login_body'] ?? '' ) ),
-			)
-		);
-
-		return;
-	}
-
-	if ( 'look' === $tab ) {
-		diluxone_users_save_options(
-			array(
-				'diluxone_users_login_template' => sanitize_key( wp_unslash( $_POST['diluxone_users_login_template'] ?? 'plain' ) ),
-				'diluxone_users_login_side'     => 'right' === sanitize_key( wp_unslash( $_POST['diluxone_users_login_side'] ?? 'left' ) ) ? 'right' : 'left',
-				'diluxone_users_login_image'    => absint( wp_unslash( $_POST['diluxone_users_login_image'] ?? 0 ) ),
-				'diluxone_users_login_logo'     => absint( wp_unslash( $_POST['diluxone_users_login_logo'] ?? 0 ) ),
-				'diluxone_users_wp_login_brand' => isset( $_POST['diluxone_users_wp_login_brand'] ) ? 1 : 0,
-				'diluxone_users_wp_login_logo'  => absint( wp_unslash( $_POST['diluxone_users_wp_login_logo'] ?? 0 ) ),
-				'diluxone_users_wp_login_bg'    => sanitize_hex_color( wp_unslash( $_POST['diluxone_users_wp_login_bg'] ?? '' ) ) ?? '',
-				'diluxone_users_lost_password'  => 'site' === sanitize_key( wp_unslash( $_POST['diluxone_users_lost_password'] ?? 'wp' ) ) ? 'site' : 'wp',
-			)
-		);
-
-		return;
-	}
-
-	if ( 'words' === $tab ) {
-		diluxone_users_save_options(
-			array(
-				'diluxone_users_login_title' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_login_title'] ?? '' ) ),
-				'diluxone_users_login_intro' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_login_intro'] ?? '' ) ),
-				// Links allowed, and only links: the terms and the privacy
-				// policy are pages, and a legal line that cannot point at them
-				// is not one. wp_kses_post() is the same filter a post goes
-				// through, so nothing gets in here that could not be published.
-				'diluxone_users_login_legal' => wp_kses_post( wp_unslash( $_POST['diluxone_users_login_legal'] ?? '' ) ),
-				'diluxone_users_sent_title'  => sanitize_text_field( wp_unslash( $_POST['diluxone_users_sent_title'] ?? '' ) ),
-				'diluxone_users_sent_note'   => sanitize_text_field( wp_unslash( $_POST['diluxone_users_sent_note'] ?? '' ) ),
 			)
 		);
 
@@ -191,6 +151,7 @@ function diluxone_users_screen_login_save( string $tab ): void {
 			// accepts, not about what a public name is.
 			'diluxone_users_handle_login'   => isset( $_POST['diluxone_users_handle_login'] ) ? 1 : 0,
 			'diluxone_users_sso_login'      => isset( $_POST['diluxone_users_sso_login'] ) ? 1 : 0,
+			'diluxone_users_lost_password'  => 'site' === sanitize_key( wp_unslash( $_POST['diluxone_users_lost_password'] ?? 'wp' ) ) ? 'site' : 'wp',
 		)
 	);
 	// phpcs:enable
@@ -313,17 +274,26 @@ function diluxone_users_doors_table(): void {
 	echo '</tbody></table>';
 }
 
-/** How people get in: the door, the page and the timings. */
-function diluxone_users_screen_login_link(): void {
-	?>
-	<h2><?php esc_html_e( 'Every way in, and what each one means', 'diluxone-users' ); ?></h2>
-	<?php
-	diluxone_users_intro( __( 'What is open right now, read from the same settings the screens below write. The choices are spread over several tabs; the consequence is not.', 'diluxone-users' ) );
-	diluxone_users_doors_table();
-	?>
-	<h2><?php esc_html_e( 'The way in', 'diluxone-users' ); ?></h2>
-	<?php
+/** Every door into the site, with the state each one is in. Nothing is edited here. */
+function diluxone_users_screen_login_doors(): void {
+	diluxone_users_intro( __( 'Every way into this site and the state each one is in, read from the same settings the other tabs write. The choices are spread over several tabs; the consequence is not. Nothing is edited here.', 'diluxone-users' ) );
 
+	diluxone_users_doors_table();
+
+	echo '<h2>' . esc_html__( 'And this is what they see', 'diluxone-users' ) . '</h2>';
+
+	diluxone_users_intro( __( 'The form as the site serves it. It is here to be looked at — how it looks is chosen on the Design screen.', 'diluxone-users' ) );
+
+	diluxone_users_login_preview();
+	?>
+	<p class="diluxone-users-panel__actions">
+		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-design', array( 'tab' => 'login' ) ) ); ?>"><?php esc_html_e( 'Change how it looks', 'diluxone-users' ); ?></a>
+	</p>
+	<?php
+}
+
+/** The way in: which page holds the form, and what it accepts. */
+function diluxone_users_screen_login_link(): void {
 	diluxone_users_intro( __( 'The person types their email and gets a single-use link. There is no password to choose, to remember or to steal. Put the [diluxone_users_login] shortcode on the page you pick below.', 'diluxone-users' ) );
 	?>
 	<table class="form-table" role="presentation">
@@ -375,6 +345,30 @@ function diluxone_users_screen_login_link(): void {
 					);
 					?>
 				</p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( '“I forgot my password”', 'diluxone-users' ); ?></th>
+			<td>
+				<?php
+				$lost = array(
+					'wp'   => __( 'WordPress’s reset screen', 'diluxone-users' ),
+					'site' => __( 'The sign-in page — the e-mail link is the way back in', 'diluxone-users' ),
+				);
+
+				foreach ( $lost as $key => $label ) :
+					?>
+					<label class="diluxone-users-roles__item">
+						<input type="radio" name="diluxone_users_lost_password" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_lost_password' ), $key ); ?>>
+						<?php echo esc_html( $label ); ?>
+					</label>
+				<?php endforeach; ?>
+				<p class="description"><?php esc_html_e( 'On a site where a link signs people in, the reset screen asks for the same address the sign-in form asks for, and sends a second e-mail to do what the first one already does.', 'diluxone-users' ); ?></p>
+				<?php if ( ! diluxone_users_login_has_link() ) : ?>
+					<p class="description"><strong><?php esc_html_e( 'There is no e-mail link on this site, so the second answer does nothing: WordPress’s reset is the only way back in and it stays.', 'diluxone-users' ); ?></strong></p>
+				<?php elseif ( 0 === (int) diluxone_users_option( 'diluxone_users_login_page' ) ) : ?>
+					<p class="description"><strong><?php esc_html_e( 'No sign-in page is chosen yet, so there is nowhere to point it: WordPress’s reset stays until there is one.', 'diluxone-users' ); ?></strong></p>
+				<?php endif; ?>
 			</td>
 		</tr>
 		<tr>
@@ -789,28 +783,6 @@ function diluxone_users_login_preview(): void {
 	<?php
 }
 
-/** What somebody signing in actually sees. */
-function diluxone_users_screen_login_look(): void {
-	$page = (int) diluxone_users_option( 'diluxone_users_login_page' );
-
-	diluxone_users_intro( __( 'The form as the site serves it, with everything chosen on the other tabs. It is the real template — your theme’s copy of it, if it has one — and not a drawing of it.', 'diluxone-users' ) );
-
-	diluxone_users_login_preview();
-
-	if ( 0 === $page ) {
-		diluxone_users_intro( __( 'There is no sign-in page chosen yet, so this form is not anywhere on the site: people still land on wp-login.php.', 'diluxone-users' ) );
-	}
-	?>
-	<p class="diluxone-users-panel__actions">
-		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-login' ) ); ?>"><?php echo esc_html( diluxone_users_screens()['diluxone-users-login'] ); ?></a>
-		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-social' ) ); ?>"><?php esc_html_e( 'Social login', 'diluxone-users' ); ?></a>
-		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-account', array( 'tab' => 'appearance' ) ) ); ?>"><?php esc_html_e( 'Colours and corners', 'diluxone-users' ); ?></a>
-		<?php if ( $page > 0 ) : ?>
-			<a class="button" href="<?php echo esc_url( (string) get_permalink( $page ) ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Open the page', 'diluxone-users' ); ?></a>
-		<?php endif; ?>
-	</p>
-	<?php
-}
 
 /**
  * One field of the wording tab.
@@ -1028,30 +1000,6 @@ function diluxone_users_screen_login_wp(): void {
 			<td>
 				<input type="color" id="diluxone_users_wp_login_bg" name="diluxone_users_wp_login_bg" value="<?php echo esc_attr( diluxone_users_wp_login_bg() ); ?>">
 				<p class="description"><?php esc_html_e( 'Left as the accent colour it follows the accent, instead of becoming a second colour that drifts from the first.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( '“I forgot my password”', 'diluxone-users' ); ?></th>
-			<td>
-				<?php
-				$lost = array(
-					'wp'   => __( 'WordPress’s reset screen', 'diluxone-users' ),
-					'site' => __( 'The sign-in page — the e-mail link is the way back in', 'diluxone-users' ),
-				);
-
-				foreach ( $lost as $key => $label ) :
-					?>
-					<label class="diluxone-users-roles__item">
-						<input type="radio" name="diluxone_users_lost_password" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_lost_password' ), $key ); ?>>
-						<?php echo esc_html( $label ); ?>
-					</label>
-				<?php endforeach; ?>
-				<p class="description"><?php esc_html_e( 'On a site where a link signs people in, the reset screen asks for the same address the sign-in form asks for, and sends a second e-mail to do what the first one already does.', 'diluxone-users' ); ?></p>
-				<?php if ( ! diluxone_users_login_has_link() ) : ?>
-					<p class="description"><strong><?php esc_html_e( 'There is no e-mail link on this site, so the second answer does nothing: WordPress’s reset is the only way back in and it stays.', 'diluxone-users' ); ?></strong></p>
-				<?php elseif ( 0 === (int) diluxone_users_option( 'diluxone_users_login_page' ) ) : ?>
-					<p class="description"><strong><?php esc_html_e( 'No sign-in page is chosen yet, so there is nowhere to point it: WordPress’s reset stays until there is one.', 'diluxone-users' ); ?></strong></p>
-				<?php endif; ?>
 			</td>
 		</tr>
 	</table>

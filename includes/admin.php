@@ -74,6 +74,7 @@ function diluxone_users_screens(): array {
 		// visitor are not the same word.
 		'diluxone-users-login'    => _x( 'Sign in', 'name of the dashboard screen', 'diluxone-users' ),
 		'diluxone-users-social'   => __( 'Social login', 'diluxone-users' ),
+		'diluxone-users-design'   => __( 'Design', 'diluxone-users' ),
 		'diluxone-users-sessions' => __( 'User sessions', 'diluxone-users' ),
 		'diluxone-users-status'   => __( 'Status', 'diluxone-users' ),
 		'diluxone-users-tools'    => __( 'Tools', 'diluxone-users' ),
@@ -99,6 +100,7 @@ function diluxone_users_menu(): void {
 		'diluxone-users-register' => 'diluxone_users_screen_register',
 		'diluxone-users-login'    => 'diluxone_users_screen_login',
 		'diluxone-users-social'   => 'diluxone_users_screen_social',
+		'diluxone-users-design'   => 'diluxone_users_screen_design',
 		'diluxone-users-sessions' => 'diluxone_users_screen_sessions',
 		'diluxone-users-status'   => 'diluxone_users_screen_status',
 		'diluxone-users-tools'    => 'diluxone_users_screen_tools',
@@ -395,7 +397,7 @@ function diluxone_users_admin_styles( string $hook ): void {
 
 	// The media modal, for the screens that let a picture be chosen. It is
 	// WordPress's own and it is not small, so it is loaded where it is used.
-	if ( false !== strpos( $hook, 'diluxone-users-login' ) ) {
+	if ( false !== strpos( $hook, 'diluxone-users-design' ) ) {
 		wp_enqueue_media();
 	}
 
@@ -416,7 +418,7 @@ function diluxone_users_admin_styles( string $hook ): void {
 	// It is loaded whatever the setting says: the account preview has to be
 	// able to show both answers without a reload, and the "off" one is drawn
 	// by stripping it back in the browser.
-	$previews = array( 'diluxone-users-account', 'diluxone-users-login', 'diluxone-users-register' );
+	$previews = array( 'diluxone-users-account', 'diluxone-users-login', 'diluxone-users-register', 'diluxone-users-design' );
 
 	foreach ( $previews as $diluxone_users_screen ) {
 		if ( false === strpos( $hook, $diluxone_users_screen ) ) {

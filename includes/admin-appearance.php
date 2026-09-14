@@ -13,43 +13,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/**
- * Saves either of the two tabs.
- *
- * @param string $tab 'appearance' or 'photo'.
- */
-function diluxone_users_screen_appearance_save( string $tab ): void {
-	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the caller verifies it.
-	if ( 'photo' === $tab ) {
-		diluxone_users_save_options(
-			array(
-				'diluxone_users_avatar_upload'   => isset( $_POST['diluxone_users_avatar_upload'] ) ? 1 : 0,
-				'diluxone_users_avatar_gravatar' => isset( $_POST['diluxone_users_avatar_gravatar'] ) ? 1 : 0,
-				'diluxone_users_avatar_initials' => isset( $_POST['diluxone_users_avatar_initials'] ) ? 1 : 0,
-				'diluxone_users_avatar_max_kb'   => absint( wp_unslash( $_POST['diluxone_users_avatar_max_kb'] ?? 2048 ) ),
-			)
-		);
-
-		return;
-	}
-
-	diluxone_users_save_options(
-		array(
-			'diluxone_users_styles'           => isset( $_POST['diluxone_users_styles'] ) ? 1 : 0,
-			'diluxone_users_style_accent'     => sanitize_hex_color( wp_unslash( $_POST['diluxone_users_style_accent'] ?? '' ) ) ?? '',
-			'diluxone_users_style_radius'     => sanitize_text_field( wp_unslash( $_POST['diluxone_users_style_radius'] ?? '' ) ),
-			'diluxone_users_account_template' => 'cover' === sanitize_key( wp_unslash( $_POST['diluxone_users_account_template'] ?? '' ) ) ? 'cover' : 'plain',
-			'diluxone_users_account_layout'   => sanitize_key( wp_unslash( $_POST['diluxone_users_account_layout'] ?? 'tabs' ) ),
-			'diluxone_users_account_width'    => 'full' === sanitize_key( wp_unslash( $_POST['diluxone_users_account_width'] ?? '' ) ) ? 'full' : 'contained',
-			'diluxone_users_account_header'   => isset( $_POST['diluxone_users_account_header'] ) ? 1 : 0,
-			'diluxone_users_account_avatar'   => isset( $_POST['diluxone_users_account_avatar'] ) ? 1 : 0,
-			'diluxone_users_account_since'    => isset( $_POST['diluxone_users_account_since'] ) ? 1 : 0,
-			'diluxone_users_account_action'   => isset( $_POST['diluxone_users_account_action'] ) ? 1 : 0,
-			'diluxone_users_account_cover'    => sanitize_hex_color( wp_unslash( $_POST['diluxone_users_account_cover'] ?? '' ) ) ?? '',
-		)
-	);
-	// phpcs:enable
-}
 
 /**
  * The ready-made looks.
@@ -284,12 +247,14 @@ function diluxone_users_screen_appearance_template(): void {
 	<?php
 }
 
-/** The whole "How it looks" tab: the shape, then the colours and corners. */
-function diluxone_users_screen_appearance_styles(): void {
-	diluxone_users_screen_appearance_template();
-
-	echo '<h2>' . esc_html__( 'Colours and corners', 'diluxone-users' ) . '</h2>';
-
+/**
+ * The brand: what every screen the plugin draws takes its look from.
+ *
+ * It is not about one screen, which is why it is not on one: the sign-in
+ * form, the account area, the fields and the buttons all read the same
+ * properties, and a site that changes the accent here changes all of them.
+ */
+function diluxone_users_screen_design_brand(): void {
 	diluxone_users_intro( __( 'Everything the plugin draws —panels, forms, lists, buttons— takes its colours and its corners from a handful of CSS properties. Change those and everything follows; a site with its own design can point them at its own tokens from its stylesheet, without copying anything from here. It reaches further than this screen: the sign-in form and the fields follow the same properties.', 'diluxone-users' ) );
 	?>
 	<table class="form-table" role="presentation">
@@ -345,18 +310,21 @@ function diluxone_users_screen_appearance_styles(): void {
 			</td>
 		</tr>
 		<tr>
+			<th scope="row"><?php esc_html_e( 'Your mark', 'diluxone-users' ); ?></th>
+			<td>
+				<?php
+				diluxone_users_image_field(
+					'diluxone_users_login_logo',
+					__( 'Shown above the sign-in form. Somebody who arrived from an e-mail link should be able to tell whose site this is before typing their address into it.', 'diluxone-users' )
+				);
+				?>
+			</td>
+		</tr>
+		<tr>
 			<th scope="row"><label for="diluxone_users_style_radius"><?php esc_html_e( 'Corners', 'diluxone-users' ); ?></label></th>
 			<td>
 				<input type="number" id="diluxone_users_style_radius" name="diluxone_users_style_radius" class="small-text" min="0" max="40" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_style_radius' ) ); ?>">
 				<?php esc_html_e( 'pixels — empty for the default', 'diluxone-users' ); ?>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Templates', 'diluxone-users' ); ?></th>
-			<td>
-				<p class="description"><?php esc_html_e( 'Copy any file from the plugin’s templates/ folder to your theme and edit it there:', 'diluxone-users' ); ?></p>
-				<p><code><?php echo esc_html( 'wp-content/themes/' . get_stylesheet() . '/diluxone-users/' ); ?></code></p>
-				<p class="description"><code>account.php</code> · <code>account-nav.php</code> · <code>account/*.php</code> · <code>login.php</code> · <code>fields.php</code> · <code>accounts.php</code> · <code>sessions.php</code></p>
 			</td>
 		</tr>
 	</table>
