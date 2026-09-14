@@ -197,7 +197,11 @@ function diluxone_users_account_css(): string {
 		. '.diluxone-users-account__body{' . $rows . '}';
 
 	if ( '' !== trim( $body ) ) {
-		$css .= '.diluxone-users-account__body{padding-block:' . (int) $body . 'px;}';
+		// As a property and not as a rule of its own: the sheet already gives
+		// a cover its air at the end, and two rules for one measurement is
+		// two rules to keep in step.
+		$css .= ':root{--diluxone-users-body-end:' . (int) $body . 'px;}'
+			. '.diluxone-users-account__body{padding-top:' . (int) $body . 'px;}';
 	}
 
 	return $css;

@@ -215,6 +215,7 @@ added. So the measurements are properties too, not only the colours:
 | `--diluxone-users-dial-w` | The dial-code column of a phone field | `minmax(0, 9rem)` |
 | `--diluxone-users-border-w` | A control's edge — inputs and buttons | `1px` |
 | `--diluxone-users-accent-soft` | The accent with the volume down | the accent at 12% |
+| `--diluxone-users-body-end` | Under the content, on a cover | `64px` |
 
 The last two are also asked from the admin — Design → Your brand — so a site
 that is not writing CSS at all still gets them. Everything on this page can be
@@ -233,6 +234,23 @@ Set them wherever you like — `:root`, the page, the block:
 	--diluxone-users-avatar: 104px;
 }
 ```
+
+### Headings are the theme's
+
+There is no property here for the size of a heading, and there will not be
+one. The person's name is an `h1` and a section's heading is an `h2`, and the
+plugin says nothing about how big they are — so they come out in the theme's
+own typography and the page reads as one page.
+
+It used to say. `font-size: 1.5em` on the name was the single thing that made
+this block look pasted in: a site whose headings were a display face at 42px
+got everything else on the page in it and this in one-and-a-half times the
+body face. That is why the site was writing a rule — not to customise the
+plugin, but to undo it.
+
+What the plugin does keep is the layout of its own header: the margins around
+the name, the gap beside the picture, the air at the end of a cover. Those are
+this block's, not the theme's.
 
 ### The one thing that is not a property
 

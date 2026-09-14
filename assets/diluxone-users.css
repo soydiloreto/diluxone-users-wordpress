@@ -22,11 +22,6 @@
 
 :root {
 	--diluxone-users-font: inherit;
-	/* Headings can have a typeface of their own, and their size is asked for
-	   separately, because a site whose titles are a display face at 42px was
-	   otherwise writing a selector for every heading the plugin draws. Both
-	   default to what the sheet already did: unset, nothing moves. */
-	--diluxone-users-font-display: var(--diluxone-users-font);
 	--diluxone-users-radius: 12px;
 	--diluxone-users-radius-sm: 8px;
 	--diluxone-users-control-h: 46px;
@@ -80,12 +75,7 @@
  * the plugin's own defaults can differ per shape while a site that sets the
  * property once wins in all of them. Declaring them here would shadow that.
  *
- *   --diluxone-users-font-display  The typeface of the headings.   the body's
- *   --diluxone-users-title       The person's name, and the sign-in
- *                                heading.                    1.5em / 2.2em
- *   --diluxone-users-title-small The same, on a phone.                1.6em
- *   --diluxone-users-section     A section's heading.                1.35em
- *   --diluxone-users-lead        The line under a heading.       the body's
+ *   --diluxone-users-body-end    Under the content, on a cover.        64px
  *   --diluxone-users-read        The reading column, when the content is
  *                                held to one.                          980px
  *
@@ -639,7 +629,7 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 
 /* The site's own sentences: the line under a heading, and the terms line at
    the foot of the sign-in form — small, quiet, and still readable. */
-.diluxone-users-login__intro { margin: 0 0 18px; font-size: var(--diluxone-users-lead, inherit); color: var(--diluxone-users-muted); }
+.diluxone-users-login__intro { margin: 0 0 18px; color: var(--diluxone-users-muted); }
 
 /* The two drawings on this screen. They take the surrounding colour, so the
    envelope over "check your email" is the accent and the one beside a note is
@@ -670,7 +660,7 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	line-height: 1.6;
 	color: var(--diluxone-users-muted);
 }
-.diluxone-users-account__intro { margin: 0 0 18px; font-size: var(--diluxone-users-lead, inherit); color: var(--diluxone-users-muted); }
+.diluxone-users-account__intro { margin: 0 0 18px; color: var(--diluxone-users-muted); }
 
 /* ── The account area ───────────────────────────────────────────────── */
 
@@ -710,11 +700,15 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	overflow: hidden;
 }
 .diluxone-users-account__avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-.diluxone-users-account__name {
-	margin: 0;
-	font-family: var(--diluxone-users-font-display);
-	font-size: var(--diluxone-users-title, 1.5em);
-}
+/* The name is an h1 and the section's heading is an h2, and the plugin does
+   not tell the theme how big its own headings are. That was the single thing
+   that made this block look pasted in: a theme with a display face at 42px
+   drew everything else on the page in it and this in 1.5em of the body face,
+   so the site had to write a rule to get its own typography back. Left alone,
+   the heading is the theme's and the page reads as one page.
+   Margins are another matter — those are the layout of this header, and the
+   layout is the plugin's. */
+.diluxone-users-account__name { margin: 0; }
 .diluxone-users-account__since { margin: 2px 0 0; color: var(--diluxone-users-muted); }
 
 /* ── The menu ────────────────────────────────────────────────────────────
@@ -793,11 +787,7 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 .diluxone-users-account__nav--plain.diluxone-users-account__nav--row { gap: var(--diluxone-users-nav-gap, 18px); }
 .diluxone-users-account__nav--plain .diluxone-users-account__tab.is-current { color: var(--diluxone-users-accent); }
 
-.diluxone-users-account__title {
-	margin: 0 0 6px;
-	font-family: var(--diluxone-users-font-display);
-	font-size: var(--diluxone-users-section, 1.35em);
-}
+.diluxone-users-account__title { margin: 0 0 6px; }
 
 /* ── The cover ──────────────────────────────────────────────────────
    The header becomes a coloured band the full width of whatever the theme
@@ -855,7 +845,7 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 
 /* The heading takes its colour from the theme, and on a coloured band that
    comes out as near-black on blue. It follows the band. */
-.diluxone-users-account--cover .diluxone-users-account__name { font-size: var(--diluxone-users-title, 2.2em); line-height: 1.15; color: inherit; }
+.diluxone-users-account--cover .diluxone-users-account__name { color: inherit; }
 .diluxone-users-account--cover .diluxone-users-account__since { color: inherit; opacity: .85; }
 
 /* The bar under the cover is a strip across the area. What the menu inside it
@@ -871,11 +861,15 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	border-bottom: var(--diluxone-users-bar-rule, 0 none);
 }
 .diluxone-users-account--cover .diluxone-users-account__bar { margin-bottom: var(--diluxone-users-bar-gap, 28px); }
+/* With a cover the area runs edge to edge and stops being a block inside the
+   page: it is the page. So it has to end somewhere. Without this the last
+   card sits flush against the footer, which is the difference between a
+   screen that is finished and one that stops. */
+.diluxone-users-account--cover .diluxone-users-account__body { padding-bottom: var(--diluxone-users-body-end, 64px); }
 
 @media (max-width: 640px) {
 	.diluxone-users-account--cover .diluxone-users-account__header { padding-block: var(--diluxone-users-cover-pad, 28px); }
 	.diluxone-users-account--cover .diluxone-users-account__header-inner { flex-wrap: wrap; gap: var(--diluxone-users-header-gap, 16px); }
-	.diluxone-users-account--cover .diluxone-users-account__name { font-size: var(--diluxone-users-title-small, 1.6em); }
 	/* Two answers and the site picks one. With eight sections a sideways
 	   scroller hides half of them and you have to drag to find out they are
 	   there; wrapped, they are all visible and the bar is three lines tall.
@@ -977,11 +971,7 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 
 /* ── Acceso ─────────────────────────────────────────────────────────── */
 
-.diluxone-users-login__title, .diluxone-users-fields__title {
-	margin: 0 0 6px;
-	font-family: var(--diluxone-users-font-display);
-	font-size: var(--diluxone-users-title, inherit);
-}
+.diluxone-users-login__title, .diluxone-users-fields__title { margin: 0 0 6px; }
 .diluxone-users-login__email { font-weight: 700; }
 .diluxone-users-divider {
 	display: flex;
