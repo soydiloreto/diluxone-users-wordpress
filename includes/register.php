@@ -1,0 +1,176 @@
+<?php
+/**
+ * A registration form of its own.
+ *
+ * On most sites the plugin builds, signing in and signing up are the same
+ * step: somebody types their address, gets a link, and the account appears if
+ * it was not there. That is the best answer when it fits, and it is still the
+ * default.
+ *
+ * It does not always fit. A site that asks for more than an address before
+ * letting somebody in — a name, a country, whatever the fields say is
+ * required — needs a form that asks for those things, and a page to put it
+ * on. A site where somebody is approved before they get in needs a moment
+ * between "I want an account" and "here is your link". Both of those need a
+ * registration that is a step of its own, which is what this is.
+ *
+ * The address is still the identity and there is still no password: what
+ * arrives after this form is the same sign-in link as always.
+ *
+ * @package DiluxOneUsers
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+/** The page holding the registration form, or '' when there is none. */
+function diluxone_users_register_url(): string {
+	$page = (int) diluxone_users_option( 'diluxone_users_register_page' );
+
+	return $page > 0 ? (string) get_permalink( $page ) : '';
+}
+
+/**
+ * Is the registration form the way in on this site?
+ *
+ * Both halves have to be true: the site has to have chosen the form, and the
+ * form has to be somewhere. A mode with no page is a door with no doorway,
+ * and the admin says so rather than pretending.
+ */
+function diluxone_users_register_form_open(): bool {
+	return 'form' === diluxone_users_register_mode() && '' !== diluxone_users_register_url();
+}
+
+/**
+ * The fields the form asks for, beyond the address.
+ *
+ * Only the required ones, and only the ones a person can fill in: a
+ * registration form that asks for everything is a registration form nobody
+ * finishes. The rest is waiting for them in their account afterwards.
+ *
+ * @return array<int, array<string, mixed>>
+ */
+function diluxone_users_register_fields(): array {
+	$fields = array_filter(
+		diluxone_users_fields( '', false ),
+		static function ( array $field ): bool {
+			return (bool) $field['active'] && (bool) $field['required'] && 'never' !== $field['edit'];
+		}
+	);
+
+	/**
+	 * Filters the fields the registration form asks for.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<int, array<string, mixed>> $fields
+	 */
+	return array_values( (array) apply_filters( 'diluxone_users_register_fields', $fields ) );
+}
+
+/** The whole registration form. Shortcode: [diluxone_users_register] */
+function diluxone_users_shortcode_register(): string {
+	if ( is_user_logged_in() ) {
+		return '';
+	}
+
+	diluxone_users_enqueue_styles();
+
+	ob_start();
+	diluxone_users_login_frame_open();
+	$frame = (string) ob_get_clean();
+
+	ob_start();
+	diluxone_users_login_frame_close();
+	$close = (string) ob_get_clean();
+
+	return $frame . diluxone_users_render(
+		'register.php',
+		array(
+			'state'     => diluxone_users_state(),
+			'email'     => '',
+			'fields'    => diluxone_users_register_fields(),
+			'open'      => 'closed' !== diluxone_users_register_mode(),
+			'providers' => diluxone_users_sso_for_login(),
+		)
+	) . $close;
+}
+add_shortcode( 'diluxone_users_register', 'diluxone_users_shortcode_register' );
+
+/**
+ * Handles the registration form.
+ *
+ * Unlike the sign-in form, this one does NOT answer the same thing whatever
+ * happened: somebody filling in a registration form has to be told that the
+ * address is already taken, or they will fill it in again. The sign-in form
+ * stays silent because there the silence is what stops an address being
+ * tested for existence; here the form is the place where an account is
+ * created, so it has to say what happened.
+ */
+function diluxone_users_register_request(): void {
+	$back = diluxone_users_register_url();
+	$back = '' === $back ? home_url( '/' ) : $back;
+
+	if ( ! isset( $_POST['diluxone_users_register_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['diluxone_users_register_nonce'] ) ), 'diluxone_users_register' ) ) {
+		wp_safe_redirect( add_query_arg( 'diluxone-users', 'error', $back ) );
+		exit;
+	}
+
+	if ( 'closed' === diluxone_users_register_mode() ) {
+		wp_safe_redirect( add_query_arg( 'diluxone-users', 'closed', $back ) );
+		exit;
+	}
+
+	$email = sanitize_email( wp_unslash( $_POST['diluxone_users_email'] ?? '' ) );
+
+	if ( '' === $email || ! is_email( $email ) ) {
+		wp_safe_redirect( add_query_arg( 'diluxone-users', 'email', $back ) );
+		exit;
+	}
+
+	if ( email_exists( $email ) ) {
+		// Not an error to hide: whoever is here wanted an account and already
+		// has one, so the useful thing is the way in, not a shrug.
+		wp_safe_redirect( add_query_arg( 'diluxone-users', 'taken', $back ) );
+		exit;
+	}
+
+	$user_id = diluxone_users_create_account( $email );
+
+	if ( 0 === $user_id ) {
+		wp_safe_redirect( add_query_arg( 'diluxone-users', 'error', $back ) );
+		exit;
+	}
+
+	// The answers arrive with the form and are saved before the first sign-in:
+	// asking again on the other side would be asking twice.
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- verified above; each field is sanitised by type.
+	diluxone_users_save( $user_id, (array) wp_unslash( $_POST ) );
+
+	/**
+	 * Fires once an account has been created from the registration form.
+	 *
+	 * This is where an add-on holds it for approval, sends a welcome, or
+	 * counts it against a quota.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int    $user_id
+	 * @param string $email
+	 */
+	do_action( 'diluxone_users_registered', $user_id, $email );
+
+	diluxone_users_login_send( $user_id, $email, diluxone_users_token_create( $user_id ) );
+
+	wp_safe_redirect(
+		add_query_arg(
+			array(
+				'diluxone-users' => 'registered',
+				'email'          => rawurlencode( $email ),
+			),
+			$back
+		)
+	);
+	exit;
+}
+add_action( 'admin_post_nopriv_diluxone_users_registro', 'diluxone_users_register_request' );
+add_action( 'admin_post_diluxone_users_registro', 'diluxone_users_register_request' );

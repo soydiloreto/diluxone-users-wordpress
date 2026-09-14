@@ -12,34 +12,52 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/** The registration screen, with its tabs. */
+/** The registration screen. */
 function diluxone_users_screen_register(): void {
-	if ( isset( $_POST['diluxone_users_options_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['diluxone_users_options_nonce'] ) ), 'diluxone_users_options' ) ) {
-		diluxone_users_screen_register_save();
-		diluxone_users_notice( __( 'Settings saved.', 'diluxone-users' ) );
-	}
-
-	// One question, so no tabs: what the form looks like is on Design, with
-	// the sign-in screen it shares.
-	diluxone_users_screen_open( diluxone_users_screens()['diluxone-users-register'] );
-
-	echo '<form method="post">';
-	wp_nonce_field( 'diluxone_users_options', 'diluxone_users_options_nonce' );
-
-	diluxone_users_screen_register_who();
-
-	submit_button();
-	echo '</form>';
-
-	diluxone_users_screen_close();
+	diluxone_users_screen_panels( 'diluxone-users-register', diluxone_users_screens()['diluxone-users-register'] );
 }
 
-/** Saves what the screen submits. */
+/** Its tabs. */
+function diluxone_users_register_panels(): void {
+	diluxone_users_register_panel(
+		'diluxone-users-register',
+		'who',
+		array(
+			'label'    => __( 'Who gets an account', 'diluxone-users' ),
+			'position' => 10,
+			'render'   => 'diluxone_users_screen_register_who',
+			'save'     => 'diluxone_users_screen_register_save',
+		)
+	);
+
+	diluxone_users_register_panel(
+		'diluxone-users-register',
+		'form',
+		array(
+			'label'    => __( 'The form', 'diluxone-users' ),
+			'position' => 20,
+			'render'   => 'diluxone_users_screen_register_form',
+			'save'     => 'diluxone_users_screen_register_form_save',
+			'preview'  => 'diluxone_users_register_preview',
+		)
+	);
+}
+add_action( 'diluxone_users_register_panels', 'diluxone_users_register_panels' );
+
+/** Saves who gets an account. */
 function diluxone_users_screen_register_save(): void {
-	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the caller verifies it.
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the panel verifies it.
+	$mode = sanitize_key( wp_unslash( $_POST['diluxone_users_register_mode'] ?? '' ) );
+	$mode = in_array( $mode, array( 'login', 'form', 'closed' ), true ) ? $mode : 'login';
+
 	diluxone_users_save_options(
 		array(
-			'diluxone_users_login_register'  => isset( $_POST['diluxone_users_login_register'] ) ? 1 : 0,
+			'diluxone_users_register_mode'   => $mode,
+			// Kept in step with the mode. Everything that reads the old
+			// checkbox — the multisite seeding, the overview, the doors
+			// table — keeps getting a straight answer without knowing that
+			// the question grew a third answer.
+			'diluxone_users_login_register'  => 'login' === $mode ? 1 : 0,
 			'diluxone_users_login_role'      => sanitize_key( wp_unslash( $_POST['diluxone_users_login_role'] ?? 'subscriber' ) ),
 			'diluxone_users_wp_registration' => sanitize_key( wp_unslash( $_POST['diluxone_users_wp_registration'] ?? 'site' ) ),
 			// The same option the social screen writes: it is one decision and
@@ -49,6 +67,129 @@ function diluxone_users_screen_register_save(): void {
 		)
 	);
 	// phpcs:enable
+}
+
+/** The page the form lives on, and what it says. */
+function diluxone_users_screen_register_form(): void {
+	$mode = diluxone_users_register_mode();
+
+	diluxone_users_intro( __( 'A form of its own, for a site that asks for more than an address before letting somebody in — or that wants a moment between “I want an account” and “here is your link”. Put the [diluxone_users_register] shortcode on the page you pick below.', 'diluxone-users' ) );
+
+	if ( 'form' !== $mode ) {
+		diluxone_users_intro( __( 'This site does not use it: on the previous tab, accounts are made another way. What is set here waits for the day that changes.', 'diluxone-users' ) );
+	}
+	?>
+	<table class="form-table" role="presentation">
+		<tr>
+			<th scope="row"><label for="diluxone_users_register_page"><?php esc_html_e( 'The registration page', 'diluxone-users' ); ?></label></th>
+			<td>
+				<?php
+				/** @var array<string, mixed> $diluxone_users_dropdown */
+				$diluxone_users_dropdown = array(
+					'name'              => 'diluxone_users_register_page',
+					'id'                => 'diluxone_users_register_page',
+					'selected'          => (int) diluxone_users_option( 'diluxone_users_register_page' ),
+					'show_option_none'  => __( '— none —', 'diluxone-users' ),
+					'option_none_value' => 0,
+				);
+
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_dropdown_pages() escapes its own and prints it.
+				wp_dropdown_pages( $diluxone_users_dropdown );
+				?>
+				<?php if ( 'form' === $mode && '' === diluxone_users_register_url() ) : ?>
+					<p class="description"><strong><?php esc_html_e( 'The form is how this site registers people and there is no page holding it, so right now nobody can register at all.', 'diluxone-users' ); ?></strong></p>
+				<?php endif; ?>
+			</td>
+		</tr>
+		<?php
+		diluxone_users_words_field(
+			'diluxone_users_register_title',
+			__( 'The heading', 'diluxone-users' ),
+			__( 'Create your account', 'diluxone-users' )
+		);
+
+		diluxone_users_words_field(
+			'diluxone_users_register_intro',
+			__( 'The line under it', 'diluxone-users' ),
+			'',
+			__( 'Nothing by default. Somewhere to say what an account is for on this site.', 'diluxone-users' )
+		);
+
+		diluxone_users_words_field(
+			'diluxone_users_register_done',
+			__( 'Once it is done', 'diluxone-users' ),
+			__( 'Your account is ready', 'diluxone-users' )
+		);
+		?>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'What it asks for', 'diluxone-users' ); ?></th>
+			<td>
+				<?php
+				$diluxone_users_asked = diluxone_users_register_fields();
+				?>
+
+				<?php if ( array() === $diluxone_users_asked ) : ?>
+					<p class="description"><?php esc_html_e( 'Only the email address: no field is marked as required. Mark one on User fields and it appears here.', 'diluxone-users' ); ?></p>
+				<?php else : ?>
+					<p class="description"><?php esc_html_e( 'The address, plus the fields marked as required:', 'diluxone-users' ); ?></p>
+					<p>
+						<?php
+						echo esc_html( implode( ' · ', wp_list_pluck( $diluxone_users_asked, 'label' ) ) );
+						?>
+					</p>
+				<?php endif; ?>
+
+				<p class="description">
+					<?php esc_html_e( 'Only the required ones, on purpose: a registration form that asks for everything is a registration form nobody finishes. The rest waits in their account.', 'diluxone-users' ); ?>
+					<a href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-fields' ) ); ?>"><?php esc_html_e( 'User fields', 'diluxone-users' ); ?></a>
+				</p>
+			</td>
+		</tr>
+	</table>
+	<?php
+}
+
+/** Saves the form's page and its words. */
+function diluxone_users_screen_register_form_save(): void {
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the panel verifies it.
+	diluxone_users_save_options(
+		array(
+			'diluxone_users_register_page'  => absint( wp_unslash( $_POST['diluxone_users_register_page'] ?? 0 ) ),
+			'diluxone_users_register_title' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_register_title'] ?? '' ) ),
+			'diluxone_users_register_intro' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_register_intro'] ?? '' ) ),
+			'diluxone_users_register_done'  => sanitize_text_field( wp_unslash( $_POST['diluxone_users_register_done'] ?? '' ) ),
+		)
+	);
+	// phpcs:enable
+
+	// The page changed, and with it whether anybody can register at all.
+	delete_option( 'diluxone_users_rewrite_version' );
+}
+
+/** The form as the site serves it. */
+function diluxone_users_register_preview(): void {
+	?>
+	<div class="diluxone-users-preview" data-diluxone-users-preview-box>
+		<p class="description"><?php esc_html_e( 'The registration form, as the site serves it:', 'diluxone-users' ); ?></p>
+
+		<div class="diluxone-users-preview__frame" inert>
+			<div data-diluxone-users-preview-skin>
+				<?php
+				echo diluxone_users_render( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the template escapes its own output.
+					'register.php',
+					array(
+						'state'     => '',
+						'email'     => '',
+						'fields'    => diluxone_users_register_fields(),
+						'open'      => 'closed' !== diluxone_users_register_mode(),
+						'providers' => diluxone_users_sso_for_login(),
+					)
+				);
+				?>
+			</div>
+		</div>
+	</div>
+	<?php
 }
 
 /**
@@ -90,14 +231,40 @@ function diluxone_users_screen_register_who(): void {
 	?>
 	<table class="form-table" role="presentation">
 		<tr>
-			<th scope="row"><?php esc_html_e( 'With their email', 'diluxone-users' ); ?></th>
+			<th scope="row"><?php esc_html_e( 'How somebody gets an account', 'diluxone-users' ); ?></th>
 			<td>
-				<label>
-					<input type="checkbox" name="diluxone_users_login_register" value="1" <?php checked( diluxone_users_option( 'diluxone_users_login_register' ), 1 ); ?>>
-					<?php esc_html_e( 'If the email does not exist, register it in the same step', 'diluxone-users' ); ?>
-				</label>
-				<p class="description"><?php esc_html_e( 'With this, signing in and signing up are the same thing and no separate registration form is needed.', 'diluxone-users' ); ?></p>
-				<p class="description"><?php esc_html_e( 'Turned off, only people who already have an account can get in — and somebody has to create the accounts from Users.', 'diluxone-users' ); ?></p>
+				<?php
+				/*
+				 * One question with three answers, instead of a checkbox that
+				 * only had two. The third — a form of its own — is what a site
+				 * needs when it asks for more than an address, or when
+				 * somebody is looked at before being let in.
+				 */
+				$modes = array(
+					'login'  => __( 'Signing in creates it: one door for everybody', 'diluxone-users' ),
+					'form'   => __( 'A registration form of its own, on its own page', 'diluxone-users' ),
+					'closed' => __( 'Nobody registers themselves: the accounts are made from Users', 'diluxone-users' ),
+				);
+
+				$mode = diluxone_users_register_mode();
+
+				foreach ( $modes as $key => $label ) :
+					?>
+					<label class="diluxone-users-roles__item">
+						<input type="radio" name="diluxone_users_register_mode" value="<?php echo esc_attr( $key ); ?>" <?php checked( $mode, $key ); ?>>
+						<?php echo esc_html( $label ); ?>
+					</label>
+				<?php endforeach; ?>
+
+				<p class="description"><?php esc_html_e( 'The first is the plugin at its simplest: somebody types their address, gets a link, and the account appears if it was not there. Nothing to fill in, nothing to confirm.', 'diluxone-users' ); ?></p>
+				<p class="description"><?php esc_html_e( 'The second asks for the required fields before creating anything, and is where an add-on would hold an account for approval. The address is still the identity and there is still no password: what arrives is the same link.', 'diluxone-users' ); ?></p>
+
+				<?php if ( 'form' === $mode && '' === diluxone_users_register_url() ) : ?>
+					<p class="description">
+						<strong><?php esc_html_e( 'There is no page holding the form yet, so nobody can register.', 'diluxone-users' ); ?></strong>
+						<a href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-register', array( 'tab' => 'form' ) ) ); ?>"><?php esc_html_e( 'Choose one', 'diluxone-users' ); ?></a>
+					</p>
+				<?php endif; ?>
 			</td>
 		</tr>
 		<tr>

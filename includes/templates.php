@@ -155,7 +155,7 @@ function diluxone_users_page_has_shortcode(): bool {
 		return false;
 	}
 
-	foreach ( array( 'diluxone_users_account', 'diluxone_users_account_nav', 'diluxone_users_login', 'diluxone_users_fields', 'diluxone_users_accounts', 'diluxone_users_sessions', 'diluxone_users_handle', 'diluxone_users_avatar', 'diluxone_users_notifications' ) as $shortcode ) {
+	foreach ( array( 'diluxone_users_account', 'diluxone_users_account_nav', 'diluxone_users_login', 'diluxone_users_register', 'diluxone_users_fields', 'diluxone_users_accounts', 'diluxone_users_sessions', 'diluxone_users_handle', 'diluxone_users_avatar', 'diluxone_users_notifications' ) as $shortcode ) {
 		if ( has_shortcode( $post->post_content, $shortcode ) ) {
 			return true;
 		}

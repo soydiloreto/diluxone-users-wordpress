@@ -170,7 +170,12 @@ function diluxone_users_screen_panels( string $screen, string $title ): void {
 	}
 
 	if ( $preview ) {
-		echo '</div><div class="diluxone-users-studio__preview">';
+		printf(
+			'</div><div class="diluxone-users-studio__preview" data-diluxone-users-live="%1$s" data-diluxone-users-live-screen="%2$s" data-diluxone-users-live-nonce="%3$s">',
+			esc_attr( $current ),
+			esc_attr( $screen ),
+			esc_attr( wp_create_nonce( 'diluxone_users_preview' ) )
+		);
 		call_user_func( $panel['preview'] );
 		echo '</div></div>';
 	}
@@ -189,8 +194,13 @@ function diluxone_users_screen_panels( string $screen, string $title ): void {
  * The moment to register a panel.
  *
  * Every panel — the plugin's own and an add-on's — is registered here, on
- * `admin_menu` before the menu is built. By then every plugin has loaded, so
- * nothing depends on which file came first.
+ * `admin_init`. By then every plugin has loaded, so nothing depends on which
+ * file came first.
+ *
+ * `admin_init` and not `admin_menu`, which was the first attempt: admin_menu
+ * does not run on an AJAX request, so the preview endpoint asked for the
+ * panels, found none, and answered 404 to every keystroke. admin_init runs
+ * for both, and still before the menu is built.
  */
 function diluxone_users_panels_ready(): void {
 	/**
@@ -200,4 +210,65 @@ function diluxone_users_panels_ready(): void {
 	 */
 	do_action( 'diluxone_users_register_panels' );
 }
-add_action( 'admin_menu', 'diluxone_users_panels_ready', 1 );
+add_action( 'admin_init', 'diluxone_users_panels_ready', 1 );
+
+/**
+ * Redraws a preview with settings that have not been saved.
+ *
+ * The previews used to be updated in the browser: JavaScript moved a class
+ * around and hid an element or two. That works for a colour and lies about
+ * everything else — asking for the menu at the side did nothing at all,
+ * because the markup for a menu at the side is not on the page when the saved
+ * setting says tabs. There is nothing to move.
+ *
+ * So the server draws it again. The values from the form are pushed in front
+ * of `diluxone_users_option`, the panel's own preview runs against them, and
+ * what comes back is the real thing rendered with what is on screen — not a
+ * guess at what it would look like. Nothing is written: the filter is added,
+ * used and left behind when the request ends.
+ */
+function diluxone_users_preview_request(): void {
+	check_ajax_referer( 'diluxone_users_preview', 'nonce' );
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( '', 403 );
+	}
+
+	$screen = isset( $_POST['screen'] ) ? sanitize_key( wp_unslash( $_POST['screen'] ) ) : '';
+	$id     = isset( $_POST['panel'] ) ? sanitize_key( wp_unslash( $_POST['panel'] ) ) : '';
+	$panels = diluxone_users_panels( $screen );
+
+	if ( ! isset( $panels[ $id ] ) || ! is_callable( $panels[ $id ]['preview'] ) ) {
+		wp_send_json_error( '', 404 );
+	}
+
+	// Only the plugin's own settings, and only as strings and integers: this
+	// decides what a preview looks like, never what is stored.
+	$values = array();
+
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- the nonce is checked above and every key and value is sanitised one at a time inside the loop.
+	foreach ( (array) wp_unslash( $_POST['values'] ?? array() ) as $key => $value ) {
+		$key = sanitize_key( (string) $key );
+
+		if ( 0 !== strpos( $key, 'diluxone_users_' ) ) {
+			continue;
+		}
+
+		$values[ $key ] = is_array( $value ) ? array_map( 'sanitize_text_field', $value ) : sanitize_text_field( (string) $value );
+	}
+
+	$override = static function ( $value, string $key ) use ( $values ) {
+		return array_key_exists( $key, $values ) ? $values[ $key ] : $value;
+	};
+
+	add_filter( 'diluxone_users_option', $override, 999, 2 );
+
+	ob_start();
+	call_user_func( $panels[ $id ]['preview'] );
+	$html = (string) ob_get_clean();
+
+	remove_filter( 'diluxone_users_option', $override, 999 );
+
+	wp_send_json_success( $html );
+}
+add_action( 'wp_ajax_diluxone_users_preview', 'diluxone_users_preview_request' );

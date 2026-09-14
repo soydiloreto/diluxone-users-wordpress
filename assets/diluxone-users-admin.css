@@ -349,6 +349,9 @@
 	min-width: 0;
 }
 .diluxone-users-studio__preview h2 { margin-top: 0; }
+/* While the server is drawing it again. Not a spinner: the old preview is
+   still true until the new one lands, so it fades rather than disappears. */
+.diluxone-users-studio__preview.is-working { opacity: .55; transition: opacity .12s ease; }
 .diluxone-users-studio .diluxone-users-preview { margin: 0; }
 /* The frame no longer needs a width of its own: the column is the width. */
 .diluxone-users-studio .diluxone-users-preview__frame { padding: 16px; }

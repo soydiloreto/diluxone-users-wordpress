@@ -49,6 +49,20 @@ function diluxone_users_option_defaults(): array {
 		// makes signing in with Google today and GitHub tomorrow one account.
 		'diluxone_users_sso_link_by_email'  => 1,
 		// Create a new account when the e-mail does not exist.
+		// ── Who gets an account, and how ─────────────────────────────
+		// 'login'  — signing in creates the account: one door for everybody.
+		// 'form'   — a registration form of its own, on its own page.
+		// 'closed' — nobody registers themselves.
+		// Empty means the question was never asked: it is read from the old
+		// checkbox, so a site that upgrades keeps doing what it did.
+		'diluxone_users_register_mode'      => '',
+		// The page holding the [diluxone_users_register] shortcode.
+		'diluxone_users_register_page'      => 0,
+		// What the registration form says, in the site's words.
+		'diluxone_users_register_title'     => '',
+		'diluxone_users_register_intro'     => '',
+		'diluxone_users_register_done'      => '',
+
 		// ── What the sign-in screen looks like ───────────────────────
 		// The shape of the page the form sits on. 'plain' leaves it where the
 		// theme put it, which is what a site with its own design wants;

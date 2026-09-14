@@ -278,10 +278,45 @@ function diluxone_users_user_for( string $email ): int {
 		return (int) $user->ID;
 	}
 
-	if ( ! diluxone_users_option( 'diluxone_users_login_register' ) ) {
+	// Signing in only creates an account when that is how this site registers
+	// people. With a form of its own, or with registration closed, an address
+	// nobody has seen before is simply an address nobody has seen before.
+	if ( 'login' !== diluxone_users_register_mode() ) {
 		return 0;
 	}
 
+	return diluxone_users_create_account( $email );
+}
+
+/**
+ * How this site lets somebody get an account.
+ *
+ * 'login'  — signing in creates it, and there is no separate form.
+ * 'form'   — a registration form of its own, on its own page.
+ * 'closed' — somebody with the keys creates the accounts.
+ *
+ * Sites from before the question was asked out loud are read from the old
+ * checkbox, so nothing changes under them.
+ */
+function diluxone_users_register_mode(): string {
+	$mode = (string) diluxone_users_option( 'diluxone_users_register_mode' );
+
+	if ( in_array( $mode, array( 'login', 'form', 'closed' ), true ) ) {
+		return $mode;
+	}
+
+	return diluxone_users_option( 'diluxone_users_login_register' ) ? 'login' : 'closed';
+}
+
+/**
+ * Creates the account, whatever door it came through.
+ *
+ * Whoever calls this has already decided that this person may have one: it
+ * asks nothing and checks nothing except that the address is free.
+ *
+ * @return int User ID, or 0 if WordPress refused.
+ */
+function diluxone_users_create_account( string $email ): int {
 	// The display name and the one in the profile URL are NOT allowed to be
 	// derived from user_login, because user_login is the e-mail: WordPress
 	// would build a display_name of "somebody@gmail.com" that later shows up in

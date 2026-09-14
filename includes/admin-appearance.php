@@ -87,8 +87,30 @@ function diluxone_users_style_preview(): void {
 		// the settings. Outside the form and inert, it is a picture that
 		// happens to be the real thing.
 		?>
+		<?php
+		/*
+		 * The colour and the corners travel on the element and not in the
+		 * stylesheet. On the front end they are added to the sheet, which is
+		 * fine there — but here the sheet is already loaded and a redraw
+		 * cannot change it, so a colour picked a second ago would show the
+		 * colour saved a week ago. On the element they arrive with the HTML.
+		 */
+		$diluxone_users_tokens = '';
+		$diluxone_users_accent = sanitize_hex_color( diluxone_users_style_accent() );
+		$diluxone_users_radius = (string) diluxone_users_option( 'diluxone_users_style_radius' );
+
+		if ( null !== $diluxone_users_accent && '' !== $diluxone_users_accent ) {
+			$diluxone_users_tokens .= '--diluxone-users-accent:' . $diluxone_users_accent . ';';
+			$diluxone_users_tokens .= '--diluxone-users-accent-bg:' . $diluxone_users_accent . ';';
+		}
+
+		if ( '' !== trim( $diluxone_users_radius ) ) {
+			$diluxone_users_tokens .= '--diluxone-users-radius:' . (int) $diluxone_users_radius . 'px;';
+			$diluxone_users_tokens .= '--diluxone-users-radius-sm:' . max( 0, (int) $diluxone_users_radius - 4 ) . 'px;';
+		}
+		?>
 		<div class="diluxone-users-preview__frame" inert>
-			<div data-diluxone-users-preview-skin>
+			<div data-diluxone-users-preview-skin<?php echo '' === $diluxone_users_tokens ? '' : ' style="' . esc_attr( $diluxone_users_tokens ) . '"'; ?>>
 				<?php
 				// The shortcode, not a copy of it. It renders for whoever is
 				// looking — the sections they can see, their own name and
