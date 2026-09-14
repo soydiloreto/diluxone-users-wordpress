@@ -256,7 +256,10 @@ function diluxone_users_account_post(): void {
 			array(
 				'diluxone_users_account_page' => absint( wp_unslash( $_POST['diluxone_users_account_page'] ?? 0 ) ),
 				'diluxone_users_wp_profile'   => sanitize_key( wp_unslash( $_POST['diluxone_users_wp_profile'] ?? 'allow' ) ),
+				'diluxone_users_admin_bar'    => 'hide' === sanitize_key( wp_unslash( $_POST['diluxone_users_admin_bar'] ?? 'wp' ) ) ? 'hide' : 'wp',
+				'diluxone_users_bar_account'  => isset( $_POST['diluxone_users_bar_account'] ) ? 1 : 0,
 			) + diluxone_users_scope_posted( 'diluxone_users_wp_profile' )
+				+ diluxone_users_scope_posted( 'diluxone_users_admin_bar' )
 		);
 
 			// The page changed: the /account/<section>/ rules have to be rebuilt.
@@ -667,6 +670,47 @@ function diluxone_users_screen_account_layout(): void {
 						__( 'Whoever can edit users is never reached by this and is not on the list: they are the person who has to be able to fix what broke, and the dashboard profile is where it gets fixed. On a network, the super administrator.', 'diluxone-users' )
 					);
 					?>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'The black bar on top', 'diluxone-users' ); ?></th>
+				<td>
+					<?php
+					/*
+					 * The other half of the same question. The dashboard
+					 * profile is where somebody edits their data; this is the
+					 * bar that takes them there — and the last thing on the
+					 * page that says "this is a WordPress install" to a person
+					 * who came to read a course.
+					 */
+					$bar = array(
+						'wp'   => __( 'Show it, as WordPress does', 'diluxone-users' ),
+						'hide' => __( 'Hide it on the front of the site', 'diluxone-users' ),
+					);
+
+					foreach ( $bar as $key => $label ) :
+						?>
+						<label class="diluxone-users-roles__item">
+							<input type="radio" name="diluxone_users_admin_bar" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_admin_bar' ), $key ); ?>>
+							<?php echo esc_html( $label ); ?>
+						</label>
+					<?php endforeach; ?>
+
+					<div class="diluxone-users-pieces">
+						<?php
+						diluxone_users_scope_control(
+							'diluxone_users_admin_bar',
+							__( 'Who stops seeing it. Anybody left out keeps it.', 'diluxone-users' ),
+							__( 'Whoever can edit users keeps it whatever is chosen, and is not on the list: taking the way into the dashboard off the screen of the person who administers the site is a setting that gets turned on once and puzzled over for an hour.', 'diluxone-users' )
+						);
+						?>
+					</div>
+
+					<label>
+						<input type="checkbox" name="diluxone_users_bar_account" value="1" <?php checked( diluxone_users_option( 'diluxone_users_bar_account' ), 1 ); ?>>
+						<?php esc_html_e( 'While it is shown, its user menu points at the account area', 'diluxone-users' ); ?>
+					</label>
+					<p class="description"><?php esc_html_e( 'Their name, their picture and “Edit profile” lead to the account page instead of to the dashboard. Only those: the rest of that menu is the dashboard’s business.', 'diluxone-users' ); ?></p>
 				</td>
 			</tr>
 		</table>

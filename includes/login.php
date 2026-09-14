@@ -341,7 +341,7 @@ function diluxone_users_login_send( int $user_id, string $email, string $token )
 	// In development there is usually no mail server. Leaving the link in the
 	// log is what makes the flow testable end to end.
 	if ( 'production' !== wp_get_environment_type() ) {
-		error_log( '[diluxone-users] enlace de acceso para ' . $email . ': ' . $url ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		error_log( '[diluxone-users] sign-in link for ' . $email . ': ' . $url ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 	}
 
 	/**

@@ -61,6 +61,17 @@ function diluxone_users_option_defaults(): array {
 		'diluxone_users_login_image'        => 0,
 		'diluxone_users_login_logo'         => 0,
 
+		// ── The black bar across the top ─────────────────────────────
+		// 'wp' leaves it exactly as WordPress shows it. 'hide' takes it away
+		// from the people chosen below — never from whoever can edit users,
+		// who needs the way back into the dashboard.
+		'diluxone_users_admin_bar'          => 'wp',
+		'diluxone_users_admin_bar_scope'    => 'all',
+		'diluxone_users_admin_bar_roles'    => array(),
+		// And whether its user menu points at the account area on the site
+		// instead of at /wp-admin/profile.php.
+		'diluxone_users_bar_account'        => 0,
+
 		// ── wp-login.php, the screen WordPress brings ────────────────
 		// Even a site that sends everybody to its own page still shows this
 		// one: an administrator coming in through the emergency door, and
