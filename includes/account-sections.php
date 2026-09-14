@@ -154,6 +154,25 @@ function diluxone_users_summary_cards(): array {
 }
 
 /**
+ * Is this card's value a figure, or a piece of text?
+ *
+ * The cards are drawn as numbers — big, heavy, read at a glance — and that is
+ * right for "11 lessons" and wrong for "Hablamos de Tecnología", which at the
+ * same size takes three lines and pushes every card beside it out of shape.
+ *
+ * It is decided here and not asked of whoever writes the card: somebody
+ * adding "the next broadcast" to a summary is thinking about the broadcast,
+ * not about typography, and getting it wrong should not be possible.
+ *
+ * Separators come out first, so "1.250", "4/6" and "80%" are still figures.
+ */
+function diluxone_users_card_is_figure( string $value ): bool {
+	$bare = str_replace( array( '.', ',', ' ', '/', '%', "Â " ), '', $value );
+
+	return '' !== $bare && is_numeric( $bare );
+}
+
+/**
  * Which cards the front page has been told not to show.
  *
  * Stored the other way round on purpose — what is hidden, not what is shown.
