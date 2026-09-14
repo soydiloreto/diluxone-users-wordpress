@@ -19,6 +19,7 @@ $diluxone_users_actual = $methods[ $method ] ?? array(
 );
 ?>
 <div class="diluxone-users diluxone-users-login diluxone-users-login--2fa">
+	<?php diluxone_users_login_logo(); ?>
 	<h2 class="diluxone-users-login__title"><?php esc_html_e( 'One more step', 'diluxone-users' ); ?></h2>
 	<p><?php echo esc_html( (string) $diluxone_users_actual['help'] ); ?></p>
 

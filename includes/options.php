@@ -49,6 +49,18 @@ function diluxone_users_option_defaults(): array {
 		// makes signing in with Google today and GitHub tomorrow one account.
 		'diluxone_users_sso_link_by_email'  => 1,
 		// Create a new account when the e-mail does not exist.
+		// ── What the sign-in screen looks like ───────────────────────
+		// The shape of the page the form sits on. 'plain' leaves it where the
+		// theme put it, which is what a site with its own design wants;
+		// the other three take over the page, which is what a site that has
+		// not designed one wants and would otherwise install a second plugin
+		// to get.
+		'diluxone_users_login_template'     => 'plain',
+		// Where the picture goes in the split layout, and which picture.
+		'diluxone_users_login_side'         => 'left',
+		'diluxone_users_login_image'        => 0,
+		'diluxone_users_login_logo'         => 0,
+
 		// ── What the sign-in screen says ──────────────────────────────
 		// Empty means the plugin's own wording. A site that wants to greet
 		// people in its own voice — or that has to print a line about its

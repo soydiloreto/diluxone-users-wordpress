@@ -34,9 +34,18 @@ function diluxone_users_screen_login(): void {
 
 	diluxone_users_screen_open( diluxone_users_screens()['diluxone-users-login'], 'diluxone-users-login', $tabs, $current );
 
-	// The preview is a form of its own, and a form inside a form is thrown
-	// away by the browser. That tab has nothing to save anyway.
+	/*
+	 * The look tab is a form and then a preview, in that order and not nested:
+	 * the preview holds the real sign-in form, and a form inside a form is
+	 * thrown away by the browser.
+	 */
 	if ( 'look' === $current ) {
+		echo '<form method="post">';
+		wp_nonce_field( 'diluxone_users_options', 'diluxone_users_options_nonce' );
+		diluxone_users_screen_login_shape();
+		submit_button();
+		echo '</form>';
+
 		diluxone_users_screen_login_look();
 		diluxone_users_screen_close();
 
@@ -85,6 +94,19 @@ function diluxone_users_screen_login_save( string $tab ): void {
 			array(
 				'diluxone_users_login_subject' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_login_subject'] ?? '' ) ),
 				'diluxone_users_login_body'    => sanitize_textarea_field( wp_unslash( $_POST['diluxone_users_login_body'] ?? '' ) ),
+			)
+		);
+
+		return;
+	}
+
+	if ( 'look' === $tab ) {
+		diluxone_users_save_options(
+			array(
+				'diluxone_users_login_template' => sanitize_key( wp_unslash( $_POST['diluxone_users_login_template'] ?? 'plain' ) ),
+				'diluxone_users_login_side'     => 'right' === sanitize_key( wp_unslash( $_POST['diluxone_users_login_side'] ?? 'left' ) ) ? 'right' : 'left',
+				'diluxone_users_login_image'    => absint( wp_unslash( $_POST['diluxone_users_login_image'] ?? 0 ) ),
+				'diluxone_users_login_logo'     => absint( wp_unslash( $_POST['diluxone_users_login_logo'] ?? 0 ) ),
 			)
 		);
 
@@ -738,6 +760,11 @@ function diluxone_users_login_preview(): void {
 		<div class="diluxone-users-preview__frame" inert>
 			<div data-diluxone-users-preview-skin>
 				<?php
+				// The same frame and the same template the front end uses,
+				// in the same order: a preview that skips the frame previews
+				// a page that does not exist.
+				diluxone_users_login_frame_open();
+
 				echo diluxone_users_render( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the template escapes its own output.
 					'login.php',
 					array(
@@ -748,6 +775,8 @@ function diluxone_users_login_preview(): void {
 						'title'     => false,
 					)
 				);
+
+				diluxone_users_login_frame_close();
 				?>
 			</div>
 		</div>
@@ -851,6 +880,111 @@ function diluxone_users_screen_login_words(): void {
 			__( 'Did not arrive? Check your spam or promotions folder.', 'diluxone-users' )
 		);
 		?>
+	</table>
+	<?php
+}
+
+/**
+ * The shapes the sign-in page comes in.
+ *
+ * Only the first leaves the page alone, and it is the default: a site that
+ * designed its own page does not want a plugin taking it over. The other
+ * three are for the sites that would otherwise install a second plugin to get
+ * a sign-in screen that does not look like a form dropped into a blog post.
+ *
+ * @return array<string, array{label: string, help: string, picture: bool}>
+ */
+function diluxone_users_login_templates(): array {
+	return array(
+		'plain'    => array(
+			'label'   => __( 'In the page', 'diluxone-users' ),
+			'help'    => __( 'The form where the theme put it, with nothing around it. For a site that already designed this page.', 'diluxone-users' ),
+			'picture' => false,
+		),
+		'card'     => array(
+			'label'   => __( 'A centred card', 'diluxone-users' ),
+			'help'    => __( 'The form in a box in the middle of the page. The safe answer when there is no design for this screen.', 'diluxone-users' ),
+			'picture' => false,
+		),
+		'split'    => array(
+			'label'   => __( 'Split with a picture', 'diluxone-users' ),
+			'help'    => __( 'Half the window is a picture and the other half is the form. On a phone the picture goes and the form stays.', 'diluxone-users' ),
+			'picture' => true,
+		),
+		'backdrop' => array(
+			'label'   => __( 'On a full background', 'diluxone-users' ),
+			'help'    => __( 'The picture behind everything and the form on top of it, darkened enough to stay readable.', 'diluxone-users' ),
+			'picture' => true,
+		),
+	);
+}
+
+/** The shape of the sign-in page, and what it is made of. */
+function diluxone_users_screen_login_shape(): void {
+	$template = diluxone_users_login_template();
+	$shapes   = diluxone_users_login_templates();
+	?>
+	<h2><?php esc_html_e( 'The shape of the page', 'diluxone-users' ); ?></h2>
+	<?php
+	diluxone_users_intro( __( 'What surrounds the form. Three of the four take over the page, edge to edge; the first leaves it exactly where your theme put it.', 'diluxone-users' ) );
+	?>
+	<table class="form-table" role="presentation">
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Template', 'diluxone-users' ); ?></th>
+			<td>
+				<div class="diluxone-users-templates">
+					<?php foreach ( $shapes as $id => $shape ) : ?>
+						<label class="diluxone-users-templates__one <?php echo $id === $template ? 'is-chosen' : ''; ?>">
+							<input type="radio" name="diluxone_users_login_template" value="<?php echo esc_attr( $id ); ?>" <?php checked( $id, $template ); ?>>
+							<span class="diluxone-users-templates__art diluxone-users-templates__art--login-<?php echo esc_attr( $id ); ?>" aria-hidden="true"></span>
+							<span class="diluxone-users-templates__name"><?php echo esc_html( $shape['label'] ); ?></span>
+							<span class="diluxone-users-templates__help"><?php echo esc_html( $shape['help'] ); ?></span>
+						</label>
+					<?php endforeach; ?>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'The picture', 'diluxone-users' ); ?></th>
+			<td>
+				<?php
+				diluxone_users_image_field(
+					'diluxone_users_login_image',
+					__( 'Used by the two templates that have one. It is decoration, so it carries no alternative text: nothing that has to be read should live in it.', 'diluxone-users' )
+				);
+				?>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Which side', 'diluxone-users' ); ?></th>
+			<td>
+				<?php
+				$sides = array(
+					'left'  => __( 'Picture on the left, form on the right', 'diluxone-users' ),
+					'right' => __( 'Picture on the right, form on the left', 'diluxone-users' ),
+				);
+
+				foreach ( $sides as $key => $label ) :
+					?>
+					<label class="diluxone-users-roles__item">
+						<input type="radio" name="diluxone_users_login_side" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_login_side' ), $key ); ?>>
+						<?php echo esc_html( $label ); ?>
+					</label>
+				<?php endforeach; ?>
+				<p class="description"><?php esc_html_e( 'Only the split template uses this.', 'diluxone-users' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Your mark', 'diluxone-users' ); ?></th>
+			<td>
+				<?php
+				diluxone_users_image_field(
+					'diluxone_users_login_logo',
+					__( 'Above the form, in every template. Somebody who arrived from an e-mail link should be able to tell whose site this is before typing their address into it.', 'diluxone-users' )
+				);
+				?>
+			</td>
+		</tr>
 	</table>
 	<?php
 }

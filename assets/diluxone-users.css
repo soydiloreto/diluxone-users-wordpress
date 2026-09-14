@@ -462,6 +462,107 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	.diluxone-users-key__edit { padding-left: 16px; }
 }
 
+/* ── The shape of the sign-in page ──────────────────────────────────
+   Three of the four take over the page. They break out of the theme's column
+   with the same full-bleed margin the account cover uses — a sign-in screen
+   that stops halfway across the window reads as broken rather than as a
+   choice. 'plain' has no rules at all: the form stays where the theme put it,
+   which is the whole point of that answer. */
+/* Breaking out of the theme's column.
+   The frame is a grandchild on purpose (see diluxone_users_login_frame_open):
+   a block theme constrains its direct children with !important on both the
+   margin and the max-width, so nothing declared on a child can get out. One
+   level down, the ordinary full-bleed margin works — the same way the account
+   cover does it. */
+.diluxone-users-login-frame--card,
+.diluxone-users-login-frame--split,
+.diluxone-users-login-frame--backdrop {
+	margin-left: calc(50% - 50vw);
+	margin-right: calc(50% - 50vw);
+	padding: 48px max(20px, calc(50vw - 50%));
+}
+.diluxone-users-login-frame__box {
+	background: var(--diluxone-users-surface);
+	border: 1px solid var(--diluxone-users-border);
+	border-radius: var(--diluxone-users-radius);
+	padding: 36px;
+	width: 100%;
+	max-width: 440px;
+	margin-inline: auto;
+}
+
+/* Centred: a card on the page's own ground. */
+.diluxone-users-login-frame--card { padding-block: 32px; }
+
+/* Inside a column this narrow, two social buttons side by side wrap their
+   labels onto three lines each. One per row. */
+.diluxone-users-login-frame__box .diluxone-users-socials--cols-2 { grid-template-columns: minmax(0, 1fr); }
+
+/* Split: the picture takes half the window and the form the other half. The
+   picture is a background and not an <img> because it is decoration — it is
+   hidden from screen readers and carries no alt text to invent. */
+.diluxone-users-login-frame.diluxone-users-login-frame--split {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0;
+	padding: 0;
+	align-items: stretch;
+	min-height: min(720px, 80vh);
+}
+.diluxone-users-login-frame--split .diluxone-users-login-frame__picture {
+	background-image: var(--diluxone-users-login-image);
+	background-size: cover;
+	background-position: center;
+	background-color: var(--diluxone-users-accent);
+}
+.diluxone-users-login-frame--split .diluxone-users-login-frame__box {
+	border: 0;
+	border-radius: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	padding: 48px;
+	max-width: 520px;
+}
+/* Which side the picture is on: the box moves, the picture keeps its cell. */
+.diluxone-users-login-frame--split.diluxone-users-login-frame--right .diluxone-users-login-frame__picture { order: 2; }
+
+/* Backdrop: the picture behind everything, the box on top of it. */
+.diluxone-users-login-frame--backdrop {
+	background-image: var(--diluxone-users-login-image);
+	background-size: cover;
+	background-position: center;
+	background-color: var(--diluxone-users-accent);
+	padding-block: 64px;
+}
+/* A photograph is not a background until something separates it from the text
+   on top. Without this the box floats on a picture and neither is readable. */
+.diluxone-users-login-frame--backdrop::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, .45);
+}
+.diluxone-users-login-frame--backdrop { position: relative; }
+.diluxone-users-login-frame--backdrop .diluxone-users-login-frame__box {
+	position: relative;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, .35);
+}
+
+/* The site's mark above the form. */
+.diluxone-users-login__logo { margin: 0 0 20px; text-align: center; }
+.diluxone-users-login__logo img { max-height: 56px; width: auto; }
+
+@media (max-width: 782px) {
+	/* The picture is the first thing that goes: on a phone, half a screen of
+	   photograph is half a screen not spent signing in. */
+	.diluxone-users-login-frame--split { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+	.diluxone-users-login-frame--split .diluxone-users-login-frame__picture { display: none; }
+	.diluxone-users-login-frame--split .diluxone-users-login-frame__box { padding: 32px 20px; max-width: none; }
+	.diluxone-users-login-frame__box { padding: 28px 20px; }
+	.diluxone-users-login-frame { padding-block: 24px; }
+}
+
 /* The site's own sentences: the line under a heading, and the terms line at
    the foot of the sign-in form — small, quiet, and still readable. */
 .diluxone-users-login__intro { margin: 0 0 18px; color: var(--diluxone-users-muted); }

@@ -74,18 +74,28 @@ function diluxone_users_shortcode_login( $atts = array() ): string {
 
 	diluxone_users_enqueue_styles();
 
+	// The frame goes around whichever of the two steps is showing: somebody
+	// who asked for a code should not watch the page change shape under them.
+	ob_start();
+	diluxone_users_login_frame_open();
+	$frame = (string) ob_get_clean();
+
+	ob_start();
+	diluxone_users_login_frame_close();
+	$close = (string) ob_get_clean();
+
 	// Halfway there: the second factor is missing and nothing else.
 	$challenge = diluxone_users_login_challenge();
 
 	if ( array() !== $challenge ) {
-		return diluxone_users_render( 'login-2fa', array_merge( $challenge, array( 'state' => diluxone_users_state() ) ) );
+		return $frame . diluxone_users_render( 'login-2fa', array_merge( $challenge, array( 'state' => diluxone_users_state() ) ) ) . $close;
 	}
 
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	$email = isset( $_GET['email'] ) ? sanitize_email( wp_unslash( $_GET['email'] ) ) : '';
 	$atts  = shortcode_atts( array( 'title' => 'no' ), (array) $atts, 'diluxone_users_login' );
 
-	return diluxone_users_render(
+	return $frame . diluxone_users_render(
 		'login.php',
 		array(
 			'state'     => diluxone_users_state(),
@@ -94,7 +104,7 @@ function diluxone_users_shortcode_login( $atts = array() ): string {
 			'minutes'   => diluxone_users_login_expiry(),
 			'title'     => in_array( strtolower( (string) $atts['title'] ), array( 'yes', '1', 'true', 'on' ), true ),
 		)
-	);
+	) . $close;
 }
 add_shortcode( 'diluxone_users_login', 'diluxone_users_shortcode_login' );
 

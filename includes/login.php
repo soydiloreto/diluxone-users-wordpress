@@ -31,6 +31,113 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
+ * The shape of the sign-in page.
+ *
+ * Four answers and only one of them leaves the page alone. A site with a
+ * designed page wants 'plain' — the form where the theme put it. A site that
+ * has not designed one wants the page taken over, which is what the other
+ * three do, and is the reason a second plugin usually gets installed for it.
+ */
+function diluxone_users_login_template(): string {
+	$template = (string) diluxone_users_option( 'diluxone_users_login_template' );
+
+	return in_array( $template, array( 'card', 'split', 'backdrop' ), true ) ? $template : 'plain';
+}
+
+/**
+ * A picture chosen in the admin, at a size worth serving.
+ *
+ * Full width because it is a background: an 'image' thumbnail stretched over
+ * half a screen is the kind of detail that makes a good design look cheap.
+ */
+function diluxone_users_login_image( string $key ): string {
+	$id = (int) diluxone_users_option( $key );
+
+	if ( $id <= 0 ) {
+		return '';
+	}
+
+	return (string) wp_get_attachment_image_url( $id, 'full' );
+}
+
+/**
+ * The frame around the sign-in form, opened.
+ *
+ * It lives here and not in the template because both steps of signing in go
+ * inside it — the form, and the screen asking for the second-step code — and
+ * a frame written twice is a frame that will be changed once. A theme that
+ * replaces login.php still gets the frame around whatever it draws, which is
+ * what a theme replacing the form actually wants.
+ *
+ * Prints nothing at all for the template that leaves the page alone.
+ */
+function diluxone_users_login_frame_open(): void {
+	$template = diluxone_users_login_template();
+
+	if ( 'plain' === $template ) {
+		return;
+	}
+
+	$image = diluxone_users_login_image( 'diluxone_users_login_image' );
+	$side  = 'right' === (string) diluxone_users_option( 'diluxone_users_login_side' ) ? 'right' : 'left';
+
+	// The picture travels as a custom property because it is a background in
+	// every layout that has one, and a property can be repointed from a
+	// stylesheet without touching any of this.
+	$style = '' !== $image && in_array( $template, array( 'split', 'backdrop' ), true )
+		? sprintf( ' style="--diluxone-users-login-image: url(%s)"', esc_url( $image ) )
+		: '';
+
+	/*
+	 * The wrapper is not decoration: it is what makes the frame a grandchild.
+	 * A block theme constrains its content with
+	 * `:where(.is-layout-constrained) > :where(…)` — direct children only, and
+	 * with !important on both the margin and the max-width, so nothing a child
+	 * declares can break out of the column. The wrapper takes that treatment
+	 * and the frame inside it is free, which is the same thing the account
+	 * cover does one level down.
+	 */
+	echo '<div class="diluxone-users-login-page">';
+
+	printf(
+		'<div class="diluxone-users-login-frame diluxone-users-login-frame--%1$s diluxone-users-login-frame--%2$s"%3$s>',
+		esc_attr( $template ),
+		esc_attr( $side ),
+		$style // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built and escaped just above.
+	);
+
+	if ( 'split' === $template ) {
+		echo '<div class="diluxone-users-login-frame__picture" aria-hidden="true"></div>';
+	}
+
+	echo '<div class="diluxone-users-login-frame__box">';
+}
+
+/** And closed. */
+function diluxone_users_login_frame_close(): void {
+	if ( 'plain' === diluxone_users_login_template() ) {
+		return;
+	}
+
+	echo '</div></div></div>';
+}
+
+/** The site's mark above the form, when there is one. */
+function diluxone_users_login_logo(): void {
+	$logo = diluxone_users_login_image( 'diluxone_users_login_logo' );
+
+	if ( '' === $logo ) {
+		return;
+	}
+
+	printf(
+		'<p class="diluxone-users-login__logo"><img src="%1$s" alt="%2$s"></p>',
+		esc_url( $logo ),
+		esc_attr( get_bloginfo( 'name' ) )
+	);
+}
+
+/**
  * What a screen says, in the site's words or in the plugin's.
  *
  * Every visible sentence the plugin writes has a default that works out of

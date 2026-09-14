@@ -535,3 +535,74 @@ diluxoneUsersFieldTypes( document );
 
 	paint();
 }() );
+
+/**
+ * Choosing a picture opens WordPress's own media library.
+ *
+ * Nothing is uploaded from here and no URL is typed: whoever is setting this
+ * up already has the picture in the library, and an address written by hand
+ * is an address that breaks the day the site changes domain. What is stored
+ * is the attachment id, so the picture keeps working after that move.
+ */
+( function () {
+	'use strict';
+
+	if ( ! window.wp || ! window.wp.media ) {
+		return;
+	}
+
+	document.querySelectorAll( '[data-diluxone-users-image]' ).forEach( function ( box ) {
+		var field   = box.querySelector( '[data-diluxone-users-image-id]' );
+		var preview = box.querySelector( '[data-diluxone-users-image-preview]' );
+		var pick    = box.querySelector( '[data-diluxone-users-image-pick]' );
+		var clear   = box.querySelector( '[data-diluxone-users-image-clear]' );
+		var frame;
+
+		if ( ! field || ! pick ) {
+			return;
+		}
+
+		pick.addEventListener( 'click', function () {
+			// One frame per field, opened again rather than built again:
+			// rebuilding it forgets what was chosen last time.
+			if ( ! frame ) {
+				frame = window.wp.media( {
+					title: pick.textContent,
+					library: { type: 'image' },
+					multiple: false,
+				} );
+
+				frame.on( 'select', function () {
+					var image = frame.state().get( 'selection' ).first().toJSON();
+					var sizes = image.sizes || {};
+					var shown = ( sizes.medium || sizes.full || image ).url;
+
+					field.value = image.id;
+
+					if ( preview ) {
+						preview.querySelector( 'img' ).src = shown;
+						preview.hidden = false;
+					}
+
+					if ( clear ) {
+						clear.hidden = false;
+					}
+				} );
+			}
+
+			frame.open();
+		} );
+
+		if ( clear ) {
+			clear.addEventListener( 'click', function () {
+				field.value = '0';
+
+				if ( preview ) {
+					preview.hidden = true;
+				}
+
+				clear.hidden = true;
+			} );
+		}
+	} );
+}() );

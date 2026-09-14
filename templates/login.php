@@ -11,12 +11,19 @@
  * @var int                                $minutes   How long the link is good for.
  * @var bool                               $title     Whether to draw the "Sign in" heading.
  *
+ * The shape of the page around this — the card, the split, the background —
+ * is not in here: it wraps both steps of signing in, so it is printed by
+ * diluxone_users_login_frame_open() and a theme replacing this file still
+ * gets it.
+ *
  * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 ?>
 <div class="diluxone-users diluxone-users-login">
+
+	<?php diluxone_users_login_logo(); ?>
 
 	<?php if ( 'sent' === $state ) : ?>
 

@@ -302,6 +302,37 @@ function diluxone_users_scope_posted( string $prefix ): array {
 	);
 }
 
+/**
+ * A picture chosen from the media library.
+ *
+ * The library and not a URL box: whoever is setting this up already has the
+ * picture in WordPress, and a URL typed by hand breaks the day the site moves
+ * domain. It is the media modal WordPress already ships — nothing is drawn
+ * here but the button, the preview and the hidden field holding the id.
+ */
+function diluxone_users_image_field( string $key, string $help = '' ): void {
+	$id  = (int) diluxone_users_option( $key );
+	$url = $id > 0 ? (string) wp_get_attachment_image_url( $id, 'medium' ) : '';
+	?>
+	<div class="diluxone-users-image" data-diluxone-users-image>
+		<input type="hidden" name="<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( (string) $id ); ?>" data-diluxone-users-image-id>
+
+		<div class="diluxone-users-image__preview" data-diluxone-users-image-preview <?php echo '' === $url ? 'hidden' : ''; ?>>
+			<img src="<?php echo esc_url( $url ); ?>" alt="">
+		</div>
+
+		<p>
+			<button type="button" class="button" data-diluxone-users-image-pick><?php esc_html_e( 'Choose a picture', 'diluxone-users' ); ?></button>
+			<button type="button" class="button-link diluxone-users-danger" data-diluxone-users-image-clear <?php echo '' === $url ? 'hidden' : ''; ?>><?php esc_html_e( 'Remove', 'diluxone-users' ); ?></button>
+		</p>
+
+		<?php if ( '' !== $help ) : ?>
+			<p class="description"><?php echo esc_html( $help ); ?></p>
+		<?php endif; ?>
+	</div>
+	<?php
+}
+
 /** A short notice at the top of the screen. */
 function diluxone_users_notice( string $text, string $type = 'success' ): void {
 	printf(
@@ -361,6 +392,13 @@ function diluxone_users_admin_styles( string $hook ): void {
 	}
 
 	wp_enqueue_style( 'diluxone-users-admin', DILUXONE_USERS_URL . 'assets/diluxone-users-admin.css', array(), diluxone_users_asset_version( 'assets/diluxone-users-admin.css' ) );
+
+	// The media modal, for the screens that let a picture be chosen. It is
+	// WordPress's own and it is not small, so it is loaded where it is used.
+	if ( false !== strpos( $hook, 'diluxone-users-login' ) ) {
+		wp_enqueue_media();
+	}
+
 	wp_enqueue_script( 'diluxone-users-admin', DILUXONE_USERS_URL . 'assets/diluxone-users-admin.js', array(), diluxone_users_asset_version( 'assets/diluxone-users-admin.js' ), true );
 
 	if ( $people ) {
