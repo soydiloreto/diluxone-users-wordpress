@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-14T15:41:16+00:00\n"
+"POT-Creation-Date: 2026-09-14T15:50:58+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: diluxone-users\n"
@@ -426,7 +426,7 @@ msgid "The account page"
 msgstr ""
 
 #: includes/admin-account.php:646
-#: includes/admin-register.php:92
+#: includes/admin-register.php:91
 msgid "— none —"
 msgstr ""
 
@@ -726,12 +726,48 @@ msgstr ""
 msgid "Your brand"
 msgstr ""
 
-#: includes/admin-design.php:198
+#: includes/admin-design.php:210
 msgid "Profile photo"
 msgstr ""
 
-#: includes/admin-design.php:208
+#: includes/admin-design.php:220
 msgid "The WordPress screen"
+msgstr ""
+
+#: includes/admin-design.php:239
+msgid "The words on the registration form. Its shape — the frame, the picture, your mark — comes from the Sign in tab: the two forms are the same page, so the frame is chosen once."
+msgstr ""
+
+#: includes/admin-design.php:245
+#: includes/admin-login.php:646
+msgid "The heading"
+msgstr ""
+
+#: includes/admin-design.php:246
+#: templates/register.php:47
+msgid "Create your account"
+msgstr ""
+
+#: includes/admin-design.php:251
+#: includes/admin-login.php:653
+msgid "The line under it"
+msgstr ""
+
+#: includes/admin-design.php:253
+msgid "Nothing by default. Somewhere to say what an account is for on this site."
+msgstr ""
+
+#: includes/admin-design.php:258
+msgid "Once it is done"
+msgstr ""
+
+#: includes/admin-design.php:259
+#: templates/register.php:26
+msgid "Your account is ready"
+msgstr ""
+
+#: includes/admin-design.php:265
+msgid "This site does not use this form: accounts are made another way. What is written here waits for the day that changes."
 msgstr ""
 
 #: includes/admin-fields.php:227
@@ -744,7 +780,7 @@ msgstr ""
 
 #: includes/admin-fields.php:232
 #: includes/admin-fields.php:475
-#: includes/admin-register.php:144
+#: includes/admin-register.php:123
 #: includes/admin.php:69
 msgid "User fields"
 msgstr ""
@@ -1585,7 +1621,7 @@ msgid "No sign-in page is chosen yet, so there is nowhere to point it: WordPress
 msgstr ""
 
 #: includes/admin-login.php:356
-#: includes/admin-register.php:271
+#: includes/admin-register.php:247
 msgid "With a social account"
 msgstr ""
 
@@ -1781,18 +1817,8 @@ msgstr ""
 msgid "The sentences on the sign-in screen. Leave a box empty and the plugin says its own, which is what the grey text in each box shows — so a site that changes nothing still reads correctly, and changing one is never a step somebody has to remember."
 msgstr ""
 
-#: includes/admin-login.php:646
-#: includes/admin-register.php:107
-msgid "The heading"
-msgstr ""
-
 #: includes/admin-login.php:648
 msgid "Writing one shows it even when the shortcode was not asked for a heading: naming this screen is meant to be read."
-msgstr ""
-
-#: includes/admin-login.php:653
-#: includes/admin-register.php:113
-msgid "The line under it"
 msgstr ""
 
 #: includes/admin-login.php:655
@@ -2176,159 +2202,141 @@ msgstr ""
 msgid "The form"
 msgstr ""
 
-#: includes/admin-register.php:76
+#: includes/admin-register.php:75
 msgid "A form of its own, for a site that asks for more than an address before letting somebody in — or that wants a moment between “I want an account” and “here is your link”. Put the [diluxone_users_register] shortcode on the page you pick below."
 msgstr ""
 
-#: includes/admin-register.php:79
+#: includes/admin-register.php:78
 msgid "This site does not use it: on the previous tab, accounts are made another way. What is set here waits for the day that changes."
 msgstr ""
 
-#: includes/admin-register.php:84
+#: includes/admin-register.php:83
 msgid "The registration page"
 msgstr ""
 
-#: includes/admin-register.php:100
+#: includes/admin-register.php:99
 msgid "The form is how this site registers people and there is no page holding it, so right now nobody can register at all."
 msgstr ""
 
-#: includes/admin-register.php:108
-#: templates/register.php:47
-msgid "Create your account"
-msgstr ""
-
-#: includes/admin-register.php:115
-msgid "Nothing by default. Somewhere to say what an account is for on this site."
-msgstr ""
-
-#: includes/admin-register.php:120
-msgid "Once it is done"
-msgstr ""
-
-#: includes/admin-register.php:121
-#: templates/register.php:26
-msgid "Your account is ready"
-msgstr ""
-
-#: includes/admin-register.php:125
+#: includes/admin-register.php:104
 msgid "What it asks for"
 msgstr ""
 
-#: includes/admin-register.php:132
+#: includes/admin-register.php:111
 msgid "Only the email address: no field is marked as required. Mark one on User fields and it appears here."
 msgstr ""
 
-#: includes/admin-register.php:134
+#: includes/admin-register.php:113
 msgid "The address, plus the fields marked as required:"
 msgstr ""
 
-#: includes/admin-register.php:143
+#: includes/admin-register.php:122
 msgid "Only the required ones, on purpose: a registration form that asks for everything is a registration form nobody finishes. The rest waits in their account."
 msgstr ""
 
-#: includes/admin-register.php:173
+#: includes/admin-register.php:149
 msgid "The registration form, as the site serves it:"
 msgstr ""
 
 #. translators: %s: list of providers, comma separated
-#: includes/admin-register.php:211
+#: includes/admin-register.php:187
 #, php-format
 msgid "Working right now: %s."
 msgstr ""
 
-#: includes/admin-register.php:222
+#: includes/admin-register.php:198
 msgid "There is no provider enabled yet, so this changes nothing until there is. What is chosen here is kept for the day there is one."
 msgstr ""
 
-#: includes/admin-register.php:224
+#: includes/admin-register.php:200
 msgid "Set up a provider"
 msgstr ""
 
-#: includes/admin-register.php:230
+#: includes/admin-register.php:206
 msgid "Who ends up with an account on this site, and what that account is when it is created. How they get into it afterwards is the Sign in screen."
 msgstr ""
 
-#: includes/admin-register.php:234
+#: includes/admin-register.php:210
 msgid "How somebody gets an account"
 msgstr ""
 
-#: includes/admin-register.php:244
+#: includes/admin-register.php:220
 msgid "Signing in creates it: one door for everybody"
 msgstr ""
 
-#: includes/admin-register.php:245
+#: includes/admin-register.php:221
 msgid "A registration form of its own, on its own page"
 msgstr ""
 
-#: includes/admin-register.php:246
+#: includes/admin-register.php:222
 msgid "Nobody registers themselves: the accounts are made from Users"
 msgstr ""
 
-#: includes/admin-register.php:259
+#: includes/admin-register.php:235
 msgid "The first is the plugin at its simplest: somebody types their address, gets a link, and the account appears if it was not there. Nothing to fill in, nothing to confirm."
 msgstr ""
 
-#: includes/admin-register.php:260
+#: includes/admin-register.php:236
 msgid "The second asks for the required fields before creating anything, and is where an add-on would hold an account for approval. The address is still the identity and there is still no password: what arrives is the same link."
 msgstr ""
 
-#: includes/admin-register.php:264
+#: includes/admin-register.php:240
 msgid "There is no page holding the form yet, so nobody can register."
 msgstr ""
 
-#: includes/admin-register.php:265
+#: includes/admin-register.php:241
 msgid "Choose one"
 msgstr ""
 
-#: includes/admin-register.php:275
+#: includes/admin-register.php:251
 msgid "Somebody arriving from a social network with no account here gets one"
 msgstr ""
 
-#: includes/admin-register.php:278
+#: includes/admin-register.php:254
 msgid "Turned off, a social account only signs in people who are already here — anybody else is turned away at the door."
 msgstr ""
 
-#: includes/admin-register.php:282
+#: includes/admin-register.php:258
 msgid "Role for new accounts"
 msgstr ""
 
-#: includes/admin-register.php:287
+#: includes/admin-register.php:263
 msgid "The same one for everybody, whether they come in by email or by a social network: a role per provider is a quiet way of handing out privileges."
 msgstr ""
 
-#: includes/admin-register.php:291
+#: includes/admin-register.php:267
 msgid "The WordPress registration form"
 msgstr ""
 
-#: includes/admin-register.php:295
+#: includes/admin-register.php:271
 msgid "Whatever Settings → General says"
 msgstr ""
 
-#: includes/admin-register.php:296
+#: includes/admin-register.php:272
 msgid "Open, whatever that setting says"
 msgstr ""
 
-#: includes/admin-register.php:297
+#: includes/admin-register.php:273
 msgid "Closed, whatever that setting says"
 msgstr ""
 
-#: includes/admin-register.php:307
+#: includes/admin-register.php:283
 msgid "This is wp-login.php?action=register and wp-signup.php, the ones WordPress brings. They are decided here because this is where the accounts are administered; leaving that in another screen is how a site ends up with a registration form nobody remembers is open."
 msgstr ""
 
-#: includes/admin-register.php:308
+#: includes/admin-register.php:284
 msgid "With “only a link” as the way in, it stays closed no matter what: it would hand out accounts with a password through a door the site closed."
 msgstr ""
 
-#: includes/admin-register.php:312
+#: includes/admin-register.php:288
 msgid "How the account ends up"
 msgstr ""
 
-#: includes/admin-register.php:314
+#: includes/admin-register.php:290
 msgid "The email is the username and it never changes —WordPress does not allow it. There is no password at all, not even one nobody knows. The name shown comes from what the person writes, and the fields they are asked for are the ones on the User fields screen."
 msgstr ""
 
-#: includes/admin-register.php:316
+#: includes/admin-register.php:292
 msgid "What they are asked for"
 msgstr ""
 

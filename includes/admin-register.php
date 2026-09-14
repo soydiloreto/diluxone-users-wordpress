@@ -38,7 +38,6 @@ function diluxone_users_register_panels(): void {
 			'position' => 20,
 			'render'   => 'diluxone_users_screen_register_form',
 			'save'     => 'diluxone_users_screen_register_form_save',
-			'preview'  => 'diluxone_users_register_preview',
 		)
 	);
 }
@@ -101,26 +100,6 @@ function diluxone_users_screen_register_form(): void {
 				<?php endif; ?>
 			</td>
 		</tr>
-		<?php
-		diluxone_users_words_field(
-			'diluxone_users_register_title',
-			__( 'The heading', 'diluxone-users' ),
-			__( 'Create your account', 'diluxone-users' )
-		);
-
-		diluxone_users_words_field(
-			'diluxone_users_register_intro',
-			__( 'The line under it', 'diluxone-users' ),
-			'',
-			__( 'Nothing by default. Somewhere to say what an account is for on this site.', 'diluxone-users' )
-		);
-
-		diluxone_users_words_field(
-			'diluxone_users_register_done',
-			__( 'Once it is done', 'diluxone-users' ),
-			__( 'Your account is ready', 'diluxone-users' )
-		);
-		?>
 		<tr>
 			<th scope="row"><?php esc_html_e( 'What it asks for', 'diluxone-users' ); ?></th>
 			<td>
@@ -154,10 +133,7 @@ function diluxone_users_screen_register_form_save(): void {
 	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the panel verifies it.
 	diluxone_users_save_options(
 		array(
-			'diluxone_users_register_page'  => absint( wp_unslash( $_POST['diluxone_users_register_page'] ?? 0 ) ),
-			'diluxone_users_register_title' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_register_title'] ?? '' ) ),
-			'diluxone_users_register_intro' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_register_intro'] ?? '' ) ),
-			'diluxone_users_register_done'  => sanitize_text_field( wp_unslash( $_POST['diluxone_users_register_done'] ?? '' ) ),
+			'diluxone_users_register_page' => absint( wp_unslash( $_POST['diluxone_users_register_page'] ?? 0 ) ),
 		)
 	);
 	// phpcs:enable

@@ -172,6 +172,18 @@ function diluxone_users_design_panels(): void {
 	);
 	diluxone_users_register_panel(
 		DILUXONE_USERS_DESIGN,
+		'register',
+		array(
+			'label'    => diluxone_users_screens()['diluxone-users-register'],
+			'position' => 25,
+			'render'   => 'diluxone_users_design_register',
+			'preview'  => 'diluxone_users_register_preview',
+			'save'     => 'diluxone_users_design_register_save',
+		)
+	);
+
+	diluxone_users_register_panel(
+		DILUXONE_USERS_DESIGN,
 		'account',
 		array(
 			'label'    => diluxone_users_screens()['diluxone-users-account'],
@@ -214,3 +226,55 @@ function diluxone_users_design_panels(): void {
 	);
 }
 add_action( 'diluxone_users_register_panels', 'diluxone_users_design_panels' );
+
+/**
+ * What the registration form says.
+ *
+ * Its shape is not here: the sign-in form and this one are the same page with
+ * different fields, and choosing the frame twice would be choosing it twice
+ * — the tab before this one sets it for both. What is its own is what it
+ * says.
+ */
+function diluxone_users_design_register(): void {
+	diluxone_users_intro( __( 'The words on the registration form. Its shape — the frame, the picture, your mark — comes from the Sign in tab: the two forms are the same page, so the frame is chosen once.', 'diluxone-users' ) );
+	?>
+	<table class="form-table" role="presentation">
+		<?php
+		diluxone_users_words_field(
+			'diluxone_users_register_title',
+			__( 'The heading', 'diluxone-users' ),
+			__( 'Create your account', 'diluxone-users' )
+		);
+
+		diluxone_users_words_field(
+			'diluxone_users_register_intro',
+			__( 'The line under it', 'diluxone-users' ),
+			'',
+			__( 'Nothing by default. Somewhere to say what an account is for on this site.', 'diluxone-users' )
+		);
+
+		diluxone_users_words_field(
+			'diluxone_users_register_done',
+			__( 'Once it is done', 'diluxone-users' ),
+			__( 'Your account is ready', 'diluxone-users' )
+		);
+		?>
+	</table>
+	<?php
+	if ( 'form' !== diluxone_users_register_mode() ) {
+		diluxone_users_intro( __( 'This site does not use this form: accounts are made another way. What is written here waits for the day that changes.', 'diluxone-users' ) );
+	}
+}
+
+/** Saves them. */
+function diluxone_users_design_register_save(): void {
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the panel verifies it.
+	diluxone_users_save_options(
+		array(
+			'diluxone_users_register_title' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_register_title'] ?? '' ) ),
+			'diluxone_users_register_intro' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_register_intro'] ?? '' ) ),
+			'diluxone_users_register_done'  => sanitize_text_field( wp_unslash( $_POST['diluxone_users_register_done'] ?? '' ) ),
+		)
+	);
+	// phpcs:enable
+}
