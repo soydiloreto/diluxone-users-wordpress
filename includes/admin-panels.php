@@ -221,31 +221,6 @@ function diluxone_users_panels_ready(): void {
 add_action( 'admin_init', 'diluxone_users_panels_ready', 1 );
 
 /**
- * The two values the admin picks, as custom properties.
- *
- * On the front end they are added to the stylesheet. Here they cannot be: the
- * sheet is one file inside the preview's document and a colour chosen a second
- * ago would show as the colour saved a week ago. So they ride with the markup.
- */
-function diluxone_users_preview_tokens(): string {
-	$tokens = '';
-	$accent = sanitize_hex_color( diluxone_users_style_accent() );
-	$radius = (string) diluxone_users_option( 'diluxone_users_style_radius' );
-
-	if ( null !== $accent && '' !== $accent ) {
-		$tokens .= '--diluxone-users-accent:' . $accent . ';';
-		$tokens .= '--diluxone-users-accent-bg:' . $accent . ';';
-	}
-
-	if ( '' !== trim( $radius ) ) {
-		$tokens .= '--diluxone-users-radius:' . (int) $radius . 'px;';
-		$tokens .= '--diluxone-users-radius-sm:' . max( 0, (int) $radius - 4 ) . 'px;';
-	}
-
-	return $tokens;
-}
-
-/**
  * A preview, as a page of its own.
  *
  * This is the whole reason the previews are in an iframe. The sign-in frames
@@ -276,17 +251,20 @@ function diluxone_users_preview_document( string $body ): string {
 		);
 	}
 
-	$tokens = diluxone_users_preview_tokens();
-
 	/*
 	 * The padding is the page's margin and it is what the breakout undoes: a
 	 * cover reaches the edge of this document exactly as it reaches the edge
 	 * of the browser on the site.
+	 *
+	 * The rest is the same CSS the front end is given, built in the same
+	 * place. Here it cannot be added to the sheet — the sheet is a file
+	 * inside this document and a colour chosen a second ago would show as the
+	 * colour saved a week ago — so it rides with the markup instead.
 	 */
 	$style = 'html{background:#fff}'
 		. 'body{margin:0;padding:40px 24px;background:#fff;color:#1e1e1e;'
 		. 'font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}'
-		. ( '' === $tokens ? '' : ':root{' . $tokens . '}' );
+		. diluxone_users_style_css();
 
 	return '<!DOCTYPE html><html ' . get_language_attributes( 'html' ) . '><head><meta charset="'
 		. esc_attr( get_bloginfo( 'charset' ) ) . '">'

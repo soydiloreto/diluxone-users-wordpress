@@ -17,6 +17,8 @@
  * @var bool                                $since
  * @var bool                                $action
  * @var string                              $cover
+ * @var string                              $picture
+ * @var string                              $kind
  * @var string                              $layout
  * @var string                              $template
  * @var string                              $width
@@ -33,10 +35,36 @@ $diluxone_users_classes = array(
 	'diluxone-users-account--' . $layout,
 	'diluxone-users-account--' . $template,
 	'diluxone-users-account--' . $width,
+	// What the menu does on a phone when it does not fit. It rides on the
+	// area and not on the menu because the menu is also placed on its own
+	// with the shortcode, where the site decides.
+	'diluxone-users-account--nav-' . ( 'wrap' === (string) diluxone_users_option( 'diluxone_users_account_nav_small' ) ? 'wrap' : 'scroll' ),
 );
+
+/*
+ * What the cover is made of is a class of its own — `--cover-image`,
+ * `--cover-dim` — and not something read off the presence of a picture. The
+ * stylesheet needs to know which of the two a picture means, and a site
+ * styling the header needs a name for it.
+ */
+if ( 'cover' === $template && 'color' !== $kind ) {
+	$diluxone_users_classes[] = 'diluxone-users-account--cover-' . ( 'dim' === $kind ? 'dim' : 'image' );
+}
+
+$diluxone_users_style = '';
+
+if ( 'cover' === $template ) {
+	if ( '' !== $cover ) {
+		$diluxone_users_style .= '--diluxone-users-cover:' . $cover . ';';
+	}
+
+	if ( '' !== $picture && 'color' !== $kind ) {
+		$diluxone_users_style .= '--diluxone-users-cover-image:url(' . esc_url( $picture ) . ');';
+	}
+}
 ?>
 <div class="<?php echo esc_attr( implode( ' ', $diluxone_users_classes ) ); ?>"
-	<?php echo 'cover' === $template && '' !== $cover ? 'style="--diluxone-users-cover: ' . esc_attr( $cover ) . '"' : ''; ?>>
+	<?php echo '' === $diluxone_users_style ? '' : 'style="' . esc_attr( $diluxone_users_style ) . '"'; ?>>
 
 	<?php if ( $header ) : ?>
 		<div class="diluxone-users-account__header">

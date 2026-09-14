@@ -27,7 +27,7 @@ defined( 'ABSPATH' ) || exit;
 
 	<?php if ( 'sent' === $state ) : ?>
 
-		<p class="diluxone-users-login__icon"><?php echo diluxone_users_icon( 'mail' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own markup. ?></p>
+		<p class="diluxone-users-login__icon <?php echo 'circle' === diluxone_users_option( 'diluxone_users_sent_icon' ) ? 'diluxone-users-login__icon--circle' : ''; ?>"><?php echo diluxone_users_icon( 'mail' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own markup. ?></p>
 		<h2 class="diluxone-users-login__title"><?php echo esc_html( diluxone_users_text( 'diluxone_users_sent_title', __( 'Check your email', 'diluxone-users' ) ) ); ?></h2>
 		<p><?php esc_html_e( 'We sent a sign-in link to', 'diluxone-users' ); ?></p>
 		<p class="diluxone-users-login__email"><strong><?php echo esc_html( $email ); ?></strong></p>
@@ -99,7 +99,7 @@ defined( 'ABSPATH' ) || exit;
 		<?php if ( diluxone_users_has_passkeys() ) : ?>
 			<?php diluxone_users_passkeys_enqueue(); ?>
 			<p class="diluxone-users-notice" data-diluxone-users-passkey-notice hidden></p>
-			<p><button type="button" class="diluxone-users-button diluxone-users-button--wide" data-diluxone-users-passkey="login"><?php esc_html_e( 'Sign in with a passkey', 'diluxone-users' ); ?></button></p>
+			<p><button type="button" class="diluxone-users-button diluxone-users-button--wide" data-diluxone-users-passkey="login"><?php echo diluxone_users_button_icon( 'key' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own markup. ?><?php esc_html_e( 'Sign in with a passkey', 'diluxone-users' ); ?></button></p>
 			<p class="diluxone-users-divider"><span><?php esc_html_e( 'or', 'diluxone-users' ); ?></span></p>
 		<?php endif; ?>
 
@@ -125,7 +125,7 @@ defined( 'ABSPATH' ) || exit;
 				<label for="diluxone-users-email"><?php esc_html_e( 'Email address', 'diluxone-users' ); ?></label>
 				<input type="email" id="diluxone-users-email" name="diluxone_users_email" required autocomplete="email" placeholder="<?php echo esc_attr_x( 'you@example.com', 'placeholder for the e-mail field', 'diluxone-users' ); ?>">
 
-				<button type="submit" class="diluxone-users-button"><?php esc_html_e( 'Send me the sign-in link', 'diluxone-users' ); ?></button>
+				<button type="submit" class="diluxone-users-button"><?php echo diluxone_users_button_icon( 'mail' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own markup. ?><?php esc_html_e( 'Send me the sign-in link', 'diluxone-users' ); ?></button>
 			</form>
 
 			<p class="diluxone-users-note diluxone-users-note--icon">

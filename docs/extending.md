@@ -210,6 +210,19 @@ added. So the measurements are properties too, not only the colours:
 | `--diluxone-users-nav-gap` | Between menu items | by the shape |
 | `--diluxone-users-tab-pad` | Inside one | by the shape |
 | `--diluxone-users-side-w` | The side menu's column | `minmax(180px, 220px)` |
+| `--diluxone-users-nav-min` | Narrowest item when the menu wraps on a phone | `140px` |
+| `--diluxone-users-avatar-ring` | The ring around the picture on a cover | `3px solid rgba(255,255,255,.35)` |
+| `--diluxone-users-cover-at` | Where the cover picture is anchored | `center` |
+| `--diluxone-users-cover-over` | What is laid over it | the cover colour at 78% |
+| `--diluxone-users-sent-icon` | The circle on "check your email" | `88px` |
+| `--diluxone-users-dial-w` | The dial-code column of a phone field | `minmax(0, 9rem)` |
+| `--diluxone-users-border-w` | A control's edge — inputs and buttons | `1px` |
+| `--diluxone-users-accent-soft` | The accent with the volume down | the accent at 12% |
+
+The last two are also asked from the admin — Design → Your brand — so a site
+that is not writing CSS at all still gets them. Everything on this page can be
+set from a stylesheet as well; the admin is the same values with a screen in
+front of them.
 
 Two defaults in a row means the plugin's own differ by shape. Setting the
 property wins in both: none of them are declared on `:root`, each is read

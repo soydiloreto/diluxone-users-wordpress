@@ -100,6 +100,112 @@ function diluxone_users_style_accent(): string {
 }
 
 /**
+ * Everything the admin decided, as custom properties.
+ *
+ * One function and not two. The front end and the live preview both need this
+ * string and they had a copy each: the preview set `--accent-bg` and the front
+ * end did not, which is the kind of difference only ever found by somebody
+ * wondering why the preview and the site disagree.
+ *
+ * Properties and not rules, because the sheet is already written against
+ * them. A button that is an outline is not a class that has to reach every
+ * template with a button in it: it is three values, and the button rule was
+ * already reading all three.
+ */
+function diluxone_users_style_tokens(): string {
+	$tokens = '';
+
+	if ( '' !== trim( (string) diluxone_users_option( 'diluxone_users_style_accent' ) ) ) {
+		$accent  = (string) sanitize_hex_color( diluxone_users_style_accent() );
+		$tokens .= '--diluxone-users-accent:' . $accent . ';';
+		$tokens .= '--diluxone-users-accent-bg:' . $accent . ';';
+	}
+
+	$radius = (string) diluxone_users_option( 'diluxone_users_style_radius' );
+
+	if ( '' !== trim( $radius ) ) {
+		$tokens .= '--diluxone-users-radius:' . (int) $radius . 'px;';
+		$tokens .= '--diluxone-users-radius-sm:' . max( 0, (int) $radius - 4 ) . 'px;';
+	}
+
+	$border = (string) diluxone_users_option( 'diluxone_users_style_border' );
+
+	if ( '' !== trim( $border ) ) {
+		// A half pixel is a real answer here: 1.5px is what a site with a
+		// heavier hand actually uses, and rounding it to 2 is another design.
+		$tokens .= '--diluxone-users-border-w:' . (float) $border . 'px;';
+	}
+
+	$control = (string) diluxone_users_option( 'diluxone_users_style_control' );
+
+	if ( '' !== trim( $control ) ) {
+		$tokens .= '--diluxone-users-control-h:' . (int) $control . 'px;';
+	}
+
+	$tokens .= diluxone_users_button_tokens();
+
+	return $tokens;
+}
+
+/**
+ * The whole of what the admin decided, as CSS.
+ *
+ * Almost all of it is properties on `:root`, which is the point of the token
+ * system. The notice is the exception and it has to be: the soft shape wants
+ * the background to be the notice's own colour washed down, and which colour
+ * that is — green, red, the accent — is decided by a class on the notice
+ * itself. A `:root` that says `--notice-bg: var(--notice-tint)` is asking
+ * `:root` for a value that only exists further down, and a custom property
+ * that cannot be resolved where it is declared resolves to nothing at all.
+ * That is not a case for giving up on tokens; it is a case for declaring this
+ * one where its ingredients are.
+ */
+function diluxone_users_style_css(): string {
+	$tokens = diluxone_users_style_tokens();
+	$css    = '' === $tokens ? '' : ':root{' . $tokens . '}';
+
+	return $css . diluxone_users_notice_css();
+}
+
+/** A notice with a bar down its left, or a soft filled box. */
+function diluxone_users_notice_css(): string {
+	if ( 'soft' !== (string) diluxone_users_option( 'diluxone_users_notice_style' ) ) {
+		return '';
+	}
+
+	return '.diluxone-users-notice{'
+		. '--diluxone-users-notice-edge:0;'
+		. '--diluxone-users-notice-pad:14px 18px;'
+		. '--diluxone-users-notice-radius:var(--diluxone-users-radius-sm);'
+		. '--diluxone-users-notice-bg:var(--diluxone-users-notice-tint);'
+		. '}';
+}
+
+/**
+ * The three looks a button comes in.
+ *
+ * The filled one is the sheet's own, so it says nothing: a site that never
+ * touched this gets exactly what it had.
+ */
+function diluxone_users_button_tokens(): string {
+	$style = (string) diluxone_users_option( 'diluxone_users_button_style' );
+
+	if ( 'outline' === $style ) {
+		return '--diluxone-users-btn-bg:transparent;'
+			. '--diluxone-users-btn-ink:var(--diluxone-users-accent);'
+			. '--diluxone-users-btn-edge:var(--diluxone-users-accent);';
+	}
+
+	if ( 'soft' === $style ) {
+		return '--diluxone-users-btn-bg:var(--diluxone-users-accent-soft);'
+			. '--diluxone-users-btn-ink:var(--diluxone-users-accent);'
+			. '--diluxone-users-btn-edge:transparent;';
+	}
+
+	return '';
+}
+
+/**
  * The plugin stylesheet, only if the site wants it.
  *
  * It is registered and not enqueued: each shortcode enqueues it as it draws,
@@ -117,24 +223,13 @@ function diluxone_users_styles(): void {
 
 	wp_register_style( 'diluxone-users', DILUXONE_USERS_URL . 'assets/diluxone-users.css', array(), diluxone_users_asset_version( 'assets/diluxone-users.css' ) );
 
-	// The two values chosen from the admin travel as properties, not as rules:
+	// The values chosen from the admin travel as properties, not as rules:
 	// there is no file to generate or to invalidate, and what is touched is
 	// exactly what the rest of the sheet was already reading.
-	$tokens = '';
+	$css = diluxone_users_style_css();
 
-	if ( '' !== trim( (string) diluxone_users_option( 'diluxone_users_style_accent' ) ) ) {
-		$tokens .= '--diluxone-users-accent: ' . sanitize_hex_color( diluxone_users_style_accent() ) . ';';
-	}
-
-	$radius = (string) diluxone_users_option( 'diluxone_users_style_radius' );
-
-	if ( '' !== trim( $radius ) ) {
-		$tokens .= '--diluxone-users-radius: ' . (int) $radius . 'px;';
-		$tokens .= '--diluxone-users-radius-sm: ' . max( 0, (int) $radius - 4 ) . 'px;';
-	}
-
-	if ( '' !== $tokens ) {
-		wp_add_inline_style( 'diluxone-users', ':root{' . $tokens . '}' );
+	if ( '' !== $css ) {
+		wp_add_inline_style( 'diluxone-users', $css );
 	}
 
 	// And if the page being requested already carries one of our shortcodes, it

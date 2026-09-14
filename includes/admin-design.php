@@ -33,10 +33,15 @@ function diluxone_users_design_brand_save(): void {
 	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the panel verifies it.
 	diluxone_users_save_options(
 		array(
-			'diluxone_users_styles'       => isset( $_POST['diluxone_users_styles'] ) ? 1 : 0,
-			'diluxone_users_style_accent' => sanitize_hex_color( wp_unslash( $_POST['diluxone_users_style_accent'] ?? '' ) ) ?? '',
-			'diluxone_users_style_radius' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_style_radius'] ?? '' ) ),
-			'diluxone_users_login_logo'   => absint( wp_unslash( $_POST['diluxone_users_login_logo'] ?? 0 ) ),
+			'diluxone_users_styles'        => isset( $_POST['diluxone_users_styles'] ) ? 1 : 0,
+			'diluxone_users_style_accent'  => sanitize_hex_color( wp_unslash( $_POST['diluxone_users_style_accent'] ?? '' ) ) ?? '',
+			'diluxone_users_style_radius'  => sanitize_text_field( wp_unslash( $_POST['diluxone_users_style_radius'] ?? '' ) ),
+			'diluxone_users_style_control' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_style_control'] ?? '' ) ),
+			'diluxone_users_style_border'  => sanitize_text_field( wp_unslash( $_POST['diluxone_users_style_border'] ?? '' ) ),
+			'diluxone_users_button_style'  => sanitize_key( wp_unslash( $_POST['diluxone_users_button_style'] ?? 'solid' ) ),
+			'diluxone_users_button_icons'  => isset( $_POST['diluxone_users_button_icons'] ) ? 1 : 0,
+			'diluxone_users_notice_style'  => 'soft' === sanitize_key( wp_unslash( $_POST['diluxone_users_notice_style'] ?? '' ) ) ? 'soft' : 'bar',
+			'diluxone_users_login_logo'    => absint( wp_unslash( $_POST['diluxone_users_login_logo'] ?? 0 ) ),
 		)
 	);
 	// phpcs:enable
@@ -79,15 +84,18 @@ function diluxone_users_design_account_save(): void {
 	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the panel verifies it.
 	diluxone_users_save_options(
 		array(
-			'diluxone_users_account_template'  => 'cover' === sanitize_key( wp_unslash( $_POST['diluxone_users_account_template'] ?? '' ) ) ? 'cover' : 'plain',
-			'diluxone_users_account_layout'    => sanitize_key( wp_unslash( $_POST['diluxone_users_account_layout'] ?? 'tabs' ) ),
-			'diluxone_users_account_nav_style' => sanitize_key( wp_unslash( $_POST['diluxone_users_account_nav_style'] ?? 'pills' ) ),
-			'diluxone_users_account_width'     => 'full' === sanitize_key( wp_unslash( $_POST['diluxone_users_account_width'] ?? '' ) ) ? 'full' : 'contained',
-			'diluxone_users_account_header'    => isset( $_POST['diluxone_users_account_header'] ) ? 1 : 0,
-			'diluxone_users_account_avatar'    => isset( $_POST['diluxone_users_account_avatar'] ) ? 1 : 0,
-			'diluxone_users_account_since'     => isset( $_POST['diluxone_users_account_since'] ) ? 1 : 0,
-			'diluxone_users_account_action'    => isset( $_POST['diluxone_users_account_action'] ) ? 1 : 0,
-			'diluxone_users_account_cover'     => sanitize_hex_color( wp_unslash( $_POST['diluxone_users_account_cover'] ?? '' ) ) ?? '',
+			'diluxone_users_account_template'    => 'cover' === sanitize_key( wp_unslash( $_POST['diluxone_users_account_template'] ?? '' ) ) ? 'cover' : 'plain',
+			'diluxone_users_account_layout'      => sanitize_key( wp_unslash( $_POST['diluxone_users_account_layout'] ?? 'tabs' ) ),
+			'diluxone_users_account_nav_style'   => sanitize_key( wp_unslash( $_POST['diluxone_users_account_nav_style'] ?? 'pills' ) ),
+			'diluxone_users_account_width'       => 'full' === sanitize_key( wp_unslash( $_POST['diluxone_users_account_width'] ?? '' ) ) ? 'full' : 'contained',
+			'diluxone_users_account_header'      => isset( $_POST['diluxone_users_account_header'] ) ? 1 : 0,
+			'diluxone_users_account_avatar'      => isset( $_POST['diluxone_users_account_avatar'] ) ? 1 : 0,
+			'diluxone_users_account_since'       => isset( $_POST['diluxone_users_account_since'] ) ? 1 : 0,
+			'diluxone_users_account_action'      => isset( $_POST['diluxone_users_account_action'] ) ? 1 : 0,
+			'diluxone_users_account_cover'       => sanitize_hex_color( wp_unslash( $_POST['diluxone_users_account_cover'] ?? '' ) ) ?? '',
+			'diluxone_users_account_cover_kind'  => sanitize_key( wp_unslash( $_POST['diluxone_users_account_cover_kind'] ?? 'color' ) ),
+			'diluxone_users_account_cover_image' => absint( wp_unslash( $_POST['diluxone_users_account_cover_image'] ?? 0 ) ),
+			'diluxone_users_account_nav_small'   => 'wrap' === sanitize_key( wp_unslash( $_POST['diluxone_users_account_nav_small'] ?? '' ) ) ? 'wrap' : 'scroll',
 		)
 	);
 	// phpcs:enable

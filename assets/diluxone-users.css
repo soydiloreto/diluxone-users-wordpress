@@ -25,6 +25,7 @@
 	--diluxone-users-radius: 12px;
 	--diluxone-users-radius-sm: 8px;
 	--diluxone-users-control-h: 46px;
+	--diluxone-users-border-w: 1px;
 	--diluxone-users-gap: 16px;
 
 	--diluxone-users-surface: #ffffff;
@@ -41,6 +42,11 @@
 	--diluxone-users-accent: #2b59d6;
 	--diluxone-users-accent-bg: var(--diluxone-users-accent);
 	--diluxone-users-accent-ink: #ffffff;
+	/* The accent with the volume down: the ground behind a washed badge, the
+	   circle around the envelope, the row of the session you are on. It is
+	   derived and not a fourth colour to keep in step — a site that changes
+	   the accent gets this one changed with it. */
+	--diluxone-users-accent-soft: color-mix(in srgb, var(--diluxone-users-accent) 12%, transparent);
 	--diluxone-users-ok: #0f7b4f;
 	--diluxone-users-danger: #b3261e;
 }
@@ -220,17 +226,23 @@ details.diluxone-users-panel[open] > .diluxone-users-panel__head .diluxone-users
 
 /* ── Avisos ─────────────────────────────────────────────────────────── */
 
+/* Two shapes, and the difference between them is four values rather than a
+   second block of rules: the bar down the left is a border width, the soft
+   box is that width at zero and a tint behind it. `--notice-tint` is what
+   each kind of notice sets — the ok one green, the error one red — so the
+   soft shape is that colour washed and never a fifth colour to keep in step. */
 .diluxone-users-notice {
+	--diluxone-users-notice-tint: color-mix(in srgb, var(--diluxone-users-notice-key, var(--diluxone-users-border)) 12%, transparent);
 	margin: 0 0 var(--diluxone-users-gap);
-	padding: 12px 16px;
-	border-left: 3px solid var(--diluxone-users-border);
-	border-radius: var(--diluxone-users-radius-sm);
-	background: var(--diluxone-users-surface-alt);
+	padding: var(--diluxone-users-notice-pad, 12px 16px);
+	border-left: var(--diluxone-users-notice-edge, 3px) solid var(--diluxone-users-notice-key, var(--diluxone-users-border));
+	border-radius: var(--diluxone-users-notice-radius, var(--diluxone-users-radius-sm));
+	background: var(--diluxone-users-notice-bg, var(--diluxone-users-surface-alt));
 	font-size: 0.95em;
 }
-.diluxone-users-notice--ok { border-left-color: var(--diluxone-users-ok); }
-.diluxone-users-notice--error { border-left-color: var(--diluxone-users-danger); }
-.diluxone-users-notice--info { border-left-color: var(--diluxone-users-accent); }
+.diluxone-users-notice--ok { --diluxone-users-notice-key: var(--diluxone-users-ok); }
+.diluxone-users-notice--error { --diluxone-users-notice-key: var(--diluxone-users-danger); }
+.diluxone-users-notice--info { --diluxone-users-notice-key: var(--diluxone-users-accent); }
 
 /* ── Formularios ────────────────────────────────────────────────────── */
 
@@ -260,7 +272,7 @@ details.diluxone-users-panel[open] > .diluxone-users-panel__head .diluxone-users
 	width: 100%;
 	min-height: var(--diluxone-users-control-h);
 	padding: 0 14px;
-	border: 1px solid var(--diluxone-users-border);
+	border: var(--diluxone-users-border-w) solid var(--diluxone-users-border);
 	border-radius: var(--diluxone-users-radius-sm);
 	background: var(--diluxone-users-surface);
 	color: var(--diluxone-users-text);
@@ -288,7 +300,7 @@ details.diluxone-users-panel[open] > .diluxone-users-panel__head .diluxone-users
 .diluxone-users-field__required { color: var(--diluxone-users-danger); }
 
 /* The phone is two controls that are one: the dialling code and the number. */
-.diluxone-users-phone { display: grid; grid-template-columns: minmax(0, 9rem) minmax(0, 1fr); gap: 8px; }
+.diluxone-users-phone { display: grid; grid-template-columns: var(--diluxone-users-dial-w, minmax(0, 9rem)) minmax(0, 1fr); gap: 8px; }
 
 .diluxone-users-check { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 12px; }
 .diluxone-users-check input { margin-top: 4px; }
@@ -303,17 +315,17 @@ details.diluxone-users-panel[open] > .diluxone-users-panel__head .diluxone-users
 	gap: 8px;
 	min-height: var(--diluxone-users-control-h);
 	padding: 0 22px;
-	border: 1px solid transparent;
+	border: var(--diluxone-users-border-w) solid var(--diluxone-users-btn-edge, transparent);
 	border-radius: var(--diluxone-users-radius-sm);
-	background: var(--diluxone-users-accent-bg);
-	color: var(--diluxone-users-accent-ink);
+	background: var(--diluxone-users-btn-bg, var(--diluxone-users-accent-bg));
+	color: var(--diluxone-users-btn-ink, var(--diluxone-users-accent-ink));
 	font: inherit;
 	font-weight: 600;
 	text-decoration: none;
 	cursor: pointer;
 	transition: filter .15s ease;
 }
-.diluxone-users-button:hover { filter: brightness(0.93); color: var(--diluxone-users-accent-ink); }
+.diluxone-users-button:hover { filter: brightness(0.93); color: var(--diluxone-users-btn-ink, var(--diluxone-users-accent-ink)); }
 
 .diluxone-users-button--soft {
 	background: transparent;
@@ -395,7 +407,7 @@ details.diluxone-users-panel[open] > .diluxone-users-panel__head .diluxone-users
 .diluxone-users-linked__item .diluxone-users-button,
 .diluxone-users-session__action .diluxone-users-button { min-height: 38px; padding: 0 16px; font-size: 0.9em; }
 
-.diluxone-users-session--current { background: var(--diluxone-users-surface-alt); }
+.diluxone-users-session--current { background: var(--diluxone-users-accent-soft); }
 .diluxone-users-sessions__all { margin: 0; }
 
 /* These lists fit the width of a page as readily as that of a column down
@@ -619,6 +631,19 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
    as quiet as the note. */
 .diluxone-users-icon { flex: 0 0 auto; }
 .diluxone-users-login__icon { margin: 0 0 10px; color: var(--diluxone-users-accent); line-height: 0; }
+/* The envelope in a circle of washed colour. It is the one picture on that
+   screen, and on its own at 40px it reads as an afterthought rather than as
+   the thing that just happened. */
+.diluxone-users-login__icon--circle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--diluxone-users-sent-icon, 88px);
+	height: var(--diluxone-users-sent-icon, 88px);
+	margin-bottom: 24px;
+	border-radius: 50%;
+	background: var(--diluxone-users-accent-soft);
+}
 .diluxone-users-note--icon { display: flex; align-items: flex-start; gap: 8px; }
 .diluxone-users-note--icon .diluxone-users-icon { margin-top: 1px; }
 
@@ -782,8 +807,29 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	height: var(--diluxone-users-avatar, 96px);
 	flex-basis: var(--diluxone-users-avatar, 96px);
 	background: var(--diluxone-users-surface);
-	border: 3px solid rgba(255, 255, 255, .35);
+	border: var(--diluxone-users-avatar-ring, 3px solid rgba(255, 255, 255, .35));
 }
+/* A picture instead of the colour, and a picture with the colour laid over
+   it. The second is not decoration: white letters on somebody's holiday photo
+   are unreadable, and a band you cannot read your own name on is worse than
+   no band. The overlay is the cover colour at three quarters, so it is still
+   the site's colour and not a grey wash. */
+.diluxone-users-account--cover-image .diluxone-users-account__header,
+.diluxone-users-account--cover-dim .diluxone-users-account__header {
+	background-image: var(--diluxone-users-cover-image);
+	background-size: cover;
+	background-position: var(--diluxone-users-cover-at, center);
+	background-repeat: no-repeat;
+}
+.diluxone-users-account--cover-dim .diluxone-users-account__header {
+	background-image:
+		linear-gradient(
+			var(--diluxone-users-cover-over, color-mix(in srgb, var(--diluxone-users-cover, var(--diluxone-users-accent)) 78%, transparent)),
+			var(--diluxone-users-cover-over, color-mix(in srgb, var(--diluxone-users-cover, var(--diluxone-users-accent)) 78%, transparent))
+		),
+		var(--diluxone-users-cover-image);
+}
+
 /* The heading takes its colour from the theme, and on a coloured band that
    comes out as near-black on blue. It follows the band. */
 .diluxone-users-account--cover .diluxone-users-account__name { font-size: 2.2em; line-height: 1.15; color: inherit; }
@@ -807,7 +853,22 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	.diluxone-users-account--cover .diluxone-users-account__header { padding-block: var(--diluxone-users-cover-pad, 28px); }
 	.diluxone-users-account--cover .diluxone-users-account__header-inner { flex-wrap: wrap; gap: var(--diluxone-users-header-gap, 16px); }
 	.diluxone-users-account--cover .diluxone-users-account__name { font-size: 1.6em; }
-	.diluxone-users-account--cover .diluxone-users-account__nav--row { overflow-x: auto; flex-wrap: nowrap; }
+	/* Two answers and the site picks one. With eight sections a sideways
+	   scroller hides half of them and you have to drag to find out they are
+	   there; wrapped, they are all visible and the bar is three lines tall.
+	   Which of those is worse depends on how many sections there are, which
+	   is why it is not decided here. */
+	.diluxone-users-account--nav-scroll .diluxone-users-account__nav--row {
+		overflow-x: auto;
+		flex-wrap: nowrap;
+	}
+	.diluxone-users-account--nav-wrap .diluxone-users-account__nav--row {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(var(--diluxone-users-nav-min, 140px), 1fr));
+		gap: 0;
+		overflow: visible;
+	}
+	.diluxone-users-account--nav-wrap .diluxone-users-account__tab { text-align: center; }
 }
 
 /* The three rows of the area — the header's contents, the menu across the
@@ -932,7 +993,7 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	width: 100%;
 	min-height: var(--diluxone-users-control-h);
 	padding: 0 14px;
-	border: 1px solid var(--diluxone-users-border);
+	border: var(--diluxone-users-border-w) solid var(--diluxone-users-border);
 	border-radius: var(--diluxone-users-radius-sm);
 	background: var(--diluxone-users-surface);
 	color: var(--diluxone-users-text);

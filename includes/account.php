@@ -619,6 +619,35 @@ function diluxone_users_account_cover(): string {
 	return '' === $cover ? '' : (string) sanitize_hex_color( $cover );
 }
 
+/**
+ * What the cover is made of: a colour, a picture, or a picture under it.
+ *
+ * Three and not a tick box, because "a picture" and "a picture you can read a
+ * name on top of" are different answers and a site should not have to find
+ * that out by uploading a bright one. The third lays the colour over the
+ * picture, so the header keeps the contrast the white text needs whatever was
+ * uploaded.
+ *
+ * Asking for a picture and not choosing one falls back to the colour: a band
+ * that came out empty because a step was missed is worse than a band.
+ */
+function diluxone_users_account_cover_kind(): string {
+	$kind = (string) diluxone_users_option( 'diluxone_users_account_cover_kind' );
+
+	if ( ! in_array( $kind, array( 'image', 'dim' ), true ) ) {
+		return 'color';
+	}
+
+	return '' === diluxone_users_account_cover_image() ? 'color' : $kind;
+}
+
+/** The picture behind the cover, at full size: it is a band across the window. */
+function diluxone_users_account_cover_image(): string {
+	$id = (int) diluxone_users_option( 'diluxone_users_account_cover_image' );
+
+	return $id > 0 ? (string) wp_get_attachment_image_url( $id, 'full' ) : '';
+}
+
 /** The whole account area. Shortcode: [diluxone_users_account] */
 function diluxone_users_shortcode_account(): string {
 	if ( ! is_user_logged_in() ) {
@@ -648,6 +677,8 @@ function diluxone_users_shortcode_account(): string {
 			'since'    => (bool) diluxone_users_option( 'diluxone_users_account_since' ),
 			'action'   => (bool) diluxone_users_option( 'diluxone_users_account_action' ),
 			'cover'    => diluxone_users_account_cover(),
+			'picture'  => diluxone_users_account_cover_image(),
+			'kind'     => diluxone_users_account_cover_kind(),
 			'width'    => diluxone_users_account_width(),
 		)
 	);

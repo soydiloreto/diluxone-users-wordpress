@@ -79,6 +79,22 @@ function diluxone_users_login_image( string $key ): string {
 	return (string) wp_get_attachment_image_url( $id, 'full' );
 }
 
+/** Does the site want an icon inside the two doors? */
+function diluxone_users_button_icons(): bool {
+	return (bool) diluxone_users_option( 'diluxone_users_button_icons' );
+}
+
+/**
+ * The icon inside a button, or nothing.
+ *
+ * It is here and not in the template because both templates want it — the
+ * sign-in form and the registration form draw the same two doors — and a
+ * decision written twice is one that will be changed once.
+ */
+function diluxone_users_button_icon( string $name ): string {
+	return diluxone_users_button_icons() ? diluxone_users_icon( $name, 20 ) : '';
+}
+
 /**
  * The frame around the sign-in form, opened.
  *
@@ -152,17 +168,22 @@ function diluxone_users_login_frame_close(): void {
  *
  * @param string $name mail | info
  */
-function diluxone_users_icon( string $name ): string {
+function diluxone_users_icon( string $name, int $size = 0 ): string {
 	$paths = array(
 		'mail' => '<rect x="2.5" y="4.5" width="19" height="15" rx="2"></rect><path d="m3 6 9 6.5L21 6"></path>',
 		'info' => '<circle cx="12" cy="12" r="9"></circle><path d="M12 16v-5M12 8h.01"></path>',
+		// The passkey: a key, because that is what everybody's operating
+		// system draws on the prompt this button opens.
+		'key'  => '<circle cx="8" cy="12" r="4"></circle><path d="M12 12h9M18 12v4M15.5 12v3"></path>',
 	);
 
 	if ( ! isset( $paths[ $name ] ) ) {
 		return '';
 	}
 
-	$size = 'mail' === $name ? 40 : 20;
+	// The envelope is the picture on the screen that says the mail is on its
+	// way, so it is drawn big; inside a button it is asked for at 20.
+	$size = $size > 0 ? $size : ( 'mail' === $name ? 40 : 20 );
 
 	return sprintf(
 		'<svg class="diluxone-users-icon diluxone-users-icon--%1$s" width="%2$d" height="%2$d" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">%3$s</svg>',

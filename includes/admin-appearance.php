@@ -193,10 +193,56 @@ function diluxone_users_screen_appearance_template(): void {
 			</td>
 		</tr>
 		<tr>
+			<th scope="row"><?php esc_html_e( 'What the cover is', 'diluxone-users' ); ?></th>
+			<td>
+				<?php
+				/*
+				 * Three answers and not a tick box: "a picture" and "a picture
+				 * you can read a name on top of" are different, and a site
+				 * should not have to find that out by uploading a bright one.
+				 */
+				$diluxone_users_covers = array(
+					'color' => array(
+						__( 'A colour', 'diluxone-users' ),
+						__( 'A flat band. The steadiest, and the one that never fights the name on top of it.', 'diluxone-users' ),
+					),
+					'image' => array(
+						__( 'A picture', 'diluxone-users' ),
+						__( 'The photo across the band. Choose a dark, quiet one: the name goes on top in white.', 'diluxone-users' ),
+					),
+					'dim'   => array(
+						__( 'A picture under the colour', 'diluxone-users' ),
+						__( 'The photo with your colour laid over it. The name stays readable whatever was uploaded, which is why it is here.', 'diluxone-users' ),
+					),
+				);
+
+				foreach ( $diluxone_users_covers as $diluxone_users_key => $diluxone_users_one ) :
+					?>
+					<label class="diluxone-users-roles__item">
+						<input type="radio" name="diluxone_users_account_cover_kind" value="<?php echo esc_attr( $diluxone_users_key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_account_cover_kind' ), $diluxone_users_key ); ?> data-diluxone-users-piece="cover_kind">
+						<strong><?php echo esc_html( $diluxone_users_one[0] ); ?></strong>
+						<span class="description"> — <?php echo esc_html( $diluxone_users_one[1] ); ?></span>
+					</label>
+				<?php endforeach; ?>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'The cover picture', 'diluxone-users' ); ?></th>
+			<td>
+				<?php
+				diluxone_users_image_field(
+					'diluxone_users_account_cover_image',
+					__( 'It runs the whole width of the window, so a wide one. With none chosen the band falls back to the colour, rather than coming out empty.', 'diluxone-users' )
+				);
+				?>
+			</td>
+		</tr>
+		<tr>
 			<th scope="row"><label for="diluxone_users_account_cover"><?php esc_html_e( 'The cover colour', 'diluxone-users' ); ?></label></th>
 			<td>
 				<input type="color" id="diluxone_users_account_cover" name="diluxone_users_account_cover" value="<?php echo esc_attr( '' !== diluxone_users_account_cover() ? diluxone_users_account_cover() : diluxone_users_style_accent() ); ?>">
 				<p class="description"><?php esc_html_e( 'Only the template with a cover uses it. Left as the accent colour it follows the accent, instead of becoming a second colour that drifts from the first.', 'diluxone-users' ); ?></p>
+				<p class="description"><?php esc_html_e( 'It is also what goes over the picture in the third answer above, so the two never drift apart.', 'diluxone-users' ); ?></p>
 			</td>
 		</tr>
 		<tr>
@@ -238,6 +284,20 @@ function diluxone_users_screen_appearance_template(): void {
 						<span class="description"> — <?php echo esc_html( $diluxone_users_style['help'] ); ?></span>
 					</label>
 				<?php endforeach; ?>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'The menu on a phone', 'diluxone-users' ); ?></th>
+			<td>
+				<label class="diluxone-users-roles__item">
+					<input type="radio" name="diluxone_users_account_nav_small" value="scroll" <?php checked( diluxone_users_option( 'diluxone_users_account_nav_small' ), 'scroll' ); ?>>
+					<?php esc_html_e( 'One line that scrolls sideways', 'diluxone-users' ); ?>
+				</label>
+				<label class="diluxone-users-roles__item">
+					<input type="radio" name="diluxone_users_account_nav_small" value="wrap" <?php checked( diluxone_users_option( 'diluxone_users_account_nav_small' ), 'wrap' ); ?>>
+					<?php esc_html_e( 'A grid with every section visible', 'diluxone-users' ); ?>
+				</label>
+				<p class="description"><?php esc_html_e( 'With three sections the scroller is tidier. With eight it hides half of them, and somebody has to drag sideways to find out they exist.', 'diluxone-users' ); ?></p>
 			</td>
 		</tr>
 		<tr>
@@ -341,6 +401,72 @@ function diluxone_users_screen_design_brand(): void {
 			<td>
 				<input type="number" id="diluxone_users_style_radius" name="diluxone_users_style_radius" class="small-text" min="0" max="40" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_style_radius' ) ); ?>">
 				<?php esc_html_e( 'pixels — empty for the default', 'diluxone-users' ); ?>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Buttons', 'diluxone-users' ); ?></th>
+			<td>
+				<?php
+				/*
+				 * The shape of a button is one answer for the whole plugin and
+				 * not one per screen: a site whose sign-in button is an outline
+				 * and whose account button is filled has not chosen two looks,
+				 * it has missed one.
+				 */
+				$diluxone_users_buttons = array(
+					'solid'   => array(
+						__( 'Filled', 'diluxone-users' ),
+						__( 'The accent colour, with the text on top of it.', 'diluxone-users' ),
+					),
+					'outline' => array(
+						__( 'Outline', 'diluxone-users' ),
+						__( 'A border and the text in the accent, on the page’s own ground. For a design where a block of colour would be too loud.', 'diluxone-users' ),
+					),
+					'soft'    => array(
+						__( 'Soft', 'diluxone-users' ),
+						__( 'The accent washed down behind the text. Quieter than filled and steadier than an outline.', 'diluxone-users' ),
+					),
+				);
+
+				foreach ( $diluxone_users_buttons as $diluxone_users_key => $diluxone_users_one ) :
+					?>
+					<label class="diluxone-users-roles__item">
+						<input type="radio" name="diluxone_users_button_style" value="<?php echo esc_attr( $diluxone_users_key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_button_style' ), $diluxone_users_key ); ?>>
+						<strong><?php echo esc_html( $diluxone_users_one[0] ); ?></strong>
+						<span class="description"> — <?php echo esc_html( $diluxone_users_one[1] ); ?></span>
+					</label>
+				<?php endforeach; ?>
+
+				<label class="diluxone-users-roles__item" style="margin-top:8px">
+					<input type="checkbox" name="diluxone_users_button_icons" value="1" <?php checked( diluxone_users_option( 'diluxone_users_button_icons' ), 1 ); ?>>
+					<?php esc_html_e( 'An icon inside the two doors: an envelope on the link, a key on the passkey', 'diluxone-users' ); ?>
+				</label>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Controls', 'diluxone-users' ); ?></th>
+			<td>
+				<label for="diluxone_users_style_control"><?php esc_html_e( 'Height', 'diluxone-users' ); ?></label>
+				<input type="number" id="diluxone_users_style_control" name="diluxone_users_style_control" class="small-text" min="28" max="80" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_style_control' ) ); ?>">
+
+				<label for="diluxone_users_style_border" style="margin-left:14px"><?php esc_html_e( 'Edge', 'diluxone-users' ); ?></label>
+				<input type="number" id="diluxone_users_style_border" name="diluxone_users_style_border" class="small-text" min="0" max="4" step="0.5" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_style_border' ) ); ?>">
+
+				<p class="description"><?php esc_html_e( 'Pixels, both, and empty for the plugin’s own — 46 and 1. The edge takes halves: 1.5 is what a site with a heavier hand actually uses, and 2 is a different design.', 'diluxone-users' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Notices', 'diluxone-users' ); ?></th>
+			<td>
+				<label class="diluxone-users-roles__item">
+					<input type="radio" name="diluxone_users_notice_style" value="bar" <?php checked( diluxone_users_option( 'diluxone_users_notice_style' ), 'bar' ); ?>>
+					<?php esc_html_e( 'A bar down the left', 'diluxone-users' ); ?>
+				</label>
+				<label class="diluxone-users-roles__item">
+					<input type="radio" name="diluxone_users_notice_style" value="soft" <?php checked( diluxone_users_option( 'diluxone_users_notice_style' ), 'soft' ); ?>>
+					<?php esc_html_e( 'A soft box in the colour of what it says', 'diluxone-users' ); ?>
+				</label>
+				<p class="description"><?php esc_html_e( 'The four the plugin writes: the link expired, that address is not valid, a network failed, something went wrong. The colour is the notice’s own either way — green when it went well, red when it did not.', 'diluxone-users' ); ?></p>
 			</td>
 		</tr>
 	</table>

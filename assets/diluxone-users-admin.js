@@ -765,6 +765,12 @@ diluxoneUsersFieldTypes( document );
 					if ( clear ) {
 						clear.hidden = false;
 					}
+
+					// A value set from here does not announce itself, and the
+					// preview listens on the form: without this, choosing a
+					// cover changed the thumbnail and nothing else until the
+					// page was saved.
+					field.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 				} );
 			}
 
@@ -780,6 +786,7 @@ diluxoneUsersFieldTypes( document );
 				}
 
 				clear.hidden = true;
+				field.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 			} );
 		}
 	} );
