@@ -74,6 +74,7 @@ None of it depends on another plugin. What belongs to someone else — a course,
 For developers working on the plugin itself:
 
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — branch naming, PR workflow, commit conventions, coding rules.
+- [`docs/extending.md`](docs/extending.md) — **public API**: the hooks an add-on, a theme or a site's own plugin builds on. These do not change shape without a major version.
 - [`docs/development.md`](docs/development.md) — local dev setup (`wp-env`, Docker, Make targets).
 - [`docs/testing-and-quality.md`](docs/testing-and-quality.md) — PHPUnit, PHPCS, PHPStan, Psalm, i18n. What each layer enforces and how to run it.
 - [`docs/ai-tooling.md`](docs/ai-tooling.md) — what AI tooling the project uses, what it costs, and what it's configured to enforce.
