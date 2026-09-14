@@ -97,6 +97,49 @@ function diluxone_users_shortcode_register(): string {
 add_shortcode( 'diluxone_users_register', 'diluxone_users_shortcode_register' );
 
 /**
+ * How many accounts one machine may create in an hour.
+ *
+ * Not one: a household, an office or a school share an address, and two
+ * people signing up minutes apart is ordinary. Six is high enough that a real
+ * group never meets it and low enough that a script filling the users table
+ * overnight does, on the first minute.
+ */
+function diluxone_users_register_burst(): int {
+	/**
+	 * Filters how many accounts one address may create per hour.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $burst
+	 */
+	return max( 1, (int) apply_filters( 'diluxone_users_register_burst', 6 ) );
+}
+
+/**
+ * Is this machine allowed to create another account right now?
+ *
+ * Counted per IP and not per e-mail address, which was the first attempt and
+ * stopped nothing at all: a script uses a different address every time, so a
+ * key built from the address is a new key every time. The address it types is
+ * the one thing it can change freely; where it is typing from is not.
+ *
+ * Counting is the side effect of asking, so there is one place that can
+ * forget to count.
+ */
+function diluxone_users_register_allowed(): bool {
+	$key  = 'diluxone_users_reg_' . md5( diluxone_users_client_ip() );
+	$seen = (int) get_transient( $key );
+
+	if ( $seen >= diluxone_users_register_burst() ) {
+		return false;
+	}
+
+	set_transient( $key, $seen + 1, HOUR_IN_SECONDS );
+
+	return true;
+}
+
+/**
  * Handles the registration form.
  *
  * Unlike the sign-in form, this one does NOT answer the same thing whatever
@@ -124,6 +167,11 @@ function diluxone_users_register_request(): void {
 
 	if ( '' === $email || ! is_email( $email ) ) {
 		wp_safe_redirect( add_query_arg( 'diluxone-users', 'email', $back ) );
+		exit;
+	}
+
+	if ( ! diluxone_users_register_allowed() ) {
+		wp_safe_redirect( add_query_arg( 'diluxone-users', 'slow', $back ) );
 		exit;
 	}
 

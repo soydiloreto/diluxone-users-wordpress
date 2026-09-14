@@ -61,6 +61,8 @@ defined( 'ABSPATH' ) || exit;
 			</p>
 		<?php elseif ( 'email' === $state ) : ?>
 			<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'That email address does not look valid.', 'diluxone-users' ); ?></p>
+		<?php elseif ( 'slow' === $state ) : ?>
+			<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'One moment: wait a few seconds and try again.', 'diluxone-users' ); ?></p>
 		<?php elseif ( 'closed' === $state ) : ?>
 			<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'This site does not take new accounts right now.', 'diluxone-users' ); ?></p>
 		<?php elseif ( 'error' === $state ) : ?>

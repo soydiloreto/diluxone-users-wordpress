@@ -863,7 +863,7 @@ msgstr "Registrazione"
 #: templates/login.php:75
 #: templates/login.php:151
 #: templates/register.php:40
-#: templates/register.php:125
+#: templates/register.php:127
 msgid "Sign in"
 msgstr "Accedi"
 
@@ -2171,7 +2171,7 @@ msgstr "Testo lungo"
 
 #: includes/fields.php:24
 #: templates/login.php:125
-#: templates/register.php:87
+#: templates/register.php:89
 msgid "Email address"
 msgstr "Indirizzo e-mail"
 
@@ -3395,7 +3395,7 @@ msgid "We could not finish signing you in with that provider. Try again or use y
 msgstr "Non siamo riusciti a completare l’accesso con quel provider. Riprova o usa la tua e-mail."
 
 #: templates/login.php:92
-#: templates/register.php:67
+#: templates/register.php:69
 msgid "Something went wrong. Try again."
 msgstr "Qualcosa è andato storto. Riprova."
 
@@ -3408,7 +3408,7 @@ msgid "or"
 msgstr "oppure"
 
 #: templates/login.php:113
-#: templates/register.php:73
+#: templates/register.php:75
 msgid "or with your email"
 msgstr "oppure con la tua e-mail"
 
@@ -3422,7 +3422,7 @@ msgid "Send me the sign-in link"
 msgstr "Mandami il link di accesso"
 
 #: templates/login.php:133
-#: templates/register.php:120
+#: templates/register.php:122
 msgid "You get an email with a link. Click it and you are in: no password to choose or type."
 msgstr "Ti arriva un’e-mail con un link. Clicchi e sei dentro: nessuna password da scegliere o da scrivere."
 
@@ -3787,7 +3787,7 @@ msgid "Copy any file from the plugin’s templates/ folder into your theme, insi
 msgstr "Copia un qualsiasi file dalla cartella templates/ del plugin nel tuo tema, dentro una cartella diluxone-users/, e modificalo lì. Il plugin userà il tuo. Puoi anche disattivare il suo foglio di stile in Area account → Come si vede."
 
 #: templates/login.php:126
-#: templates/register.php:90
+#: templates/register.php:92
 msgctxt "placeholder for the e-mail field"
 msgid "you@example.com"
 msgstr "tu@esempio.com"
@@ -4502,15 +4502,15 @@ msgstr "Esiste già un account con quell'indirizzo."
 msgid "Sign in instead"
 msgstr "Accedi invece"
 
-#: templates/register.php:65
+#: templates/register.php:67
 msgid "This site does not take new accounts right now."
 msgstr "Questo sito non accetta nuovi account al momento."
 
-#: templates/register.php:115
+#: templates/register.php:117
 msgid "Create my account"
 msgstr "Crea il mio account"
 
-#: templates/register.php:124
+#: templates/register.php:126
 msgid "Already have an account?"
 msgstr "Hai già un account?"
 
@@ -4655,3 +4655,7 @@ msgstr "Non sei obbligato a farlo: su questo sito un link via e-mail ti fa entra
 #: templates/login.php:84
 msgid "Your password is changed. You can sign in with it now."
 msgstr "La tua password è cambiata. Ora puoi accedere con quella."
+
+#: templates/register.php:65
+msgid "One moment: wait a few seconds and try again."
+msgstr "Un momento: aspetta qualche secondo e riprova."
