@@ -301,6 +301,22 @@ function diluxone_users_screen_appearance_template(): void {
 			</td>
 		</tr>
 		<tr>
+			<th scope="row"><?php esc_html_e( 'Lining up with the site', 'diluxone-users' ); ?></th>
+			<td>
+				<label for="diluxone_users_account_row_w"><?php esc_html_e( 'Width', 'diluxone-users' ); ?></label>
+				<input type="number" id="diluxone_users_account_row_w" name="diluxone_users_account_row_w" class="small-text" min="0" max="2400" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_account_row_w' ) ); ?>">
+
+				<label for="diluxone_users_account_row_pad" style="margin-left:14px"><?php esc_html_e( 'Side gutter', 'diluxone-users' ); ?></label>
+				<input type="number" id="diluxone_users_account_row_pad" name="diluxone_users_account_row_pad" class="small-text" min="0" max="200" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_account_row_pad' ) ); ?>">
+
+				<label for="diluxone_users_account_body_pad" style="margin-left:14px"><?php esc_html_e( 'Above and below', 'diluxone-users' ); ?></label>
+				<input type="number" id="diluxone_users_account_body_pad" name="diluxone_users_account_body_pad" class="small-text" min="0" max="200" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_account_body_pad' ) ); ?>">
+
+				<p class="description"><?php esc_html_e( 'The header, the menu and the content are three rows, and this is the width they line up to and the air inside them. Pixels, and empty means the plugin says nothing about it: whatever your theme already does with the page stands.', 'diluxone-users' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Empty and not zero, and the difference matters: a zero is an answer, and an answer printed into the stylesheet would overrule a theme that had already lined these rows up itself.', 'diluxone-users' ); ?></p>
+			</td>
+		</tr>
+		<tr>
 			<th scope="row"><?php esc_html_e( 'The content', 'diluxone-users' ); ?></th>
 			<td>
 				<?php

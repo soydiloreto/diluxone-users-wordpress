@@ -196,8 +196,6 @@ added. So the measurements are properties too, not only the colours:
 
 | Property | What it is | Default |
 | --- | --- | --- |
-| `--diluxone-users-page` | The width the area's rows line up to | `100%` |
-| `--diluxone-users-pad` | The gutter inside those rows | `0` |
 | `--diluxone-users-read` | The reading column, when the content is held to one | `980px` |
 | `--diluxone-users-bleed` | How far the cover breaks out of the theme's column | `calc(50% - 50vw)` |
 | `--diluxone-users-cover-pad` | The air inside the cover band | `40px` |
@@ -206,7 +204,6 @@ added. So the measurements are properties too, not only the colours:
 | `--diluxone-users-bar-bg` | Behind the menu's strip | `transparent` |
 | `--diluxone-users-bar-rule` | Its rule, whole: `1px solid #ddd` | none |
 | `--diluxone-users-bar-gap` | Under the strip | `28px` |
-| `--diluxone-users-body-pad` | Above and below the content | `0` |
 | `--diluxone-users-nav-gap` | Between menu items | by the shape |
 | `--diluxone-users-tab-pad` | Inside one | by the shape |
 | `--diluxone-users-side-w` | The side menu's column | `minmax(180px, 220px)` |
@@ -231,12 +228,28 @@ Set them wherever you like — `:root`, the page, the block:
 
 ```css
 :root {
-	--diluxone-users-page: 1296px;
-	--diluxone-users-pad: 24px;
 	--diluxone-users-bleed: 0px;   /* this site is already full width */
 	--diluxone-users-nav-gap: 36px;
+	--diluxone-users-avatar: 104px;
 }
 ```
+
+### The one thing that is not a property
+
+Where the area's three rows — the header's contents, the menu across the top,
+the body — line up with the rest of the page. That is asked from Design →
+Account area instead, and the rule is printed only when it has been answered.
+
+It was a property for a day and it was wrong, in a way worth writing down.
+The rule read `padding-inline: var(--diluxone-users-pad, 0px)`, and the
+neutral default is not neutral: this sheet loads after the site's, so `0` won,
+and a site that had been lining those rows up with its own grid lost the
+alignment without anybody touching it. **A value that means "nothing" still
+beats a value that means something.** The only declaration that cannot
+overrule anybody is the one that is not printed.
+
+So where the plugin has no opinion, it prints no rule — and where a site
+wants one, it answers the question and the plugin prints exactly that.
 
 When you do need a selector — your own typeface on the name, your own colour
 on the open item — **style what the thing is, not what a template implies it

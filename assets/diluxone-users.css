@@ -75,10 +75,15 @@
  * the plugin's own defaults can differ per shape while a site that sets the
  * property once wins in all of them. Declaring them here would shadow that.
  *
- *   --diluxone-users-page        The width the area's rows line up to.  100%
- *   --diluxone-users-pad         The gutter inside those rows.            0
  *   --diluxone-users-read        The reading column, when the content is
  *                                held to one.                          980px
+ *
+ * The width and the gutter of the area's rows are NOT here. They are asked
+ * from Design → Account area, and the rule that applies them is printed only
+ * when they have an answer — see diluxone_users_account_css(). A rule here
+ * with a neutral default would beat a site that had already lined those rows
+ * up with its own grid, because this sheet loads after the site's and
+ * `padding-inline: 0` is a value like any other.
  *   --diluxone-users-bleed       How far the cover breaks out of the theme's
  *                                column. Set it to 0 on a site that is
  *                                already full width.       calc(50% - 50vw)
@@ -88,7 +93,6 @@
  *   --diluxone-users-bar-bg      Behind the menu's strip.        transparent
  *   --diluxone-users-bar-rule    Its rule, whole: `1px solid #ddd`.    none
  *   --diluxone-users-bar-gap     Under the strip.                       28px
- *   --diluxone-users-body-pad    Above and below the content.             0
  *   --diluxone-users-nav-gap     Between menu items.            2 / 4 / 20px
  *   --diluxone-users-tab-pad     Inside one.                    by the shape
  *   --diluxone-users-side-w      The side menu's column.     180px … 220px
@@ -871,23 +875,30 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	.diluxone-users-account--nav-wrap .diluxone-users-account__tab { text-align: center; }
 }
 
-/* The three rows of the area — the header's contents, the menu across the
-   top, the body — line up with each other and with the site around them.
-   Both numbers are the site's to set and neither needs a selector: `--page`
-   is the width they line up to, `--pad` the gutter inside them.
+/* How wide the content runs. "Contained" holds it to a reading column and
+   centres it; "full" leaves it at whatever width the theme gave it.
 
-   "Contained" is the same idea asked from the admin: it names a reading
-   column, and `min()` takes whichever of the two is narrower, so a site that
-   set its own grid width still gets a reading column when it asks for one. */
-.diluxone-users-account__header-inner,
-.diluxone-users-account__nav--row,
-.diluxone-users-account__body {
-	max-width: min(var(--diluxone-users-page, 100%), var(--diluxone-users-read, 100%));
-	margin-inline: auto;
-	padding-inline: var(--diluxone-users-pad, 0px);
+   There is deliberately no rule here for the width and the gutter of the
+   three rows in general. There was one for a day, reading `--page` and
+   `--pad` with neutral defaults, and it broke a site — because declaring
+   `padding-inline: 0` is not the same as declaring nothing. The plugin's
+   sheet loads after the site's, so a neutral value still wins, and a site
+   that had been lining these rows up with its own grid lost the alignment
+   without touching anything. Those two numbers are asked from the admin now,
+   and the rule for them is printed only when they have been answered: a site
+   that did not ask gets no rule at all, which is the only value that cannot
+   overrule somebody. */
+.diluxone-users-account--contained .diluxone-users-account__body {
+	max-width: var(--diluxone-users-read, 980px);
+	margin-left: auto;
+	margin-right: auto;
 }
-.diluxone-users-account__body { padding-block: var(--diluxone-users-body-pad, 0px); }
-.diluxone-users-account--contained { --diluxone-users-read: 980px; }
+.diluxone-users-account--contained .diluxone-users-account__header-inner,
+.diluxone-users-account--contained .diluxone-users-account__nav--row {
+	max-width: var(--diluxone-users-read, 980px);
+	margin-left: auto;
+	margin-right: auto;
+}
 
 
 /* Menu at the side: the navigation becomes a column and the content sits beside it. */

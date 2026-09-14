@@ -96,6 +96,9 @@ function diluxone_users_design_account_save(): void {
 			'diluxone_users_account_cover_kind'  => sanitize_key( wp_unslash( $_POST['diluxone_users_account_cover_kind'] ?? 'color' ) ),
 			'diluxone_users_account_cover_image' => absint( wp_unslash( $_POST['diluxone_users_account_cover_image'] ?? 0 ) ),
 			'diluxone_users_account_nav_small'   => 'wrap' === sanitize_key( wp_unslash( $_POST['diluxone_users_account_nav_small'] ?? '' ) ) ? 'wrap' : 'scroll',
+			'diluxone_users_account_row_w'       => sanitize_text_field( wp_unslash( $_POST['diluxone_users_account_row_w'] ?? '' ) ),
+			'diluxone_users_account_row_pad'     => sanitize_text_field( wp_unslash( $_POST['diluxone_users_account_row_pad'] ?? '' ) ),
+			'diluxone_users_account_body_pad'    => sanitize_text_field( wp_unslash( $_POST['diluxone_users_account_body_pad'] ?? '' ) ),
 		)
 	);
 	// phpcs:enable

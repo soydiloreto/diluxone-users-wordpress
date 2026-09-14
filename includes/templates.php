@@ -164,7 +164,43 @@ function diluxone_users_style_css(): string {
 	$tokens = diluxone_users_style_tokens();
 	$css    = '' === $tokens ? '' : ':root{' . $tokens . '}';
 
-	return $css . diluxone_users_notice_css();
+	return $css . diluxone_users_notice_css() . diluxone_users_account_css();
+}
+
+/**
+ * Where the account area's rows line up, if the site said.
+ *
+ * Printed only when there is an answer, and that is the whole point. There
+ * was a rule in the stylesheet for a day that read these as properties with
+ * neutral defaults — `padding-inline: var(--pad, 0px)` — and it took the
+ * alignment away from a site that had been doing it itself. The plugin's
+ * sheet loads after the site's, so `0` won; a value that means "nothing"
+ * still beats a value that means something. The only declaration that cannot
+ * overrule anybody is the one that is not printed.
+ */
+function diluxone_users_account_css(): string {
+	$width = (string) diluxone_users_option( 'diluxone_users_account_row_w' );
+	$pad   = (string) diluxone_users_option( 'diluxone_users_account_row_pad' );
+	$body  = (string) diluxone_users_option( 'diluxone_users_account_body_pad' );
+	$rows  = '';
+
+	if ( '' !== trim( $width ) ) {
+		$rows .= 'max-width:' . (int) $width . 'px;margin-inline:auto;';
+	}
+
+	if ( '' !== trim( $pad ) ) {
+		$rows .= 'padding-inline:' . (int) $pad . 'px;';
+	}
+
+	$css = '' === $rows ? '' : '.diluxone-users-account__header-inner,'
+		. '.diluxone-users-account__nav--row,'
+		. '.diluxone-users-account__body{' . $rows . '}';
+
+	if ( '' !== trim( $body ) ) {
+		$css .= '.diluxone-users-account__body{padding-block:' . (int) $body . 'px;}';
+	}
+
+	return $css;
 }
 
 /** A notice with a bar down its left, or a soft filled box. */

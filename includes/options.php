@@ -248,6 +248,15 @@ function diluxone_users_option_defaults(): array {
 		// What the menu does on a phone when it does not fit: scrolls
 		// sideways, or wraps and shows every section at once.
 		'diluxone_users_account_nav_small'   => 'scroll',
+		// How the area's three rows line up with the rest of the site: the
+		// width they are held to and the gutter inside them. Empty means the
+		// plugin says nothing about it and whatever the theme does stands —
+		// which is why they are empty and not zero. A zero would be an answer,
+		// and an answer printed into the stylesheet beats a site that had
+		// already lined these rows up itself.
+		'diluxone_users_account_row_w'       => '',
+		'diluxone_users_account_row_pad'     => '',
+		'diluxone_users_account_body_pad'    => '',
 
 		// ── Second factor ─────────────────────────────────────────────
 		// 'off' is never asked; 'optional' only of whoever turned it on;
