@@ -52,17 +52,6 @@ function diluxone_users_login_panels(): void {
 
 	diluxone_users_register_panel(
 		'diluxone-users-login',
-		'email',
-		array(
-			'label'    => __( 'The email', 'diluxone-users' ),
-			'position' => 30,
-			'render'   => 'diluxone_users_screen_login_email',
-			'save'     => 'diluxone_users_login_email_save',
-		)
-	);
-
-	diluxone_users_register_panel(
-		'diluxone-users-login',
 		'handle',
 		array(
 			'label'    => __( 'Public name', 'diluxone-users' ),
@@ -88,6 +77,9 @@ function diluxone_users_login_link_save(): void {
 			'diluxone_users_handle_login'   => isset( $_POST['diluxone_users_handle_login'] ) ? 1 : 0,
 			'diluxone_users_sso_login'      => isset( $_POST['diluxone_users_sso_login'] ) ? 1 : 0,
 			'diluxone_users_lost_password'  => 'site' === sanitize_key( wp_unslash( $_POST['diluxone_users_lost_password'] ?? 'wp' ) ) ? 'site' : 'wp',
+			'diluxone_users_wp_screens'     => in_array( $_POST['diluxone_users_wp_screens'] ?? '', array( 'auto', 'mine', 'wp' ), true )
+				? sanitize_key( wp_unslash( $_POST['diluxone_users_wp_screens'] ) )
+				: 'auto',
 		)
 	);
 	// phpcs:enable
@@ -299,6 +291,41 @@ function diluxone_users_screen_login_link(): void {
 					);
 					?>
 				</p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'WordPress’s own screens', 'diluxone-users' ); ?></th>
+			<td>
+				<?php
+				$screens = array(
+					'auto' => __( 'Take them over only when “only a link” is the way in', 'diluxone-users' ),
+					'mine' => __( 'Always: this site’s pages are the doors', 'diluxone-users' ),
+					'wp'   => __( 'Leave them alone', 'diluxone-users' ),
+				);
+
+				$chosen = diluxone_users_wp_screens();
+
+				foreach ( $screens as $key => $label ) :
+					?>
+					<label class="diluxone-users-roles__item">
+						<input type="radio" name="diluxone_users_wp_screens" value="<?php echo esc_attr( $key ); ?>" <?php checked( $chosen, $key ); ?>>
+						<?php echo esc_html( $label ); ?>
+					</label>
+				<?php endforeach; ?>
+
+				<p class="description"><?php esc_html_e( 'Taken over, wp-login.php sends people to the page chosen above, and “register” sends them to the registration page when there is one. Whoever can administer the site still has the emergency way in.', 'diluxone-users' ); ?></p>
+
+				<?php if ( 'wp' === $chosen ) : ?>
+					<p class="description">
+						<strong><?php esc_html_e( 'Left alone, this site has two sign-in screens: the one you designed and the one WordPress brings.', 'diluxone-users' ); ?></strong>
+						<?php esc_html_e( 'Anybody who lands on wp-login.php — from an old bookmark, a link in an email, a plugin that sends them there — sees the other one. That is a choice worth making on purpose.', 'diluxone-users' ); ?>
+						<a href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-design', array( 'tab' => 'wp' ) ) ); ?>"><?php esc_html_e( 'At least put your face on it', 'diluxone-users' ); ?></a>
+					</p>
+				<?php endif; ?>
+
+				<?php if ( 0 === (int) diluxone_users_option( 'diluxone_users_login_page' ) && 'wp' !== $chosen ) : ?>
+					<p class="description"><strong><?php esc_html_e( 'There is no sign-in page to send anybody to, so nothing is taken over until there is one — which is the only thing keeping this site reachable.', 'diluxone-users' ); ?></strong></p>
+				<?php endif; ?>
 			</td>
 		</tr>
 		<tr>

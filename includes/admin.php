@@ -76,6 +76,7 @@ function diluxone_users_screens(): array {
 		'diluxone-users-social'   => __( 'Social login', 'diluxone-users' ),
 		'diluxone-users-design'   => __( 'Design', 'diluxone-users' ),
 		'diluxone-users-security' => __( 'Security', 'diluxone-users' ),
+		'diluxone-users-notices'  => __( 'Notifications', 'diluxone-users' ),
 		'diluxone-users-status'   => __( 'Status', 'diluxone-users' ),
 		'diluxone-users-tools'    => __( 'Tools', 'diluxone-users' ),
 	);
@@ -102,6 +103,7 @@ function diluxone_users_menu(): void {
 		'diluxone-users-social'   => 'diluxone_users_screen_social',
 		'diluxone-users-design'   => 'diluxone_users_screen_design',
 		'diluxone-users-security' => 'diluxone_users_screen_security',
+		'diluxone-users-notices'  => 'diluxone_users_screen_notices',
 		'diluxone-users-status'   => 'diluxone_users_screen_status',
 		'diluxone-users-tools'    => 'diluxone_users_screen_tools',
 	);

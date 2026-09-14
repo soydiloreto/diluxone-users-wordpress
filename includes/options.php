@@ -86,6 +86,15 @@ function diluxone_users_option_defaults(): array {
 		// instead of at /wp-admin/profile.php.
 		'diluxone_users_bar_account'        => 0,
 
+		/*
+		 * What happens to wp-login.php and to WordPress's own registration.
+		 * 'auto' — taken over only while "only a link" is the way in, which is
+		 *          what the plugin always did and stays the default.
+		 * 'mine' — always taken over: the site's pages are the doors.
+		 * 'wp'   — left alone, and the admin says two doors will be open.
+		 */
+		'diluxone_users_wp_screens'         => 'auto',
+
 		// ── wp-login.php, the screen WordPress brings ────────────────
 		// Even a site that sends everybody to its own page still shows this
 		// one: an administrator coming in through the emergency door, and

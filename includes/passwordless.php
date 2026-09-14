@@ -63,9 +63,35 @@ function diluxone_users_should_redirect( string $action, array $query = array() 
 	return true;
 }
 
+/**
+ * Does the site take over WordPress's own screens?
+ *
+ * Three answers. 'auto' is what the plugin always did: take them over only
+ * while "only a link" is the way in, because then the native form cannot work
+ * anyway. 'mine' takes them over whatever else is true — a site with its own
+ * sign-in page usually wants one door, not two. 'wp' leaves them alone, and
+ * the admin says plainly that two doors will be open.
+ */
+function diluxone_users_wp_screens(): string {
+	$mode = (string) diluxone_users_option( 'diluxone_users_wp_screens' );
+
+	return in_array( $mode, array( 'auto', 'mine', 'wp' ), true ) ? $mode : 'auto';
+}
+
+/** Are WordPress's own sign-in screens being taken over right now? */
+function diluxone_users_wp_screens_taken(): bool {
+	$mode = diluxone_users_wp_screens();
+
+	if ( 'wp' === $mode ) {
+		return false;
+	}
+
+	return 'mine' === $mode || diluxone_users_login_only_link();
+}
+
 /** Sends wp-login.php to the sign-in page. */
 function diluxone_users_block_wp_login(): void {
-	if ( ! diluxone_users_login_only_link() ) {
+	if ( ! diluxone_users_wp_screens_taken() ) {
 		return;
 	}
 
@@ -80,8 +106,18 @@ function diluxone_users_block_wp_login(): void {
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- it is only read to decide the destination.
 	$action = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
 
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	if ( ! diluxone_users_should_redirect( $action, $_GET ) ) {
+	/*
+	 * The escape hatch has to survive the form being submitted. The argument
+	 * arrives in the query the first time, and WordPress's own form posts to
+	 * wp-login.php with nothing after the question mark — so an administrator
+	 * who opened the hatch, saw the form and pressed the button was stopped by
+	 * the next line with no way to explain themselves. It is carried through
+	 * as a hidden field, and read from both places.
+	 */
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.NonceVerification.Missing
+	$request = array_merge( (array) $_GET, (array) $_POST );
+
+	if ( ! diluxone_users_should_redirect( $action, $request ) ) {
 		return;
 	}
 
@@ -92,6 +128,14 @@ function diluxone_users_block_wp_login(): void {
 			esc_html__( 'Sign in', 'diluxone-users' ),
 			array( 'response' => 403 )
 		);
+	}
+
+	// Somebody asking to register goes to the registration page when the site
+	// has one. Sending them to the sign-in form instead is answering a
+	// different question from the one they asked.
+	if ( 'register' === $action && function_exists( 'diluxone_users_register_form_open' ) && diluxone_users_register_form_open() ) {
+		wp_safe_redirect( diluxone_users_register_url() );
+		exit;
 	}
 
 	wp_safe_redirect( diluxone_users_login_url() );
@@ -177,3 +221,20 @@ function diluxone_users_wp_profile_guard(): void {
 	);
 }
 add_action( 'admin_init', 'diluxone_users_wp_profile_guard' );
+
+/**
+ * Carries the escape hatch into the form WordPress draws.
+ *
+ * Without it the argument is lost the moment the button is pressed, and the
+ * person it exists for — the administrator of a site with no other way in —
+ * is the one it locks out.
+ */
+function diluxone_users_login_hatch_field(): void {
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- it only decides whether a hidden field is printed.
+	if ( ! isset( $_GET['diluxone-users-admin'] ) ) {
+		return;
+	}
+
+	echo '<input type="hidden" name="diluxone-users-admin" value="1">';
+}
+add_action( 'login_form', 'diluxone_users_login_hatch_field' );
