@@ -49,6 +49,17 @@ function diluxone_users_option_defaults(): array {
 		// makes signing in with Google today and GitHub tomorrow one account.
 		'diluxone_users_sso_link_by_email'  => 1,
 		// Create a new account when the e-mail does not exist.
+		// ── What the sign-in screen says ──────────────────────────────
+		// Empty means the plugin's own wording. A site that wants to greet
+		// people in its own voice — or that has to print a line about its
+		// terms, which is not optional for anybody creating accounts —
+		// should not have to copy a template to do it.
+		'diluxone_users_login_title'        => '',
+		'diluxone_users_login_intro'        => '',
+		'diluxone_users_login_legal'        => '',
+		'diluxone_users_sent_title'         => '',
+		'diluxone_users_sent_note'          => '',
+
 		'diluxone_users_sso_register'       => 1,
 		// Whether the buttons show on the sign-in form at all. Separate from
 		// registering with them: a site can let the people who already linked

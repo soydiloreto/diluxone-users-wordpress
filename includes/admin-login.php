@@ -21,6 +21,7 @@ function diluxone_users_screen_login(): void {
 		'handle'   => __( 'Public name', 'diluxone-users' ),
 		'2fa'      => __( 'Two-step verification', 'diluxone-users' ),
 		'passkeys' => __( 'Passkeys', 'diluxone-users' ),
+		'words'    => __( 'What it says', 'diluxone-users' ),
 		'look'     => __( 'How it looks', 'diluxone-users' ),
 	);
 
@@ -62,6 +63,10 @@ function diluxone_users_screen_login(): void {
 			diluxone_users_screen_login_passkeys();
 			break;
 
+		case 'words':
+			diluxone_users_screen_login_words();
+			break;
+
 		default:
 			diluxone_users_screen_login_link();
 	}
@@ -80,6 +85,24 @@ function diluxone_users_screen_login_save( string $tab ): void {
 			array(
 				'diluxone_users_login_subject' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_login_subject'] ?? '' ) ),
 				'diluxone_users_login_body'    => sanitize_textarea_field( wp_unslash( $_POST['diluxone_users_login_body'] ?? '' ) ),
+			)
+		);
+
+		return;
+	}
+
+	if ( 'words' === $tab ) {
+		diluxone_users_save_options(
+			array(
+				'diluxone_users_login_title' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_login_title'] ?? '' ) ),
+				'diluxone_users_login_intro' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_login_intro'] ?? '' ) ),
+				// Links allowed, and only links: the terms and the privacy
+				// policy are pages, and a legal line that cannot point at them
+				// is not one. wp_kses_post() is the same filter a post goes
+				// through, so nothing gets in here that could not be published.
+				'diluxone_users_login_legal' => wp_kses_post( wp_unslash( $_POST['diluxone_users_login_legal'] ?? '' ) ),
+				'diluxone_users_sent_title'  => sanitize_text_field( wp_unslash( $_POST['diluxone_users_sent_title'] ?? '' ) ),
+				'diluxone_users_sent_note'   => sanitize_text_field( wp_unslash( $_POST['diluxone_users_sent_note'] ?? '' ) ),
 			)
 		);
 
@@ -752,5 +775,82 @@ function diluxone_users_screen_login_look(): void {
 			<a class="button" href="<?php echo esc_url( (string) get_permalink( $page ) ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Open the page', 'diluxone-users' ); ?></a>
 		<?php endif; ?>
 	</p>
+	<?php
+}
+
+/**
+ * One field of the wording tab.
+ *
+ * The placeholder is what the plugin would say, so the box is never a blank
+ * asking to be guessed at: it shows the sentence it is about to replace, and
+ * emptying the box brings that sentence back.
+ */
+function diluxone_users_words_field( string $key, string $label, string $fallback, string $help = '' ): void {
+	?>
+	<tr>
+		<th scope="row"><label for="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></label></th>
+		<td>
+			<input type="text" class="large-text" id="<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( $key ); ?>"
+				value="<?php echo esc_attr( (string) diluxone_users_option( $key ) ); ?>"
+				placeholder="<?php echo esc_attr( $fallback ); ?>">
+			<?php if ( '' !== $help ) : ?>
+				<p class="description"><?php echo esc_html( $help ); ?></p>
+			<?php endif; ?>
+		</td>
+	</tr>
+	<?php
+}
+
+/** What the sign-in screen says, in the site's own words. */
+function diluxone_users_screen_login_words(): void {
+	diluxone_users_intro( __( 'The sentences on the sign-in screen. Leave a box empty and the plugin says its own, which is what the grey text in each box shows — so a site that changes nothing still reads correctly, and changing one is never a step somebody has to remember.', 'diluxone-users' ) );
+	?>
+	<table class="form-table" role="presentation">
+		<?php
+		diluxone_users_words_field(
+			'diluxone_users_login_title',
+			__( 'The heading', 'diluxone-users' ),
+			__( 'Sign in', 'diluxone-users' ),
+			__( 'Writing one shows it even when the shortcode was not asked for a heading: naming this screen is meant to be read.', 'diluxone-users' )
+		);
+
+		diluxone_users_words_field(
+			'diluxone_users_login_intro',
+			__( 'The line under it', 'diluxone-users' ),
+			'',
+			__( 'Nothing by default. This is where a site says something like “if it is your first time, the account is created in the same step”.', 'diluxone-users' )
+		);
+		?>
+		<tr>
+			<th scope="row"><label for="diluxone_users_login_legal"><?php esc_html_e( 'The terms line', 'diluxone-users' ); ?></label></th>
+			<td>
+				<textarea class="large-text code" rows="3" id="diluxone_users_login_legal" name="diluxone_users_login_legal"><?php echo esc_textarea( (string) diluxone_users_option( 'diluxone_users_login_legal' ) ); ?></textarea>
+				<p class="description"><?php esc_html_e( 'Goes under the form, small. On a site where signing in also creates the account, this is the only place the rules can be stated — there is no separate registration form to put them on.', 'diluxone-users' ); ?></p>
+				<p class="description">
+					<?php
+					printf(
+						/* translators: %s: an example of a link, literal HTML */
+						esc_html__( 'Links are allowed, and they are the point: %s', 'diluxone-users' ),
+						'<code>&lt;a href="/terms/"&gt;' . esc_html__( 'terms', 'diluxone-users' ) . '&lt;/a&gt;</code>'
+					);
+					?>
+				</p>
+			</td>
+		</tr>
+		<?php
+		diluxone_users_words_field(
+			'diluxone_users_sent_title',
+			__( 'After the link is sent', 'diluxone-users' ),
+			__( 'Check your email', 'diluxone-users' ),
+			__( 'The screen somebody lands on once the e-mail is on its way.', 'diluxone-users' )
+		);
+
+		diluxone_users_words_field(
+			'diluxone_users_sent_note',
+			__( 'And the note under it', 'diluxone-users' ),
+			__( 'Did not arrive? Check your spam or promotions folder.', 'diluxone-users' )
+		);
+		?>
+	</table>
 	<?php
 }

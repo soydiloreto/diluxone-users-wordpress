@@ -462,6 +462,17 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	.diluxone-users-key__edit { padding-left: 16px; }
 }
 
+/* The site's own sentences: the line under a heading, and the terms line at
+   the foot of the sign-in form — small, quiet, and still readable. */
+.diluxone-users-login__intro { margin: 0 0 18px; color: var(--diluxone-users-muted); }
+.diluxone-users-login__legal {
+	margin: 20px 0 0;
+	font-size: 0.85em;
+	line-height: 1.6;
+	color: var(--diluxone-users-muted);
+}
+.diluxone-users-account__intro { margin: 0 0 18px; color: var(--diluxone-users-muted); }
+
 /* ── The account area ───────────────────────────────────────────────── */
 
 /* The header is the same markup in both shapes; what changes is whether it

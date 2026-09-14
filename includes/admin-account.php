@@ -491,6 +491,13 @@ function diluxone_users_screen_account_section( string $id, array $sections, int
 				</td>
 			</tr>
 			<tr>
+				<th scope="row"><label for="diluxone-users-section-intro"><?php esc_html_e( 'The line under the title', 'diluxone-users' ); ?></label></th>
+				<td>
+					<input type="text" id="diluxone-users-section-intro" class="large-text" name="diluxone_users_seccion[intro]" value="<?php echo esc_attr( (string) ( $section['intro'] ?? '' ) ); ?>">
+					<p class="description"><?php esc_html_e( 'Optional. One sentence saying what this section is for, under its title.', 'diluxone-users' ); ?></p>
+				</td>
+			</tr>
+			<tr>
 				<th scope="row"><?php esc_html_e( 'Who sees it', 'diluxone-users' ); ?></th>
 				<td>
 					<?php

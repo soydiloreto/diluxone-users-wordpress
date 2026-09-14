@@ -138,6 +138,10 @@ function diluxone_users_sections( bool $all = false ): array {
 			$sections[ $id ]['roles'] = array_values( array_filter( array_map( 'sanitize_key', (array) $config['roles'] ) ) );
 		}
 
+		if ( isset( $config['intro'] ) ) {
+			$sections[ $id ]['intro'] = sanitize_text_field( (string) $config['intro'] );
+		}
+
 		if ( isset( $config['visibility'] ) ) {
 			$sections[ $id ]['visibility'] = 'some' === $config['visibility'] ? 'some' : 'all';
 		}
@@ -446,10 +450,20 @@ function diluxone_users_account_heading( array $section, string $id, WP_User $us
  */
 function diluxone_users_account_heading_html( array $section, string $id, WP_User $user ): string {
 	$heading = diluxone_users_account_heading( $section, $id, $user );
+	$intro   = trim( (string) ( $section['intro'] ?? '' ) );
 
-	return '' === $heading
+	$html = '' === $heading
 		? ''
 		: sprintf( '<h2 class="diluxone-users-account__title">%s</h2>', esc_html( $heading ) );
+
+	// The line under the title. A section that explains what it is for in one
+	// sentence is worth more than one that does not, and asking a site to copy
+	// a template to write that sentence is how templates get copied.
+	if ( '' !== $intro ) {
+		$html .= sprintf( '<p class="diluxone-users-account__intro">%s</p>', esc_html( $intro ) );
+	}
+
+	return $html;
 }
 
 /** Are we in the account area? */

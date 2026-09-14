@@ -30,6 +30,25 @@
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * What a screen says, in the site's words or in the plugin's.
+ *
+ * Every visible sentence the plugin writes has a default that works out of
+ * the box and an option that is empty until somebody fills it in. Empty is
+ * not "say nothing": it is "say what the plugin says", which is the same rule
+ * every other setting here follows — a site that changes nothing gets a
+ * screen that reads correctly, and a site that has its own voice does not
+ * have to copy a template to use it.
+ *
+ * @param string $key      Option name.
+ * @param string $fallback  What the plugin says when nothing was written.
+ */
+function diluxone_users_text( string $key, string $fallback = '' ): string {
+	$own = trim( (string) diluxone_users_option( $key ) );
+
+	return '' !== $own ? $own : $fallback;
+}
+
 const DILUXONE_USERS_META_HASH    = '_diluxone_users_acceso_hash';
 const DILUXONE_USERS_META_EXPIRES = '_diluxone_users_acceso_vence';
 

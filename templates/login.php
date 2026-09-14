@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
 
 	<?php if ( 'sent' === $state ) : ?>
 
-		<h2 class="diluxone-users-login__title"><?php esc_html_e( 'Check your email', 'diluxone-users' ); ?></h2>
+		<h2 class="diluxone-users-login__title"><?php echo esc_html( diluxone_users_text( 'diluxone_users_sent_title', __( 'Check your email', 'diluxone-users' ) ) ); ?></h2>
 		<p><?php esc_html_e( 'We sent a sign-in link to', 'diluxone-users' ); ?></p>
 		<p class="diluxone-users-login__email"><strong><?php echo esc_html( $email ); ?></strong></p>
 		<p class="diluxone-users-note">
@@ -32,12 +32,26 @@ defined( 'ABSPATH' ) || exit;
 			);
 			?>
 		</p>
-		<p class="diluxone-users-note"><?php esc_html_e( 'Did not arrive? Check your spam or promotions folder.', 'diluxone-users' ); ?></p>
+		<p class="diluxone-users-note"><?php echo esc_html( diluxone_users_text( 'diluxone_users_sent_note', __( 'Did not arrive? Check your spam or promotions folder.', 'diluxone-users' ) ) ); ?></p>
 
 	<?php else : ?>
 
-		<?php if ( $title ) : ?>
-			<h2 class="diluxone-users-login__title"><?php esc_html_e( 'Sign in', 'diluxone-users' ); ?></h2>
+		<?php
+		// The heading shows when the shortcode was asked for one, and also
+		// whenever the site wrote its own: somebody who takes the trouble to
+		// name this screen means it to be read.
+		$diluxone_users_heading = diluxone_users_text( 'diluxone_users_login_title' );
+		$diluxone_users_intro   = diluxone_users_text( 'diluxone_users_login_intro' );
+		?>
+
+		<?php if ( $title || '' !== $diluxone_users_heading ) : ?>
+			<h2 class="diluxone-users-login__title">
+				<?php echo esc_html( '' !== $diluxone_users_heading ? $diluxone_users_heading : __( 'Sign in', 'diluxone-users' ) ); ?>
+			</h2>
+		<?php endif; ?>
+
+		<?php if ( '' !== $diluxone_users_intro ) : ?>
+			<p class="diluxone-users-login__intro"><?php echo esc_html( $diluxone_users_intro ); ?></p>
 		<?php endif; ?>
 
 		<?php if ( 'expired' === $state ) : ?>
@@ -107,6 +121,21 @@ defined( 'ABSPATH' ) || exit;
 			<p class="diluxone-users-note">
 				<a href="<?php echo esc_url( wp_lostpassword_url() ); ?>"><?php esc_html_e( 'I forgot my password', 'diluxone-users' ); ?></a>
 			</p>
+		<?php endif; ?>
+
+		<?php
+		/*
+		 * The line about the terms goes last and inside the "else": on the
+		 * screen that only says an e-mail was sent there is nothing left to
+		 * accept. It allows links because that is what it is for — the terms
+		 * and the privacy policy are pages, and a legal line that cannot link
+		 * to them is not one.
+		 */
+		$diluxone_users_legal = diluxone_users_text( 'diluxone_users_login_legal' );
+		?>
+
+		<?php if ( '' !== $diluxone_users_legal ) : ?>
+			<p class="diluxone-users-login__legal"><?php echo wp_kses_post( $diluxone_users_legal ); ?></p>
 		<?php endif; ?>
 
 	<?php endif; ?>
