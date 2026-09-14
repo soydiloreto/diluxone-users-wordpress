@@ -334,7 +334,7 @@ function diluxone_users_sessions_admin_close(): void {
 	}
 
 	$back = wp_get_referer();
-	wp_safe_redirect( add_query_arg( 'diluxone_users_done', 'closed', $back ? $back : admin_url( 'admin.php?page=diluxone-users-sessions' ) ) );
+	wp_safe_redirect( add_query_arg( 'diluxone_users_done', 'closed', $back ? $back : diluxone_users_admin_url( DILUXONE_USERS_SECURITY, array( 'tab' => 'sessions' ) ) ) );
 	exit;
 }
 add_action( 'admin_post_diluxone_users_sessions_admin', 'diluxone_users_sessions_admin_close' );

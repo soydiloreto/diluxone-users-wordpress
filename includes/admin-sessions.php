@@ -12,52 +12,52 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/** Screen sessions. */
-function diluxone_users_screen_sessions(): void {
-	$tabs = array(
-		'open'     => __( 'Open sessions', 'diluxone-users' ),
-		'duration' => __( 'Settings', 'diluxone-users' ),
+/** Its two tabs on the security screen. */
+function diluxone_users_sessions_panels(): void {
+	diluxone_users_register_panel(
+		DILUXONE_USERS_SECURITY,
+		'sessions',
+		array(
+			'label'    => __( 'Open sessions', 'diluxone-users' ),
+			'position' => 30,
+			'render'   => 'diluxone_users_screen_sessions_list',
+			// The list posts to admin-post and comes back: it is not a
+			// settings form and must not be wrapped in one.
+			'form'     => false,
+		)
 	);
 
-	$current = diluxone_users_tab( $tabs );
+	diluxone_users_register_panel(
+		DILUXONE_USERS_SECURITY,
+		'duration',
+		array(
+			'label'    => __( 'How long they last', 'diluxone-users' ),
+			'position' => 40,
+			'render'   => 'diluxone_users_screen_sessions_duration',
+			'save'     => 'diluxone_users_sessions_save',
+		)
+	);
+}
+add_action( 'diluxone_users_register_panels', 'diluxone_users_sessions_panels' );
 
-	if ( isset( $_POST['diluxone_users_sessions_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['diluxone_users_sessions_nonce'] ) ), 'diluxone_users_sessions_options' ) ) {
-		diluxone_users_save_options(
-			array(
-				// phpcs:disable WordPress.Security.NonceVerification.Missing -- verificado arriba.
-				'diluxone_users_session_long_days'  => absint( wp_unslash( $_POST['diluxone_users_session_long_days'] ?? 30 ) ),
-				'diluxone_users_session_short_days' => absint( wp_unslash( $_POST['diluxone_users_session_short_days'] ?? 2 ) ),
-				'diluxone_users_sessions_show'      => isset( $_POST['diluxone_users_sessions_show'] ) ? 1 : 0,
-				// phpcs:enable
-			)
-		);
-
-		diluxone_users_notice( __( 'Settings saved.', 'diluxone-users' ) );
-	}
-
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	if ( isset( $_GET['diluxone_users_done'] ) && 'closed' === sanitize_key( wp_unslash( $_GET['diluxone_users_done'] ) ) ) {
-		diluxone_users_notice( __( 'Sessions closed.', 'diluxone-users' ) );
-	}
-
-	diluxone_users_screen_open( __( 'User sessions', 'diluxone-users' ), 'diluxone-users-sessions', $tabs, $current );
-
-	if ( 'duration' === $current ) {
-		diluxone_users_screen_sessions_duration();
-	} else {
-		diluxone_users_screen_sessions_list();
-	}
-
-	diluxone_users_screen_close();
+/** Saves how long a session lasts. */
+function diluxone_users_sessions_save(): void {
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the panel verifies it.
+	diluxone_users_save_options(
+		array(
+			'diluxone_users_session_long_days'  => absint( wp_unslash( $_POST['diluxone_users_session_long_days'] ?? 30 ) ),
+			'diluxone_users_session_short_days' => absint( wp_unslash( $_POST['diluxone_users_session_short_days'] ?? 2 ) ),
+			'diluxone_users_sessions_show'      => isset( $_POST['diluxone_users_sessions_show'] ) ? 1 : 0,
+		)
+	);
+	// phpcs:enable
 }
 
 /** Screen sessions duration. */
 function diluxone_users_screen_sessions_duration(): void {
 	diluxone_users_intro( __( 'By default WordPress ends the session after 2 days, or 14 with “remember me”. On a passwordless site that means going through the email again and again.', 'diluxone-users' ) );
 	?>
-	<form method="post">
-		<?php wp_nonce_field( 'diluxone_users_sessions_options', 'diluxone_users_sessions_nonce' ); ?>
-		<table class="form-table" role="presentation">
+	<table class="form-table" role="presentation">
 			<tr>
 				<th scope="row"><label for="diluxone_users_session_long_days"><?php esc_html_e( 'With “remember me”', 'diluxone-users' ); ?></label></th>
 				<td>
@@ -83,9 +83,7 @@ function diluxone_users_screen_sessions_duration(): void {
 					<p class="description"><?php esc_html_e( 'It shows up under Security. With this off, that box is not there —and closing sessions stays an administrator job, from here.', 'diluxone-users' ); ?></p>
 				</td>
 			</tr>
-		</table>
-		<?php submit_button(); ?>
-	</form>
+	</table>
 	<?php
 }
 
@@ -102,12 +100,25 @@ function diluxone_users_screen_sessions_list(): void {
 	$pages  = (int) max( 1, ceil( $total / $per ) );
 	?>
 	<form method="get" class="diluxone-users-search">
-		<input type="hidden" name="page" value="diluxone-users-sessions">
+		<input type="hidden" name="page" value="<?php echo esc_attr( DILUXONE_USERS_SECURITY ); ?>">
+		<input type="hidden" name="tab" value="sessions">
 		<label class="screen-reader-text" for="diluxone-users-s"><?php esc_html_e( 'Search', 'diluxone-users' ); ?></label>
 		<input type="search" id="diluxone-users-s" name="s" value="<?php echo esc_attr( $search ); ?>" placeholder="<?php esc_attr_e( 'Email, username or name…', 'diluxone-users' ); ?>">
 		<?php submit_button( __( 'Search', 'diluxone-users' ), 'secondary', '', false ); ?>
 
-		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-sessions', array( 'per' => $per ) ) ); ?>"><?php esc_html_e( 'Clear', 'diluxone-users' ); ?></a>
+		<a class="button" href="
+		<?php
+		echo esc_url(
+			diluxone_users_admin_url(
+				DILUXONE_USERS_SECURITY,
+				array(
+					'tab' => 'sessions',
+					'per' => $per,
+				)
+			)
+		);
+		?>
+			"><?php esc_html_e( 'Clear', 'diluxone-users' ); ?></a>
 
 		<label class="diluxone-users-search__by">
 			<?php esc_html_e( 'Show', 'diluxone-users' ); ?>
@@ -121,7 +132,7 @@ function diluxone_users_screen_sessions_list(): void {
 
 		<?php
 		$diluxone_users_refresh = diluxone_users_admin_url(
-			'diluxone-users-sessions',
+			DILUXONE_USERS_SECURITY,
 			array(
 				's'     => $search,
 				'per'   => $per,
@@ -201,7 +212,7 @@ function diluxone_users_screen_sessions_list(): void {
 		<div class="tablenav"><div class="tablenav-pages">
 			<?php
 			$diluxone_users_base = diluxone_users_admin_url(
-				'diluxone-users-sessions',
+				DILUXONE_USERS_SECURITY,
 				array(
 					's'   => $search,
 					'per' => $per,

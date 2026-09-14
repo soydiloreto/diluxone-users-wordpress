@@ -431,7 +431,7 @@ function diluxone_users_panel_doors(): void {
 					(int) diluxone_users_option( 'diluxone_users_session_long_days' ),
 					(int) diluxone_users_option( 'diluxone_users_session_short_days' )
 				),
-				diluxone_users_admin_url( 'diluxone-users-sessions', array( 'tab' => 'duration' ) ),
+				diluxone_users_admin_url( DILUXONE_USERS_SECURITY, array( 'tab' => 'duration' ) ),
 				__( 'Change it', 'diluxone-users' )
 			);
 			?>
@@ -443,7 +443,7 @@ function diluxone_users_panel_doors(): void {
 			$screens['diluxone-users-login']    => diluxone_users_admin_url( 'diluxone-users-login' ),
 			$screens['diluxone-users-register'] => diluxone_users_admin_url( 'diluxone-users-register' ),
 			$screens['diluxone-users-social']   => diluxone_users_admin_url( 'diluxone-users-social' ),
-			$screens['diluxone-users-sessions'] => diluxone_users_admin_url( 'diluxone-users-sessions' ),
+			$screens[ DILUXONE_USERS_SECURITY ] => diluxone_users_admin_url( DILUXONE_USERS_SECURITY ),
 		)
 	);
 }
@@ -548,7 +548,7 @@ function diluxone_users_screen_home(): void {
 			number_format_i18n( $numbers['sessions'] ),
 			__( 'Open sessions', 'diluxone-users' ),
 			__( 'Signed in right now, on at least one device.', 'diluxone-users' ),
-			diluxone_users_admin_url( 'diluxone-users-sessions' ),
+			diluxone_users_admin_url( DILUXONE_USERS_SECURITY ),
 			__( 'See who', 'diluxone-users' )
 		);
 

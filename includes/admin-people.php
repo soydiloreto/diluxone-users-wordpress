@@ -147,7 +147,19 @@ function diluxone_users_profile_block( WP_User $user ): void {
 					);
 					?>
 					<br>
-					<a href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-sessions', array( 's' => $user->user_email ) ) ); ?>">
+					<a href="
+					<?php
+					echo esc_url(
+						diluxone_users_admin_url(
+							DILUXONE_USERS_SECURITY,
+							array(
+								'tab' => 'sessions',
+								's'   => $user->user_email,
+							)
+						)
+					);
+					?>
+					">
 						<?php esc_html_e( 'See every session', 'diluxone-users' ); ?>
 					</a>
 				<?php endif; ?>

@@ -13,134 +13,70 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/** The registration and sign-in screen, with its tabs. */
+/** The sign-in screen. */
 function diluxone_users_screen_login(): void {
-	/*
-	 * One question per tab, and the first one asks none: it is the map. The
-	 * screen used to open with that table on top of the settings it
-	 * summarises, which meant scrolling past the answer to reach the
-	 * question — and "how it looks" carried two different screens at once.
-	 */
-	$tabs = array(
-		'doors'    => __( 'Overview', 'diluxone-users' ),
-		'link'     => __( 'Getting in', 'diluxone-users' ),
-		'email'    => __( 'The email', 'diluxone-users' ),
-		'handle'   => __( 'Public name', 'diluxone-users' ),
-		'2fa'      => __( 'Two-step verification', 'diluxone-users' ),
-		'passkeys' => __( 'Passkeys', 'diluxone-users' ),
-	);
-
-	$current = diluxone_users_tab( $tabs );
-
-	if ( isset( $_POST['diluxone_users_options_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['diluxone_users_options_nonce'] ) ), 'diluxone_users_options' ) ) {
-		diluxone_users_screen_login_save( $current );
-		diluxone_users_notice( __( 'Settings saved.', 'diluxone-users' ) );
-	}
-
-	diluxone_users_screen_open( diluxone_users_screens()['diluxone-users-login'], 'diluxone-users-login', $tabs, $current );
-
-	/*
-	 * The look tab is a form and then a preview, in that order and not nested:
-	 * the preview holds the real sign-in form, and a form inside a form is
-	 * thrown away by the browser.
-	 */
-	// Nothing to save on the summary: it reads the settings the other tabs write.
-	if ( 'doors' === $current ) {
-		diluxone_users_screen_login_doors();
-		diluxone_users_screen_close();
-
-		return;
-	}
-
-	echo '<form method="post">';
-	wp_nonce_field( 'diluxone_users_options', 'diluxone_users_options_nonce' );
-
-	switch ( $current ) {
-		case 'email':
-			diluxone_users_screen_login_email();
-			break;
-
-		case 'handle':
-			diluxone_users_screen_login_handle();
-			break;
-
-		case '2fa':
-			diluxone_users_screen_login_2fa();
-			break;
-
-		case 'passkeys':
-			diluxone_users_screen_login_passkeys();
-			break;
-
-		default:
-			diluxone_users_screen_login_link();
-	}
-
-	submit_button();
-	echo '</form>';
-
-	diluxone_users_screen_close();
+	diluxone_users_screen_panels( 'diluxone-users-login', diluxone_users_screens()['diluxone-users-login'] );
 }
 
-/** Saves only what the tab being looked at submits. */
-function diluxone_users_screen_login_save( string $tab ): void {
-	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the caller verifies it.
-	if ( 'email' === $tab ) {
-		diluxone_users_save_options(
-			array(
-				'diluxone_users_login_subject' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_login_subject'] ?? '' ) ),
-				'diluxone_users_login_body'    => sanitize_textarea_field( wp_unslash( $_POST['diluxone_users_login_body'] ?? '' ) ),
-			)
-		);
+/**
+ * Its tabs.
+ *
+ * Two-step verification and passkeys used to be here. They are features of
+ * their own and they moved to Security, each registering its tab from its own
+ * file — which is what this screen no longer needs to know about.
+ */
+function diluxone_users_login_panels(): void {
+	diluxone_users_register_panel(
+		'diluxone-users-login',
+		'doors',
+		array(
+			'label'    => __( 'Overview', 'diluxone-users' ),
+			'position' => 10,
+			'render'   => 'diluxone_users_screen_login_doors',
+			// It reads the settings the other tabs write; there is nothing to
+			// save and so no form and no button.
+			'form'     => false,
+		)
+	);
 
-		return;
-	}
+	diluxone_users_register_panel(
+		'diluxone-users-login',
+		'link',
+		array(
+			'label'    => __( 'Getting in', 'diluxone-users' ),
+			'position' => 20,
+			'render'   => 'diluxone_users_screen_login_link',
+			'save'     => 'diluxone_users_login_link_save',
+		)
+	);
 
-	if ( 'passkeys' === $tab ) {
-		diluxone_users_save_options(
-			array(
-				'diluxone_users_passkey_enabled' => isset( $_POST['diluxone_users_passkey_enabled'] ) ? 1 : 0,
-				'diluxone_users_passkey_where'   => sanitize_key( wp_unslash( $_POST['diluxone_users_passkey_where'] ?? 'any' ) ),
-				'diluxone_users_passkey_verify'  => isset( $_POST['diluxone_users_passkey_verify'] ) ? 1 : 0,
-			)
-		);
+	diluxone_users_register_panel(
+		'diluxone-users-login',
+		'email',
+		array(
+			'label'    => __( 'The email', 'diluxone-users' ),
+			'position' => 30,
+			'render'   => 'diluxone_users_screen_login_email',
+			'save'     => 'diluxone_users_login_email_save',
+		)
+	);
 
-		return;
-	}
+	diluxone_users_register_panel(
+		'diluxone-users-login',
+		'handle',
+		array(
+			'label'    => __( 'Public name', 'diluxone-users' ),
+			'position' => 40,
+			'render'   => 'diluxone_users_screen_login_handle',
+			'save'     => 'diluxone_users_login_handle_save',
+		)
+	);
+}
+add_action( 'diluxone_users_register_panels', 'diluxone_users_login_panels' );
 
-	if ( '2fa' === $tab ) {
-		diluxone_users_save_options(
-			array_merge(
-				diluxone_users_scope_posted( 'diluxone_users_2fa' ),
-				array(
-					'diluxone_users_2fa_mode'          => sanitize_key( wp_unslash( $_POST['diluxone_users_2fa_mode'] ?? 'optional' ) ),
-					'diluxone_users_2fa_methods'       => array_map( 'sanitize_key', (array) wp_unslash( $_POST['diluxone_users_2fa_methods'] ?? array() ) ),
-
-					'diluxone_users_2fa_link'          => sanitize_key( wp_unslash( $_POST['diluxone_users_2fa_link'] ?? 'auto' ) ),
-					'diluxone_users_2fa_remember_days' => absint( wp_unslash( $_POST['diluxone_users_2fa_remember_days'] ?? 30 ) ),
-				)
-			)
-		);
-
-		return;
-	}
-
-	if ( 'handle' === $tab ) {
-		diluxone_users_save_options(
-			array(
-				'diluxone_users_handle_enabled'  => isset( $_POST['diluxone_users_handle_enabled'] ) ? 1 : 0,
-				'diluxone_users_handle_min'      => absint( wp_unslash( $_POST['diluxone_users_handle_min'] ?? 3 ) ),
-				'diluxone_users_handle_max'      => absint( wp_unslash( $_POST['diluxone_users_handle_max'] ?? 30 ) ),
-				'diluxone_users_handle_charset'  => sanitize_key( wp_unslash( $_POST['diluxone_users_handle_charset'] ?? 'strict' ) ),
-				'diluxone_users_handle_spaces'   => sanitize_key( wp_unslash( $_POST['diluxone_users_handle_spaces'] ?? 'dash' ) ),
-				'diluxone_users_handle_cooldown' => absint( wp_unslash( $_POST['diluxone_users_handle_cooldown'] ?? 30 ) ),
-				'diluxone_users_handle_reserved' => sanitize_textarea_field( wp_unslash( $_POST['diluxone_users_handle_reserved'] ?? '' ) ),
-			)
-		);
-
-		return;
-	}
-
+/** The doors, the page, and what the box accepts. */
+function diluxone_users_login_link_save(): void {
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the panel verifies it.
 	diluxone_users_save_options(
 		array(
 			'diluxone_users_login_method'   => sanitize_key( wp_unslash( $_POST['diluxone_users_login_method'] ?? 'both' ) ),
@@ -152,6 +88,35 @@ function diluxone_users_screen_login_save( string $tab ): void {
 			'diluxone_users_handle_login'   => isset( $_POST['diluxone_users_handle_login'] ) ? 1 : 0,
 			'diluxone_users_sso_login'      => isset( $_POST['diluxone_users_sso_login'] ) ? 1 : 0,
 			'diluxone_users_lost_password'  => 'site' === sanitize_key( wp_unslash( $_POST['diluxone_users_lost_password'] ?? 'wp' ) ) ? 'site' : 'wp',
+		)
+	);
+	// phpcs:enable
+}
+
+/** The e-mail that carries the link. */
+function diluxone_users_login_email_save(): void {
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the panel verifies it.
+	diluxone_users_save_options(
+		array(
+			'diluxone_users_login_subject' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_login_subject'] ?? '' ) ),
+			'diluxone_users_login_body'    => sanitize_textarea_field( wp_unslash( $_POST['diluxone_users_login_body'] ?? '' ) ),
+		)
+	);
+	// phpcs:enable
+}
+
+/** The public name and its rules. */
+function diluxone_users_login_handle_save(): void {
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the panel verifies it.
+	diluxone_users_save_options(
+		array(
+			'diluxone_users_handle_enabled'  => isset( $_POST['diluxone_users_handle_enabled'] ) ? 1 : 0,
+			'diluxone_users_handle_min'      => absint( wp_unslash( $_POST['diluxone_users_handle_min'] ?? 3 ) ),
+			'diluxone_users_handle_max'      => absint( wp_unslash( $_POST['diluxone_users_handle_max'] ?? 30 ) ),
+			'diluxone_users_handle_charset'  => sanitize_key( wp_unslash( $_POST['diluxone_users_handle_charset'] ?? 'strict' ) ),
+			'diluxone_users_handle_spaces'   => sanitize_key( wp_unslash( $_POST['diluxone_users_handle_spaces'] ?? 'dash' ) ),
+			'diluxone_users_handle_cooldown' => absint( wp_unslash( $_POST['diluxone_users_handle_cooldown'] ?? 30 ) ),
+			'diluxone_users_handle_reserved' => sanitize_textarea_field( wp_unslash( $_POST['diluxone_users_handle_reserved'] ?? '' ) ),
 		)
 	);
 	// phpcs:enable
@@ -279,17 +244,6 @@ function diluxone_users_screen_login_doors(): void {
 	diluxone_users_intro( __( 'Every way into this site and the state each one is in, read from the same settings the other tabs write. The choices are spread over several tabs; the consequence is not. Nothing is edited here.', 'diluxone-users' ) );
 
 	diluxone_users_doors_table();
-
-	echo '<h2>' . esc_html__( 'And this is what they see', 'diluxone-users' ) . '</h2>';
-
-	diluxone_users_intro( __( 'The form as the site serves it. It is here to be looked at — how it looks is chosen on the Design screen.', 'diluxone-users' ) );
-
-	diluxone_users_login_preview();
-	?>
-	<p class="diluxone-users-panel__actions">
-		<a class="button" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-design', array( 'tab' => 'login' ) ) ); ?>"><?php esc_html_e( 'Change how it looks', 'diluxone-users' ); ?></a>
-	</p>
-	<?php
 }
 
 /** The way in: which page holds the form, and what it accepts. */
@@ -548,101 +502,6 @@ function diluxone_users_screen_login_handle(): void {
 	<?php
 }
 
-/**
- * The second factor: who is asked for it, with what, and when not.
- *
- * The methods are listed from the registry and not by hand: if an add-on adds
- * one, it shows up here on its own.
- */
-function diluxone_users_screen_login_2fa(): void {
-	diluxone_users_intro( __( 'One more thing after the password or the link: a code that only that person has. Whoever gets hold of an email still does not get in.', 'diluxone-users' ) );
-
-	// All of them are asked for, not only the ones turned on: the checkbox of a
-	// method that is off has to exist in order to turn it on.
-	$all     = (array) apply_filters(
-		'diluxone_users_2fa_methods',
-		array(
-			'email' => array( 'label' => __( 'A code by email', 'diluxone-users' ) ),
-			'totp'  => array( 'label' => __( 'An authenticator app', 'diluxone-users' ) ),
-		)
-	);
-	$enabled = (array) diluxone_users_option( 'diluxone_users_2fa_methods' );
-	$roles   = (array) diluxone_users_option( 'diluxone_users_2fa_roles' );
-	?>
-	<table class="form-table" role="presentation">
-		<tr>
-			<th scope="row"><?php esc_html_e( 'When it is asked for', 'diluxone-users' ); ?></th>
-			<td>
-				<?php
-				$modes = array(
-					'optional' => __( 'Optional: whoever wants it turns it on from their profile', 'diluxone-users' ),
-					'required' => __( 'Required: everybody who can use it has to', 'diluxone-users' ),
-					'off'      => __( 'Off: it is not offered at all', 'diluxone-users' ),
-				);
-
-				foreach ( $modes as $key => $label ) :
-					?>
-					<label class="diluxone-users-roles__item">
-						<input type="radio" name="diluxone_users_2fa_mode" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_2fa_mode' ), $key ); ?>>
-						<?php echo esc_html( $label ); ?>
-					</label>
-				<?php endforeach; ?>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'With what', 'diluxone-users' ); ?></th>
-			<td>
-				<?php foreach ( $all as $key => $method ) : ?>
-					<label class="diluxone-users-roles__item">
-						<input type="checkbox" name="diluxone_users_2fa_methods[]" value="<?php echo esc_attr( $key ); ?>" <?php checked( in_array( $key, $enabled, true ) ); ?>>
-						<?php echo esc_html( $method['label'] ); ?>
-					</label>
-				<?php endforeach; ?>
-				<p class="description"><?php esc_html_e( 'The app is the stronger one: the code never travels. The email is the one people actually turn on, because there is nothing to install.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'To whom', 'diluxone-users' ); ?></th>
-			<td>
-				<?php
-				diluxone_users_scope_control(
-					'diluxone_users_2fa',
-					__( 'Asking only the roles that can change things is the usual middle ground: the second step where the friction is worth it.', 'diluxone-users' )
-				);
-				?>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Coming in by email link', 'diluxone-users' ); ?></th>
-			<td>
-				<?php
-				$link = array(
-					'auto'   => __( 'Work it out: ask, unless the second step is another email', 'diluxone-users' ),
-					'always' => __( 'Always ask', 'diluxone-users' ),
-					'never'  => __( 'Never ask', 'diluxone-users' ),
-				);
-
-				foreach ( $link as $key => $label ) :
-					?>
-					<label class="diluxone-users-roles__item">
-						<input type="radio" name="diluxone_users_2fa_link" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_2fa_link' ), $key ); ?>>
-						<?php echo esc_html( $label ); ?>
-					</label>
-				<?php endforeach; ?>
-				<p class="description"><?php esc_html_e( 'A code sent to the same inbox the person just opened to follow the link does not prove anything the link did not prove already. An authenticator app does. That is the whole rule, and it is why the first option exists: it asks when asking is worth something.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><label for="diluxone_users_2fa_remember_days"><?php esc_html_e( 'Remember the browser', 'diluxone-users' ); ?></label></th>
-			<td>
-				<input type="number" id="diluxone_users_2fa_remember_days" name="diluxone_users_2fa_remember_days" class="small-text" min="0" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_2fa_remember_days' ) ); ?>">
-				<?php esc_html_e( 'days — 0 to ask every time', 'diluxone-users' ); ?>
-				<p class="description"><?php esc_html_e( 'A signed cookie, no more: it does not let anybody in, it only saves repeating the step on a browser that already passed it.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-	</table>
-	<?php
-}
 
 /**
  * What each person can do with their own data, without asking anyone.
@@ -682,64 +541,6 @@ function diluxone_users_screen_login_privacy(): void {
 	<?php
 }
 
-/** Passkeys: whether they are offered, which ones are accepted and what is required. */
-function diluxone_users_screen_login_passkeys(): void {
-	diluxone_users_intro( __( 'A passkey is a private key that lives on the person’s device or keychain and never leaves it. There is nothing on this side worth stealing, nothing to reuse on another site, and it cannot be phished: the browser refuses to sign for a domain that is not the one it was made for.', 'diluxone-users' ) );
-	?>
-	<table class="form-table" role="presentation">
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Offer them', 'diluxone-users' ); ?></th>
-			<td>
-				<label>
-					<input type="checkbox" name="diluxone_users_passkey_enabled" value="1" <?php checked( diluxone_users_option( 'diluxone_users_passkey_enabled' ), 1 ); ?>>
-					<?php esc_html_e( 'People can add passkeys and sign in with them', 'diluxone-users' ); ?>
-				</label>
-				<p class="description">
-					<?php
-					printf(
-							/* translators: %s: the domain the passkeys end up tied to */
-						esc_html__( 'They get tied to %s. If the site moves to another domain, the passkeys made here stop working and have to be added again — there is no way around that, and it is exactly what makes them unphishable.', 'diluxone-users' ),
-						'<code>' . esc_html( diluxone_users_passkey_rp_id() ) . '</code>'
-					);
-					?>
-				</p>
-				<?php if ( ! is_ssl() && 'local' !== wp_get_environment_type() ) : ?>
-					<p class="description diluxone-users-danger"><?php esc_html_e( 'This site is not on HTTPS. Browsers will refuse passkeys until it is.', 'diluxone-users' ); ?></p>
-				<?php endif; ?>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Which ones', 'diluxone-users' ); ?></th>
-			<td>
-				<?php
-				$where = array(
-					'any'    => __( 'Any: the device being used, a USB key, or another phone', 'diluxone-users' ),
-					'device' => __( 'Only the device being used', 'diluxone-users' ),
-				);
-
-				foreach ( $where as $key => $label ) :
-					?>
-					<label class="diluxone-users-roles__item">
-						<input type="radio" name="diluxone_users_passkey_where" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_passkey_where' ), $key ); ?>>
-						<?php echo esc_html( $label ); ?>
-					</label>
-				<?php endforeach; ?>
-				<p class="description"><?php esc_html_e( 'The first one lets somebody register from their laptop using their phone, and lets a hardware key work. The second keeps everything on the machine in front of them, which some organisations require and everybody else finds annoying.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Ask who they are', 'diluxone-users' ); ?></th>
-			<td>
-				<label>
-					<input type="checkbox" name="diluxone_users_passkey_verify" value="1" <?php checked( diluxone_users_option( 'diluxone_users_passkey_verify' ), 1 ); ?>>
-					<?php esc_html_e( 'Require the fingerprint, the face or the PIN', 'diluxone-users' ); ?>
-				</label>
-				<p class="description"><?php esc_html_e( 'This is what makes a passkey count as two things at once: something they have and something they are. With it off, whoever is holding an unlocked device gets in, and the passkey is worth one factor.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-	</table>
-	<?php
-}
 
 /**
  * The sign-in form as the site serves it.
