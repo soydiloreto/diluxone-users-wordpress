@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-14T20:28:04+00:00\n"
+"POT-Creation-Date: 2026-09-14T20:39:36+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: diluxone-users\n"
@@ -161,7 +161,7 @@ msgid "Yours"
 msgstr ""
 
 #: includes/account.php:576
-#: includes/admin-appearance.php:418
+#: includes/admin-appearance.php:434
 msgid "Filled"
 msgstr ""
 
@@ -695,231 +695,255 @@ msgid "With three sections the scroller is tidier. With eight it hides half of t
 msgstr ""
 
 #: includes/admin-appearance.php:304
-msgid "The content"
+msgid "Lining up with the site"
 msgstr ""
 
-#: includes/admin-appearance.php:308
-msgid "Held to a reading column"
+#: includes/admin-appearance.php:306
+msgid "Width"
 msgstr ""
 
 #: includes/admin-appearance.php:309
+msgid "Side gutter"
+msgstr ""
+
+#: includes/admin-appearance.php:312
+msgid "Above and below"
+msgstr ""
+
+#: includes/admin-appearance.php:315
+msgid "The header, the menu and the content are three rows, and this is the width they line up to and the air inside them. Pixels, and empty means the plugin says nothing about it: whatever your theme already does with the page stands."
+msgstr ""
+
+#: includes/admin-appearance.php:316
+msgid "Empty and not zero, and the difference matters: a zero is an answer, and an answer printed into the stylesheet would overrule a theme that had already lined these rows up itself."
+msgstr ""
+
+#: includes/admin-appearance.php:320
+msgid "The content"
+msgstr ""
+
+#: includes/admin-appearance.php:324
+msgid "Held to a reading column"
+msgstr ""
+
+#: includes/admin-appearance.php:325
 msgid "As wide as the theme allows"
 msgstr ""
 
-#: includes/admin-appearance.php:319
+#: includes/admin-appearance.php:335
 msgid "Forms are hard to read at full width; a list of courses is not. This holds the content only — a cover always runs edge to edge."
 msgstr ""
 
-#: includes/admin-appearance.php:334
+#: includes/admin-appearance.php:350
 msgid "Everything the plugin draws —panels, forms, lists, buttons— takes its colours and its corners from a handful of CSS properties. Change those and everything follows; a site with its own design can point them at its own tokens from its stylesheet, without copying anything from here. It reaches further than this screen: the sign-in form and the fields follow the same properties."
 msgstr ""
 
-#: includes/admin-appearance.php:338
+#: includes/admin-appearance.php:354
 msgid "Start from"
 msgstr ""
 
-#: includes/admin-appearance.php:361
+#: includes/admin-appearance.php:377
 msgid "A starting point, not a setting: pressing one fills in the three below, and from there everything is yours to change."
 msgstr ""
 
-#: includes/admin-appearance.php:365
+#: includes/admin-appearance.php:381
 msgid "Styles"
 msgstr ""
 
-#: includes/admin-appearance.php:369
+#: includes/admin-appearance.php:385
 msgid "Load the plugin stylesheet"
 msgstr ""
 
-#: includes/admin-appearance.php:371
+#: includes/admin-appearance.php:387
 msgid "Only turn it off if the site is going to style every diluxone-users-* class itself. Turned off, its panels and buttons come out bare and the site has to draw them; re-pointing the properties is almost always enough, and it survives the plugin adding a new component."
 msgstr ""
 
-#: includes/admin-appearance.php:376
+#: includes/admin-appearance.php:392
 msgid "Dark mode"
 msgstr ""
 
-#: includes/admin-appearance.php:378
+#: includes/admin-appearance.php:394
 msgid "There is none here, on purpose. Dark mode belongs to the site: a light site seen from a dark system used to end up with a light page and black panels. If the site has a dark mode, its own tokens change and these follow."
 msgstr ""
 
-#: includes/admin-appearance.php:382
+#: includes/admin-appearance.php:398
 msgid "Accent colour"
 msgstr ""
 
-#: includes/admin-appearance.php:385
+#: includes/admin-appearance.php:401
 msgid "Buttons, the open tab, links and the drawn avatars."
 msgstr ""
 
-#: includes/admin-appearance.php:389
+#: includes/admin-appearance.php:405
 #: includes/admin-login.php:782
 msgid "Your mark"
 msgstr ""
 
-#: includes/admin-appearance.php:394
+#: includes/admin-appearance.php:410
 msgid "Shown above the sign-in form. Somebody who arrived from an e-mail link should be able to tell whose site this is before typing their address into it."
 msgstr ""
 
-#: includes/admin-appearance.php:400
+#: includes/admin-appearance.php:416
 msgid "Corners"
 msgstr ""
 
-#: includes/admin-appearance.php:403
+#: includes/admin-appearance.php:419
 msgid "pixels — empty for the default"
 msgstr ""
 
-#: includes/admin-appearance.php:407
+#: includes/admin-appearance.php:423
 msgid "Buttons"
 msgstr ""
 
-#: includes/admin-appearance.php:419
+#: includes/admin-appearance.php:435
 msgid "The accent colour, with the text on top of it."
 msgstr ""
 
-#: includes/admin-appearance.php:422
+#: includes/admin-appearance.php:438
 msgid "Outline"
 msgstr ""
 
-#: includes/admin-appearance.php:423
+#: includes/admin-appearance.php:439
 msgid "A border and the text in the accent, on the page’s own ground. For a design where a block of colour would be too loud."
 msgstr ""
 
-#: includes/admin-appearance.php:426
+#: includes/admin-appearance.php:442
 msgid "Soft"
 msgstr ""
 
-#: includes/admin-appearance.php:427
+#: includes/admin-appearance.php:443
 msgid "The accent washed down behind the text. Quieter than filled and steadier than an outline."
 msgstr ""
 
-#: includes/admin-appearance.php:442
+#: includes/admin-appearance.php:458
 msgid "An icon inside the two doors: an envelope on the link, a key on the passkey"
 msgstr ""
 
-#: includes/admin-appearance.php:447
+#: includes/admin-appearance.php:463
 msgid "Controls"
 msgstr ""
 
-#: includes/admin-appearance.php:449
+#: includes/admin-appearance.php:465
 msgid "Height"
 msgstr ""
 
-#: includes/admin-appearance.php:452
+#: includes/admin-appearance.php:468
 msgid "Edge"
 msgstr ""
 
-#: includes/admin-appearance.php:455
+#: includes/admin-appearance.php:471
 msgid "Pixels, both, and empty for the plugin’s own — 46 and 1. The edge takes halves: 1.5 is what a site with a heavier hand actually uses, and 2 is a different design."
 msgstr ""
 
-#: includes/admin-appearance.php:459
+#: includes/admin-appearance.php:475
 msgid "Notices"
 msgstr ""
 
-#: includes/admin-appearance.php:463
+#: includes/admin-appearance.php:479
 msgid "A bar down the left"
 msgstr ""
 
-#: includes/admin-appearance.php:467
+#: includes/admin-appearance.php:483
 msgid "A soft box in the colour of what it says"
 msgstr ""
 
-#: includes/admin-appearance.php:469
+#: includes/admin-appearance.php:485
 msgid "The four the plugin writes: the link expired, that address is not valid, a network failed, something went wrong. The colour is the notice’s own either way — green when it went well, red when it did not."
 msgstr ""
 
-#: includes/admin-appearance.php:478
+#: includes/admin-appearance.php:494
 msgid "Three layers, in this order: the photo the person uploaded, then Gravatar, then their initials drawn on the accent colour. Turn off the ones you do not want."
 msgstr ""
 
-#: includes/admin-appearance.php:482
+#: includes/admin-appearance.php:498
 msgid "Where it comes from"
 msgstr ""
 
-#: includes/admin-appearance.php:486
+#: includes/admin-appearance.php:502
 msgid "Let people upload their own"
 msgstr ""
 
-#: includes/admin-appearance.php:490
+#: includes/admin-appearance.php:506
 msgid "Fall back to Gravatar when there is none"
 msgstr ""
 
-#: includes/admin-appearance.php:494
+#: includes/admin-appearance.php:510
 msgid "Otherwise, draw their initials"
 msgstr ""
 
-#: includes/admin-appearance.php:496
+#: includes/admin-appearance.php:512
 msgid "Gravatar means sending a hash of every visitor’s email address to a third party. With it off and initials on, nothing leaves the site."
 msgstr ""
 
-#: includes/admin-appearance.php:500
+#: includes/admin-appearance.php:516
 msgid "Largest photo accepted"
 msgstr ""
 
-#: includes/admin-design.php:161
+#: includes/admin-design.php:164
 msgid "Your brand"
 msgstr ""
 
-#: includes/admin-design.php:165
+#: includes/admin-design.php:168
 msgid "Your account area, as the site serves it. It is the real thing and not a drawing, so a template your theme has replaced shows up here as it does on the site."
 msgstr ""
 
-#: includes/admin-design.php:180
+#: includes/admin-design.php:183
 msgid "The sign-in page, at the width shown. The theme’s own fonts are not in here: what this shows is the plugin’s part of the page."
 msgstr ""
 
-#: includes/admin-design.php:192
+#: includes/admin-design.php:195
 msgid "The registration form, in the frame the sign-in tab chose for both."
 msgstr ""
 
-#: includes/admin-design.php:205
+#: includes/admin-design.php:208
 msgid "The account area as you would meet it, with your own name and picture and the sections your account can see."
 msgstr ""
 
-#: includes/admin-design.php:223
+#: includes/admin-design.php:226
 msgid "Profile photo"
 msgstr ""
 
-#: includes/admin-design.php:233
+#: includes/admin-design.php:236
 msgid "The WordPress screen"
 msgstr ""
 
-#: includes/admin-design.php:239
+#: includes/admin-design.php:242
 msgid "wp-login.php as it is right now. Save to see the changes: this is the page itself, not a drawing of it."
 msgstr ""
 
-#: includes/admin-design.php:255
+#: includes/admin-design.php:258
 msgid "The words on the registration form. Its shape — the frame, the picture, your mark — comes from the Sign in tab: the two forms are the same page, so the frame is chosen once."
 msgstr ""
 
-#: includes/admin-design.php:261
+#: includes/admin-design.php:264
 #: includes/admin-login.php:632
 msgid "The heading"
 msgstr ""
 
-#: includes/admin-design.php:262
+#: includes/admin-design.php:265
 #: templates/register.php:47
 msgid "Create your account"
 msgstr ""
 
-#: includes/admin-design.php:267
+#: includes/admin-design.php:270
 #: includes/admin-login.php:639
 msgid "The line under it"
 msgstr ""
 
-#: includes/admin-design.php:269
+#: includes/admin-design.php:272
 msgid "Nothing by default. Somewhere to say what an account is for on this site."
 msgstr ""
 
-#: includes/admin-design.php:274
+#: includes/admin-design.php:277
 msgid "Once it is done"
 msgstr ""
 
-#: includes/admin-design.php:275
+#: includes/admin-design.php:278
 #: templates/register.php:26
 msgid "Your account is ready"
 msgstr ""
 
-#: includes/admin-design.php:281
+#: includes/admin-design.php:284
 msgid "This site does not use this form: accounts are made another way. What is written here waits for the day that changes."
 msgstr ""
 
