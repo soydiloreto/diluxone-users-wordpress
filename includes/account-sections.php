@@ -167,7 +167,9 @@ function diluxone_users_summary_cards(): array {
  * Separators come out first, so "1.250", "4/6" and "80%" are still figures.
  */
 function diluxone_users_card_is_figure( string $value ): bool {
-	$bare = str_replace( array( '.', ',', ' ', '/', '%', "Â " ), '', $value );
+	// The last one is a non-breaking space: "1 250" written with one is
+	// still a figure, and it arrives that way from more than one language.
+	$bare = str_replace( array( '.', ',', ' ', '/', '%', chr( 194 ) . chr( 160 ) ), '', $value );
 
 	return '' !== $bare && is_numeric( $bare );
 }
