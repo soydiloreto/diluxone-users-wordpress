@@ -27,6 +27,7 @@ defined( 'ABSPATH' ) || exit;
 
 	<?php if ( 'sent' === $state ) : ?>
 
+		<p class="diluxone-users-login__icon"><?php echo diluxone_users_icon( 'mail' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own markup. ?></p>
 		<h2 class="diluxone-users-login__title"><?php echo esc_html( diluxone_users_text( 'diluxone_users_sent_title', __( 'Check your email', 'diluxone-users' ) ) ); ?></h2>
 		<p><?php esc_html_e( 'We sent a sign-in link to', 'diluxone-users' ); ?></p>
 		<p class="diluxone-users-login__email"><strong><?php echo esc_html( $email ); ?></strong></p>
@@ -39,7 +40,25 @@ defined( 'ABSPATH' ) || exit;
 			);
 			?>
 		</p>
-		<p class="diluxone-users-note"><?php echo esc_html( diluxone_users_text( 'diluxone_users_sent_note', __( 'Did not arrive? Check your spam or promotions folder.', 'diluxone-users' ) ) ); ?></p>
+
+		<?php
+		/*
+		 * The way out of this screen. Somebody who typed one letter wrong is
+		 * looking at a page telling them to check an inbox that will never
+		 * have anything in it, and without this the only way back is the
+		 * browser's back button — or waiting for a link that is not coming.
+		 */
+		?>
+		<p class="diluxone-users-login__again">
+			<a class="diluxone-users-button diluxone-users-button--soft diluxone-users-button--wide" href="<?php echo esc_url( diluxone_users_login_url() ); ?>">
+				<?php esc_html_e( 'Use a different address', 'diluxone-users' ); ?>
+			</a>
+		</p>
+
+		<p class="diluxone-users-note diluxone-users-note--icon">
+			<?php echo diluxone_users_icon( 'info' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own markup. ?>
+			<span><?php echo esc_html( diluxone_users_text( 'diluxone_users_sent_note', __( 'Did not arrive? Check your spam or promotions folder.', 'diluxone-users' ) ) ); ?></span>
+		</p>
 
 	<?php else : ?>
 
@@ -103,7 +122,10 @@ defined( 'ABSPATH' ) || exit;
 				<button type="submit" class="diluxone-users-button"><?php esc_html_e( 'Send me the sign-in link', 'diluxone-users' ); ?></button>
 			</form>
 
-			<p class="diluxone-users-note"><?php esc_html_e( 'You get an email with a link. Click it and you are in: no password to choose or type.', 'diluxone-users' ); ?></p>
+			<p class="diluxone-users-note diluxone-users-note--icon">
+				<?php echo diluxone_users_icon( 'info' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own markup. ?>
+				<span><?php esc_html_e( 'You get an email with a link. Click it and you are in: no password to choose or type.', 'diluxone-users' ); ?></span>
+			</p>
 		<?php endif; ?>
 
 		<?php if ( diluxone_users_login_has_password() ) : ?>

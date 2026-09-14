@@ -77,54 +77,54 @@ msgid "Open"
 msgstr "Apri"
 
 #. translators: %s: first name
-#: includes/account-sections.php:202
+#: includes/account-sections.php:223
 #, php-format
 msgid "Hello, %s"
 msgstr "Ciao, %s"
 
-#: includes/account-sections.php:251
+#: includes/account-sections.php:272
 msgid "fields filled in"
 msgstr "campi compilati"
 
-#: includes/account-sections.php:252
+#: includes/account-sections.php:273
 #: includes/admin-fields.php:294
 msgid "Edit"
 msgstr "Modifica"
 
-#: includes/account-sections.php:276
+#: includes/account-sections.php:297
 msgid "network linked"
 msgid_plural "networks linked"
 msgstr[0] "social collegato"
 msgstr[1] "social collegati"
 
-#: includes/account-sections.php:277
+#: includes/account-sections.php:298
 msgid "Manage"
 msgstr "Gestisci"
 
-#: includes/account-sections.php:297
+#: includes/account-sections.php:318
 msgid "open session"
 msgid_plural "open sessions"
 msgstr[0] "sessione aperta"
 msgstr[1] "sessioni aperte"
 
-#: includes/account-sections.php:298
+#: includes/account-sections.php:319
 msgid "Review"
 msgstr "Controlla"
 
-#: includes/account-sections.php:436
+#: includes/account-sections.php:457
 msgid "Waiting for you to confirm by email"
 msgstr "In attesa della tua conferma via e-mail"
 
-#: includes/account-sections.php:437
+#: includes/account-sections.php:458
 msgid "Confirmed — we are preparing it"
 msgstr "Confermato — lo stiamo preparando"
 
-#: includes/account-sections.php:438
+#: includes/account-sections.php:459
 #: includes/admin-home.php:310
 msgid "Ready"
 msgstr "Pronto"
 
-#: includes/account-sections.php:439
+#: includes/account-sections.php:460
 msgid "Failed"
 msgstr "Non riuscito"
 
@@ -864,8 +864,8 @@ msgstr "Registrazione"
 #: includes/admin-login.php:847
 #: includes/passwordless.php:92
 #: templates/account-guest.php:15
-#: templates/login.php:56
-#: templates/login.php:123
+#: templates/login.php:75
+#: templates/login.php:145
 msgid "Sign in"
 msgstr "Accedi"
 
@@ -2208,7 +2208,7 @@ msgid "Long text"
 msgstr "Testo lungo"
 
 #: includes/fields.php:24
-#: templates/login.php:100
+#: templates/login.php:119
 msgid "Email address"
 msgstr "Indirizzo e-mail"
 
@@ -2371,17 +2371,17 @@ msgstr "Controllo in corso…"
 msgid "We could not check it right now."
 msgstr "Non siamo riusciti a controllarlo adesso."
 
-#: includes/login.php:300
+#: includes/login.php:331
 msgid "Someone"
 msgstr "Qualcuno"
 
 #. translators: %s: site name
-#: includes/login.php:309
+#: includes/login.php:340
 #, php-format
 msgid "Your sign-in link for %s"
 msgstr "Il tuo link di accesso per %s"
 
-#: includes/login.php:322
+#: includes/login.php:353
 msgid ""
 "Click here to sign in:\n"
 "\n"
@@ -3188,7 +3188,7 @@ msgid "Email"
 msgstr "E-mail"
 
 #: templates/account/security.php:54
-#: templates/login.php:122
+#: templates/login.php:144
 msgid "Password"
 msgstr "Password"
 
@@ -3398,71 +3398,71 @@ msgid "Lost the phone and the email? Use one of your backup codes: they go in th
 msgstr "Hai perso il telefono e l’e-mail? Usa uno dei tuoi codici di riserva: vanno nella stessa casella."
 
 #: includes/admin-login.php:878
-#: templates/login.php:30
+#: templates/login.php:31
 msgid "Check your email"
 msgstr "Guarda la tua e-mail"
 
-#: templates/login.php:31
+#: templates/login.php:32
 msgid "We sent a sign-in link to"
 msgstr "Abbiamo mandato un link di accesso a"
 
 #. translators: %d: how many minutes the link lasts
-#: templates/login.php:37
+#: templates/login.php:38
 #, php-format
 msgid "Click the link and you are in. It expires in %d minutes and works once."
 msgstr "Clicca il link e sei dentro. Scade tra %d minuti e vale una volta sola."
 
 #: includes/admin-login.php:885
-#: templates/login.php:42
+#: templates/login.php:60
 msgid "Did not arrive? Check your spam or promotions folder."
 msgstr "Non è arrivato? Guarda nello spam o nella scheda promozioni."
 
-#: templates/login.php:65
+#: templates/login.php:84
 msgid "That link expired or was already used. Ask for a new one."
 msgstr "Quel link è scaduto o è già stato usato. Chiedine uno nuovo."
 
-#: templates/login.php:67
+#: templates/login.php:86
 msgid "That email address does not look valid."
 msgstr "Quell’indirizzo e-mail non sembra valido."
 
-#: templates/login.php:69
+#: templates/login.php:88
 msgid "We could not finish signing you in with that provider. Try again or use your email."
 msgstr "Non siamo riusciti a completare l’accesso con quel provider. Riprova o usa la tua e-mail."
 
-#: templates/login.php:71
+#: templates/login.php:90
 msgid "Something went wrong. Try again."
 msgstr "Qualcosa è andato storto. Riprova."
 
-#: templates/login.php:77
+#: templates/login.php:96
 msgid "Sign in with a passkey"
 msgstr "Accedi con una passkey"
 
-#: templates/login.php:78
+#: templates/login.php:97
 msgid "or"
 msgstr "oppure"
 
-#: templates/login.php:88
+#: templates/login.php:107
 msgid "or with your email"
 msgstr "oppure con la tua e-mail"
 
-#: templates/login.php:89
-#: templates/login.php:111
+#: templates/login.php:108
+#: templates/login.php:133
 msgid "or with your password"
 msgstr "oppure con la tua password"
 
-#: templates/login.php:103
+#: templates/login.php:122
 msgid "Send me the sign-in link"
 msgstr "Mandami il link di accesso"
 
-#: templates/login.php:106
+#: templates/login.php:127
 msgid "You get an email with a link. Click it and you are in: no password to choose or type."
 msgstr "Ti arriva un’e-mail con un link. Clicchi e sei dentro: nessuna password da scegliere o da scrivere."
 
-#: templates/login.php:121
+#: templates/login.php:143
 msgid "Email or username"
 msgstr "E-mail o nome utente"
 
-#: templates/login.php:129
+#: templates/login.php:151
 msgid "I forgot my password"
 msgstr "Ho dimenticato la password"
 
@@ -3836,7 +3836,7 @@ msgstr "Lo stesso, con un titolo «Accedi» sopra — per dove il titolo della p
 msgid "Copy any file from the plugin’s templates/ folder into your theme, inside a diluxone-users/ folder, and edit it there. The plugin will use yours. You can also turn off its stylesheet in Account area → How it looks."
 msgstr "Copia un qualsiasi file dalla cartella templates/ del plugin nel tuo tema, dentro una cartella diluxone-users/, e modificalo lì. Il plugin userà il tuo. Puoi anche disattivare il suo foglio di stile in Area account → Come si vede."
 
-#: templates/login.php:101
+#: templates/login.php:120
 msgctxt "placeholder for the e-mail field"
 msgid "you@example.com"
 msgstr "tu@esempio.com"
@@ -4422,3 +4422,7 @@ msgstr "niente da mostrare in questo momento"
 #: includes/admin-account.php:554
 msgid "The front page is a summary: each section offers one card and the site can add its own. Untick one and it stops being shown — the section itself is untouched, and a card that has nothing to say today is left out on its own anyway."
 msgstr "La copertina è un riepilogo: ogni sezione offre una scheda e il sito può aggiungere le sue. Togli la spunta a una e smette di essere mostrata — la sezione resta intatta, e una scheda che oggi non ha nulla da dire resta fuori da sé."
+
+#: templates/login.php:54
+msgid "Use a different address"
+msgstr "Usa un altro indirizzo"

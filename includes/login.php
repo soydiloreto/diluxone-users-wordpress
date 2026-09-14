@@ -122,6 +122,37 @@ function diluxone_users_login_frame_close(): void {
 	echo '</div></div></div>';
 }
 
+/**
+ * A small drawing, for the two places on this screen that read better with one.
+ *
+ * Inline and not a font or a sprite: two shapes do not justify a request, and
+ * inline is the only kind that follows the surrounding colour. They carry
+ * their size as attributes so they stay the right size with the plugin's
+ * stylesheet turned off, and they are hidden from screen readers — each one
+ * sits next to a sentence that already says the same thing.
+ *
+ * @param string $name mail | info
+ */
+function diluxone_users_icon( string $name ): string {
+	$paths = array(
+		'mail' => '<rect x="2.5" y="4.5" width="19" height="15" rx="2"></rect><path d="m3 6 9 6.5L21 6"></path>',
+		'info' => '<circle cx="12" cy="12" r="9"></circle><path d="M12 16v-5M12 8h.01"></path>',
+	);
+
+	if ( ! isset( $paths[ $name ] ) ) {
+		return '';
+	}
+
+	$size = 'mail' === $name ? 40 : 20;
+
+	return sprintf(
+		'<svg class="diluxone-users-icon diluxone-users-icon--%1$s" width="%2$d" height="%2$d" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">%3$s</svg>',
+		esc_attr( $name ),
+		$size,
+		$paths[ $name ] // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- literal markup from the table above.
+	);
+}
+
 /** The site's mark above the form, when there is one. */
 function diluxone_users_login_logo(): void {
 	$logo = diluxone_users_login_image( 'diluxone_users_login_logo' );

@@ -279,6 +279,10 @@ details.diluxone-users-panel[open] > .diluxone-users-panel__head .diluxone-users
 }
 .diluxone-users-button--soft:hover { background: var(--diluxone-users-surface-alt); color: var(--diluxone-users-text); filter: none; }
 
+/* Used by the passkey button and by the way out of "check your email", and
+   until now it was a class on the markup with no rule behind it. */
+.diluxone-users-button--wide { display: flex; width: 100%; }
+
 .diluxone-users-button--danger { background: var(--diluxone-users-danger); color: #fff; }
 .diluxone-users-button--danger:hover { color: #fff; }
 
@@ -566,6 +570,17 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 /* The site's own sentences: the line under a heading, and the terms line at
    the foot of the sign-in form — small, quiet, and still readable. */
 .diluxone-users-login__intro { margin: 0 0 18px; color: var(--diluxone-users-muted); }
+
+/* The two drawings on this screen. They take the surrounding colour, so the
+   envelope over "check your email" is the accent and the one beside a note is
+   as quiet as the note. */
+.diluxone-users-icon { flex: 0 0 auto; }
+.diluxone-users-login__icon { margin: 0 0 10px; color: var(--diluxone-users-accent); line-height: 0; }
+.diluxone-users-note--icon { display: flex; align-items: flex-start; gap: 8px; }
+.diluxone-users-note--icon .diluxone-users-icon { margin-top: 1px; }
+
+/* The way back out of "check your email". */
+.diluxone-users-login__again { margin: 18px 0 14px; }
 .diluxone-users-login__legal {
 	margin: 20px 0 0;
 	font-size: 0.85em;
