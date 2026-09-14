@@ -45,6 +45,49 @@
 	--diluxone-users-danger: #b3261e;
 }
 
+/* ── The measurements a site changes ─────────────────────────────────────
+ *
+ * Colours were tokens from the first day; measurements were not, and every
+ * site that wanted its own spacing had to write a selector for it. That is
+ * what broke the account menu: ConoSurTech wrote
+ *
+ *     .diluxone-users-account--cover .diluxone-users-account__nav { gap: 36px }
+ *
+ * meaning "the tab bar under the cover", because at the time a cover implied
+ * a row of tabs. When the menu learnt to go down the side, the rule was still
+ * true to the letter and no longer true to the intention: 36px of gap and
+ * 20px of padding, stacked, is a hundred pixels between items.
+ *
+ * A value applies in every state. A selector makes a claim about which states
+ * exist, and that claim expires the next time the plugin grows one. So:
+ * everything a site is likely to want is a property it can set, and it can be
+ * set anywhere above the area — on `:root`, on the page, on the block.
+ *
+ * None of them are declared here on purpose. Each one is read where it is
+ * used with the default for that place — `var(--diluxone-users-nav-gap, 4px)`
+ * beside the tabs and `var(--diluxone-users-nav-gap, 2px)` down the side — so
+ * the plugin's own defaults can differ per shape while a site that sets the
+ * property once wins in all of them. Declaring them here would shadow that.
+ *
+ *   --diluxone-users-page        The width the area's rows line up to.  100%
+ *   --diluxone-users-pad         The gutter inside those rows.            0
+ *   --diluxone-users-read        The reading column, when the content is
+ *                                held to one.                          980px
+ *   --diluxone-users-bleed       How far the cover breaks out of the theme's
+ *                                column. Set it to 0 on a site that is
+ *                                already full width.       calc(50% - 50vw)
+ *   --diluxone-users-cover-pad   The air inside the cover band.         40px
+ *   --diluxone-users-header-gap  Between the picture and the name.  18 / 24px
+ *   --diluxone-users-avatar      The picture.                       64 / 96px
+ *   --diluxone-users-bar-bg      Behind the menu's strip.        transparent
+ *   --diluxone-users-bar-rule    Its rule, whole: `1px solid #ddd`.    none
+ *   --diluxone-users-bar-gap     Under the strip.                       28px
+ *   --diluxone-users-body-pad    Above and below the content.             0
+ *   --diluxone-users-nav-gap     Between menu items.            2 / 4 / 20px
+ *   --diluxone-users-tab-pad     Inside one.                    by the shape
+ *   --diluxone-users-side-w      The side menu's column.     180px … 220px
+ */
+
 /* There is no dark-mode block here, and that is on purpose.
  *
  * There was one, following `prefers-color-scheme`, and it was a mistake: dark
@@ -601,7 +644,7 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 .diluxone-users-account__header-inner {
 	display: flex;
 	align-items: center;
-	gap: 18px;
+	gap: var(--diluxone-users-header-gap, 18px);
 }
 .diluxone-users-account__who { min-width: 0; flex: 1 1 auto; }
 /* The button goes to the far end of the header and stays on its line. */
@@ -616,9 +659,9 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 64px;
-	height: 64px;
-	flex: 0 0 64px;
+	width: var(--diluxone-users-avatar, 64px);
+	height: var(--diluxone-users-avatar, 64px);
+	flex: 0 0 var(--diluxone-users-avatar, 64px);
 	border-radius: 50%;
 	background: var(--diluxone-users-accent-bg);
 	color: var(--diluxone-users-accent-ink);
@@ -641,14 +684,19 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
    So: direction is `--row` or `--column`, look is `--pills`, `--underline` or
    `--plain`, and every pair of the six is written out. */
 .diluxone-users-account__nav { display: flex; margin-bottom: 24px; }
-.diluxone-users-account__nav--row { flex-wrap: wrap; gap: 4px; }
-.diluxone-users-account__nav--column { flex-direction: column; flex-wrap: nowrap; gap: 2px; margin: 0; }
+.diluxone-users-account__nav--row { flex-wrap: wrap; gap: var(--diluxone-users-nav-gap, 4px); }
+.diluxone-users-account__nav--column {
+	flex-direction: column;
+	flex-wrap: nowrap;
+	gap: var(--diluxone-users-nav-gap, 2px);
+	margin: 0;
+}
 
 .diluxone-users-account__tab {
 	color: var(--diluxone-users-muted);
 	text-decoration: none;
 	font-weight: 600;
-	padding: 10px 16px;
+	padding: var(--diluxone-users-tab-pad, 10px 16px);
 	border-radius: var(--diluxone-users-radius-sm);
 }
 .diluxone-users-account__tab:hover { color: var(--diluxone-users-text); }
@@ -668,11 +716,11 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
    the whole menu is on the menu and not on the bar around it, so it is there
    whether or not the area drew a bar. */
 .diluxone-users-account__nav--underline.diluxone-users-account__nav--row {
-	gap: 20px;
+	gap: var(--diluxone-users-nav-gap, 20px);
 	border-bottom: 1px solid var(--diluxone-users-border);
 }
 .diluxone-users-account__nav--underline.diluxone-users-account__nav--row .diluxone-users-account__tab {
-	padding: 14px 2px;
+	padding: var(--diluxone-users-tab-pad, 14px 2px);
 	border-radius: 0;
 	border-bottom: 3px solid transparent;
 	margin-bottom: -1px;
@@ -684,9 +732,9 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 
 /* Underlined, down the side: the same idea rotated a quarter turn. A rule
    down the left of the column, and the open item's piece of it in colour. */
-.diluxone-users-account__nav--underline.diluxone-users-account__nav--column { gap: 0; }
+.diluxone-users-account__nav--underline.diluxone-users-account__nav--column { gap: var(--diluxone-users-nav-gap, 0px); }
 .diluxone-users-account__nav--underline.diluxone-users-account__nav--column .diluxone-users-account__tab {
-	padding: 10px 14px;
+	padding: var(--diluxone-users-tab-pad, 10px 14px);
 	border-radius: 0;
 	border-left: 3px solid var(--diluxone-users-border);
 }
@@ -697,8 +745,8 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 }
 
 /* Plain: the words, and the open one in colour. */
-.diluxone-users-account__nav--plain .diluxone-users-account__tab { padding: 8px 2px; border-radius: 0; }
-.diluxone-users-account__nav--plain.diluxone-users-account__nav--row { gap: 18px; }
+.diluxone-users-account__nav--plain .diluxone-users-account__tab { padding: var(--diluxone-users-tab-pad, 8px 2px); border-radius: 0; }
+.diluxone-users-account__nav--plain.diluxone-users-account__nav--row { gap: var(--diluxone-users-nav-gap, 18px); }
 .diluxone-users-account__nav--plain .diluxone-users-account__tab.is-current { color: var(--diluxone-users-accent); }
 
 .diluxone-users-account__title { margin: 0 0 6px; font-size: 1.35em; }
@@ -716,17 +764,23 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	color: var(--diluxone-users-cover-ink);
 	border-bottom: 0;
 	margin-bottom: 0;
-	padding: 40px 0;
-	margin-left: calc(50% - 50vw);
-	margin-right: calc(50% - 50vw);
-	padding-left: max(20px, calc(50vw - 50%));
-	padding-right: max(20px, calc(50vw - 50%));
+	padding-block: var(--diluxone-users-cover-pad, 40px);
+	/* The breakout and the padding that undoes it are one number, so a site
+	   already running full width sets `--diluxone-users-bleed: 0px` and both
+	   stop together. Two properties to keep in step would be one to forget. */
+	margin-inline: var(--diluxone-users-bleed, calc(50% - 50vw));
+	padding-inline: max(var(--diluxone-users-pad, 20px), calc(-1 * var(--diluxone-users-bleed, calc(50% - 50vw))));
 }
-.diluxone-users-account--cover .diluxone-users-account__header-inner { gap: 24px; }
+/* The band already carries the gutter, so the row inside it does not add a
+   second one: they are the same gutter seen from two elements. */
+.diluxone-users-account--cover .diluxone-users-account__header-inner {
+	gap: var(--diluxone-users-header-gap, 24px);
+	padding-inline: 0;
+}
 .diluxone-users-account--cover .diluxone-users-account__avatar {
-	width: 96px;
-	height: 96px;
-	flex-basis: 96px;
+	width: var(--diluxone-users-avatar, 96px);
+	height: var(--diluxone-users-avatar, 96px);
+	flex-basis: var(--diluxone-users-avatar, 96px);
 	background: var(--diluxone-users-surface);
 	border: 3px solid rgba(255, 255, 255, .35);
 }
@@ -739,34 +793,46 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
    looks like is not decided here: that is its own setting, and the cover
    deciding it was how pressing "with a cover" silently changed the shape of
    every button in the menu. */
-.diluxone-users-account--cover .diluxone-users-account__bar { margin-bottom: 28px; }
+/* The rule is the whole value and not a colour, because a transparent border
+   is still a pixel: unset, there is no border and the bar takes no height it
+   did not take before. A site asks for one with
+   `--diluxone-users-bar-rule: 1px solid #e2e5ec`. */
+.diluxone-users-account__bar {
+	background: var(--diluxone-users-bar-bg, transparent);
+	border-bottom: var(--diluxone-users-bar-rule, 0 none);
+}
+.diluxone-users-account--cover .diluxone-users-account__bar { margin-bottom: var(--diluxone-users-bar-gap, 28px); }
 
 @media (max-width: 640px) {
-	.diluxone-users-account--cover .diluxone-users-account__header { padding-top: 28px; padding-bottom: 28px; }
-	.diluxone-users-account--cover .diluxone-users-account__header-inner { flex-wrap: wrap; gap: 16px; }
+	.diluxone-users-account--cover .diluxone-users-account__header { padding-block: var(--diluxone-users-cover-pad, 28px); }
+	.diluxone-users-account--cover .diluxone-users-account__header-inner { flex-wrap: wrap; gap: var(--diluxone-users-header-gap, 16px); }
 	.diluxone-users-account--cover .diluxone-users-account__name { font-size: 1.6em; }
 	.diluxone-users-account--cover .diluxone-users-account__nav--row { overflow-x: auto; flex-wrap: nowrap; }
 }
 
-/* How wide the content runs. "Contained" holds it to a reading column and
-   centres it; "full" leaves it at whatever width the theme gave it. */
-.diluxone-users-account--contained .diluxone-users-account__body {
-	max-width: 980px;
-	margin-left: auto;
-	margin-right: auto;
+/* The three rows of the area — the header's contents, the menu across the
+   top, the body — line up with each other and with the site around them.
+   Both numbers are the site's to set and neither needs a selector: `--page`
+   is the width they line up to, `--pad` the gutter inside them.
+
+   "Contained" is the same idea asked from the admin: it names a reading
+   column, and `min()` takes whichever of the two is narrower, so a site that
+   set its own grid width still gets a reading column when it asks for one. */
+.diluxone-users-account__header-inner,
+.diluxone-users-account__nav--row,
+.diluxone-users-account__body {
+	max-width: min(var(--diluxone-users-page, 100%), var(--diluxone-users-read, 100%));
+	margin-inline: auto;
+	padding-inline: var(--diluxone-users-pad, 0px);
 }
-.diluxone-users-account--contained .diluxone-users-account__header-inner,
-.diluxone-users-account--contained .diluxone-users-account__nav--row {
-	max-width: 980px;
-	margin-left: auto;
-	margin-right: auto;
-}
+.diluxone-users-account__body { padding-block: var(--diluxone-users-body-pad, 0px); }
+.diluxone-users-account--contained { --diluxone-users-read: 980px; }
 
 
 /* Menu at the side: the navigation becomes a column and the content sits beside it. */
 .diluxone-users-account--side .diluxone-users-account__body {
 	display: grid;
-	grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+	grid-template-columns: var(--diluxone-users-side-w, minmax(180px, 220px)) minmax(0, 1fr);
 	gap: 32px;
 	align-items: start;
 }
@@ -777,7 +843,7 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	.diluxone-users-account--side .diluxone-users-account__nav--column {
 		flex-direction: row;
 		flex-wrap: wrap;
-		gap: 4px;
+		gap: var(--diluxone-users-nav-gap, 4px);
 		margin-bottom: 4px;
 	}
 	.diluxone-users-account--side .diluxone-users-account__nav--underline.diluxone-users-account__nav--column .diluxone-users-account__tab {

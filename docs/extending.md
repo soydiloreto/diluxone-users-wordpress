@@ -173,6 +173,75 @@ Colours and corners are CSS custom properties — `--diluxone-users-accent`,
 `--diluxone-users-radius` and the rest — so a site or an add-on can repoint
 them from a stylesheet without any PHP at all.
 
+## Styling it from a site
+
+**Set a value. Do not write a selector.** This is the one rule on this page
+that is about CSS, and it is here because breaking it broke a real site.
+
+A site had written, reasonably:
+
+```css
+.diluxone-users-account--cover .diluxone-users-account__nav { gap: 36px }
+```
+
+meaning *the tab bar under the cover* — at the time, a cover implied a row of
+tabs. Then the menu learnt to go down the side. The rule was still true to the
+letter and no longer true to the intention: 36px of gap on a stacked menu is a
+hundred pixels between items, and nobody had touched either the site or that
+rule.
+
+A property applies in every state the plugin will ever have. A selector is a
+claim about which states exist, and that claim expires the next time one is
+added. So the measurements are properties too, not only the colours:
+
+| Property | What it is | Default |
+| --- | --- | --- |
+| `--diluxone-users-page` | The width the area's rows line up to | `100%` |
+| `--diluxone-users-pad` | The gutter inside those rows | `0` |
+| `--diluxone-users-read` | The reading column, when the content is held to one | `980px` |
+| `--diluxone-users-bleed` | How far the cover breaks out of the theme's column | `calc(50% - 50vw)` |
+| `--diluxone-users-cover-pad` | The air inside the cover band | `40px` |
+| `--diluxone-users-header-gap` | Between the picture and the name | `18px` / `24px` |
+| `--diluxone-users-avatar` | The picture | `64px` / `96px` |
+| `--diluxone-users-bar-bg` | Behind the menu's strip | `transparent` |
+| `--diluxone-users-bar-rule` | Its rule, whole: `1px solid #ddd` | none |
+| `--diluxone-users-bar-gap` | Under the strip | `28px` |
+| `--diluxone-users-body-pad` | Above and below the content | `0` |
+| `--diluxone-users-nav-gap` | Between menu items | by the shape |
+| `--diluxone-users-tab-pad` | Inside one | by the shape |
+| `--diluxone-users-side-w` | The side menu's column | `minmax(180px, 220px)` |
+
+Two defaults in a row means the plugin's own differ by shape. Setting the
+property wins in both: none of them are declared on `:root`, each is read
+where it is used with the default for that place, so yours is never shadowed.
+Set them wherever you like — `:root`, the page, the block:
+
+```css
+:root {
+	--diluxone-users-page: 1296px;
+	--diluxone-users-pad: 24px;
+	--diluxone-users-bleed: 0px;   /* this site is already full width */
+	--diluxone-users-nav-gap: 36px;
+}
+```
+
+When you do need a selector — your own typeface on the name, your own colour
+on the open item — **style what the thing is, not what a template implies it
+is**. Every axis is a class on the element it describes, so there is always
+one that means exactly what you mean:
+
+| Axis | Classes | On |
+| --- | --- | --- |
+| Which shape | `--plain` `--cover` | the area |
+| Where the menu goes | `--tabs` `--side` | the area |
+| How wide | `--contained` `--full` | the area |
+| Which way the menu runs | `--row` `--column` | the menu |
+| What the menu looks like | `--pills` `--underline` `--plain` | the menu |
+
+`.diluxone-users-account__nav--row` is a row of items, in every template there
+will ever be. `.diluxone-users-account--cover .diluxone-users-account__nav`
+was a row of items *until Tuesday*.
+
 ## Templates
 
 `diluxone_users_template` filters the path of any template before it is
