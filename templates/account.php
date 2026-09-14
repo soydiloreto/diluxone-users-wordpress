@@ -41,6 +41,12 @@ $diluxone_users_classes = array(
 	'diluxone-users-account--nav-' . ( 'wrap' === (string) diluxone_users_option( 'diluxone_users_account_nav_small' ) ? 'wrap' : 'scroll' ),
 );
 
+// With no header the area opens with the menu, against whatever the site has
+// above it. That is a different shape and it needs its own air, so it says so.
+if ( ! $header ) {
+	$diluxone_users_classes[] = 'diluxone-users-account--bare';
+}
+
 /*
  * What the cover is made of is a class of its own — `--cover-image`,
  * `--cover-dim` — and not something read off the presence of a picture. The

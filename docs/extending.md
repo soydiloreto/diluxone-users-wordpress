@@ -203,7 +203,9 @@ added. So the measurements are properties too, not only the colours:
 | `--diluxone-users-avatar` | The picture | `64px` / `96px` |
 | `--diluxone-users-bar-bg` | Behind the menu's strip | `transparent` |
 | `--diluxone-users-bar-rule` | Its rule, whole: `1px solid #ddd` | none |
+| `--diluxone-users-bar-pad` | Inside the strip, above and below the menu | `10px` |
 | `--diluxone-users-bar-gap` | Under the strip | `28px` |
+| `--diluxone-users-bare-top` | Above the area when it has no header | `24px` |
 | `--diluxone-users-nav-gap` | Between menu items | by the shape |
 | `--diluxone-users-tab-pad` | Inside one | by the shape |
 | `--diluxone-users-side-w` | The side menu's column | `minmax(180px, 220px)` |

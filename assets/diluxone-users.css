@@ -856,11 +856,29 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
    is still a pixel: unset, there is no border and the bar takes no height it
    did not take before. A site asks for one with
    `--diluxone-users-bar-rule: 1px solid #e2e5ec`. */
+/* The strip the menu sits in, and its own air.
+   It had none: the only space around the menu was whatever padding the chosen
+   tab shape happened to bring, which is why the three shapes each looked
+   wrong in a different way — the filled one pressed against the band above,
+   the plain one straddled the seam between the band and the page, and the
+   underlined one only looked right by accident. The strip is one thing and
+   it has one height, whatever is drawn inside it. */
 .diluxone-users-account__bar {
+	/* Symmetric, so whatever is drawn inside sits in the middle of it. */
+	padding-block: var(--diluxone-users-bar-pad, 10px);
+	margin-bottom: var(--diluxone-users-bar-gap, 28px);
 	background: var(--diluxone-users-bar-bg, transparent);
 	border-bottom: var(--diluxone-users-bar-rule, 0 none);
 }
-.diluxone-users-account--cover .diluxone-users-account__bar { margin-bottom: var(--diluxone-users-bar-gap, 28px); }
+/* The menu carries its own gap to what follows when it is placed on its own.
+   Inside the strip, the strip carries it, and counting it twice is what left
+   a hole between the menu and the heading. */
+.diluxone-users-account__bar .diluxone-users-account__nav { margin-bottom: 0; }
+/* With no header the area opens with the strip, against whatever the site has
+   above it — its own header, usually. The opening air belongs to the area and
+   not to the strip: on the strip it would push the menu off centre. */
+.diluxone-users-account--bare { padding-top: var(--diluxone-users-bare-top, 24px); }
+
 /* With a cover the area runs edge to edge and stops being a block inside the
    page: it is the page. So it has to end somewhere. Without this the last
    card sits flush against the footer, which is the difference between a
