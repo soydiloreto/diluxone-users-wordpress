@@ -384,8 +384,8 @@ function diluxone_users_panel_doors(): void {
 
 			diluxone_users_status_row(
 				__( 'Passkeys', 'diluxone-users' ),
-				diluxone_users_option( 'diluxone_users_passkey_enabled' ) ? 'ok' : 'pending',
-				diluxone_users_option( 'diluxone_users_passkey_enabled' )
+				diluxone_users_has_passkeys() ? 'ok' : 'pending',
+				diluxone_users_has_passkeys()
 					? sprintf(
 							/* translators: %s: the domain they end up tied to */
 						__( 'On, tied to %s.', 'diluxone-users' ),

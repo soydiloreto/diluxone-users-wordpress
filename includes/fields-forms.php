@@ -60,6 +60,28 @@ function diluxone_users_field_input( array $field, string $value, string $id = '
 	$lock     = $editable ? '' : ' readonly';
 	$lock_sel = $editable ? '' : ' disabled';
 
+	/**
+	 * Filters the whole input, before the built-in types are tried.
+	 *
+	 * Return markup and it is printed instead of anything the plugin would
+	 * draw. It is a filter and not an action so that whatever answers can be
+	 * sure nothing else printed first.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string               $html  '' to leave it to the plugin.
+	 * @param array<string, mixed> $field The field.
+	 * @param string               $value What the person has stored.
+	 * @param string               $id    The id the label points at.
+	 */
+	$own = (string) apply_filters( 'diluxone_users_field_input', '', $field, $value, $id );
+
+	if ( '' !== $own ) {
+		echo wp_kses( $own, diluxone_users_field_input_tags() );
+
+		return;
+	}
+
 	switch ( $field['type'] ) {
 		case 'textarea':
 			printf(
@@ -343,3 +365,57 @@ function diluxone_users_register_save( int $user_id ): void {
 	diluxone_users_save( $user_id, $_POST );
 }
 add_action( 'user_register', 'diluxone_users_register_save' );
+
+/**
+ * What markup a field's input is allowed to be.
+ *
+ * An add-on drawing its own input goes through this, so a filter cannot turn
+ * a text box into a script tag. Form elements and the attributes they need,
+ * and nothing else.
+ *
+ * @return array<string, array<string, bool>>
+ */
+function diluxone_users_field_input_tags(): array {
+	$attrs = array(
+		'id'           => true,
+		'name'         => true,
+		'class'        => true,
+		'value'        => true,
+		'type'         => true,
+		'placeholder'  => true,
+		'required'     => true,
+		'readonly'     => true,
+		'disabled'     => true,
+		'checked'      => true,
+		'selected'     => true,
+		'multiple'     => true,
+		'min'          => true,
+		'max'          => true,
+		'step'         => true,
+		'rows'         => true,
+		'cols'         => true,
+		'maxlength'    => true,
+		'pattern'      => true,
+		'autocomplete' => true,
+		'inputmode'    => true,
+		'list'         => true,
+		'for'          => true,
+		'data-*'       => true,
+		'aria-*'       => true,
+	);
+
+	return array(
+		'input'    => $attrs,
+		'textarea' => $attrs,
+		'select'   => $attrs,
+		'option'   => $attrs,
+		'optgroup' => $attrs,
+		'datalist' => $attrs,
+		'label'    => $attrs,
+		'span'     => $attrs,
+		'div'      => $attrs,
+		'p'        => $attrs,
+		'fieldset' => $attrs,
+		'legend'   => $attrs,
+	);
+}

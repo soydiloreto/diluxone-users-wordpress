@@ -31,6 +31,18 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
+ * Does this install have passkeys at all?
+ *
+ * Passkeys is one feature in two files. Everything outside those two asks
+ * this instead of calling into them, so an install without them gets a screen
+ * with one row fewer rather than a fatal error. It is also the shape every
+ * optional feature will take.
+ */
+function diluxone_users_has_passkeys(): bool {
+	return function_exists( 'diluxone_users_passkeys_enabled' ) && diluxone_users_passkeys_enabled();
+}
+
+/**
  * The shape of the sign-in page.
  *
  * Four answers and only one of them leaves the page alone. A site with a
@@ -41,7 +53,14 @@ defined( 'ABSPATH' ) || exit;
 function diluxone_users_login_template(): string {
 	$template = (string) diluxone_users_option( 'diluxone_users_login_template' );
 
-	return in_array( $template, array( 'card', 'split', 'backdrop' ), true ) ? $template : 'plain';
+	// Checked against the shapes there are and not a list written here, or a
+	// shape added by something else would never be allowed through — the
+	// setting would save and then quietly not apply.
+	$known = function_exists( 'diluxone_users_login_templates' )
+		? array_keys( diluxone_users_login_templates() )
+		: array( 'plain', 'card', 'split', 'backdrop' );
+
+	return in_array( $template, $known, true ) && 'plain' !== $template ? $template : 'plain';
 }
 
 /**

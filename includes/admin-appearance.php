@@ -119,10 +119,14 @@ function diluxone_users_style_preview(): void {
  * chosen IS stored — the shape is not the sum of its pieces, it is the
  * difference between a panel in the page and a band across the window.
  *
- * @return array<string, array{label: string, help: string, layout: string, header: int, avatar: int, since: int, action: int, width: string}>
+ * The shape of a row is documented rather than declared: it goes through a
+ * filter, and what comes back from a filter is whatever somebody put there.
+ * Every reader treats a missing key as absent.
+ *
+ * @return array<string, array<string, mixed>>
  */
 function diluxone_users_account_templates(): array {
-	return array(
+	$templates = array(
 		'plain' => array(
 			'label'  => __( 'Simple', 'diluxone-users' ),
 			'help'   => __( 'A panel in the page, the way a settings screen looks. It sits quietly inside whatever the theme already draws.', 'diluxone-users' ),
@@ -144,6 +148,19 @@ function diluxone_users_account_templates(): array {
 			'width'  => 'contained',
 		),
 	);
+
+	/**
+	 * Filters the shapes the account area comes in.
+	 *
+	 * The id is printed as a class on the area — `diluxone-users-account--<id>`
+	 * — and the rest of the row is what pressing it fills in. Anything that
+	 * is not one of the plugin's own needs its own CSS.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, array<string, mixed>> $templates
+	 */
+	return (array) apply_filters( 'diluxone_users_account_templates', $templates );
 }
 
 /** The shape of the account area, and the pieces that shape is made of. */

@@ -176,8 +176,8 @@ function diluxone_users_doors(): array {
 
 	$doors[] = array(
 		'label'  => __( 'A passkey', 'diluxone-users' ),
-		'state'  => diluxone_users_passkeys_enabled() ? 'open' : 'closed',
-		'detail' => diluxone_users_passkeys_enabled()
+		'state'  => diluxone_users_has_passkeys() ? 'open' : 'closed',
+		'detail' => diluxone_users_has_passkeys()
 			? __( 'For whoever added one. It asks for no second step: a passkey is already two of them in one.', 'diluxone-users' )
 			: __( 'Closed. Nobody can add one, and the ones already added stop working.', 'diluxone-users' ),
 		'url'    => diluxone_users_admin_url( 'diluxone-users-login', array( 'tab' => 'passkeys' ) ),
@@ -673,7 +673,7 @@ function diluxone_users_screen_login_words(): void {
  * @return array<string, array{label: string, help: string, picture: bool}>
  */
 function diluxone_users_login_templates(): array {
-	return array(
+	$templates = array(
 		'plain'    => array(
 			'label'   => __( 'In the page', 'diluxone-users' ),
 			'help'    => __( 'The form where the theme put it, with nothing around it. For a site that already designed this page.', 'diluxone-users' ),
@@ -695,6 +695,19 @@ function diluxone_users_login_templates(): array {
 			'picture' => true,
 		),
 	);
+
+	/**
+	 * Filters the shapes the sign-in page comes in.
+	 *
+	 * A shape added here needs its own CSS: the plugin prints the id as a
+	 * class on the frame — `diluxone-users-login-frame--<id>` — and stops
+	 * there. Set `picture` to true and it gets the picture field.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, array{label: string, help: string, picture: bool}> $templates
+	 */
+	return (array) apply_filters( 'diluxone_users_login_templates', $templates );
 }
 
 /** The shape of the sign-in page, and what it is made of. */

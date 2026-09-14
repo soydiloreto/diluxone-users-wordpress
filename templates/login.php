@@ -90,7 +90,11 @@ defined( 'ABSPATH' ) || exit;
 			<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'Something went wrong. Try again.', 'diluxone-users' ); ?></p>
 		<?php endif; ?>
 
-		<?php if ( diluxone_users_passkeys_enabled() ) : ?>
+		<?php
+		// Guarded: passkeys is one feature in two files, and a site running
+		// without them should get a sign-in form, not a fatal error.
+		?>
+		<?php if ( diluxone_users_has_passkeys() ) : ?>
 			<?php diluxone_users_passkeys_enqueue(); ?>
 			<p class="diluxone-users-notice" data-diluxone-users-passkey-notice hidden></p>
 			<p><button type="button" class="diluxone-users-button diluxone-users-button--wide" data-diluxone-users-passkey="login"><?php esc_html_e( 'Sign in with a passkey', 'diluxone-users' ); ?></button></p>

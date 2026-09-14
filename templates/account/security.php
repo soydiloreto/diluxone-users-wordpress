@@ -38,7 +38,7 @@ $diluxone_users_notices = array(
 	'passkeyname' => array( 'ok', __( 'The passkey has a new name.', 'diluxone-users' ) ),
 );
 
-if ( diluxone_users_passkeys_enabled() ) {
+if ( diluxone_users_has_passkeys() ) {
 	diluxone_users_passkeys_enqueue();
 }
 ?>
@@ -69,7 +69,7 @@ if ( diluxone_users_passkeys_enabled() ) {
  * whoever can use them needs nothing of what comes below.
  */
 ?>
-<?php if ( diluxone_users_passkeys_enabled() ) : ?>
+<?php if ( diluxone_users_has_passkeys() ) : ?>
 	<?php diluxone_users_panel_open( __( 'Passkeys', 'diluxone-users' ) ); ?>
 		<p><?php esc_html_e( 'The way in with no password and nothing to type: the fingerprint, the face or the PIN of your own device. The key never leaves it, there is nothing on our side worth stealing, and it cannot be used on a fake site pretending to be this one.', 'diluxone-users' ); ?></p>
 

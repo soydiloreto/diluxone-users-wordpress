@@ -530,7 +530,14 @@ function diluxone_users_account_nav( ?array $sections = null, string $current = 
 function diluxone_users_account_template(): string {
 	$template = (string) diluxone_users_option( 'diluxone_users_account_template' );
 
-	return 'cover' === $template ? 'cover' : 'plain';
+	// Against the shapes there are, not a list written here: a shape added by
+	// something else has to be allowed through, and anything unknown falls
+	// back to the one that works everywhere.
+	$known = function_exists( 'diluxone_users_account_templates' )
+		? array_keys( diluxone_users_account_templates() )
+		: array( 'plain', 'cover' );
+
+	return in_array( $template, $known, true ) ? $template : 'plain';
 }
 
 /** How wide the content runs. */

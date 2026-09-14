@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  * @return array<string, string> type => name to display.
  */
 function diluxone_users_field_types(): array {
-	return array(
+	$types = array(
 		'text'     => __( 'Text', 'diluxone-users' ),
 		'textarea' => __( 'Long text', 'diluxone-users' ),
 		'email'    => __( 'Email address', 'diluxone-users' ),
@@ -31,6 +31,21 @@ function diluxone_users_field_types(): array {
 		'datalist' => __( 'Text with suggestions', 'diluxone-users' ),
 		'checkbox' => __( 'Yes / no', 'diluxone-users' ),
 	);
+
+	/**
+	 * Filters the field types on offer.
+	 *
+	 * A type added here shows up in the admin straight away and is drawn as a
+	 * text box and cleaned as text, which is the right answer for most of
+	 * what anybody would add. To draw it differently there is
+	 * `diluxone_users_field_input`, and to clean it differently there is
+	 * `diluxone_users_sanitize_value`.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, string> $types Slug => what it is called.
+	 */
+	return (array) apply_filters( 'diluxone_users_field_types', $types );
 }
 
 /**
@@ -419,6 +434,24 @@ function diluxone_users_field_edit_note( array $field, int $user_id ): string {
  */
 function diluxone_users_sanitize( array $field, string $value ): string {
 	$value = trim( $value );
+
+	/**
+	 * Filters how a value is cleaned, before the built-in types are tried.
+	 *
+	 * Return anything but null and it is used as it is — so whatever answers
+	 * this is responsible for the value being safe to store.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string|null          $clean null to leave it to the plugin.
+	 * @param string               $value What arrived, trimmed.
+	 * @param array<string, mixed> $field The field it belongs to.
+	 */
+	$own = apply_filters( 'diluxone_users_sanitize_value', null, $value, $field );
+
+	if ( null !== $own ) {
+		return (string) $own;
+	}
 
 	switch ( $field['type'] ) {
 		case 'email':
