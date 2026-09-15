@@ -40,6 +40,79 @@ function diluxone_users_sessions_panels(): void {
 }
 add_action( 'diluxone_users_register_panels', 'diluxone_users_sessions_panels' );
 
+/**
+ * Behind a proxy: which header carries the visitor's address.
+ *
+ * Every limit the plugin keeps per address — how often a link may be asked
+ * for, how many accounts an address may create — is only as good as the
+ * address. Behind a proxy the connection comes from the proxy and the
+ * visitor is in a header, and a header anybody can type is not an address
+ * unless the connection it came on is trusted. So: one header, and the
+ * proxies it is believed from.
+ */
+function diluxone_users_proxy_panels(): void {
+	diluxone_users_register_panel(
+		DILUXONE_USERS_SECURITY,
+		'proxy',
+		array(
+			'label'    => __( 'Behind a proxy', 'diluxone-users' ),
+			'position' => 50,
+			'render'   => 'diluxone_users_screen_proxy',
+			'save'     => 'diluxone_users_proxy_save',
+		)
+	);
+}
+add_action( 'diluxone_users_register_panels', 'diluxone_users_proxy_panels' );
+
+/** Saves the header and the proxies. */
+function diluxone_users_proxy_save(): void {
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the panel verifies it.
+	$header = strtoupper( sanitize_key( wp_unslash( $_POST['diluxone_users_ip_header'] ?? '' ) ) );
+
+	diluxone_users_save_options(
+		array(
+			'diluxone_users_ip_header'       => isset( diluxone_users_ip_headers()[ $header ] ) ? $header : '',
+			'diluxone_users_trusted_proxies' => sanitize_textarea_field( wp_unslash( $_POST['diluxone_users_trusted_proxies'] ?? '' ) ),
+		)
+	);
+	// phpcs:enable
+}
+
+/** The header and the proxies. */
+function diluxone_users_screen_proxy(): void {
+	diluxone_users_intro( __( 'Every limit this plugin keeps per address — how often a link may be asked for, how many accounts an address may create — is only as good as the address. Behind a proxy or a CDN the visitor’s address travels in a header, and a header is only believed when the connection it came on is from a proxy this site trusts.', 'diluxone-users' ) );
+	?>
+	<table class="form-table" role="presentation">
+		<tr>
+			<th scope="row"><label for="diluxone_users_ip_header"><?php esc_html_e( 'The header with the visitor’s address', 'diluxone-users' ); ?></label></th>
+			<td>
+				<select id="diluxone_users_ip_header" name="diluxone_users_ip_header">
+					<?php foreach ( diluxone_users_ip_headers() as $diluxone_users_key => $diluxone_users_name ) : ?>
+						<option value="<?php echo esc_attr( $diluxone_users_key ); ?>" <?php selected( diluxone_users_ip_header(), $diluxone_users_key ); ?>><?php echo esc_html( $diluxone_users_name ); ?></option>
+					<?php endforeach; ?>
+				</select>
+				<p class="description">
+					<?php
+					printf(
+						/* translators: %s: the address the plugin sees for this request */
+						esc_html__( 'What this site sees for you right now: %s. If that is your own address, it is set right.', 'diluxone-users' ),
+						'<code>' . esc_html( diluxone_users_client_ip() ) . '</code>'
+					);
+					?>
+				</p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><label for="diluxone_users_trusted_proxies"><?php esc_html_e( 'Trusted proxies', 'diluxone-users' ); ?></label></th>
+			<td>
+				<textarea id="diluxone_users_trusted_proxies" name="diluxone_users_trusted_proxies" rows="4" class="large-text code"><?php echo esc_textarea( (string) diluxone_users_option( 'diluxone_users_trusted_proxies' ) ); ?></textarea>
+				<p class="description"><?php esc_html_e( 'One address or range per line, such as 203.0.113.0/24. Private and local ranges are always trusted, so a proxy on the same machine or network needs nothing here. A CDN’s edges do.', 'diluxone-users' ); ?></p>
+			</td>
+		</tr>
+	</table>
+	<?php
+}
+
 /** Saves how long a session lasts. */
 function diluxone_users_sessions_save(): void {
 	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the panel verifies it.

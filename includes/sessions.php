@@ -157,9 +157,18 @@ function diluxone_users_session_close( int $user_id, string $id ): bool {
 	return true;
 }
 
-/** Closes every session but the one in use. */
+/**
+ * Closes every session but the one in use.
+ *
+ * The browsers that were trusted to skip the second step are forgotten at
+ * the same time. Somebody closing their other sessions is somebody who lost
+ * a device, and the device they lost must not walk back in with the
+ * password alone because it was trusted a week ago.
+ */
 function diluxone_users_sessions_close_others( int $user_id ): void {
 	$manager = WP_Session_Tokens::get_instance( $user_id );
+
+	diluxone_users_2fa_forget_browsers( $user_id );
 
 	if ( get_current_user_id() === $user_id && function_exists( 'wp_get_session_token' ) ) {
 		$manager->destroy_others( (string) wp_get_session_token() );
@@ -330,6 +339,7 @@ function diluxone_users_sessions_admin_close(): void {
 	$user_id = absint( $_POST['diluxone_users_user'] ?? 0 );
 
 	if ( $user_id > 0 ) {
+		diluxone_users_2fa_forget_browsers( $user_id );
 		WP_Session_Tokens::get_instance( $user_id )->destroy_all();
 	}
 

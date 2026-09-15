@@ -389,6 +389,26 @@ diluxoneUsersFieldTypes( document );
 }() );
 
 /**
+ * The toolbar's roles hang under the one answer that needs them.
+ */
+( function () {
+	'use strict';
+
+	var radios = document.querySelectorAll( '[data-diluxone-users-bar]' );
+	var roles  = document.querySelector( '[data-diluxone-users-bar-roles]' );
+
+	if ( ! radios.length || ! roles ) {
+		return;
+	}
+
+	radios.forEach( function ( radio ) {
+		radio.addEventListener( 'change', function () {
+			roles.hidden = 'hide-some' !== radio.value;
+		} );
+	} );
+}() );
+
+/**
  * The way back to the default, and the box that turns a colour on.
  *
  * Both exist for the same reason: a field can be put into a state it cannot

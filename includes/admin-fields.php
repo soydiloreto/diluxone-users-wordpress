@@ -655,7 +655,7 @@ function diluxone_users_screen_fields_usage(): void {
 
 	<h2><?php esc_html_e( 'Fitting them into your design', 'diluxone-users' ); ?></h2>
 	<p class="diluxone-users-admin__intro">
-		<?php esc_html_e( 'Copy any file from the plugin’s templates/ folder into your theme, inside a diluxone-users/ folder, and edit it there. The plugin will use yours. You can also turn off its stylesheet in Account area → How it looks.', 'diluxone-users' ); ?>
+		<?php esc_html_e( 'Copy any file from the plugin’s templates/ folder into your theme, inside a diluxone-users/ folder, and edit it there. The plugin will use yours. You can also turn off its stylesheet in Design → Your brand.', 'diluxone-users' ); ?>
 	</p>
 	<?php
 }

@@ -19,8 +19,9 @@ class, there is a seam missing.
 ## Screens and tabs
 
 A tab is registered, not written down. Register on `diluxone_users_register_panels`,
-which fires on `admin_menu` before the menu is built — by then every plugin
-has loaded, so nothing depends on which file came first.
+which fires on `admin_init` — early enough for the menu and for the preview's
+AJAX request, and by then every plugin has loaded, so nothing depends on which
+file came first.
 
 ```php
 add_action( 'diluxone_users_register_panels', function () {
@@ -41,11 +42,47 @@ add_action( 'diluxone_users_register_panels', function () {
 The screen supplies the form, the nonce, the submit button and the "Saved."
 notice. `render` prints the fields and nothing else.
 
-Screens that take panels: `diluxone-users-login`, `diluxone-users-security`,
-`diluxone-users-design`.
+Every screen takes panels: `diluxone-users` (Overview), `diluxone-users-login`
+(Access — sign-in page, ways in, registration), `diluxone-users-security`,
+`diluxone-users-social`, `diluxone-users-account`, `diluxone-users-fields`,
+`diluxone-users-design`, `diluxone-users-notices`, `diluxone-users-status`
+(Maintenance — status, tools, lockout). `diluxone-users-register` and
+`diluxone-users-tools` are not screens any more; their slugs redirect to the
+tab they became.
 
 A tab exists because something registered it. Nothing registered means no tab
 — not an empty one.
+
+### The shape every screen has
+
+The first tab of a screen with settings is a **Summary**: `form => false`,
+`position => 0`, drawn with `diluxone_users_summary_table()`. It reads what
+the other tabs write and edits nothing. A row is a label, a state, one line of
+detail and a "Change it →" link to the tab that owns it.
+
+There is one vocabulary of state, four words, on every screen:
+`active`, `pending` (half set up, or waiting on something — always with a
+reason), `off`, and `unknown` for what cannot be told from inside the site.
+`diluxone_users_state_pill( $state, $why )` draws one.
+
+A control that does not apply right now stays on the screen and keeps saving —
+what is chosen applies the day the reason goes away — but it is dimmed and
+`diluxone_users_not_now( $why, $url )` says why, above it, with the way out.
+
+### Doors into an account
+
+Registration is a set of independent doors and not one exclusive answer: the
+e-mail link creates the account (`diluxone_users_login_register`), a social
+account does (`diluxone_users_sso_register`), the site's own form does
+(`diluxone_users_register_form` + `diluxone_users_register_page`), and
+WordPress's own form does — that last one is `users_can_register`, the same
+switch as Settings → General, read and written directly rather than copied.
+`diluxone_users_register_mode()` still answers with one word for whatever
+wants one: `login`, `form`, `both` or `closed`.
+
+While the e-mail link is the only way in, `users_can_register` reads as off
+whatever is stored (`diluxone_users_block_registration()`), and both screens
+say so.
 
 ## Social login providers
 

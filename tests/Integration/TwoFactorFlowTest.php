@@ -1,0 +1,168 @@
+<?php
+/**
+ * H-03 and M-03: the second step has a limit, and no door around it.
+ *
+ * The challenge and its submission are played by function, the way the
+ * hooks would call them: the redirect is caught, the e-mail with the code
+ * is caught, and what is asserted is what a script attacking the code
+ * would run into.
+ */
+
+namespace Tests\Integration;
+
+class TwoFactorFlowTest extends IntegrationTestCase {
+
+	private int $user;
+
+	protected function setUp(): void {
+		parent::setUp();
+
+		update_option( 'diluxone_users_2fa_mode', 'required' );
+		update_option( 'diluxone_users_2fa_methods', array( 'email' ) );
+		update_option( 'diluxone_users_2fa_remember_days', 0 );
+
+		$this->user = $this->make_user();
+	}
+
+	/** Starts the challenge and returns the key the screen would carry. */
+	private function challenge(): string {
+		wp_set_current_user( 0 );
+
+		$url = $this->expectRedirect( fn() => diluxone_users_2fa_challenge( $this->user, 'password', false, home_url( '/after/' ) ) );
+
+		$this->assertSame( (string) $this->user, $this->queryArg( $url, 'diluxone_users_2fa' ) );
+
+		return $this->queryArg( $url, 'diluxone_users_key' );
+	}
+
+	/** The six digits inside the last e-mail. */
+	private function mailedCode(): string {
+		preg_match( '/\b(\d{6})\b/', (string) ( $this->lastMail()['message'] ?? '' ), $m );
+
+		return $m[1] ?? '';
+	}
+
+	/** Submits a code (or a resend) and returns where it went. */
+	private function submit( string $key, string $code, bool $resend = false ): string {
+		$post = array(
+			'diluxone_users_2fa_user'   => (string) $this->user,
+			'diluxone_users_2fa_key'    => $key,
+			'diluxone_users_2fa_method' => 'email',
+			'diluxone_users_2fa_code'   => $code,
+		);
+
+		if ( $resend ) {
+			$post['diluxone_users_2fa_resend'] = '1';
+		}
+
+		$this->postAs( 0, $post );
+
+		return $this->expectRedirect( 'diluxone_users_2fa_handle' );
+	}
+
+	public function test_the_right_code_opens_the_session_and_ends_the_attempt(): void {
+		$key = $this->challenge();
+		$url = $this->submit( $key, $this->mailedCode() );
+
+		$this->assertSame( home_url( '/after/' ), $url );
+		$this->assertSame( $this->user, get_current_user_id() );
+		$this->assertSame( '', get_user_meta( $this->user, 'diluxone_users_2fa_pending', true ) );
+	}
+
+	public function test_a_wrong_code_costs_a_try_and_the_fifth_costs_the_attempt(): void {
+		$key = $this->challenge();
+
+		for ( $i = 1; $i < DILUXONE_USERS_2FA_TRIES; $i++ ) {
+			$this->assertSame( 'code', $this->redirectState( $this->submit( $key, '000000' ) ), "Try $i should still be a try" );
+		}
+
+		$this->assertSame( 'expired', $this->redirectState( $this->submit( $key, '000000' ) ) );
+		$this->assertSame( '', get_user_meta( $this->user, 'diluxone_users_2fa_pending', true ), 'The attempt has to be gone' );
+		$this->assertSame( 0, get_current_user_id() );
+	}
+
+	public function test_after_the_limit_even_the_right_code_is_no_good(): void {
+		// The count would mean nothing if the person could keep guessing
+		// against the same code: the code went with the attempt.
+		$key  = $this->challenge();
+		$code = $this->mailedCode();
+
+		for ( $i = 0; $i < DILUXONE_USERS_2FA_TRIES; $i++ ) {
+			$this->submit( $key, '000000' );
+		}
+
+		$this->assertSame( 'expired', $this->redirectState( $this->submit( $key, $code ) ) );
+		$this->assertSame( 0, get_current_user_id() );
+	}
+
+	public function test_the_count_survives_a_reload_of_the_screen(): void {
+		$key = $this->challenge();
+
+		$this->submit( $key, '000000' );
+		$this->submit( $key, '000000' );
+
+		$this->assertSame( 2, (int) get_user_meta( $this->user, 'diluxone_users_2fa_pending', true )['tries'] );
+	}
+
+	public function test_send_it_again_waits_a_minute_between_mails(): void {
+		$key = $this->challenge();
+		$this->assertCount( 1, self::$mail );
+
+		$url = $this->submit( $key, '', true );
+
+		$this->assertCount( 1, self::$mail, 'Asked straight away, nothing goes out' );
+		$this->assertSame( '', $this->redirectState( $url ), 'And nothing is claimed to have gone out' );
+
+		// A minute later.
+		$pending         = (array) get_user_meta( $this->user, 'diluxone_users_2fa_pending', true );
+		$pending['sent'] = time() - DILUXONE_USERS_2FA_RESEND_WAIT;
+		update_user_meta( $this->user, 'diluxone_users_2fa_pending', $pending );
+
+		$url = $this->submit( $key, '', true );
+
+		$this->assertCount( 2, self::$mail );
+		$this->assertSame( 'sent', $this->redirectState( $url ) );
+	}
+
+	public function test_a_wrong_key_is_an_expired_attempt(): void {
+		$this->challenge();
+
+		$this->assertSame( 'expired', $this->redirectState( $this->submit( 'not-the-key', '123456' ) ) );
+	}
+
+	/* ── M-03: the doors with no screen ────────────────────────────── */
+
+	public function test_xml_rpc_refuses_a_password_that_would_need_a_second_step(): void {
+		$user = get_userdata( $this->user );
+
+		$this->assertInstanceOf( \WP_Error::class, diluxone_users_2fa_gate( $user, true ) );
+		$this->assertSame( $user, diluxone_users_2fa_gate( $user, false ), 'A request with a screen goes on to the challenge' );
+		$this->assertSame( 99, has_filter( 'authenticate', 'diluxone_users_2fa_gate_xmlrpc' ) );
+	}
+
+	public function test_xml_rpc_lets_through_whoever_is_not_asked(): void {
+		update_option( 'diluxone_users_2fa_mode', 'off' );
+
+		$user = get_userdata( $this->user );
+
+		$this->assertSame( $user, diluxone_users_2fa_gate( $user, true ) );
+	}
+
+	public function test_a_wrong_password_stays_a_wrong_password(): void {
+		$error = new \WP_Error( 'incorrect_password' );
+
+		$this->assertSame( $error, diluxone_users_2fa_gate( $error, true ) );
+	}
+
+	public function test_application_passwords_are_off_for_whoever_is_asked_for_a_second_step(): void {
+		add_filter( 'wp_is_application_passwords_available', '__return_true' );
+
+		$this->assertFalse( wp_is_application_passwords_available_for_user( get_userdata( $this->user ) ) );
+
+		update_option( 'diluxone_users_2fa_mode', 'off' );
+
+		$this->assertTrue( wp_is_application_passwords_available_for_user( get_userdata( $this->user ) ) );
+
+		remove_filter( 'wp_is_application_passwords_available', '__return_true' );
+	}
+}

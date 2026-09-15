@@ -62,7 +62,7 @@ function diluxone_users_register_own_sections(): void {
 			'position'  => 60,
 			'render'    => 'diluxone_users_section_notifications',
 			'available' => 'diluxone_users_notifications_any',
-			'why'       => __( 'There is nothing to turn on or off: no notification is registered.', 'diluxone-users' ),
+			'why'       => __( 'There is nothing to turn on or off: no notice leaves the choice to the person.', 'diluxone-users' ),
 		)
 	);
 
@@ -84,9 +84,9 @@ function diluxone_users_sso_any(): bool {
 	return function_exists( 'diluxone_users_sso_available' ) && array() !== diluxone_users_sso_available();
 }
 
-/** Is there any notice to offer? */
+/** Is there any notice a person gets to decide about? */
 function diluxone_users_notifications_any(): bool {
-	return array() !== diluxone_users_notification_prefs();
+	return array() !== diluxone_users_notification_choices();
 }
 
 /** Is anybody allowed to do anything with their data? */
@@ -348,6 +348,34 @@ function diluxone_users_notification_prefs(): array {
 	return (array) apply_filters( 'diluxone_users_notification_prefs', diluxone_users_default_notifications() );
 }
 
+/**
+ * The notices a person gets a switch for.
+ *
+ * Everything registered, minus what the site decided on everybody's behalf:
+ * a notice that is always sent has nothing to turn off, and one that is never
+ * sent has nothing to turn on. Showing either would be a switch wired to
+ * nothing. What is left carries its starting position from the policy, not
+ * from what it registered, so the account area and the sending agree.
+ *
+ * @return array<string, array<string, string>>
+ */
+function diluxone_users_notification_choices(): array {
+	$choices = array();
+
+	foreach ( diluxone_users_notification_prefs() as $key => $pref ) {
+		$policy = diluxone_users_notice_policy( (string) $key );
+
+		if ( ! diluxone_users_notice_is_choice( $policy ) ) {
+			continue;
+		}
+
+		$pref['default'] = 'default_on' === $policy ? '1' : '';
+		$choices[ $key ] = $pref;
+	}
+
+	return $choices;
+}
+
 /** Section notifications. */
 function diluxone_users_section_notifications( WP_User $user ): void {
 	echo do_shortcode( '[diluxone_users_notifications]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode propio.
@@ -371,7 +399,7 @@ function diluxone_users_shortcode_notifications(): string {
 		'account/notifications',
 		array(
 			'user'  => wp_get_current_user(),
-			'prefs' => diluxone_users_notification_prefs(),
+			'prefs' => diluxone_users_notification_choices(),
 		)
 	);
 }
@@ -388,7 +416,10 @@ function diluxone_users_notifications_save(): void {
 
 	$user_id = get_current_user_id();
 
-	foreach ( diluxone_users_notification_prefs() as $key => $pref ) {
+	// Only what was on the form: a notice the site decides for everybody
+	// keeps no meta, so the day the rule changes the person starts from the
+	// policy and not from a box they never saw.
+	foreach ( diluxone_users_notification_choices() as $key => $pref ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verificado arriba.
 		update_user_meta( $user_id, $key, isset( $_POST[ $key ] ) ? '1' : '0' );
 	}

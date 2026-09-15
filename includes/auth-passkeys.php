@@ -102,6 +102,22 @@ function diluxone_users_passkeys_ready( int $user_id ): bool {
  * @param array<int, array<string, mixed>> $keys
  */
 function diluxone_users_passkeys_save( int $user_id, array $keys ): void {
+	$keys = array_values( $keys );
+
+	// The index is kept in step with the list: one row per key, written when
+	// the key arrives and removed when it goes, so that the lookup by
+	// credential id below never has to open anybody's list to find its owner.
+	$before = array_map( 'strval', array_column( diluxone_users_passkeys( $user_id ), 'id' ) );
+	$after  = array_map( 'strval', array_column( $keys, 'id' ) );
+
+	foreach ( array_diff( $before, $after ) as $gone ) {
+		delete_user_meta( $user_id, diluxone_users_passkey_index_key( $gone ) );
+	}
+
+	foreach ( array_diff( $after, $before ) as $new ) {
+		update_user_meta( $user_id, diluxone_users_passkey_index_key( $new ), 1 );
+	}
+
 	if ( array() === $keys ) {
 		// Somebody who took their last key off has no key, and an empty array
 		// left behind is a row that answers "yes" to every query asking who
@@ -111,7 +127,29 @@ function diluxone_users_passkeys_save( int $user_id, array $keys ): void {
 		return;
 	}
 
-	update_user_meta( $user_id, 'diluxone_users_passkeys', array_values( $keys ) );
+	update_user_meta( $user_id, 'diluxone_users_passkeys', $keys );
+}
+
+/**
+ * The meta key that indexes one credential id.
+ *
+ * A meta key, not a meta value, because that is what the users table is
+ * indexed by: finding the owner becomes one indexed query, whatever the
+ * number of accounts. The id is hashed so the key stays a fixed length.
+ */
+function diluxone_users_passkey_index_key( string $id ): string {
+	return 'diluxone_users_pk_' . hash( 'sha256', $id );
+}
+
+/** Is this credential id in this person's list? */
+function diluxone_users_passkey_belongs( int $user_id, string $id ): bool {
+	foreach ( diluxone_users_passkeys( $user_id ) as $key ) {
+		if ( hash_equals( (string) $key['id'], $id ) ) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 /** Removes one by its identifier. */
@@ -129,19 +167,46 @@ function diluxone_users_passkey_forget( int $user_id, string $id ): void {
  * passkey says who they are before anybody has given their e-mail.
  */
 function diluxone_users_passkey_owner( string $id ): int {
+	if ( '' === $id ) {
+		return 0;
+	}
+
+	$indexed = get_users(
+		array(
+			'meta_key' => diluxone_users_passkey_index_key( $id ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'fields'   => 'ID',
+			'number'   => 2,
+		)
+	);
+
+	// The index says who; the list confirms it, so a stray index row on its
+	// own opens nothing.
+	foreach ( $indexed as $user_id ) {
+		if ( diluxone_users_passkey_belongs( (int) $user_id, $id ) ) {
+			return (int) $user_id;
+		}
+	}
+
+	/*
+	 * Keys stored before the index existed. They are found the old way — by
+	 * opening every list — and indexed on the spot, so each one goes through
+	 * this once. The cap is the old cap: a key that was unreachable before is
+	 * still unreachable this way, and reachable the moment its list is saved
+	 * again.
+	 */
 	$users = get_users(
 		array(
 			'meta_key' => 'diluxone_users_passkeys', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-		'fields'       => 'ID',
-		'number'       => 500,
+			'fields'   => 'ID',
+			'number'   => 500,
 		)
 	);
 
 	foreach ( $users as $user_id ) {
-		foreach ( diluxone_users_passkeys( (int) $user_id ) as $key ) {
-			if ( hash_equals( (string) $key['id'], $id ) ) {
-				return (int) $user_id;
-			}
+		if ( diluxone_users_passkey_belongs( (int) $user_id, $id ) ) {
+			update_user_meta( (int) $user_id, diluxone_users_passkey_index_key( $id ), 1 );
+
+			return (int) $user_id;
 		}
 	}
 
@@ -401,6 +466,18 @@ function diluxone_users_passkeys_register( array $post ): array {
 				'data'    => array( 'message' => __( 'That one was already here.', 'diluxone-users' ) ),
 			);
 		}
+	}
+
+	// One credential id, one account. A key that two accounts claim can only
+	// open the one the lookup finds first, and the other person is locked out
+	// of a key that is theirs: the second claim is refused instead.
+	$owner = diluxone_users_passkey_owner( $id );
+
+	if ( $owner > 0 && $owner !== $user_id ) {
+		return array(
+			'success' => false,
+			'data'    => array( 'message' => __( 'That passkey is already registered to another account.', 'diluxone-users' ) ),
+		);
 	}
 
 	$keys[] = array(

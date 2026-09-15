@@ -263,4 +263,45 @@ function diluxone_users_migrate(): void {
 	update_option( DILUXONE_USERS_MIGRATED, DILUXONE_USERS_VERSION );
 }
 add_action( 'admin_init', 'diluxone_users_migrate', 0 );
+
+/**
+ * Registration stops being one exclusive answer and becomes a set of doors.
+ *
+ * What was stored as `register_mode` (login / form / closed) is read once and
+ * written back as the two doors it meant; what was stored as
+ * `wp_registration` (site / on / off) is written into WordPress's own
+ * `users_can_register` when it forced anything, and dropped. Both old options
+ * are deleted so nothing is left to read them. It runs once and marks itself.
+ */
+function diluxone_users_migrate_registration(): void {
+	if ( get_option( 'diluxone_users_registration_v2' ) ) {
+		return;
+	}
+
+	$mode = (string) get_option( 'diluxone_users_register_mode', '' );
+
+	if ( 'form' === $mode ) {
+		update_option( 'diluxone_users_register_form', 1 );
+		update_option( 'diluxone_users_login_register', 0 );
+	} elseif ( 'closed' === $mode ) {
+		update_option( 'diluxone_users_register_form', 0 );
+		update_option( 'diluxone_users_login_register', 0 );
+	} elseif ( 'login' === $mode ) {
+		update_option( 'diluxone_users_register_form', 0 );
+		update_option( 'diluxone_users_login_register', 1 );
+	}
+
+	$forced = (string) get_option( 'diluxone_users_wp_registration', '' );
+
+	if ( 'on' === $forced ) {
+		update_option( 'users_can_register', 1 );
+	} elseif ( 'off' === $forced ) {
+		update_option( 'users_can_register', 0 );
+	}
+
+	delete_option( 'diluxone_users_register_mode' );
+	delete_option( 'diluxone_users_wp_registration' );
+	update_option( 'diluxone_users_registration_v2', 1, false );
+}
+add_action( 'admin_init', 'diluxone_users_migrate_registration', 1 );
 add_action( 'wp_initialize_site', 'diluxone_users_migrate' );

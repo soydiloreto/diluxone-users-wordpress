@@ -40,7 +40,7 @@ function diluxone_users_join_site( int $user_id ): void {
 		return;
 	}
 
-	add_user_to_blog( get_current_blog_id(), $user_id, (string) diluxone_users_option( 'diluxone_users_login_role' ) );
+	add_user_to_blog( get_current_blog_id(), $user_id, diluxone_users_register_role() );
 }
 
 /**

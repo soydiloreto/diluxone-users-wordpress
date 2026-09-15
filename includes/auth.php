@@ -23,6 +23,54 @@ defined( 'ABSPATH' ) || exit;
 /** How long a half-finished second-factor attempt lives. */
 const DILUXONE_USERS_2FA_WINDOW = 10 * MINUTE_IN_SECONDS;
 
+/**
+ * How many wrong codes one attempt survives.
+ *
+ * A six-digit code has a million answers and a ten-minute window: with no
+ * limit, a script that already has the password tries them all in time. Five
+ * is enough for a person mistyping twice and reading the wrong app once, and
+ * nowhere near enough for a script.
+ */
+const DILUXONE_USERS_2FA_TRIES = 5;
+
+/** Seconds between two e-mails with a code, so the button is not a mail cannon. */
+const DILUXONE_USERS_2FA_RESEND_WAIT = 60;
+
+/**
+ * Sets one of the plugin's cookies, the same way every time.
+ *
+ * Every cookie the plugin writes is HttpOnly, Secure over HTTPS and
+ * SameSite=Lax — the last one is what keeps another site from riding on it.
+ * The filter is the seam a test uses to look at the cookie instead of letting
+ * PHP write a header the CLI has nowhere to send; a site that hands its
+ * cookies to another layer can use it the same way.
+ */
+function diluxone_users_cookie_set( string $name, string $value, int $expires ): void {
+	$options = array(
+		'expires'  => $expires,
+		'path'     => defined( 'COOKIEPATH' ) && '' !== (string) COOKIEPATH ? (string) COOKIEPATH : '/',
+		'domain'   => defined( 'COOKIE_DOMAIN' ) ? (string) COOKIE_DOMAIN : '',
+		'secure'   => is_ssl(),
+		'httponly' => true,
+		'samesite' => 'Lax',
+	);
+
+	/**
+	 * Filters a cookie before it is written. Anything but an array writes nothing.
+	 *
+	 * @param array<string, mixed> $options The setcookie() options.
+	 * @param string               $name
+	 * @param string               $value
+	 */
+	$options = apply_filters( 'diluxone_users_cookie', $options, $name, $value );
+
+	if ( ! is_array( $options ) ) {
+		return;
+	}
+
+	setcookie( $name, $value, $options );
+}
+
 /* ── Los segundos factores disponibles ─────────────────────────────── */
 
 /*
@@ -267,7 +315,40 @@ function diluxone_users_2fa_trusted( int $user_id ): bool {
 		return false;
 	}
 
-	return hash_equals( wp_hash( $user_id . '|' . $expires, 'secure_auth' ), $hash );
+	return hash_equals( diluxone_users_2fa_trust_hash( $user_id, (int) $expires ), $hash );
+}
+
+/**
+ * The signature inside the trust cookie.
+ *
+ * It covers the epoch as well as the id and the expiry: that is what makes
+ * the cookie revocable. Everything else in it is fixed for the life of the
+ * account, so a cookie that only signed those could not be taken back short
+ * of changing the site salts — and turning the second step off and on again,
+ * or closing every session, has to take it back.
+ */
+function diluxone_users_2fa_trust_hash( int $user_id, int $expires ): string {
+	$epoch = (string) get_user_meta( $user_id, 'diluxone_users_2fa_epoch', true );
+
+	return wp_hash( $user_id . '|' . $expires . '|' . $epoch, 'secure_auth' );
+}
+
+/**
+ * Forgets every browser this person marked as trusted.
+ *
+ * The cookies are not reachable — they live in other browsers — so what
+ * changes is the epoch they were signed with, and every one of them stops
+ * verifying at once. It is called when the second step is turned off or
+ * changed, and when the person closes their other sessions: a session that
+ * was closed should not come back in without the second step.
+ */
+function diluxone_users_2fa_forget_browsers( int $user_id ): void {
+	update_user_meta( $user_id, 'diluxone_users_2fa_epoch', time() . '.' . wp_generate_password( 8, false, false ) );
+}
+
+/** What the trust cookie holds: who, until when, and the signature over both. */
+function diluxone_users_2fa_trust_value( int $user_id, int $expires ): string {
+	return $user_id . '|' . $expires . '|' . diluxone_users_2fa_trust_hash( $user_id, $expires );
 }
 
 /** Marks this browser so it is not asked again for a few days. */
@@ -279,17 +360,8 @@ function diluxone_users_2fa_trust( int $user_id ): void {
 	}
 
 	$expires = time() + $days * DAY_IN_SECONDS;
-	$value   = $user_id . '|' . $expires . '|' . wp_hash( $user_id . '|' . $expires, 'secure_auth' );
 
-	setcookie(
-		'diluxone_users_2fa_' . COOKIEHASH,
-		$value,
-		$expires,
-		defined( 'COOKIEPATH' ) ? COOKIEPATH : '/',
-		defined( 'COOKIE_DOMAIN' ) ? (string) COOKIE_DOMAIN : '',
-		is_ssl(),
-		true
-	);
+	diluxone_users_cookie_set( 'diluxone_users_2fa_' . COOKIEHASH, diluxone_users_2fa_trust_value( $user_id, $expires ), $expires );
 }
 
 /* ── The single way in ─────────────────────────────────────────────── */
@@ -338,19 +410,7 @@ function diluxone_users_2fa_challenge( int $user_id, string $via, bool $remember
 	// session opened before the second factor is having no second factor.
 	wp_clear_auth_cookie();
 
-	$nonce = wp_generate_password( 32, false );
-
-	update_user_meta(
-		$user_id,
-		'diluxone_users_2fa_pending',
-		array(
-			'nonce'    => wp_hash( $nonce ),
-			'expires'  => time() + DILUXONE_USERS_2FA_WINDOW,
-			'via'      => $via,
-			'remember' => $remember ? 1 : 0,
-			'redirect' => $redirect,
-		)
-	);
+	$nonce = diluxone_users_2fa_pending_start( $user_id, $via, $remember, $redirect );
 
 	$methods = diluxone_users_2fa_available( $user_id );
 
@@ -384,6 +444,33 @@ function diluxone_users_2fa_challenge( int $user_id, string $via, bool $remember
 }
 
 /**
+ * Opens a pending attempt and returns the nonce that names it.
+ *
+ * Separate from the redirect so it can be exercised without one: what is
+ * stored, how many tries it has and when it expires are the facts the
+ * limits below rest on.
+ */
+function diluxone_users_2fa_pending_start( int $user_id, string $via, bool $remember, string $redirect ): string {
+	$nonce = wp_generate_password( 32, false );
+
+	update_user_meta(
+		$user_id,
+		'diluxone_users_2fa_pending',
+		array(
+			'nonce'    => wp_hash( $nonce ),
+			'expires'  => time() + DILUXONE_USERS_2FA_WINDOW,
+			'via'      => $via,
+			'remember' => $remember ? 1 : 0,
+			'redirect' => $redirect,
+			'tries'    => 0,
+			'sent'     => 0,
+		)
+	);
+
+	return $nonce;
+}
+
+/**
  * Somebody's pending attempt, if it is still alive and the nonce is theirs.
  *
  * @return array<string, mixed>
@@ -398,13 +485,97 @@ function diluxone_users_2fa_pending( int $user_id, string $nonce ): array {
 	return hash_equals( (string) ( $pending['nonce'] ?? '' ), wp_hash( $nonce ) ) ? $pending : array();
 }
 
+/**
+ * Counts a wrong code against the attempt.
+ *
+ * Returns whether the attempt is still alive. On the last strike it is
+ * thrown away whole: the person starts over from the first step, which is
+ * the only thing that makes the count mean anything — a limit that resets
+ * on reload is not a limit.
+ */
+function diluxone_users_2fa_strike( int $user_id, string $nonce ): bool {
+	$pending = diluxone_users_2fa_pending( $user_id, $nonce );
+
+	if ( array() === $pending ) {
+		return false;
+	}
+
+	$pending['tries'] = (int) ( $pending['tries'] ?? 0 ) + 1;
+
+	if ( $pending['tries'] >= DILUXONE_USERS_2FA_TRIES ) {
+		delete_user_meta( $user_id, 'diluxone_users_2fa_pending' );
+
+		return false;
+	}
+
+	update_user_meta( $user_id, 'diluxone_users_2fa_pending', $pending );
+
+	return true;
+}
+
+/**
+ * May another code go out for this attempt right now?
+ *
+ * The attempt remembers when the last one went out; the button only works
+ * once that was long enough ago. Without this, "send it again" is a way of
+ * flooding somebody else's inbox from the sign-in page.
+ */
+function diluxone_users_2fa_resend_allowed( int $user_id, string $nonce ): bool {
+	$pending = diluxone_users_2fa_pending( $user_id, $nonce );
+
+	if ( array() === $pending ) {
+		return false;
+	}
+
+	return time() - (int) ( $pending['sent'] ?? 0 ) >= DILUXONE_USERS_2FA_RESEND_WAIT;
+}
+
 /** Fires whatever that method needs in order to start (send the e-mail). */
 function diluxone_users_2fa_send( int $user_id, string $method ): void {
 	$methods = diluxone_users_2fa_available( $user_id );
 
-	if ( isset( $methods[ $method ]['send'] ) && is_callable( $methods[ $method ]['send'] ) ) {
-		call_user_func( $methods[ $method ]['send'], $user_id );
+	if ( ! isset( $methods[ $method ]['send'] ) || ! is_callable( $methods[ $method ]['send'] ) ) {
+		return;
 	}
+
+	call_user_func( $methods[ $method ]['send'], $user_id );
+
+	// The attempt keeps the time of the last send: that is what the resend
+	// limit is measured from.
+	$pending = (array) get_user_meta( $user_id, 'diluxone_users_2fa_pending', true );
+
+	if ( array() !== $pending ) {
+		$pending['sent'] = time();
+		update_user_meta( $user_id, 'diluxone_users_2fa_pending', $pending );
+	}
+}
+
+/**
+ * Is this code good right now, whichever method it belongs to?
+ *
+ * For the actions that weaken the account — turning the second step off,
+ * removing the app, replacing the backup codes — a session is not enough: a
+ * session can be stolen, and whoever stole it must not be able to remove the
+ * one thing that was still in their way. What is asked for is proof of the
+ * second step itself, by any method the person has ready, backup codes
+ * included.
+ */
+function diluxone_users_2fa_reauth( int $user_id, string $code ): bool {
+	if ( '' === trim( $code ) ) {
+		return false;
+	}
+
+	if ( diluxone_users_backup_use( $user_id, $code ) ) {
+		return true;
+	}
+
+	foreach ( diluxone_users_2fa_available( $user_id ) as $method ) {
+		if ( is_callable( $method['verify'] ) && call_user_func( $method['verify'], $user_id, $code ) ) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 /**
@@ -464,12 +635,26 @@ function diluxone_users_2fa_handle(): void {
 	);
 
 	if ( $resend ) {
+		// Asked too soon, nothing goes out and nothing is claimed: the screen
+		// comes back as it was, with the code that is already on its way.
+		if ( ! diluxone_users_2fa_resend_allowed( $user_id, $key ) ) {
+			wp_safe_redirect( $back );
+			exit;
+		}
+
 		diluxone_users_2fa_send( $user_id, $method );
 		wp_safe_redirect( add_query_arg( 'diluxone-users', 'sent', $back ) );
 		exit;
 	}
 
 	if ( '' === $code || ! diluxone_users_2fa_verify( $user_id, $method, $code ) ) {
+		// A wrong code costs a try; the last one costs the attempt, and the
+		// person is back at the first step as if the window had closed.
+		if ( ! diluxone_users_2fa_strike( $user_id, $key ) ) {
+			wp_safe_redirect( add_query_arg( 'diluxone-users', 'expired', diluxone_users_login_url() ) );
+			exit;
+		}
+
 		wp_safe_redirect( add_query_arg( 'diluxone-users', 'code', $back ) );
 		exit;
 	}
@@ -513,6 +698,66 @@ function diluxone_users_2fa_after_password( string $login, WP_User $user ): void
 	diluxone_users_2fa_challenge( (int) $user->ID, 'password', $remember, $redirect );
 }
 add_action( 'wp_login', 'diluxone_users_2fa_after_password', 10, 2 );
+
+/*
+ * The doors with no screen.
+ *
+ * XML-RPC and application passwords authenticate with the password alone and
+ * never fire `wp_login`, so nothing above sees them: an account asked for a
+ * second step on every screen was open to a script with the password and no
+ * screen. Neither of those ways in can ask for a code, so for whoever is
+ * asked for one they are closed.
+ */
+
+/**
+ * Says no to an application password for anybody the second step applies to.
+ *
+ * It is the same filter WordPress consults everywhere — the REST API, XML-RPC
+ * and the profile screen — so closing it here closes it in all three, and
+ * the profile says plainly that they are not available.
+ *
+ * @param bool    $available What WordPress decided.
+ * @param WP_User $user      Whose password it would be.
+ */
+function diluxone_users_2fa_no_app_passwords( bool $available, WP_User $user ): bool {
+	return $available && ! diluxone_users_2fa_required( (int) $user->ID, 'password' );
+}
+add_filter( 'wp_is_application_passwords_available_for_user', 'diluxone_users_2fa_no_app_passwords', 10, 2 );
+
+/**
+ * Refuses a password sign-in that arrived somewhere no code can be asked for.
+ *
+ * Pure on purpose — whether this is such a request is passed in — so the
+ * verdict can be tested without defining the constant that names it.
+ *
+ * @param WP_User|WP_Error|null $user    What the filters before decided.
+ * @param bool                  $machine A request with no screen to ask on.
+ * @return WP_User|WP_Error|null
+ */
+function diluxone_users_2fa_gate( $user, bool $machine ) {
+	if ( ! $machine || ! $user instanceof WP_User || ! diluxone_users_2fa_required( (int) $user->ID, 'password' ) ) {
+		return $user;
+	}
+
+	return new WP_Error(
+		'diluxone_users_2fa',
+		__( 'This account asks for a second step when signing in, and this way in cannot ask for it.', 'diluxone-users' )
+	);
+}
+
+/**
+ * The gate on XML-RPC, where wp_authenticate() runs with no screen behind it.
+ *
+ * Late in the chain so the password has been checked first: a wrong password
+ * keeps saying "wrong password", and only a right one meets this.
+ *
+ * @param WP_User|WP_Error|null $user
+ * @return WP_User|WP_Error|null
+ */
+function diluxone_users_2fa_gate_xmlrpc( $user ) {
+	return diluxone_users_2fa_gate( $user, defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST );
+}
+add_filter( 'authenticate', 'diluxone_users_2fa_gate_xmlrpc', 99 );
 
 /* ── Backup codes ──────────────────────────────────────────────────── */
 

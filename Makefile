@@ -135,6 +135,9 @@ test-unit: ## Run only the unit-test suite (no WordPress runtime).
 test-integration: ## Run integration tests against the wp-env stack (must be `make env` first).
 	npx @wordpress/env run tests-cli --env-cwd=wp-content/plugins/$(REPO_DIR) ./vendor/bin/phpunit -c phpunit-integration.xml --testsuite integration
 
+.PHONY: test-all
+test-all: test-unit test-integration ## Both suites: the fast one, then the one that needs wp-env running.
+
 # -- Distribution build ------------------------------------------------
 # The repo directory is diluxone-users-wordpress (GitHub), but the plugin
 # folder wordpress.org receives must be named after the slug, diluxone-users:

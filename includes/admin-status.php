@@ -1,6 +1,7 @@
 <?php
 /**
- * The status screen: what breaks today without saying so.
+ * The maintenance screen: what breaks today without saying so, and the
+ * little that can be done about it by hand.
  *
  * Almost nothing this plugin does fails with a visible error. The account
  * page loses the shortcode and shows the raw text; the mail stops going out
@@ -9,28 +10,78 @@
  * and the account area starts returning 404. All of those are discovered when
  * somebody complains, not when they happen.
  *
- * Here they are all together, on a single screen that touches nothing: it
- * looks and reports. What gets fixed is fixed in Tools.
+ * Here they are all together, on a single tab that touches nothing: it looks
+ * and reports. What gets fixed is fixed on the Tools tab beside it, and the
+ * way back in when nothing else works is on the third one. Three tabs of one
+ * screen and not three screens, because they are read in that order and by
+ * the same person: something is wrong, what can be pressed, and what to do
+ * when nothing can be pressed.
  *
  * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
 
+const DILUXONE_USERS_STATUS = 'diluxone-users-status';
+
+/** The screen's own tabs. The tools register theirs from their own file. */
+function diluxone_users_status_panels(): void {
+	diluxone_users_register_panel(
+		DILUXONE_USERS_STATUS,
+		'status',
+		array(
+			'label'    => __( 'Status', 'diluxone-users' ),
+			'position' => 0,
+			'render'   => 'diluxone_users_screen_status_checks',
+			// It reads and counts; there is nothing to save and so no form.
+			'form'     => false,
+		)
+	);
+
+	diluxone_users_register_panel(
+		DILUXONE_USERS_STATUS,
+		'lockout',
+		array(
+			'label'    => __( 'If you get locked out', 'diluxone-users' ),
+			'position' => 20,
+			'render'   => 'diluxone_users_screen_status_lockout',
+			'form'     => false,
+		)
+	);
+}
+add_action( 'diluxone_users_register_panels', 'diluxone_users_status_panels' );
+
 /**
  * One check, with its verdict.
  *
+ * The verdict is one of the four states every screen uses — active, pending,
+ * off, unknown — so the row can go straight into the summary table. A pending
+ * one always carries its reason: the pill is never shown bare.
+ *
  * @param string $label  What was looked at.
- * @param string $state  'ok', 'warn' or 'fail'.
- * @param string $detail What was found.
- * @return array{label: string, state: string, detail: string}
+ * @param string $state  One of active|pending|off|unknown.
+ * @param string $detail What was found, in one line.
+ * @param string $why    The reason, for a pending one.
+ * @param string $url    Where to fix it, if anywhere.
+ * @param string $change What the link says, when not "Change it".
+ * @return array{label: string, state: string, detail: string, why: string, url: string, change?: string}
  */
-function diluxone_users_check( string $label, string $state, string $detail ): array {
-	return array(
+function diluxone_users_check( string $label, string $state, string $detail = '', string $why = '', string $url = '', string $change = '' ): array {
+	$row = array(
 		'label'  => $label,
 		'state'  => $state,
 		'detail' => $detail,
+		'why'    => $why,
+		'url'    => $url,
 	);
+
+	// Left out rather than empty: the table falls back to "Change it" only
+	// when the key is missing, and an empty string would print as nothing.
+	if ( '' !== $change ) {
+		$row['change'] = $change;
+	}
+
+	return $row;
 }
 
 /**
@@ -44,30 +95,35 @@ function diluxone_users_check( string $label, string $state, string $detail ): a
  * @param string $option    The option storing the page ID.
  * @param string $shortcode The shortcode that page has to contain.
  * @param string $label     What that page is called in here.
- * @return array{label: string, state: string, detail: string}
+ * @param string $screen    The plugin screen where the page is chosen.
+ * @return array{label: string, state: string, detail: string, why: string, url: string, change?: string}
  */
-function diluxone_users_check_page( string $option, string $shortcode, string $label ): array {
-	$id = (int) diluxone_users_option( $option );
+function diluxone_users_check_page( string $option, string $shortcode, string $label, string $screen ): array {
+	$id     = (int) diluxone_users_option( $option );
+	$choose = diluxone_users_admin_url( $screen );
 
 	if ( $id <= 0 ) {
-		return diluxone_users_check( $label, 'warn', __( 'No page chosen yet.', 'diluxone-users' ) );
+		return diluxone_users_check( $label, 'pending', '', __( 'No page chosen yet.', 'diluxone-users' ), $choose, __( 'Choose it →', 'diluxone-users' ) );
 	}
 
 	$page = get_post( $id );
 
 	if ( ! $page instanceof WP_Post || 'page' !== $page->post_type ) {
-		return diluxone_users_check( $label, 'fail', __( 'The chosen page no longer exists.', 'diluxone-users' ) );
+		return diluxone_users_check( $label, 'off', __( 'The chosen page no longer exists.', 'diluxone-users' ), '', $choose, __( 'Choose another →', 'diluxone-users' ) );
 	}
 
 	if ( 'publish' !== $page->post_status ) {
 		return diluxone_users_check(
 			$label,
-			'fail',
+			'off',
 			sprintf(
 				/* translators: %s: title of the page */
 				__( '“%s” is not published, so nobody can reach it.', 'diluxone-users' ),
 				$page->post_title
-			)
+			),
+			'',
+			(string) get_edit_post_link( $page, 'raw' ),
+			__( 'Edit the page →', 'diluxone-users' )
 		);
 	}
 
@@ -88,63 +144,92 @@ function diluxone_users_check_page( string $option, string $shortcode, string $l
 	$draws = (bool) apply_filters( 'diluxone_users_page_draws', $draws, $option, $page );
 
 	if ( ! $draws ) {
-		// A warning and not a failure: what can be said for certain is that
-		// the shortcode is not in the content, and that is not the same as
-		// the page being broken.
+		// Pending and not off: what can be said for certain is that the
+		// shortcode is not in the content, and that is not the same as the
+		// page being broken.
 		return diluxone_users_check(
 			$label,
-			'warn',
+			'pending',
 			sprintf(
 				/* translators: 1: title of the page, 2: the shortcode that was not found */
 				__( '“%1$s” does not contain %2$s. If your theme draws it from a template, this is fine; if not, the page renders empty.', 'diluxone-users' ),
 				$page->post_title,
 				'[' . $shortcode . ']'
-			)
+			),
+			__( 'Shortcode not found.', 'diluxone-users' ),
+			(string) get_edit_post_link( $page, 'raw' ),
+			__( 'Edit the page →', 'diluxone-users' )
 		);
 	}
 
-	return diluxone_users_check( $label, 'ok', $page->post_title );
+	return diluxone_users_check( $label, 'active', $page->post_title );
 }
 
 /**
- * Every check, in order of how much it hurts.
+ * Does mail go out?
  *
- * @return array<int, array{label: string, state: string, detail: string}>
+ * Only what the site has seen can be reported: the last message it tried to
+ * send, and how that went. Before the first one there is nothing to go on,
+ * and the honest answer is that nobody can tell — not "ready", which is a
+ * guess dressed as a fact. The overview reuses this row, so the two screens
+ * never disagree about the mail.
+ *
+ * @return array{label: string, state: string, detail: string, why: string, url: string, change?: string}
  */
-function diluxone_users_checks(): array {
-	$checks = array();
-
-	$checks[] = diluxone_users_check_page( 'diluxone_users_account_page', 'diluxone_users_account', __( 'Account page', 'diluxone-users' ) );
-	$checks[] = diluxone_users_check_page( 'diluxone_users_login_page', 'diluxone_users_login', __( 'Sign-in page', 'diluxone-users' ) );
-
-	// Mail. Without it nobody comes in by link and nobody passes a second step.
-	$mail = diluxone_users_mail_status();
+function diluxone_users_check_mail(): array {
+	$mail  = diluxone_users_mail_status();
+	$label = __( 'Outgoing mail', 'diluxone-users' );
+	$test  = diluxone_users_admin_url( DILUXONE_USERS_STATUS, array( 'tab' => 'tools' ) );
 
 	if ( 'fail' === $mail['state'] ) {
-		$checks[] = diluxone_users_check(
-			__( 'Outgoing mail', 'diluxone-users' ),
-			'fail',
+		return diluxone_users_check(
+			$label,
+			'off',
 			'' !== $mail['error']
 				? wp_strip_all_tags( $mail['error'] )
-				: __( 'The last message could not be sent.', 'diluxone-users' )
+				: __( 'The last message could not be sent.', 'diluxone-users' ),
+			'',
+			$test,
+			__( 'Send a test →', 'diluxone-users' )
 		);
-	} elseif ( 'ok' === $mail['state'] ) {
-		$checks[] = diluxone_users_check(
-			__( 'Outgoing mail', 'diluxone-users' ),
-			'ok',
+	}
+
+	if ( 'ok' === $mail['state'] ) {
+		return diluxone_users_check(
+			$label,
+			'active',
 			sprintf(
 				/* translators: %s: how long ago, e.g. "2 hours" */
 				__( 'Last message sent %s ago.', 'diluxone-users' ),
 				human_time_diff( $mail['time'] )
 			)
 		);
-	} else {
-		$checks[] = diluxone_users_check(
-			__( 'Outgoing mail', 'diluxone-users' ),
-			'warn',
-			__( 'Nothing sent yet. Send a test from Tools.', 'diluxone-users' )
-		);
 	}
+
+	return diluxone_users_check(
+		$label,
+		'unknown',
+		__( 'Nothing sent yet. A test is the only way to know.', 'diluxone-users' ),
+		'',
+		$test,
+		__( 'Send a test →', 'diluxone-users' )
+	);
+}
+
+/**
+ * Every check, in order of how much it hurts.
+ *
+ * @return array<int, array{label: string, state: string, detail: string, why: string, url: string, change?: string}>
+ */
+function diluxone_users_checks(): array {
+	$checks = array();
+	$tools  = diluxone_users_admin_url( DILUXONE_USERS_STATUS, array( 'tab' => 'tools' ) );
+
+	$checks[] = diluxone_users_check_page( 'diluxone_users_account_page', 'diluxone_users_account', __( 'Account page', 'diluxone-users' ), 'diluxone-users-account' );
+	$checks[] = diluxone_users_check_page( 'diluxone_users_login_page', 'diluxone_users_login', __( 'Sign-in page', 'diluxone-users' ), 'diluxone-users-login' );
+
+	// Mail. Without it nobody comes in by link and nobody passes a second step.
+	$checks[] = diluxone_users_check_mail();
 
 	// HTTPS. Passkeys are WebAuthn, and WebAuthn does not exist outside HTTPS.
 	//
@@ -156,14 +241,20 @@ function diluxone_users_checks(): array {
 	$passkeys = (int) diluxone_users_option( 'diluxone_users_passkey_enabled' );
 
 	if ( wp_is_using_https() ) {
-		$checks[] = diluxone_users_check( 'HTTPS', 'ok', __( 'The site is served over HTTPS.', 'diluxone-users' ) );
+		$checks[] = diluxone_users_check( 'HTTPS', 'active', __( 'The site is served over HTTPS.', 'diluxone-users' ) );
+	} elseif ( $passkeys ) {
+		// Off and not pending: a door is advertised that nobody can open.
+		$checks[] = diluxone_users_check(
+			'HTTPS',
+			'off',
+			__( 'Passkeys are on, but WebAuthn does not work outside HTTPS: nobody can register or use one.', 'diluxone-users' )
+		);
 	} else {
 		$checks[] = diluxone_users_check(
 			'HTTPS',
-			$passkeys ? 'fail' : 'warn',
-			$passkeys
-				? __( 'Passkeys are on, but WebAuthn does not work outside HTTPS: nobody can register or use one.', 'diluxone-users' )
-				: __( 'The site is not served over HTTPS. Passkeys will not work if you turn them on.', 'diluxone-users' )
+			'pending',
+			__( 'Passkeys will not work if you turn them on.', 'diluxone-users' ),
+			__( 'The site is not served over HTTPS.', 'diluxone-users' )
 		);
 	}
 
@@ -173,18 +264,23 @@ function diluxone_users_checks(): array {
 	$checks[] = '' === $permalinks
 		? diluxone_users_check(
 			__( 'Permalinks', 'diluxone-users' ),
-			'fail',
-			__( 'Set to “Plain”. The account area needs pretty permalinks to route its sections.', 'diluxone-users' )
+			'off',
+			__( 'Set to “Plain”. The account area needs pretty permalinks to route its sections.', 'diluxone-users' ),
+			'',
+			admin_url( 'options-permalink.php' )
 		)
-		: diluxone_users_check( __( 'Permalinks', 'diluxone-users' ), 'ok', $permalinks );
+		: diluxone_users_check( __( 'Permalinks', 'diluxone-users' ), 'active', $permalinks );
 
 	// The rewrite rules, which are rewritten when the version changes.
 	$checks[] = get_option( 'diluxone_users_rewrite_version' ) === DILUXONE_USERS_VERSION
-		? diluxone_users_check( __( 'Rewrite rules', 'diluxone-users' ), 'ok', __( 'Up to date.', 'diluxone-users' ) )
+		? diluxone_users_check( __( 'Rewrite rules', 'diluxone-users' ), 'active', __( 'Up to date.', 'diluxone-users' ) )
 		: diluxone_users_check(
 			__( 'Rewrite rules', 'diluxone-users' ),
-			'warn',
-			__( 'Not rewritten for this version yet. Flush them from Tools if a section 404s.', 'diluxone-users' )
+			'pending',
+			__( 'Rebuild them from Tools if a section of the account area 404s.', 'diluxone-users' ),
+			__( 'Not rewritten for this version yet.', 'diluxone-users' ),
+			$tools,
+			__( 'Rebuild them →', 'diluxone-users' )
 		);
 
 	// That there is at least one way in.
@@ -208,10 +304,12 @@ function diluxone_users_checks(): array {
  * comes in — not even the administrator — and the site is locked from the
  * inside.
  *
- * @return array{label: string, state: string, detail: string}
+ * @return array{label: string, state: string, detail: string, why: string, url: string, change?: string}
  */
 function diluxone_users_check_ways_in(): array {
-	$ways = array();
+	$label  = __( 'Ways in', 'diluxone-users' );
+	$access = diluxone_users_admin_url( 'diluxone-users-login' );
+	$ways   = array();
 
 	if ( diluxone_users_login_has_password() ) {
 		$ways[] = __( 'password', 'diluxone-users' );
@@ -226,24 +324,22 @@ function diluxone_users_check_ways_in(): array {
 	}
 
 	if ( array() === $ways ) {
-		return diluxone_users_check(
-			__( 'Ways in', 'diluxone-users' ),
-			'fail',
-			__( 'No sign-in method is enabled at all.', 'diluxone-users' )
-		);
+		return diluxone_users_check( $label, 'off', __( 'No sign-in method is enabled at all.', 'diluxone-users' ), '', $access );
 	}
 
 	$email_only = array( __( 'e-mail link', 'diluxone-users' ) ) === $ways;
 
 	if ( $email_only && ! diluxone_users_mail_works() ) {
 		return diluxone_users_check(
-			__( 'Ways in', 'diluxone-users' ),
-			'fail',
-			__( 'The e-mail link is the only way in, and mail is failing. Nobody can sign in.', 'diluxone-users' )
+			$label,
+			'off',
+			__( 'The e-mail link is the only way in, and mail is failing. Nobody can sign in.', 'diluxone-users' ),
+			'',
+			$access
 		);
 	}
 
-	return diluxone_users_check( __( 'Ways in', 'diluxone-users' ), 'ok', implode( ', ', $ways ) );
+	return diluxone_users_check( $label, 'active', implode( ', ', $ways ), '', $access, __( 'Access →', 'diluxone-users' ) );
 }
 
 /**
@@ -253,7 +349,7 @@ function diluxone_users_check_ways_in(): array {
  * filled in, it is saved, and the button does not appear because the provider
  * was never ticked.
  *
- * @return array{label: string, state: string, detail: string}|null
+ * @return array{label: string, state: string, detail: string, why: string, url: string, change?: string}|null
  */
 function diluxone_users_check_social(): ?array {
 	$ready   = array();
@@ -278,7 +374,7 @@ function diluxone_users_check_social(): ?array {
 	if ( array() === $dormant ) {
 		return diluxone_users_check(
 			__( 'Social login', 'diluxone-users' ),
-			'ok',
+			'active',
 			sprintf(
 				/* translators: %d: number of providers */
 				_n( '%d provider configured and enabled.', '%d providers configured and enabled.', count( $ready ), 'diluxone-users' ),
@@ -289,12 +385,15 @@ function diluxone_users_check_social(): ?array {
 
 	return diluxone_users_check(
 		__( 'Social login', 'diluxone-users' ),
-		'warn',
+		'pending',
 		sprintf(
 			/* translators: %s: comma-separated provider names */
 			__( 'Credentials are saved but the provider is off, so no button shows: %s.', 'diluxone-users' ),
 			implode( ', ', $dormant )
-		)
+		),
+		__( 'Provider off.', 'diluxone-users' ),
+		diluxone_users_admin_url( 'diluxone-users-social' ),
+		__( 'Turn it on →', 'diluxone-users' )
 	);
 }
 
@@ -344,29 +443,30 @@ function diluxone_users_environment(): array {
 	global $wp_version;
 
 	return array(
-		__( 'Plugin version', 'diluxone-users' )    => DILUXONE_USERS_VERSION,
-		__( 'WordPress', 'diluxone-users' )         => (string) $wp_version,
-		'PHP'                                       => PHP_VERSION,
-		__( 'Site language', 'diluxone-users' )     => (string) get_locale(),
-		__( 'Multisite', 'diluxone-users' )         => is_multisite() ? __( 'yes', 'diluxone-users' ) : __( 'no', 'diluxone-users' ),
-		__( 'Object cache', 'diluxone-users' )      => wp_using_ext_object_cache() ? __( 'external', 'diluxone-users' ) : __( 'none', 'diluxone-users' ),
-		__( 'WordPress profile', 'diluxone-users' ) => (string) diluxone_users_option( 'diluxone_users_wp_profile' ),
+		__( 'Plugin version', 'diluxone-users' )         => DILUXONE_USERS_VERSION,
+		__( 'WordPress', 'diluxone-users' )              => (string) $wp_version,
+		'PHP'                                            => PHP_VERSION,
+		__( 'Site language', 'diluxone-users' )          => (string) get_locale(),
+		__( 'Multisite', 'diluxone-users' )              => is_multisite() ? __( 'yes', 'diluxone-users' ) : __( 'no', 'diluxone-users' ),
+		__( 'Object cache', 'diluxone-users' )           => wp_using_ext_object_cache() ? __( 'external', 'diluxone-users' ) : __( 'none', 'diluxone-users' ),
+		__( 'Dashboard profile rule', 'diluxone-users' ) => (string) diluxone_users_option( 'diluxone_users_wp_profile' ),
 	);
 }
 
-/** Screen status. */
+/** The maintenance screen: its tabs come from the registry. */
 function diluxone_users_screen_status(): void {
-	diluxone_users_screen_open( __( 'Status', 'diluxone-users' ) );
-	diluxone_users_intro( __( 'Nothing here changes anything: it looks and it counts. What needs fixing gets fixed in Tools.', 'diluxone-users' ) );
+	diluxone_users_screen_panels( DILUXONE_USERS_STATUS, diluxone_users_screens()[ DILUXONE_USERS_STATUS ] );
+}
+
+/** The Status tab: the checks, the numbers, the environment. */
+function diluxone_users_screen_status_checks(): void {
+	diluxone_users_intro( __( 'Nothing here changes anything: it looks and it counts. What needs fixing gets fixed on the Tools tab.', 'diluxone-users' ) );
 
 	$checks = diluxone_users_checks();
-	$bad    = 0;
 
-	foreach ( $checks as $check ) {
-		if ( 'fail' === $check['state'] ) {
-			++$bad;
-		}
-	}
+	// Only what is off is counted. A pending row says what it waits on and
+	// the site works meanwhile; an unknown one is a question, not a fault.
+	$bad = count( array_filter( $checks, static fn( array $check ): bool => 'off' === $check['state'] ) );
 
 	if ( 0 === $bad ) {
 		diluxone_users_notice( __( 'Everything checks out.', 'diluxone-users' ) );
@@ -381,30 +481,11 @@ function diluxone_users_screen_status(): void {
 		);
 	}
 
-	$icons = array(
-		'ok'   => 'dashicons-yes-alt',
-		'warn' => 'dashicons-warning',
-		'fail' => 'dashicons-dismiss',
-	);
-
-	echo '<table class="widefat striped diluxone-users-status">';
-	echo '<tbody>';
-
-	foreach ( $checks as $check ) {
-		printf(
-			'<tr class="diluxone-users-status--%1$s"><td class="diluxone-users-status__icon"><span class="dashicons %2$s"></span></td><th scope="row">%3$s</th><td>%4$s</td></tr>',
-			esc_attr( $check['state'] ),
-			esc_attr( $icons[ $check['state'] ] ),
-			esc_html( $check['label'] ),
-			esc_html( $check['detail'] )
-		);
-	}
-
-	echo '</tbody></table>';
+	diluxone_users_summary_table( $checks );
 
 	$stats = diluxone_users_stats();
 
-	printf( '<h2>%s</h2>', esc_html__( 'How much of it is being used', 'diluxone-users' ) );
+	printf( '<h2>%s</h2>', esc_html__( 'Usage', 'diluxone-users' ) );
 	echo '<table class="widefat striped"><tbody>';
 
 	$rows = array(
@@ -456,6 +537,33 @@ function diluxone_users_screen_status(): void {
 	echo wp_kses_post( '<code>' . implode( '</code> · <code>', $diluxone_users_files ) . '</code>' );
 
 	echo '</p>';
+}
 
-	diluxone_users_screen_close();
+/**
+ * The way back in when there is no way back in.
+ *
+ * On a site without passwords and without outgoing mail, an expired session
+ * leaves the administrator outside with the rest. Two doors survive that:
+ * the command line, which prints a link without needing the mail, and the
+ * native form, which never went away for administrators.
+ */
+function diluxone_users_screen_status_lockout(): void {
+	$screens = diluxone_users_screens();
+
+	diluxone_users_intro( __( 'On a site without passwords and without outgoing mail, an expired session leaves you outside. There are two ways back that do not depend on either.', 'diluxone-users' ) );
+
+	printf( '<h2>%s</h2>', esc_html__( 'From the server', 'diluxone-users' ) );
+	printf( '<p><code>%s</code></p>', esc_html( 'wp diluxone-users login ' . wp_get_current_user()->user_email ) );
+	diluxone_users_intro( __( 'That prints a single-use link and does not need the mail to work. It is WP-CLI, so it needs a shell on the server.', 'diluxone-users' ) );
+
+	printf( '<h2>%s</h2>', esc_html__( 'From the browser', 'diluxone-users' ) );
+	printf( '<p><code>%s</code></p>', esc_html( wp_login_url() . '?diluxone-users-admin=1' ) );
+	diluxone_users_intro( __( 'That address shows the WordPress form with a username and a password, whatever the site is set to. It is no secret: the password is still what keeps the door shut, so it opens only for an account that has one.', 'diluxone-users' ) );
+
+	diluxone_users_panel_actions(
+		array(
+			$screens['diluxone-users-login'] => diluxone_users_admin_url( 'diluxone-users-login' ),
+			__( 'Tools', 'diluxone-users' )  => diluxone_users_admin_url( DILUXONE_USERS_STATUS, array( 'tab' => 'tools' ) ),
+		)
+	);
 }

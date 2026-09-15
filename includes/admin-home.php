@@ -4,23 +4,63 @@
  *
  * It is not a welcome screen with a fixed text. It is the real numbers and
  * the real state: how many people there are, how many are in, what they are
- * asked for, how they get in and what is left to configure. What you would
- * want to know before touching any other screen.
+ * asked for and how they get in. What you would want to know before touching
+ * any other screen.
  *
  * The screen has two halves and they answer different questions. The cards at
  * the top are the headline numbers — four of them, glanced at, not read. What
- * is under them is the detail, and it is split into four panels behind tabs
- * because reading all four at once is reading none: nobody arrives here
- * wanting to know at the same time what their people use, how they get in,
- * what is asked of them and how to get back in after being locked out.
+ * is under them is the detail, and it is split into three panels behind tabs
+ * because reading all three at once is reading none: nobody arrives here
+ * wanting to know at the same time what their people use, how they get in and
+ * what is asked of them.
  *
  * None of the panels edits anything. They tell, and they carry the button to
- * the screen where the thing is actually changed.
+ * the screen where the thing is actually changed. The panels are registered
+ * the way every other screen's are, so an add-on can put one here too; the
+ * screen draws them itself only because the cards and the first steps sit
+ * above the tabs, and the shared drawing has no room above its tabs.
  *
  * @package DiluxOneUsers
  */
 
 defined( 'ABSPATH' ) || exit;
+
+/** The three panels, in the order they are asked about. */
+function diluxone_users_home_panels(): void {
+	diluxone_users_register_panel(
+		DILUXONE_USERS_MENU,
+		'usage',
+		array(
+			'label'    => __( 'What your people use', 'diluxone-users' ),
+			'position' => 10,
+			'render'   => 'diluxone_users_panel_usage',
+			'form'     => false,
+		)
+	);
+
+	diluxone_users_register_panel(
+		DILUXONE_USERS_MENU,
+		'doors',
+		array(
+			'label'    => __( 'How your people get in', 'diluxone-users' ),
+			'position' => 20,
+			'render'   => 'diluxone_users_panel_doors',
+			'form'     => false,
+		)
+	);
+
+	diluxone_users_register_panel(
+		DILUXONE_USERS_MENU,
+		'asked',
+		array(
+			'label'    => __( 'What is asked of them', 'diluxone-users' ),
+			'position' => 30,
+			'render'   => 'diluxone_users_panel_asked',
+			'form'     => false,
+		)
+	);
+}
+add_action( 'diluxone_users_register_panels', 'diluxone_users_home_panels' );
 
 /**
  * The front-page numbers.
@@ -122,7 +162,7 @@ function diluxone_users_setup_steps(): array {
 			'label'  => __( 'Check that e-mail goes out', 'diluxone-users' ),
 			'detail' => __( 'The sign-in link, the second-step code and the data requests are all e-mail. Send yourself a test: it is the only way to know.', 'diluxone-users' ),
 			'done'   => 'ok' === $mail['state'],
-			'url'    => diluxone_users_admin_url( 'diluxone-users-tools' ),
+			'url'    => diluxone_users_admin_url( DILUXONE_USERS_STATUS, array( 'tab' => 'tools' ) ),
 			'cta'    => __( 'Go to Tools', 'diluxone-users' ),
 		),
 	);
@@ -166,20 +206,6 @@ function diluxone_users_steps( array $steps ): void {
 }
 
 /**
- * The four panels, in the order they are asked about.
- *
- * @return array<string, string>
- */
-function diluxone_users_home_panels(): array {
-	return array(
-		'usage'   => __( 'What your people use', 'diluxone-users' ),
-		'doors'   => __( 'How your people get in', 'diluxone-users' ),
-		'asked'   => __( 'What is asked of them', 'diluxone-users' ),
-		'lockout' => __( 'If you get locked out', 'diluxone-users' ),
-	);
-}
-
-/**
  * The buttons at the foot of a panel: where what it just showed gets changed.
  *
  * @param array<string, string> $actions Label => URL.
@@ -208,9 +234,8 @@ function diluxone_users_panel_actions( array $actions ): void {
  * numbers, and on paper it prints as the table it is.
  */
 function diluxone_users_panel_usage(): void {
-	$screens = diluxone_users_screens();
-	$stats   = diluxone_users_stats();
-	$total   = (int) $stats['users'];
+	$stats = diluxone_users_stats();
+	$total = (int) $stats['users'];
 
 	$rows = array(
 		array(
@@ -296,154 +321,56 @@ function diluxone_users_panel_usage(): void {
 }
 
 /**
- * A status row: what it is, how it is doing and what to do.
+ * How people get in, in four lines.
  *
- * The state has three values and not two. "To be confirmed" exists because
- * there are things that cannot be known from here — whether the mail really
- * goes out, for instance — and saying "ready" without being sure is worse
- * than saying nothing.
- *
- * @param string $state ok | pending | unknown
+ * The full table of doors — every method, every provider, the second step,
+ * the sessions — lives on the Access screen, and it used to be repeated here
+ * with a different rule for what counts as ready, which is how the two came
+ * to disagree. This is the short version: the page, the method, the mail that
+ * the method depends on, and one line that says whether any door is open at
+ * all. The mail row is the very same check the maintenance screen runs, so
+ * it cannot say something different here.
  */
-function diluxone_users_status_row( string $what, string $state, string $detail, string $link = '', string $link_label = '' ): void {
-	$pills = array(
-		'ok'      => array( 'on', __( 'Ready', 'diluxone-users' ) ),
-		'pending' => array( 'blank', __( 'Pending', 'diluxone-users' ) ),
-		'unknown' => array( 'off', __( 'Cannot tell', 'diluxone-users' ) ),
+function diluxone_users_panel_doors(): void {
+	$page   = (int) diluxone_users_option( 'diluxone_users_login_page' );
+	$post   = $page > 0 ? get_post( $page ) : null;
+	$access = diluxone_users_admin_url( 'diluxone-users-login' );
+
+	$methods = array(
+		'link'     => __( 'The e-mail link only: no passwords on this site.', 'diluxone-users' ),
+		'password' => __( 'Username and password only, the WordPress one.', 'diluxone-users' ),
+		'both'     => __( 'The e-mail link, and username and password underneath.', 'diluxone-users' ),
 	);
 
-	[ $tone, $label ] = $pills[ $state ] ?? $pills['unknown'];
-	?>
-	<tr>
-		<th scope="row"><?php echo esc_html( $what ); ?></th>
-		<td>
-			<span class="diluxone-users-pill diluxone-users-pill--<?php echo esc_attr( $tone ); ?>"><?php echo esc_html( $label ); ?></span>
-			<?php echo esc_html( $detail ); ?>
-			<?php if ( '' !== $link ) : ?>
-				<a href="<?php echo esc_url( $link ); ?>"><?php echo esc_html( $link_label ); ?></a>
-			<?php endif; ?>
-		</td>
-	</tr>
-	<?php
-}
+	$doors = diluxone_users_check_ways_in();
 
-/** Every door into the site, with the state each one is in. */
-function diluxone_users_panel_doors(): void {
-	$screens   = diluxone_users_screens();
-	$providers = diluxone_users_sso_providers();
-	$ready     = diluxone_users_sso_available();
-	$setup     = array_filter( array_keys( $providers ), 'diluxone_users_sso_configured' );
-	$page      = (int) diluxone_users_option( 'diluxone_users_login_page' );
+	diluxone_users_intro( __( 'The short version. Every door, with its own state, is on the Access screen.', 'diluxone-users' ) );
 
-	diluxone_users_intro( __( 'Every way into this site and the state it is in. Nothing here is edited on this screen: the buttons underneath lead to where each one is changed.', 'diluxone-users' ) );
-	?>
-	<table class="widefat striped diluxone-users-state">
-		<tbody>
-			<?php
-			diluxone_users_status_row(
-				__( 'Sign-in page', 'diluxone-users' ),
-				$page > 0 ? 'ok' : 'pending',
-				$page > 0
-					? (string) get_the_title( $page )
-					: __( 'Not chosen yet: wp-login.php is doing the job.', 'diluxone-users' ),
-				diluxone_users_admin_url( 'diluxone-users-login' ),
-				__( 'Choose it', 'diluxone-users' )
-			);
-
-			diluxone_users_status_row(
-				__( 'Link by email', 'diluxone-users' ),
-				'ok',
-				diluxone_users_option( 'diluxone_users_login_register' )
-					? __( 'On. If the email does not exist, the account is created in the same step.', 'diluxone-users' )
-					: __( 'On, for accounts that already exist. New ones are not created from here.', 'diluxone-users' )
-			);
-
-			$methods = array(
-				'link'     => __( 'Only the email link: wp-login.php sends people to the sign-in page.', 'diluxone-users' ),
-				'password' => __( 'Only username and password, the WordPress one.', 'diluxone-users' ),
-				'both'     => __( 'The email link and the password, both.', 'diluxone-users' ),
-			);
-
-			diluxone_users_status_row(
-				__( 'How people get in', 'diluxone-users' ),
-				'ok',
-				$methods[ diluxone_users_login_method() ]
-			);
-
-			$two_step = array(
-				'off'      => __( 'Off: nobody is asked for a second step.', 'diluxone-users' ),
-				'optional' => __( 'Optional: whoever wants it turns it on from their profile.', 'diluxone-users' ),
-				'required' => __( 'Required for everybody who can use it.', 'diluxone-users' ),
-			);
-
-			diluxone_users_status_row(
-				__( 'Two-step verification', 'diluxone-users' ),
-				'off' === (string) diluxone_users_option( 'diluxone_users_2fa_mode' ) ? 'pending' : 'ok',
-				$two_step[ (string) diluxone_users_option( 'diluxone_users_2fa_mode' ) ] ?? ''
-			);
-
-			diluxone_users_status_row(
-				__( 'Passkeys', 'diluxone-users' ),
-				diluxone_users_has_passkeys() ? 'ok' : 'pending',
-				diluxone_users_has_passkeys()
-					? sprintf(
-							/* translators: %s: the domain they end up tied to */
-						__( 'On, tied to %s.', 'diluxone-users' ),
-						diluxone_users_passkey_rp_id()
-					)
-					: __( 'Off. It is the only way in that cannot be phished.', 'diluxone-users' )
-			);
-
-			diluxone_users_status_row(
-				__( 'Social login', 'diluxone-users' ),
-				array() !== $ready ? 'ok' : 'pending',
-				array() !== $ready
-					/* translators: %s: list of providers */
-					? sprintf( __( 'Working: %s', 'diluxone-users' ), implode( ', ', wp_list_pluck( $ready, 'name' ) ) )
-					: (
-						array() !== $setup
-							? __( 'There are providers with credentials, but none is verified and enabled yet.', 'diluxone-users' )
-							: __( 'No provider set up yet: only the email link works.', 'diluxone-users' )
-					),
-				diluxone_users_admin_url( 'diluxone-users-social' ),
-				__( 'Providers', 'diluxone-users' )
-			);
-
-			// Whether an e-mail goes out cannot be known without sending one. The
-			// only checkable thing is whether anything is hooked to the sending,
-			// and that is not enough to say it works.
-			$has_mailer = (bool) has_filter( 'phpmailer_init' );
-
-			diluxone_users_status_row(
-				__( 'Outgoing email', 'diluxone-users' ),
-				$has_mailer ? 'unknown' : 'pending',
-				$has_mailer
-					? __( 'Something is hooked into delivery, but whether mail actually leaves cannot be known from here. Send yourself a link to find out.', 'diluxone-users' )
-					: __( 'Nothing is hooked into delivery: WordPress will try the server’s mail() and that usually fails. Without email there is no sign-in link.', 'diluxone-users' )
-			);
-
-			diluxone_users_status_row(
-				__( 'Session length', 'diluxone-users' ),
-				'ok',
-				sprintf(
-						/* translators: 1: days with remember-me, 2: days without remember-me */
-					__( '%1$d days with “remember me”, %2$d without.', 'diluxone-users' ),
-					(int) diluxone_users_option( 'diluxone_users_session_long_days' ),
-					(int) diluxone_users_option( 'diluxone_users_session_short_days' )
-				),
-				diluxone_users_admin_url( DILUXONE_USERS_SECURITY, array( 'tab' => 'duration' ) ),
-				__( 'Change it', 'diluxone-users' )
-			);
-			?>
-		</tbody>
-	</table>
-	<?php
-	diluxone_users_panel_actions(
+	diluxone_users_summary_table(
 		array(
-			$screens['diluxone-users-login']    => diluxone_users_admin_url( 'diluxone-users-login' ),
-			$screens['diluxone-users-register'] => diluxone_users_admin_url( 'diluxone-users-register' ),
-			$screens['diluxone-users-social']   => diluxone_users_admin_url( 'diluxone-users-social' ),
-			$screens[ DILUXONE_USERS_SECURITY ] => diluxone_users_admin_url( DILUXONE_USERS_SECURITY ),
+			array(
+				'label'  => __( 'Sign-in page', 'diluxone-users' ),
+				'state'  => $post instanceof WP_Post && 'publish' === $post->post_status ? 'active' : 'off',
+				'detail' => $post instanceof WP_Post
+					? $post->post_title
+					: __( 'Not chosen yet: wp-login.php is doing the job.', 'diluxone-users' ),
+				'url'    => $access,
+				'change' => __( 'Choose it →', 'diluxone-users' ),
+			),
+			array(
+				'label'  => __( 'Sign-in method', 'diluxone-users' ),
+				'state'  => 'active',
+				'detail' => $methods[ diluxone_users_login_method() ],
+				'url'    => diluxone_users_admin_url( 'diluxone-users-login', array( 'tab' => 'link' ) ),
+			),
+			diluxone_users_check_mail(),
+			array(
+				'label'  => __( 'All the doors', 'diluxone-users' ),
+				'state'  => $doors['state'],
+				'detail' => $doors['detail'],
+				'url'    => $access,
+				'change' => __( 'Access › Summary →', 'diluxone-users' ),
+			),
 		)
 	);
 }
@@ -488,23 +415,6 @@ function diluxone_users_panel_asked(): void {
 	);
 }
 
-/** The way back in when there is no way back in. */
-function diluxone_users_panel_lockout(): void {
-	$screens = diluxone_users_screens();
-	diluxone_users_intro( __( 'On a site without passwords and without outgoing email, an expired session leaves you outside. With access to the server:', 'diluxone-users' ) );
-	?>
-	<p><code>wp diluxone-users login <?php echo esc_html( wp_get_current_user()->user_email ); ?></code></p>
-	<?php
-	diluxone_users_intro( __( 'That prints a single-use link and does not need the e-mail to work. If there is no shell either, the emergency door for administrators is on the Sign in screen, along with the address it lives at.', 'diluxone-users' ) );
-
-	diluxone_users_panel_actions(
-		array(
-			$screens['diluxone-users-login'] => diluxone_users_admin_url( 'diluxone-users-login' ),
-			$screens['diluxone-users-tools'] => diluxone_users_admin_url( 'diluxone-users-tools' ),
-		)
-	);
-}
-
 /** Screen home. */
 function diluxone_users_screen_home(): void {
 	$numbers   = diluxone_users_home_numbers();
@@ -513,8 +423,9 @@ function diluxone_users_screen_home(): void {
 	$providers = diluxone_users_sso_providers();
 	$ready     = diluxone_users_sso_available();
 
-	$panels  = diluxone_users_home_panels();
-	$current = diluxone_users_tab( $panels );
+	$panels  = diluxone_users_panels( DILUXONE_USERS_MENU );
+	$labels  = wp_list_pluck( $panels, 'label' );
+	$current = diluxone_users_tab( $labels );
 
 	diluxone_users_screen_open( diluxone_users_screens()[ DILUXONE_USERS_MENU ] );
 
@@ -577,26 +488,18 @@ function diluxone_users_screen_home(): void {
 		<?php diluxone_users_steps( $steps ); ?>
 	<?php endif; ?>
 
-	<?php diluxone_users_tabs( DILUXONE_USERS_MENU, $panels, $current ); ?>
+	<?php if ( array() !== $panels ) : ?>
+		<?php diluxone_users_tabs( DILUXONE_USERS_MENU, $labels, $current ); ?>
 
-	<div class="diluxone-users-panel">
-		<h2><?php echo esc_html( $panels[ $current ] ); ?></h2>
-		<?php
-		switch ( $current ) {
-			case 'doors':
-				diluxone_users_panel_doors();
-				break;
-			case 'asked':
-				diluxone_users_panel_asked();
-				break;
-			case 'lockout':
-				diluxone_users_panel_lockout();
-				break;
-			default:
-				diluxone_users_panel_usage();
-		}
-		?>
-	</div>
+		<div class="diluxone-users-panel">
+			<h2><?php echo esc_html( (string) $labels[ $current ] ); ?></h2>
+			<?php
+			if ( is_callable( $panels[ $current ]['render'] ) ) {
+				call_user_func( $panels[ $current ]['render'] );
+			}
+			?>
+		</div>
+	<?php endif; ?>
 	<?php
 
 	diluxone_users_screen_close();

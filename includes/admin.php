@@ -66,19 +66,17 @@ add_filter( 'admin_title', 'diluxone_users_admin_title', 10, 2 );
 function diluxone_users_screens(): array {
 	return array(
 		'diluxone-users'          => __( 'Overview', 'diluxone-users' ),
-		'diluxone-users-fields'   => __( 'User fields', 'diluxone-users' ),
-		'diluxone-users-account'  => __( 'Account area', 'diluxone-users' ),
-		'diluxone-users-register' => __( 'Registration', 'diluxone-users' ),
-		// With a context of its own: the screen is a place, and in several
-		// languages the place and the "Sign in" on the button in front of a
-		// visitor are not the same word.
-		'diluxone-users-login'    => _x( 'Sign in', 'name of the dashboard screen', 'diluxone-users' ),
-		'diluxone-users-social'   => __( 'Social login', 'diluxone-users' ),
-		'diluxone-users-design'   => __( 'Design', 'diluxone-users' ),
+		// The order is the way a person walks through it: how they get in,
+		// how they are protected once in, what they have inside, how it
+		// looks, what reaches them by e-mail, keeping it all alive.
+		'diluxone-users-login'    => __( 'Access', 'diluxone-users' ),
 		'diluxone-users-security' => __( 'Security', 'diluxone-users' ),
-		'diluxone-users-notices'  => __( 'Notifications', 'diluxone-users' ),
-		'diluxone-users-status'   => __( 'Status', 'diluxone-users' ),
-		'diluxone-users-tools'    => __( 'Tools', 'diluxone-users' ),
+		'diluxone-users-social'   => __( 'Social login', 'diluxone-users' ),
+		'diluxone-users-account'  => __( 'Account area', 'diluxone-users' ),
+		'diluxone-users-fields'   => __( 'User fields', 'diluxone-users' ),
+		'diluxone-users-design'   => __( 'Design', 'diluxone-users' ),
+		'diluxone-users-notices'  => __( 'E-mail notices', 'diluxone-users' ),
+		'diluxone-users-status'   => __( 'Maintenance', 'diluxone-users' ),
 	);
 }
 
@@ -96,16 +94,14 @@ function diluxone_users_menu(): void {
 
 	$callbacks = array(
 		'diluxone-users'          => 'diluxone_users_screen_home',
-		'diluxone-users-fields'   => 'diluxone_users_screen_fields',
-		'diluxone-users-account'  => 'diluxone_users_screen_account',
-		'diluxone-users-register' => 'diluxone_users_screen_register',
 		'diluxone-users-login'    => 'diluxone_users_screen_login',
-		'diluxone-users-social'   => 'diluxone_users_screen_social',
-		'diluxone-users-design'   => 'diluxone_users_screen_design',
 		'diluxone-users-security' => 'diluxone_users_screen_security',
+		'diluxone-users-social'   => 'diluxone_users_screen_social',
+		'diluxone-users-account'  => 'diluxone_users_screen_account',
+		'diluxone-users-fields'   => 'diluxone_users_screen_fields',
+		'diluxone-users-design'   => 'diluxone_users_screen_design',
 		'diluxone-users-notices'  => 'diluxone_users_screen_notices',
 		'diluxone-users-status'   => 'diluxone_users_screen_status',
-		'diluxone-users-tools'    => 'diluxone_users_screen_tools',
 	);
 
 	foreach ( diluxone_users_screens() as $slug => $title ) {
@@ -227,8 +223,9 @@ function diluxone_users_roles_that_edit_users(): array {
  * @param string            $help       A line under the control, or '' for none.
  * @param string            $spared     Who this can never reach, or '' when it can reach anybody.
  * @param array<int,string> $exclude    Roles not offered at all.
+ * @param array<int,string> $fixed      Roles shown but not choosable: they are never reached, and it says so on the row.
  */
-function diluxone_users_roles_picker( string $scope_name, string $roles_name, string $scope, array $chosen, string $help = '', string $spared = '', array $exclude = array() ): void {
+function diluxone_users_roles_picker( string $scope_name, string $roles_name, string $scope, array $chosen, string $help = '', string $spared = '', array $exclude = array(), array $fixed = array() ): void {
 	?>
 	<fieldset data-diluxone-users-scope>
 		<label>
@@ -243,18 +240,32 @@ function diluxone_users_roles_picker( string $scope_name, string $roles_name, st
 
 		<div class="diluxone-users-scope__roles" data-diluxone-users-scope-roles>
 			<?php foreach ( wp_roles()->get_names() as $role => $label ) : ?>
-				<?php if ( ! in_array( (string) $role, $exclude, true ) ) : ?>
+				<?php if ( in_array( (string) $role, $fixed, true ) ) : ?>
+					<?php
+					/*
+					 * On the list and not choosable. It used to be left off the
+					 * list, and the rule it stood for — this role is never
+					 * reached — showed up as an absence, which reads as a bug:
+					 * "the administrator is not there and I cannot tick it".
+					 */
+					?>
+					<label class="diluxone-users-roles__item diluxone-users-roles__item--fixed">
+						<input type="checkbox" disabled>
+						<?php echo esc_html( translate_user_role( $label ) ); ?>
+						<span class="description"><?php esc_html_e( '— always kept, whatever is chosen', 'diluxone-users' ); ?></span>
+					</label>
+				<?php elseif ( ! in_array( (string) $role, $exclude, true ) ) : ?>
 					<label class="diluxone-users-roles__item">
 						<input type="checkbox" name="<?php echo esc_attr( $roles_name ); ?>" value="<?php echo esc_attr( $role ); ?>" <?php checked( in_array( $role, $chosen, true ) ); ?>>
 						<?php echo esc_html( translate_user_role( $label ) ); ?>
 					</label>
 				<?php endif; ?>
 			<?php endforeach; ?>
-
-			<?php if ( '' !== $spared ) : ?>
-				<p class="description"><?php echo esc_html( $spared ); ?></p>
-			<?php endif; ?>
 		</div>
+
+		<?php if ( '' !== $spared ) : ?>
+			<p class="description"><?php echo esc_html( $spared ); ?></p>
+		<?php endif; ?>
 
 		<?php if ( '' !== $help ) : ?>
 			<p class="description"><?php echo esc_html( $help ); ?></p>
@@ -271,7 +282,9 @@ function diluxone_users_roles_picker( string $scope_name, string $roles_name, st
  * @param string $spared Who this can never reach, or '' when it can reach anybody.
  */
 function diluxone_users_scope_control( string $prefix, string $help = '', string $spared = '' ): void {
-	$exclude = '' === $spared ? array() : diluxone_users_roles_that_edit_users();
+	// With somebody spared, the roles that edit users are shown as fixed
+	// rows rather than left off: the rule is seen, not inferred.
+	$fixed = '' === $spared ? array() : diluxone_users_roles_that_edit_users();
 
 	diluxone_users_roles_picker(
 		$prefix . '_scope',
@@ -280,7 +293,8 @@ function diluxone_users_scope_control( string $prefix, string $help = '', string
 		(array) diluxone_users_option( $prefix . '_roles' ),
 		$help,
 		$spared,
-		$exclude
+		array(),
+		$fixed
 	);
 }
 

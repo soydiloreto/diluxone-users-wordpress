@@ -92,4 +92,24 @@ class PasswordlessTest extends TestCase {
 			'The escape hatch shows the native form; native registration stays off through option_users_can_register'
 		);
 	}
+
+	/**
+	 * H-05: taking the screens over is not taking the endpoint away.
+	 *
+	 * @dataProvider postsToWpLogin
+	 */
+	public function test_which_posts_to_wp_login_get_through(string $action, bool $has_password, bool $allowed): void {
+		$this->assertSame($allowed, diluxone_users_wp_login_post_allowed($action, $has_password));
+	}
+
+	public static function postsToWpLogin(): array {
+		return [
+			'the password form, password on'   => ['', true, true],
+			'the same with the action spelled' => ['login', true, true],
+			'the password form, link only'     => ['', false, false],
+			'lost password, password on'       => ['lostpassword', true, false],
+			'native registration, password on' => ['register', true, false],
+			'anything unknown'                 => ['something-else', true, false],
+		];
+	}
 }

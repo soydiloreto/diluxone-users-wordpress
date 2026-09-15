@@ -1,11 +1,12 @@
 <?php
 /**
- * The tools screen: the little that can be done by hand.
+ * The Tools tab of the maintenance screen: the little that can be done by hand.
  *
  * Everything here exists because at some point it had to be done over SSH or
  * with a loose script. None of it is a feature of the plugin: they are the
- * five buttons that show up when something went wrong and somebody is waiting
- * on the other side.
+ * six buttons that show up when something went wrong and somebody is waiting
+ * on the other side. They sit beside the checks that say what went wrong,
+ * on the same screen, because that is the order they are used in.
  *
  * What is deliberately NOT here: reading somebody's two-step code. The code
  * is stored hashed, so "seeing" it would mean brute-forcing it, and a button
@@ -35,9 +36,29 @@ const DILUXONE_USERS_TOOL_RESULT = 'diluxone_users_tool_result';
 function diluxone_users_tool_done( string $text, string $type = 'success' ): void {
 	set_transient( DILUXONE_USERS_TOOL_RESULT . '_' . get_current_user_id(), array( $text, $type ), 60 );
 
-	wp_safe_redirect( diluxone_users_admin_url( 'diluxone-users-tools' ) );
+	// Straight to the tab, not to the old screen slug: that slug only exists
+	// as a redirect now, and a redirect that lands on another one is a hop
+	// nobody asked for.
+	wp_safe_redirect( diluxone_users_admin_url( DILUXONE_USERS_STATUS, array( 'tab' => 'tools' ) ) );
 	exit;
 }
+
+/** Its tab on the maintenance screen. */
+function diluxone_users_tools_panels(): void {
+	diluxone_users_register_panel(
+		DILUXONE_USERS_STATUS,
+		'tools',
+		array(
+			'label'    => __( 'Tools', 'diluxone-users' ),
+			'position' => 10,
+			'render'   => 'diluxone_users_screen_tools_boxes',
+			// Every tool posts to admin-post and comes back: none of them is
+			// a settings form and they must not be wrapped in one.
+			'form'     => false,
+		)
+	);
+}
+add_action( 'diluxone_users_register_panels', 'diluxone_users_tools_panels' );
 
 /**
  * Everything fired from this screen comes in through here.
@@ -120,7 +141,7 @@ function diluxone_users_tool_send_code(): void {
 				__( 'A fresh code is on its way to %s.', 'diluxone-users' ),
 				$user->user_email
 			)
-			: __( 'The code could not be sent. Check outgoing mail in Status.', 'diluxone-users' ),
+			: __( 'The code could not be sent. Check outgoing mail on the Status tab.', 'diluxone-users' ),
 		$ok ? 'success' : 'error'
 	);
 }
@@ -351,10 +372,18 @@ function diluxone_users_tool_box( string $title, string $text, callable $form, b
 	echo '</form>';
 }
 
-/** Screen tools. */
+/**
+ * The old Tools screen, which is now a tab.
+ *
+ * The menu still points here until it is taken out; it draws the maintenance
+ * screen, and the redirect on the old slug lands on the right tab.
+ */
 function diluxone_users_screen_tools(): void {
-	diluxone_users_screen_open( __( 'Tools', 'diluxone-users' ) );
+	diluxone_users_screen_status();
+}
 
+/** The Tools tab: one box per thing that can be pressed. */
+function diluxone_users_screen_tools_boxes(): void {
 	$result = get_transient( DILUXONE_USERS_TOOL_RESULT . '_' . get_current_user_id() );
 
 	if ( is_array( $result ) ) {
@@ -362,7 +391,7 @@ function diluxone_users_screen_tools(): void {
 		diluxone_users_notice( (string) $result[0], (string) $result[1] );
 	}
 
-	diluxone_users_intro( __( 'Five buttons for when something went wrong and somebody is waiting on the other side.', 'diluxone-users' ) );
+	diluxone_users_intro( __( 'Six buttons for when something went wrong and somebody is waiting on the other side.', 'diluxone-users' ) );
 
 	diluxone_users_tool_box(
 		__( 'Rebuild the rewrite rules', 'diluxone-users' ),
@@ -437,6 +466,4 @@ function diluxone_users_screen_tools(): void {
 		},
 		true
 	);
-
-	diluxone_users_screen_close();
 }

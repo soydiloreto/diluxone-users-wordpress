@@ -44,7 +44,7 @@ function diluxone_users_design_brand_save(): void {
 			'diluxone_users_button_style'  => sanitize_key( wp_unslash( $_POST['diluxone_users_button_style'] ?? 'solid' ) ),
 			'diluxone_users_button_icons'  => isset( $_POST['diluxone_users_button_icons'] ) ? 1 : 0,
 			'diluxone_users_notice_style'  => 'soft' === sanitize_key( wp_unslash( $_POST['diluxone_users_notice_style'] ?? '' ) ) ? 'soft' : 'bar',
-			'diluxone_users_login_logo'    => absint( wp_unslash( $_POST['diluxone_users_login_logo'] ?? 0 ) ),
+			'diluxone_users_sent_icon'     => 'circle' === sanitize_key( wp_unslash( $_POST['diluxone_users_sent_icon'] ?? '' ) ) ? 'circle' : 'plain',
 		)
 	);
 	// phpcs:enable
@@ -190,7 +190,7 @@ function diluxone_users_design_panels(): void {
 			// The tabs are named after the screens whose look they hold, so
 			// "the sign-in design" and "the sign-in settings" are obviously
 			// the same thing seen twice.
-			'label'    => diluxone_users_screens()['diluxone-users-login'],
+			'label'    => __( 'The sign-in page', 'diluxone-users' ),
 			'position' => 20,
 			'render'   => 'diluxone_users_design_login',
 			'preview'  => 'diluxone_users_login_preview',
@@ -202,7 +202,7 @@ function diluxone_users_design_panels(): void {
 		DILUXONE_USERS_DESIGN,
 		'register',
 		array(
-			'label'    => diluxone_users_screens()['diluxone-users-register'],
+			'label'    => __( 'Registration', 'diluxone-users' ),
 			'position' => 25,
 			'render'   => 'diluxone_users_design_register',
 			'preview'  => 'diluxone_users_register_preview',
@@ -215,7 +215,7 @@ function diluxone_users_design_panels(): void {
 		DILUXONE_USERS_DESIGN,
 		'account',
 		array(
-			'label'    => diluxone_users_screens()['diluxone-users-account'],
+			'label'    => __( 'Account area', 'diluxone-users' ),
 			'position' => 30,
 			'render'   => 'diluxone_users_screen_appearance_template',
 			'preview'  => 'diluxone_users_style_preview',
@@ -227,7 +227,7 @@ function diluxone_users_design_panels(): void {
 		DILUXONE_USERS_DESIGN,
 		'social',
 		array(
-			'label'    => diluxone_users_screens()['diluxone-users-social'],
+			'label'    => __( 'Social login', 'diluxone-users' ),
 			'position' => 40,
 			'render'   => 'diluxone_users_design_social',
 			'save'     => 'diluxone_users_design_social_save',
@@ -247,7 +247,7 @@ function diluxone_users_design_panels(): void {
 		DILUXONE_USERS_DESIGN,
 		'wp',
 		array(
-			'label'       => __( 'The WordPress screen', 'diluxone-users' ),
+			'label'       => 'wp-login.php',
 			'position'    => 60,
 			'render'      => 'diluxone_users_screen_login_wp',
 			// The page itself and not a rendering of it, so it only changes
@@ -294,7 +294,7 @@ function diluxone_users_design_register(): void {
 		?>
 	</table>
 	<?php
-	if ( 'form' !== diluxone_users_register_mode() ) {
+	if ( ! diluxone_users_option( 'diluxone_users_register_form' ) ) {
 		diluxone_users_intro( __( 'This site does not use this form: accounts are made another way. What is written here waits for the day that changes.', 'diluxone-users' ) );
 	}
 }

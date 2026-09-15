@@ -68,7 +68,7 @@ defined( 'ABSPATH' ) || exit;
 						<button type="submit" class="diluxone-users-button diluxone-users-button--soft"><?php esc_html_e( 'Unlink', 'diluxone-users' ); ?></button>
 					</form>
 				<?php else : ?>
-					<a class="diluxone-users-button diluxone-users-button--soft" href="<?php echo esc_url( diluxone_users_sso_login_url( $diluxone_users_id ) ); ?>">
+					<a class="diluxone-users-button diluxone-users-button--soft" href="<?php echo esc_url( diluxone_users_sso_link_url( $diluxone_users_id ) ); ?>">
 						<?php esc_html_e( 'Link', 'diluxone-users' ); ?>
 					</a>
 				<?php endif; ?>

@@ -34,6 +34,8 @@ $diluxone_users_notices = array(
 	'badcode'     => array( 'error', __( 'That code is not right. Check the app and try again — they change every thirty seconds.', 'diluxone-users' ) ),
 	'nomethod'    => array( 'error', __( 'First set up a way to receive the second step.', 'diluxone-users' ) ),
 	'required'    => array( 'error', __( 'This site requires two-step verification: it cannot be turned off.', 'diluxone-users' ) ),
+	'reauth'      => array( 'error', __( 'That needs a current code — from your app, one of your backup codes, or one we email you — and it was missing or not right.', 'diluxone-users' ) ),
+	'codesent'    => array( 'ok', __( 'We emailed you a code. Type it in below and try again.', 'diluxone-users' ) ),
 	'passkeyoff'  => array( 'ok', __( 'The passkey was removed.', 'diluxone-users' ) ),
 	'passkeyname' => array( 'ok', __( 'The passkey has a new name.', 'diluxone-users' ) ),
 );
@@ -237,6 +239,22 @@ if ( diluxone_users_has_passkeys() ) {
 			<input type="hidden" name="action" value="diluxone_users_security">
 			<?php wp_nonce_field( 'diluxone_users_security' ); ?>
 
+			<?php if ( $diluxone_users_on ) : ?>
+				<?php
+				/*
+				 * Turning it off or replacing the codes asks for a current
+				 * code first: a session alone must not be able to undo the
+				 * second step. Whoever has no app asks for one by e-mail.
+				 */
+				?>
+				<label for="diluxone-users-reauth-code"><?php esc_html_e( 'A current code, to confirm it is you', 'diluxone-users' ); ?></label>
+				<input type="text" id="diluxone-users-reauth-code" name="diluxone_users_code" inputmode="numeric" autocomplete="one-time-code" maxlength="20">
+				<p class="diluxone-users-note"><?php esc_html_e( 'From your app, one of your backup codes, or the one we email you.', 'diluxone-users' ); ?></p>
+				<?php if ( isset( $diluxone_users_ready['email'] ) ) : ?>
+					<button type="submit" name="diluxone_users_security" value="code" class="diluxone-users-button diluxone-users-button--soft"><?php esc_html_e( 'Email me a code', 'diluxone-users' ); ?></button>
+				<?php endif; ?>
+			<?php endif; ?>
+
 			<?php if ( ! $diluxone_users_on ) : ?>
 				<button type="submit" name="diluxone_users_security" value="on" class="diluxone-users-button"><?php esc_html_e( 'Turn it on', 'diluxone-users' ); ?></button>
 			<?php elseif ( diluxone_users_2fa_can_turn_off( $diluxone_users_id ) ) : ?>
@@ -264,9 +282,11 @@ if ( diluxone_users_has_passkeys() ) {
 
 			<?php if ( diluxone_users_totp_ready( $diluxone_users_id ) ) : ?>
 				<p><?php esc_html_e( 'Set up. When you sign in, we ask for the six-digit code from the app.', 'diluxone-users' ); ?></p>
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<form class="diluxone-users-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="diluxone_users_security">
 					<?php wp_nonce_field( 'diluxone_users_security' ); ?>
+					<label for="diluxone-users-totp-off-code"><?php esc_html_e( 'The code from the app, to confirm it is you', 'diluxone-users' ); ?></label>
+					<input type="text" id="diluxone-users-totp-off-code" name="diluxone_users_code" inputmode="numeric" autocomplete="one-time-code" maxlength="20" required>
 					<button type="submit" name="diluxone_users_security" value="totp_off" class="diluxone-users-button diluxone-users-button--soft"><?php esc_html_e( 'Remove it', 'diluxone-users' ); ?></button>
 				</form>
 				<?php

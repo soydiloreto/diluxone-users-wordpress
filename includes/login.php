@@ -302,7 +302,7 @@ function diluxone_users_user_for( string $email ): int {
 	// Signing in only creates an account when that is how this site registers
 	// people. With a form of its own, or with registration closed, an address
 	// nobody has seen before is simply an address nobody has seen before.
-	if ( 'login' !== diluxone_users_register_mode() ) {
+	if ( ! diluxone_users_option( 'diluxone_users_login_register' ) ) {
 		return 0;
 	}
 
@@ -310,23 +310,27 @@ function diluxone_users_user_for( string $email ): int {
 }
 
 /**
- * How this site lets somebody get an account.
+ * How accounts come to exist, read off the doors that make them.
  *
- * 'login'  — signing in creates it, and there is no separate form.
- * 'form'   — a registration form of its own, on its own page.
- * 'closed' — somebody with the keys creates the accounts.
- *
- * Sites from before the question was asked out loud are read from the old
- * checkbox, so nothing changes under them.
+ * It used to be an option of its own with three exclusive answers, and the
+ * third question — "and if I want both?" — had no answer. The doors are
+ * independent now: the e-mail link can create the account, the site's own
+ * form can, either, neither. This is the same fact read back as one word,
+ * for everything that wants a word: 'login', 'form', 'both' or 'closed'.
  */
 function diluxone_users_register_mode(): string {
-	$mode = (string) diluxone_users_option( 'diluxone_users_register_mode' );
+	$link = (bool) diluxone_users_option( 'diluxone_users_login_register' );
+	$form = (bool) diluxone_users_option( 'diluxone_users_register_form' );
 
-	if ( in_array( $mode, array( 'login', 'form', 'closed' ), true ) ) {
-		return $mode;
+	if ( $link && $form ) {
+		return 'both';
 	}
 
-	return diluxone_users_option( 'diluxone_users_login_register' ) ? 'login' : 'closed';
+	if ( $form ) {
+		return 'form';
+	}
+
+	return $link ? 'login' : 'closed';
 }
 
 /**
@@ -356,7 +360,7 @@ function diluxone_users_create_account( string $email ): int {
 			'display_name'  => $visible,
 			// wp_insert_user() adds a suffix if it is already taken.
 			'user_nicename' => sanitize_title( $visible ),
-			'role'          => (string) diluxone_users_option( 'diluxone_users_login_role' ),
+			'role'          => diluxone_users_register_role(),
 		)
 	);
 
@@ -367,6 +371,85 @@ function diluxone_users_create_account( string $email ): int {
 	diluxone_users_join_site( (int) $id );
 
 	return (int) $id;
+}
+
+/**
+ * The role an account gets when it creates itself.
+ *
+ * The setting is read through a check and not as it is, because the screen
+ * that saves it offers every role there is, administrator included, and a
+ * setting that can hand the site to whoever types an e-mail is not a setting
+ * anybody meant. A role that fails the check falls back to subscriber, the
+ * one WordPress means for exactly this.
+ */
+function diluxone_users_register_role(): string {
+	$role = sanitize_key( (string) diluxone_users_option( 'diluxone_users_login_role' ) );
+
+	return diluxone_users_role_self_serve( $role ) ? $role : 'subscriber';
+}
+
+/**
+ * May people give themselves this role?
+ *
+ * It is decided by what the role can do, not by its name, so a custom role
+ * gets the same treatment as a built-in one: anything that reaches other
+ * people's accounts, other people's content or the site's setup is out. That
+ * leaves subscriber, contributor and author of the built-in ones — and any
+ * role a site adds that keeps to its own account.
+ */
+function diluxone_users_role_self_serve( string $role ): bool {
+	$object = get_role( $role );
+
+	if ( ! $object instanceof WP_Role ) {
+		return false;
+	}
+
+	/**
+	 * Filters the capabilities that keep a role out of self-registration.
+	 *
+	 * @param array<int, string> $caps
+	 */
+	$forbidden = (array) apply_filters(
+		'diluxone_users_role_forbidden_caps',
+		array(
+			// Other people's accounts.
+			'manage_options',
+			'edit_users',
+			'list_users',
+			'promote_users',
+			'create_users',
+			'delete_users',
+			'remove_users',
+			// Other people's content, and content that goes out unfiltered.
+			'edit_others_posts',
+			'delete_others_posts',
+			'edit_others_pages',
+			'publish_pages',
+			'unfiltered_html',
+			'moderate_comments',
+			'manage_categories',
+			// The site itself.
+			'edit_theme_options',
+			'switch_themes',
+			'edit_themes',
+			'install_themes',
+			'activate_plugins',
+			'edit_plugins',
+			'install_plugins',
+			'update_core',
+			'edit_files',
+			'import',
+			'export',
+		)
+	);
+
+	foreach ( $forbidden as $cap ) {
+		if ( $object->has_cap( (string) $cap ) ) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 /** How people get in: 'link', 'password' or 'both'. */
@@ -510,6 +593,18 @@ function diluxone_users_login_request(): void {
 	}
 
 	set_transient( $throttle, 1, max( 1, (int) diluxone_users_option( 'diluxone_users_login_throttle' ) ) );
+
+	// An address nobody has seen before is an account about to be created,
+	// and accounts are counted per machine, on the same count the
+	// registration form uses: a script typing a new address each time gets
+	// a new throttle key each time, and only the count per machine stops it
+	// — from filling the users table, and from mailing a link to every
+	// address it types with the site as the sender. The answer is the same
+	// as always: the form never says whether anything happened.
+	if ( ! get_user_by( 'email', $email ) && diluxone_users_option( 'diluxone_users_login_register' ) && ! diluxone_users_register_allowed() ) {
+		wp_safe_redirect( $done );
+		exit;
+	}
 
 	$user_id = diluxone_users_user_for( $email );
 

@@ -1,9 +1,11 @@
 <?php
 /**
- * The session IP is what gets looked at when somebody says "I do not
- * recognise that sign-in". If behind a proxy it always stores the proxy's, the
- * sessions screen is useless; and if it believes any header, anybody can claim
- * to be whoever they like. These tests pin both things down.
+ * The client IP is what the per-machine limits and the sessions screen rest
+ * on. Behind a proxy it always stored the proxy's, which made the screen
+ * useless; and if it believes any header, anybody can claim to be whoever
+ * they like — and get around the limits. These tests pin the safe answer to
+ * each case: only the site's own proxies are believed, and only on the one
+ * header they write.
  */
 
 namespace Tests\Unit\DiluxOneUsers;
@@ -16,7 +18,10 @@ class ClientIpTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		Monkey\setUp();
+		require_once DILUXONE_USERS_DIR . 'includes/options.php';
 		require_once DILUXONE_USERS_DIR . 'includes/client-ip.php';
+
+		$GLOBALS['_test_wp_options'] = array();
 	}
 
 	protected function tearDown(): void {
@@ -34,8 +39,9 @@ class ClientIpTest extends TestCase {
 		// The server is exposed straight to the internet: the header was written
 		// by the client and could say anything.
 		$this->assertSame( '190.15.219.128', diluxone_users_client_ip( array(
-			'REMOTE_ADDR'          => '190.15.219.128',
-			'HTTP_X_FORWARDED_FOR' => '8.8.8.8',
+			'REMOTE_ADDR'           => '190.15.219.128',
+			'HTTP_X_FORWARDED_FOR'  => '8.8.8.8',
+			'HTTP_CF_CONNECTING_IP' => '8.8.4.4',
 		) ) );
 	}
 
@@ -47,10 +53,90 @@ class ClientIpTest extends TestCase {
 	}
 
 	public function test_from_a_chain_of_proxies_it_keeps_the_client(): void {
-		// X-Forwarded-For is "client, proxy1, proxy2": the first is who asked.
+		// X-Forwarded-For is "client, proxy1, proxy2": walking from the right
+		// past our own proxies, the first address that is not ours is the client.
 		$this->assertSame( '181.45.184.48', diluxone_users_client_ip( array(
 			'REMOTE_ADDR'          => '10.0.0.5',
 			'HTTP_X_FORWARDED_FOR' => '181.45.184.48, 10.0.0.9, 10.0.0.5',
+		) ) );
+	}
+
+	public function test_what_the_client_wrote_before_the_first_proxy_is_ignored(): void {
+		// The client sent its own X-Forwarded-For with a made-up address; the
+		// proxy appended what it saw. The made-up one is on the left and the
+		// real one is the last address that is not one of ours.
+		$this->assertSame( '2.2.2.2', diluxone_users_client_ip( array(
+			'REMOTE_ADDR'          => '10.0.0.5',
+			'HTTP_X_FORWARDED_FOR' => '1.1.1.1, 2.2.2.2, 10.0.0.9',
+		) ) );
+	}
+
+	public function test_an_injected_cloudflare_header_is_ignored_behind_a_proxy_that_does_not_write_it(): void {
+		// nginx writes X-Forwarded-For and passes everything else through: a
+		// client can send CF-Connecting-IP and, before, it won over the real
+		// header. Only the one header the site's proxy writes is read.
+		$this->assertSame( '181.45.184.48', diluxone_users_client_ip( array(
+			'REMOTE_ADDR'           => '172.16.0.1',
+			'HTTP_CF_CONNECTING_IP' => '200.1.2.3',
+			'HTTP_TRUE_CLIENT_IP'   => '200.1.2.4',
+			'HTTP_X_REAL_IP'        => '200.1.2.5',
+			'HTTP_X_FORWARDED_FOR'  => '181.45.184.48',
+		) ) );
+	}
+
+	public function test_the_site_can_name_the_header_its_proxy_writes(): void {
+		update_option( 'diluxone_users_ip_header', 'HTTP_CF_CONNECTING_IP' );
+
+		$this->assertSame( '200.1.2.3', diluxone_users_client_ip( array(
+			'REMOTE_ADDR'           => '172.16.0.1',
+			'HTTP_CF_CONNECTING_IP' => '200.1.2.3',
+			'HTTP_X_FORWARDED_FOR'  => '8.8.8.8',
+		) ) );
+	}
+
+	public function test_a_named_header_that_is_missing_falls_back_to_the_proxy(): void {
+		update_option( 'diluxone_users_ip_header', 'HTTP_X_REAL_IP' );
+
+		$this->assertSame( '172.16.0.1', diluxone_users_client_ip( array(
+			'REMOTE_ADDR'          => '172.16.0.1',
+			'HTTP_X_FORWARDED_FOR' => '8.8.8.8',
+		) ) );
+	}
+
+	public function test_a_header_name_that_is_not_a_header_means_the_default(): void {
+		update_option( 'diluxone_users_ip_header', 'REMOTE_ADDR' );
+
+		$this->assertSame( 'HTTP_X_FORWARDED_FOR', diluxone_users_ip_header() );
+	}
+
+	public function test_a_public_proxy_is_believed_only_once_the_site_lists_it(): void {
+		// Cloudflare's edge has a public address: without the list its
+		// headers are the client's, with the list they are Cloudflare's.
+		$server = array(
+			'REMOTE_ADDR'          => '203.0.113.7',
+			'HTTP_X_FORWARDED_FOR' => '181.45.184.48',
+		);
+
+		$this->assertSame( '203.0.113.7', diluxone_users_client_ip( $server ) );
+
+		update_option( 'diluxone_users_trusted_proxies', "203.0.113.0/24\n198.51.100.1" );
+
+		$this->assertSame( '181.45.184.48', diluxone_users_client_ip( $server ) );
+	}
+
+	public function test_listed_proxies_are_skipped_inside_the_chain_too(): void {
+		update_option( 'diluxone_users_trusted_proxies', '203.0.113.0/24' );
+
+		$this->assertSame( '181.45.184.48', diluxone_users_client_ip( array(
+			'REMOTE_ADDR'          => '10.0.0.5',
+			'HTTP_X_FORWARDED_FOR' => '9.9.9.9, 181.45.184.48, 203.0.113.9, 10.0.0.9',
+		) ) );
+	}
+
+	public function test_a_client_on_the_internal_network_is_reported_as_such(): void {
+		$this->assertSame( '10.0.0.9', diluxone_users_client_ip( array(
+			'REMOTE_ADDR'          => '10.0.0.5',
+			'HTTP_X_FORWARDED_FOR' => '10.0.0.9',
 		) ) );
 	}
 
@@ -59,14 +145,6 @@ class ClientIpTest extends TestCase {
 		$this->assertSame( '79.159.158.249', diluxone_users_client_ip( array(
 			'REMOTE_ADDR'          => '127.0.0.1',
 			'HTTP_X_FORWARDED_FOR' => '79.159.158.249:49391',
-		) ) );
-	}
-
-	public function test_cloudflare_wins_over_x_forwarded_for(): void {
-		$this->assertSame( '200.1.2.3', diluxone_users_client_ip( array(
-			'REMOTE_ADDR'           => '172.16.0.1',
-			'HTTP_CF_CONNECTING_IP' => '200.1.2.3',
-			'HTTP_X_FORWARDED_FOR'  => '8.8.8.8',
 		) ) );
 	}
 
@@ -84,13 +162,33 @@ class ClientIpTest extends TestCase {
 		) ) );
 	}
 
+	/** @dataProvider ranges */
+	public function test_an_address_is_or_is_not_inside_a_range( string $ip, string $range, bool $inside ): void {
+		$this->assertSame( $inside, diluxone_users_ip_in( $ip, $range ) );
+	}
+
+	/** @return array<string, array{string, string, bool}> */
+	public static function ranges(): array {
+		return array(
+			'a bare address is itself'    => array( '203.0.113.7', '203.0.113.7', true ),
+			'and nothing else'            => array( '203.0.113.8', '203.0.113.7', false ),
+			'inside a /24'                => array( '203.0.113.200', '203.0.113.0/24', true ),
+			'outside a /24'               => array( '203.0.114.1', '203.0.113.0/24', false ),
+			'a /25 splits the last byte'  => array( '203.0.113.200', '203.0.113.0/25', false ),
+			'ipv6 inside'                 => array( '2001:db8::1', '2001:db8::/32', true ),
+			'ipv6 outside'                => array( '2001:db9::1', '2001:db8::/32', false ),
+			'families do not mix'         => array( '2001:db8::1', '203.0.113.0/24', false ),
+			'junk is outside everything'  => array( '203.0.113.7', 'not-a-range', false ),
+		);
+	}
+
 	public function test_an_old_session_without_our_ip_uses_the_wordpress_one(): void {
 		$this->assertSame( '79.159.158.249', diluxone_users_session_ip_of( array( 'ip' => '79.159.158.249:49391' ) ) );
 	}
 
 	public function test_a_session_carrying_our_ip_is_preferred(): void {
 		$this->assertSame( '181.45.184.48', diluxone_users_session_ip_of( array(
-			'ip'      => '172.20.0.1',
+			'ip'                => '172.20.0.1',
 			'diluxone_users_ip' => '181.45.184.48',
 		) ) );
 	}

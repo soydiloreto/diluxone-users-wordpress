@@ -1,0 +1,135 @@
+<?php
+/**
+ * M-06: a passkey finds its owner by an index, and belongs to one account.
+ *
+ * Before, the owner was found by opening the first five hundred lists:
+ * account five hundred and one could register a key and never use it, and
+ * two accounts could hold the same credential id, with only one of them
+ * ever found.
+ */
+
+namespace Tests\Integration;
+
+class PasskeyStoreTest extends IntegrationTestCase {
+
+	/** Credential ids are the test's own: users outlive the test that made them. */
+	private string $run;
+
+	protected function setUp(): void {
+		parent::setUp();
+
+		$this->run = wp_generate_password( 8, false );
+	}
+
+	private function id( string $name ): string {
+		return 'cred-' . $name . '-' . $this->run;
+	}
+
+	/** @return array<string, mixed> */
+	private function key( string $id ): array {
+		return array(
+			'id'      => $id,
+			'key'     => base64_encode( 'not-a-real-key' ),
+			'alg'     => -7,
+			'label'   => 'Phone',
+			'created' => time(),
+			'used'    => 0,
+			'counter' => 0,
+		);
+	}
+
+	public function test_saving_a_key_indexes_it_and_the_owner_is_found_through_the_index(): void {
+		$user = $this->make_user();
+
+		diluxone_users_passkeys_save( $user, array( $this->key( $this->id( 'a' ) ) ) );
+
+		$this->assertSame( '1', get_user_meta( $user, diluxone_users_passkey_index_key( $this->id( 'a' ) ), true ) );
+		$this->assertSame( $user, diluxone_users_passkey_owner( $this->id( 'a' ) ) );
+	}
+
+	public function test_removing_a_key_removes_its_index(): void {
+		$user = $this->make_user();
+
+		diluxone_users_passkeys_save( $user, array( $this->key( $this->id( 'a' ) ), $this->key( $this->id( 'b' ) ) ) );
+		diluxone_users_passkey_forget( $user, $this->id( 'a' ) );
+
+		$this->assertSame( '', get_user_meta( $user, diluxone_users_passkey_index_key( $this->id( 'a' ) ), true ) );
+		$this->assertSame( 0, diluxone_users_passkey_owner( $this->id( 'a' ) ) );
+		$this->assertSame( $user, diluxone_users_passkey_owner( $this->id( 'b' ) ) );
+	}
+
+	public function test_a_stray_index_row_opens_nothing(): void {
+		$user = $this->make_user();
+
+		update_user_meta( $user, diluxone_users_passkey_index_key( $this->id( 'x' ) ), 1 );
+
+		$this->assertSame( 0, diluxone_users_passkey_owner( $this->id( 'x' ) ) );
+	}
+
+	public function test_a_key_stored_before_the_index_is_found_and_indexed_on_the_way(): void {
+		$user = $this->make_user();
+
+		update_user_meta( $user, 'diluxone_users_passkeys', array( $this->key( $this->id( 'old' ) ) ) );
+
+		$this->assertSame( $user, diluxone_users_passkey_owner( $this->id( 'old' ) ) );
+		$this->assertSame( '1', get_user_meta( $user, diluxone_users_passkey_index_key( $this->id( 'old' ) ), true ) );
+	}
+
+	public function test_a_credential_id_belongs_to_one_account(): void {
+		$first  = $this->make_user();
+		$second = $this->make_user();
+
+		diluxone_users_passkeys_save( $first, array( $this->key( $this->id( 'shared' ) ) ) );
+
+		wp_set_current_user( $second );
+
+		$result = diluxone_users_passkeys_register( $this->registration( $this->id( 'shared' ) ) );
+
+		$this->assertFalse( $result['success'] );
+		$this->assertSame( array(), diluxone_users_passkeys( $second ) );
+		$this->assertSame( $first, diluxone_users_passkey_owner( $this->id( 'shared' ) ) );
+	}
+
+	public function test_registering_a_fresh_credential_still_works(): void {
+		$user = $this->make_user();
+		wp_set_current_user( $user );
+
+		$result = diluxone_users_passkeys_register( $this->registration( $this->id( 'fresh' ) ) );
+
+		$this->assertTrue( $result['success'], (string) ( $result['data']['message'] ?? '' ) );
+		$this->assertSame( $user, diluxone_users_passkey_owner( $this->id( 'fresh' ) ) );
+	}
+
+	/**
+	 * What the browser would POST to register a key: a fresh challenge, the
+	 * right origin, and a public key that is really a public key.
+	 *
+	 * @return array<string, string>
+	 */
+	private function registration( string $id ): array {
+		$pair = openssl_pkey_new(
+			array(
+				'private_key_type' => OPENSSL_KEYTYPE_EC,
+				'curve_name'       => 'prime256v1',
+			)
+		);
+		$pem  = (string) openssl_pkey_get_details( $pair )['key'];
+		$der  = (string) base64_decode( (string) preg_replace( '/-----[^-]+-----|\s/', '', $pem ), true );
+
+		$client = wp_json_encode(
+			array(
+				'type'      => 'webauthn.create',
+				'challenge' => diluxone_users_passkey_challenge_new( 'reg' ),
+				'origin'    => diluxone_users_passkey_origin(),
+			)
+		);
+
+		return array(
+			'id'             => $id,
+			'publicKey'      => diluxone_users_b64url_encode( $der ),
+			'algorithm'      => '-7',
+			'clientDataJSON' => (string) $client,
+			'label'          => 'Test key',
+		);
+	}
+}

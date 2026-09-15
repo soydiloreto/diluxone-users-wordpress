@@ -30,7 +30,10 @@ function diluxone_users_admin_bar_hidden(): bool {
 		return false;
 	}
 
-	if ( current_user_can( 'edit_users' ) ) {
+	// An option, shown on the screen, and on by default: hiding the toolbar
+	// locks nobody out — /wp-admin stays open — so there is no reason to fix
+	// it in code, and every reason to let it be seen and turned off.
+	if ( diluxone_users_option( 'diluxone_users_admin_bar_keep_admins' ) && current_user_can( 'edit_users' ) ) {
 		return false;
 	}
 

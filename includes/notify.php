@@ -46,7 +46,84 @@ function diluxone_users_default_notifications(): array {
 	return $prefs;
 }
 
-/** Does this person want this notice? */
+/* ── Quién decide ──────────────────────────────────────────────────── */
+
+/**
+ * The four things a site can decide about one notice, written as outcomes.
+ *
+ * Two of them leave a switch in the person's account area and only set which
+ * way it starts; the other two take the switch away. "Always" exists for the
+ * site that treats a security notice as part of the service, and "never" for
+ * the one that has another system sending the same thing.
+ *
+ * @return array<string, string>
+ */
+function diluxone_users_notice_policies(): array {
+	return array(
+		'default_on'  => __( 'On by default — each person can turn it off', 'diluxone-users' ),
+		'default_off' => __( 'Off by default — each person can turn it on', 'diluxone-users' ),
+		'always'      => __( 'Always sent — no switch for anybody', 'diluxone-users' ),
+		'never'       => __( 'Never sent', 'diluxone-users' ),
+	);
+}
+
+/**
+ * The rules the site wrote down, key => policy, and nothing else.
+ *
+ * Whatever is stored is read defensively: a rule with a word that is not one
+ * of the four is dropped rather than guessed at, and a value that is not a
+ * map at all counts as no rules. A broken option must not silence a security
+ * notice.
+ *
+ * @return array<string, string>
+ */
+function diluxone_users_notice_rules(): array {
+	$stored   = diluxone_users_option( 'diluxone_users_notice_rules' );
+	$policies = diluxone_users_notice_policies();
+	$rules    = array();
+
+	foreach ( is_array( $stored ) ? $stored : array() as $key => $policy ) {
+		if ( is_string( $key ) && is_string( $policy ) && isset( $policies[ $policy ] ) ) {
+			$rules[ $key ] = $policy;
+		}
+	}
+
+	return $rules;
+}
+
+/**
+ * The site's policy for one notice.
+ *
+ * A notice with no rule written down behaves as it always did: whatever it
+ * registered as its default decides, and the plugin's own register as on. So
+ * a site that never opens the screen sees nothing change, and an add-on that
+ * ships a notice off by default is still off by default.
+ */
+function diluxone_users_notice_policy( string $key ): string {
+	$rules = diluxone_users_notice_rules();
+
+	if ( isset( $rules[ $key ] ) ) {
+		return $rules[ $key ];
+	}
+
+	$prefs = diluxone_users_notification_prefs();
+
+	return isset( $prefs[ $key ] ) && '' === (string) ( $prefs[ $key ]['default'] ?? '' ) ? 'default_off' : 'default_on';
+}
+
+/** Does this policy leave the choice to the person? */
+function diluxone_users_notice_is_choice( string $policy ): bool {
+	return 'default_on' === $policy || 'default_off' === $policy;
+}
+
+/**
+ * Does this person want this notice?
+ *
+ * The site speaks first: a notice it never sends is not sent, and one it
+ * always sends goes out whatever the person chose. In between, the person's
+ * own switch counts, and with nothing chosen yet the policy says which way
+ * the switch starts.
+ */
 function diluxone_users_wants( int $user_id, string $key ): bool {
 	$prefs = diluxone_users_notification_prefs();
 
@@ -54,9 +131,19 @@ function diluxone_users_wants( int $user_id, string $key ): bool {
 		return false;
 	}
 
+	$policy = diluxone_users_notice_policy( $key );
+
+	if ( 'never' === $policy ) {
+		return false;
+	}
+
+	if ( 'always' === $policy ) {
+		return true;
+	}
+
 	$saved = get_user_meta( $user_id, $key, true );
 
-	return '' === (string) $saved ? ! empty( $prefs[ $key ]['default'] ) : (bool) $saved;
+	return '' === (string) $saved ? 'default_on' === $policy : (bool) $saved;
 }
 
 /**

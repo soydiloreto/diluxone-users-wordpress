@@ -336,3 +336,33 @@ if (!function_exists('wp_unslash')) {
 		return is_array($value) ? array_map('wp_unslash', $value) : stripslashes((string) $value);
 	}
 }
+
+// ── Errors ────────────────────────────────────────────────────────────────
+// The gate on the doors with no screen answers with a WP_Error, and the
+// social mappers ask is_wp_error() of an HTTP answer.
+
+if (!class_exists('WP_Error')) {
+	class WP_Error {
+		public string $code;
+		public string $message;
+
+		public function __construct(string $code = '', string $message = '') {
+			$this->code = $code;
+			$this->message = $message;
+		}
+
+		public function get_error_code(): string {
+			return $this->code;
+		}
+
+		public function get_error_message(): string {
+			return $this->message;
+		}
+	}
+}
+
+if (!function_exists('is_wp_error')) {
+	function is_wp_error($thing): bool {
+		return $thing instanceof WP_Error;
+	}
+}

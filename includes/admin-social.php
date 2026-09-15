@@ -46,7 +46,7 @@ function diluxone_users_screen_social(): void {
 	// with a network and how the accounts are joined up.
 	$tabs = array(
 		'providers' => __( 'Providers', 'diluxone-users' ),
-		'general'   => __( 'Global settings', 'diluxone-users' ),
+		'general'   => __( 'Rules', 'diluxone-users' ),
 	);
 
 	$current = diluxone_users_tab( $tabs );
@@ -56,7 +56,6 @@ function diluxone_users_screen_social(): void {
 			array(
 				// phpcs:disable WordPress.Security.NonceVerification.Missing -- verificado arriba.
 				'diluxone_users_sso_link_by_email' => isset( $_POST['diluxone_users_sso_link_by_email'] ) ? 1 : 0,
-				'diluxone_users_sso_register'      => isset( $_POST['diluxone_users_sso_register'] ) ? 1 : 0,
 				'diluxone_users_sso_verified_only' => isset( $_POST['diluxone_users_sso_verified_only'] ) ? 1 : 0,
 				'diluxone_users_sso_blocked_roles' => array_map( 'sanitize_key', (array) wp_unslash( $_POST['diluxone_users_sso_blocked_roles'] ?? array() ) ),
 				// phpcs:enable
@@ -294,13 +293,21 @@ function diluxone_users_screen_social_general(): void {
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php esc_html_e( 'Create accounts', 'diluxone-users' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'Creating accounts', 'diluxone-users' ); ?></th>
 				<td>
-					<label>
-						<input type="checkbox" name="diluxone_users_sso_register" value="1" <?php checked( diluxone_users_option( 'diluxone_users_sso_register' ), 1 ); ?>>
-						<?php esc_html_e( 'If the email does not exist yet, create the account', 'diluxone-users' ); ?>
-					</label>
-					<p class="description"><?php esc_html_e( 'Turned off, only people who already have an account can use the social buttons.', 'diluxone-users' ); ?></p>
+					<?php
+					/*
+					 * Decided on one screen and shown here as state. It used
+					 * to be a tick box in both places for the same option, and
+					 * a person could change it here and find it "changed by
+					 * itself" over there.
+					 */
+					?>
+					<p>
+						<?php echo diluxone_users_state_pill( diluxone_users_option( 'diluxone_users_sso_register' ) ? 'active' : 'off' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>
+						<?php echo diluxone_users_option( 'diluxone_users_sso_register' ) ? esc_html__( 'Signing in with a social account creates the account when there is none.', 'diluxone-users' ) : esc_html__( 'A social account only signs in people who already have one here.', 'diluxone-users' ); ?>
+						<a href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-login', array( 'tab' => 'register' ) ) ); ?>"><?php esc_html_e( 'Change it →', 'diluxone-users' ); ?></a>
+					</p>
 				</td>
 			</tr>
 			<tr>

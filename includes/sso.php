@@ -176,6 +176,23 @@ function diluxone_users_sso_login_url( string $id ): string {
 	return add_query_arg( 'diluxone_users_go', 1, diluxone_users_sso_redirect_uri( $id ) );
 }
 
+/**
+ * The URL that links a network to the account of whoever is signed in.
+ *
+ * The same trip as signing in, with a nonce on top: linking writes to an
+ * account, and a link somebody else can make a signed-in person click must
+ * not be able to do that. The handler asks for the nonce whenever the trip
+ * starts with a session.
+ */
+function diluxone_users_sso_link_url( string $id ): string {
+	return wp_nonce_url( diluxone_users_sso_login_url( $id ), 'diluxone_users_sso_link_' . $id, 'diluxone_users_nonce' );
+}
+
+/** The cookie that ties an outbound trip to the browser that started it. */
+function diluxone_users_sso_cookie(): string {
+	return 'diluxone_users_sso_' . COOKIEHASH;
+}
+
 /** The live-test URL, to open in a window of its own. */
 function diluxone_users_sso_test_url( string $id ): string {
 	return wp_nonce_url(
@@ -216,12 +233,41 @@ add_filter( 'query_vars', 'diluxone_users_sso_query_var' );
 
 /* ── Reading each provider's profile ───────────────────────────────── */
 
+/*
+ * Every mapper answers one more question besides who this is: did the
+ * provider vouch for the e-mail? Three answers — yes, no, and it said nothing
+ * — and they are kept apart on purpose, because the flow below treats "it
+ * said nothing" differently from "it said no". An e-mail nobody vouched for
+ * is an e-mail anybody can type into a profile, and matching accounts by it
+ * would hand the account to whoever typed it.
+ */
+
+/**
+ * A provider's "the e-mail is verified" claim, read as one of three answers.
+ *
+ * @param mixed $claim What the provider sent, or null when it sent nothing.
+ * @return bool|null True or false when it said so; null when it did not.
+ */
+function diluxone_users_sso_verified_claim( $claim ): ?bool {
+	if ( null === $claim ) {
+		return null;
+	}
+
+	// Google answers with a boolean, others with the word: both are read.
+	return filter_var( $claim, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE );
+}
+
 /**
  * OpenID Connect (Google, Microsoft, LinkedIn, Yahoo, Twitch, GitLab): the
  * profile already comes with standard names.
  *
+ * `email_verified` is a standard claim, and not every one of them sends it:
+ * Microsoft's userinfo does not, and there the e-mail of a work account is
+ * whatever its tenant wrote in it. That is why the absence is passed on as an
+ * absence and not read as a yes.
+ *
  * @param array<string, mixed> $data
- * @return array{id: string, email: string, name: string, last_name: string}
+ * @return array{id: string, email: string, name: string, last_name: string, verified: bool|null}
  */
 function diluxone_users_sso_map_oidc( array $data, string $token ): array {
 	return array(
@@ -229,23 +275,28 @@ function diluxone_users_sso_map_oidc( array $data, string $token ): array {
 		'email'     => (string) ( $data['email'] ?? '' ),
 		'name'      => (string) ( $data['given_name'] ?? $data['preferred_username'] ?? '' ),
 		'last_name' => (string) ( $data['family_name'] ?? '' ),
+		'verified'  => diluxone_users_sso_verified_claim( $data['email_verified'] ?? null ),
 	);
 }
 
-/** Facebook usa first_name / last_name. */
 /**
- * @return array<string, mixed>
- */
-/**
+ * Facebook uses first_name / last_name.
+ *
+ * It sends no claim because it needs none: an e-mail only appears in the
+ * profile once Facebook has confirmed it, and an unconfirmed one is left out.
+ *
  * @param array<string, mixed> $data
  * @return array<string, mixed>
  */
 function diluxone_users_sso_map_facebook( array $data, string $token ): array {
+	$email = (string) ( $data['email'] ?? '' );
+
 	return array(
 		'id'        => (string) ( $data['id'] ?? '' ),
-		'email'     => (string) ( $data['email'] ?? '' ),
+		'email'     => $email,
 		'name'      => (string) ( $data['first_name'] ?? '' ),
 		'last_name' => (string) ( $data['last_name'] ?? '' ),
+		'verified'  => '' !== $email ? true : null,
 	);
 }
 
@@ -253,35 +304,43 @@ function diluxone_users_sso_map_facebook( array $data, string $token ): array {
  * GitHub sends a single `name` field and hides the e-mail when it is private:
  * it has to be asked for separately, keeping the verified primary one.
  *
+ * The list is always asked for and not only when the profile has no e-mail:
+ * the one in the profile is the public address, which GitHub lets anybody
+ * write and confirms nothing about. The list is the only place that says
+ * which ones were confirmed.
+ *
  * @param array<string, mixed> $data
  * @return array<string, mixed>
  */
 function diluxone_users_sso_map_github( array $data, string $token ): array {
-	$email = (string) ( $data['email'] ?? '' );
+	$email    = '';
+	$verified = null;
+
+	foreach ( (array) diluxone_users_sso_get( 'https://api.github.com/user/emails', $token ) as $row ) {
+		if ( is_array( $row ) && ! empty( $row['primary'] ) && ! empty( $row['verified'] ) ) {
+			$email    = (string) $row['email'];
+			$verified = true;
+			break;
+		}
+	}
 
 	if ( '' === $email ) {
-		foreach ( (array) diluxone_users_sso_get( 'https://api.github.com/user/emails', $token ) as $row ) {
-			if ( ! empty( $row['primary'] ) && ! empty( $row['verified'] ) ) {
-				$email = (string) $row['email'];
-				break;
-			}
-		}
+		$email = (string) ( $data['email'] ?? '' );
 	}
 
 	return array_merge(
 		diluxone_users_sso_split_name( (string) ( $data['name'] ?? '' ) ),
 		array(
-			'id'    => (string) ( $data['id'] ?? '' ),
-			'email' => $email,
+			'id'       => (string) ( $data['id'] ?? '' ),
+			'email'    => $email,
+			'verified' => $verified,
 		)
 	);
 }
 
-/** WordPress.com devuelve el perfil bajo claves propias. */
 /**
- * @return array<string, mixed>
- */
-/**
+ * WordPress.com returns the profile under keys of its own.
+ *
  * @param array<string, mixed> $data
  * @return array<string, mixed>
  */
@@ -289,14 +348,18 @@ function diluxone_users_sso_map_wordpress( array $data, string $token ): array {
 	return array_merge(
 		diluxone_users_sso_split_name( (string) ( $data['display_name'] ?? '' ) ),
 		array(
-			'id'    => (string) ( $data['ID'] ?? '' ),
-			'email' => (string) ( $data['email'] ?? '' ),
+			'id'       => (string) ( $data['ID'] ?? '' ),
+			'email'    => (string) ( $data['email'] ?? '' ),
+			'verified' => diluxone_users_sso_verified_claim( $data['email_verified'] ?? null ),
 		)
 	);
 }
 
 /**
  * Discord: the e-mail only comes if the `email` scope was asked for.
+ *
+ * And it comes whether or not the person confirmed it — `verified` says
+ * which. This is the provider that made the question unavoidable.
  *
  * @param array<string, mixed> $data
  * @return array<string, mixed>
@@ -305,26 +368,31 @@ function diluxone_users_sso_map_discord( array $data, string $token ): array {
 	return array_merge(
 		diluxone_users_sso_split_name( (string) ( $data['global_name'] ?? $data['username'] ?? '' ) ),
 		array(
-			'id'    => (string) ( $data['id'] ?? '' ),
-			'email' => (string) ( $data['email'] ?? '' ),
+			'id'       => (string) ( $data['id'] ?? '' ),
+			'email'    => (string) ( $data['email'] ?? '' ),
+			'verified' => diluxone_users_sso_verified_claim( $data['verified'] ?? null ),
 		)
 	);
 }
 
-/** Amazon: name / email / user_id. */
 /**
- * @return array<string, mixed>
- */
-/**
+ * Amazon: name / email / user_id.
+ *
+ * Login with Amazon only hands over the address of the Amazon account, which
+ * Amazon confirmed before the account could be used.
+ *
  * @param array<string, mixed> $data
  * @return array<string, mixed>
  */
 function diluxone_users_sso_map_amazon( array $data, string $token ): array {
+	$email = (string) ( $data['email'] ?? '' );
+
 	return array_merge(
 		diluxone_users_sso_split_name( (string) ( $data['name'] ?? '' ) ),
 		array(
-			'id'    => (string) ( $data['user_id'] ?? '' ),
-			'email' => (string) ( $data['email'] ?? '' ),
+			'id'       => (string) ( $data['user_id'] ?? '' ),
+			'email'    => $email,
+			'verified' => '' !== $email ? true : null,
 		)
 	);
 }
@@ -345,8 +413,9 @@ function diluxone_users_sso_map_twitter( array $data, string $token ): array {
 	return array_merge(
 		diluxone_users_sso_split_name( (string) ( $user['name'] ?? '' ) ),
 		array(
-			'id'    => (string) ( $user['id'] ?? '' ),
-			'email' => '',
+			'id'       => (string) ( $user['id'] ?? '' ),
+			'email'    => '',
+			'verified' => null,
 		)
 	);
 }
@@ -402,11 +471,26 @@ function diluxone_users_sso_get( string $url, string $token ): array {
 function diluxone_users_sso_authorize( string $id, array $provider, bool $test = false ): void {
 	$credentials = diluxone_users_sso_credentials( $id );
 	$state       = wp_generate_password( 24, false, false );
+	$browser     = wp_generate_password( 32, false, false );
 
+	/*
+	 * The `state` alone proves the callback answers a trip this site started.
+	 * It does not prove it answers a trip THIS browser started: the state
+	 * travels in the URL, and a URL is something one person can make another
+	 * open. So the trip is tied to two more things. A secret that only lives
+	 * in this browser's cookie, of which the server keeps the hash; and who
+	 * was signed in when it started, so that a trip begun by nobody cannot
+	 * end in somebody's account, and a trip begun by one account cannot end
+	 * in another.
+	 */
 	$saved = array(
 		'provider' => $id,
 		'test'     => $test ? 1 : 0,
+		'browser'  => wp_hash( $browser ),
+		'user'     => get_current_user_id(),
 	);
+
+	diluxone_users_cookie_set( diluxone_users_sso_cookie(), $browser, time() + 10 * MINUTE_IN_SECONDS );
 
 	// PKCE: instead of the secret, the hash of a random value is sent, and the
 	// value itself is sent on the exchange. That way a code stolen on the way
@@ -489,11 +573,39 @@ function diluxone_users_sso_token( string $id, array $provider, string $code, st
 }
 
 /**
+ * May this e-mail be taken as the person's, on the provider's word?
+ *
+ * Two different questions hide in it. Matching an EXISTING account by e-mail
+ * hands that account over, so it needs the provider's explicit yes — always,
+ * whatever the setting says, because a provider that said nothing might be
+ * one where the e-mail is a text field. Creating a NEW account with the
+ * e-mail hands over nothing yet, so there the explicit no is what closes the
+ * door, and the "verified only" setting decides what silence means.
+ *
+ * @param array<string, mixed> $identity What the mapper returned.
+ * @param bool                 $linking  Whether an existing account is at stake.
+ */
+function diluxone_users_sso_email_trusted( array $identity, bool $linking ): bool {
+	$verified = $identity['verified'] ?? null;
+
+	if ( true === $verified ) {
+		return true;
+	}
+
+	if ( false === $verified || $linking ) {
+		return false;
+	}
+
+	return ! diluxone_users_option( 'diluxone_users_sso_verified_only' );
+}
+
+/**
  * Finds or creates the account behind a social identity, and links it.
  *
  * Linking is by e-mail, the same as Nextend's "Link accounts by email"
  * setting: if there is already an account with that e-mail, it belongs to the
- * same person. That holds because the provider verified the e-mail, not us.
+ * same person. That holds only because the provider verified the e-mail,
+ * which is why it is asked for before believing it.
  *
  * @param array<string, mixed> $identity
  */
@@ -523,7 +635,7 @@ function diluxone_users_sso_user( string $id, array $identity ): int {
 	// linked: it is the same person, and the network is added to it. That is
 	// what makes signing in with Google today and GitHub tomorrow one account.
 	if ( $known ) {
-		if ( ! diluxone_users_option( 'diluxone_users_sso_link_by_email' ) ) {
+		if ( ! diluxone_users_option( 'diluxone_users_sso_link_by_email' ) || ! diluxone_users_sso_email_trusted( $identity, true ) ) {
 			return 0;
 		}
 
@@ -533,7 +645,7 @@ function diluxone_users_sso_user( string $id, array $identity ): int {
 		// this site, or they get in and can do nothing.
 		diluxone_users_join_site( $user_id );
 	} else {
-		if ( ! diluxone_users_option( 'diluxone_users_sso_register' ) ) {
+		if ( ! diluxone_users_option( 'diluxone_users_sso_register' ) || ! diluxone_users_sso_email_trusted( $identity, false ) ) {
 			return 0;
 		}
 
@@ -592,10 +704,10 @@ function diluxone_users_sso_role_blocked( int $user_id ): bool {
  *
  * @return array<string, mixed>
  */
-function diluxone_users_sso_query(): array {
+function diluxone_users_sso_query( bool $fresh = false ): array {
 	static $query = null;
 
-	if ( null === $query ) {
+	if ( null === $query || $fresh ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- this is the copy, not the use.
 		$query = wp_unslash( $_GET );
 	}
@@ -603,9 +715,15 @@ function diluxone_users_sso_query(): array {
 	return $query;
 }
 
-/** The copy of the request, taken early. diluxone_users_sso_param() reads it. */
+/**
+ * The copy of the request, taken early. diluxone_users_sso_param() reads it.
+ *
+ * It takes it afresh each time it runs, and it runs once per request: that
+ * is also what lets a test that plays several requests in one process set
+ * the query and take it again.
+ */
 function diluxone_users_sso_query_snapshot(): void {
-	diluxone_users_sso_query();
+	diluxone_users_sso_query( true );
 }
 add_action( 'init', 'diluxone_users_sso_query_snapshot', 0 );
 
@@ -671,6 +789,13 @@ function diluxone_users_sso_handle( $wp = null ): void {
 			diluxone_users_sso_fail();
 		}
 
+		// Started with a session, the trip ends by linking the network to that
+		// account: that is a write, and it needs the nonce the account screen
+		// puts on its own link, so that no other page can start it.
+		if ( ! $test && is_user_logged_in() && ! wp_verify_nonce( sanitize_key( diluxone_users_sso_param( 'diluxone_users_nonce' ) ), 'diluxone_users_sso_link_' . $id ) ) {
+			diluxone_users_sso_fail();
+		}
+
 		diluxone_users_sso_authorize( $id, $provider, $test );
 	}
 
@@ -699,6 +824,13 @@ function diluxone_users_sso_handle( $wp = null ): void {
 	delete_transient( 'diluxone_users_sso_' . $state );
 
 	if ( ! is_array( $stored ) || ( $stored['provider'] ?? '' ) !== $id ) {
+		diluxone_users_sso_fail();
+	}
+
+	// The return has to come from the browser that left, and find the same
+	// person — or the same nobody — that was signed in when it left. See
+	// diluxone_users_sso_authorize() for what each of the two stops.
+	if ( ! diluxone_users_sso_same_browser( $stored ) || (int) ( $stored['user'] ?? -1 ) !== get_current_user_id() ) {
 		diluxone_users_sso_fail();
 	}
 
@@ -773,6 +905,18 @@ function diluxone_users_sso_handle( $wp = null ): void {
  * anything yet.
  */
 add_action( 'parse_request', 'diluxone_users_sso_handle' );
+
+/**
+ * Does this browser hold the secret the trip left in it?
+ *
+ * @param array<string, mixed> $stored What was saved when the trip started.
+ */
+function diluxone_users_sso_same_browser( array $stored ): bool {
+	$name   = diluxone_users_sso_cookie();
+	$cookie = isset( $_COOKIE[ $name ] ) ? sanitize_text_field( wp_unslash( $_COOKIE[ $name ] ) ) : '';
+
+	return '' !== $cookie && hash_equals( (string) ( $stored['browser'] ?? '' ), wp_hash( $cookie ) );
+}
 
 /** Back to the sign-in screen with the notice that it did not work. */
 function diluxone_users_sso_fail(): void {

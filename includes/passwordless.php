@@ -110,6 +110,26 @@ function diluxone_users_should_redirect( string $action, array $query = array() 
 }
 
 /**
+ * Does a POST to wp-login.php get through while its screens are taken over?
+ *
+ * Taking the screens over means nobody SEES wp-login.php; it never meant that
+ * nothing may be SENT to it. The password form the site's own page draws is
+ * WordPress's, and it posts to wp-login.php with no action — so on a site
+ * where the password is a way in, that POST is the site's own sign-in and
+ * goes through. Every other POST is to a form the site closed, and is stopped.
+ *
+ * A pure function for the same reason as diluxone_users_should_redirect():
+ * the two of them together are the whole verdict, and a table of cases pins
+ * them down without WordPress.
+ *
+ * @param string $action       Value of `action` (empty string = login).
+ * @param bool   $has_password Whether the site lets people in with a password.
+ */
+function diluxone_users_wp_login_post_allowed( string $action, bool $has_password ): bool {
+	return in_array( $action, array( '', 'login' ), true ) && $has_password;
+}
+
+/**
  * Does the site take over WordPress's own screens?
  *
  * Three answers. 'auto' is what the plugin always did: take them over only
@@ -149,26 +169,31 @@ function diluxone_users_block_wp_login(): void {
 		return;
 	}
 
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- it is only read to decide the destination.
-	$action = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
-
 	/*
 	 * The escape hatch has to survive the form being submitted. The argument
 	 * arrives in the query the first time, and WordPress's own form posts to
 	 * wp-login.php with nothing after the question mark — so an administrator
 	 * who opened the hatch, saw the form and pressed the button was stopped by
 	 * the next line with no way to explain themselves. It is carried through
-	 * as a hidden field, and read from both places.
+	 * as a hidden field, and read from both places. The action is read the
+	 * same way, because that is how wp-login.php itself reads it.
 	 */
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.NonceVerification.Missing
 	$request = array_merge( (array) $_GET, (array) $_POST );
+	$action  = is_scalar( $request['action'] ?? null ) ? sanitize_key( (string) $request['action'] ) : '';
 
 	if ( ! diluxone_users_should_redirect( $action, $request ) ) {
 		return;
 	}
 
-		// POST to the native form: do not redirect in silence, stop.
 	if ( 'POST' === sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? '' ) ) ) {
+		// The site's own page draws WordPress's password form, and that form
+		// posts here: the screen is taken over, the endpoint is not.
+		if ( diluxone_users_wp_login_post_allowed( $action, diluxone_users_login_has_password() ) ) {
+			return;
+		}
+
+		// A POST to a form the site closed: do not redirect in silence, stop.
 		wp_die(
 			esc_html__( 'This site signs you in without a password: with your email or with a social account.', 'diluxone-users' ),
 			esc_html__( 'Sign in', 'diluxone-users' ),
@@ -190,30 +215,56 @@ function diluxone_users_block_wp_login(): void {
 add_action( 'login_init', 'diluxone_users_block_wp_login' );
 
 /**
- * Turns off WordPress's own registration for as long as "e-mail only" lasts.
+ * WordPress's own registration form stays closed while the e-mail link is the
+ * only way in.
  *
- * Without this, with `users_can_register` on, `wp-signup.php` would go on
- * registering people with a password by e-mail.
+ * That form creates accounts with a password, and on a site where a password
+ * opens nothing it would be handing out keys to a door the site bricked up.
+ * So `users_can_register` reads as off for as long as that lasts — and only
+ * for that. There used to be a three-way option of the plugin's own here
+ * (respect the site / force open / force closed) that filtered the same
+ * setting, and it made Settings → General show one thing and save another
+ * without a word. Now there is one switch, WordPress's, shown in two places,
+ * and this one rule on top of it, said out loud in both.
  *
  * @param mixed $value What came from the option.
  * @return mixed
  */
 function diluxone_users_block_registration( $value ) {
-	$forced = (string) diluxone_users_option( 'diluxone_users_wp_registration' );
-
-	if ( 'on' === $forced ) {
-		return 1;
-	}
-
-	if ( 'off' === $forced ) {
-		return 0;
-	}
-
-	// With nothing forced, "link only" mode turns it off all the same: leaving
-	// it on would register people with a password through a door the site closed.
 	return diluxone_users_login_only_link() ? 0 : $value;
 }
 add_filter( 'option_users_can_register', 'diluxone_users_block_registration' );
+
+/** Is WordPress's registration form locked shut by the plugin right now? */
+function diluxone_users_wp_registration_locked(): bool {
+	return diluxone_users_login_only_link();
+}
+
+/**
+ * Says so next to WordPress's own checkbox.
+ *
+ * Settings → General → "Anyone can register" is the same switch the plugin
+ * shows on the Access screen. While it is locked, ticking it there saves and
+ * changes nothing, which is the kind of thing a person has to be told where
+ * they are standing — not on another screen.
+ */
+function diluxone_users_wp_registration_notice(): void {
+	if ( ! diluxone_users_wp_registration_locked() || ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	printf(
+		'<div class="notice notice-info"><p>%1$s <a href="%2$s">%3$s</a></p></div>',
+		esc_html__( '“Anyone can register” is off and locked: on this site the e-mail link is the only way in, and that form would create accounts with a password. The same switch, and the reason, are on the Access screen.', 'diluxone-users' ),
+		esc_url( diluxone_users_admin_url( 'diluxone-users-login', array( 'tab' => 'register' ) ) ),
+		esc_html__( 'Open it →', 'diluxone-users' )
+	);
+}
+/** Only on that one screen: the notice has nothing to say anywhere else. */
+function diluxone_users_wp_registration_notice_hook(): void {
+	add_action( 'admin_notices', 'diluxone_users_wp_registration_notice' );
+}
+add_action( 'load-options-general.php', 'diluxone_users_wp_registration_notice_hook' );
 
 /* ── The dashboard profile ─────────────────────────────────────────── */
 

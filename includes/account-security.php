@@ -55,10 +55,22 @@ function diluxone_users_security_submit(): void {
 
 	$user_id = get_current_user_id();
 	$target  = diluxone_users_account_url( 'security' );
-	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verificado arriba.
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- verified above.
 	$action = sanitize_key( wp_unslash( $_POST['diluxone_users_security'] ?? '' ) );
+	$code   = sanitize_text_field( wp_unslash( $_POST['diluxone_users_code'] ?? '' ) );
+	// phpcs:enable
 
 	switch ( $action ) {
+		case 'code':
+			// The e-mail code, for whoever has no app: it has to be asked for
+			// before it can be typed.
+			if ( isset( diluxone_users_2fa_available( $user_id )['email'] ) ) {
+				diluxone_users_2fa_email_send( $user_id );
+			}
+
+			wp_safe_redirect( add_query_arg( 'diluxone-users', 'codesent', $target ) );
+			exit;
+
 		case 'on':
 			if ( array() === diluxone_users_2fa_available( $user_id ) ) {
 				wp_safe_redirect( add_query_arg( 'diluxone-users', 'nomethod', $target ) );
@@ -83,15 +95,17 @@ function diluxone_users_security_submit(): void {
 				exit;
 			}
 
+			diluxone_users_security_confirm( $user_id, $code, $target );
+
 			delete_user_meta( $user_id, 'diluxone_users_2fa_on' );
+			// The browsers trusted while it was on are forgotten with it: if
+			// it comes back on, they start from the challenge again.
+			diluxone_users_2fa_forget_browsers( $user_id );
 			diluxone_users_notify_security( $user_id, __( 'Two-step verification was turned off.', 'diluxone-users' ) );
 			wp_safe_redirect( add_query_arg( 'diluxone-users', 'off', $target ) );
 			exit;
 
 		case 'totp':
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verificado arriba.
-			$code = sanitize_text_field( wp_unslash( $_POST['diluxone_users_code'] ?? '' ) );
-
 			if ( ! diluxone_users_totp_activate( $user_id, $code ) ) {
 				wp_safe_redirect( add_query_arg( 'diluxone-users', 'badcode', $target ) );
 				exit;
@@ -108,12 +122,17 @@ function diluxone_users_security_submit(): void {
 			exit;
 
 		case 'totp_off':
+			diluxone_users_security_confirm( $user_id, $code, $target );
+
 			diluxone_users_totp_forget( $user_id );
+			diluxone_users_2fa_forget_browsers( $user_id );
 			diluxone_users_notify_security( $user_id, __( 'The authenticator app was removed.', 'diluxone-users' ) );
 			wp_safe_redirect( add_query_arg( 'diluxone-users', 'totpoff', $target ) );
 			exit;
 
 		case 'backup':
+			diluxone_users_security_confirm( $user_id, $code, $target );
+
 			set_transient( 'diluxone_users_backup_' . $user_id, diluxone_users_backup_generate( $user_id ), 15 * MINUTE_IN_SECONDS );
 			wp_safe_redirect( add_query_arg( 'diluxone-users', 'backup', $target ) );
 			exit;
@@ -123,6 +142,24 @@ function diluxone_users_security_submit(): void {
 	exit;
 }
 add_action( 'admin_post_diluxone_users_security', 'diluxone_users_security_submit' );
+
+/**
+ * Stops an action that weakens the account unless a current code came with it.
+ *
+ * Turning the second step off, removing the app, replacing the backup codes:
+ * with a stolen session — or a script the theme let in — each of those
+ * removes the one thing still standing between the thief and the account. A
+ * session is not enough for them; proof of the second step is, by any method
+ * the person has ready. Without it, this sends them back and does not return.
+ */
+function diluxone_users_security_confirm( int $user_id, string $code, string $target ): void {
+	if ( diluxone_users_2fa_reauth( $user_id, $code ) ) {
+		return;
+	}
+
+	wp_safe_redirect( add_query_arg( 'diluxone-users', 'reauth', $target ) );
+	exit;
+}
 
 /**
  * The freshly generated codes, if they can still be shown.
