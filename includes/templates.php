@@ -115,7 +115,15 @@ function diluxone_users_style_accent(): string {
 function diluxone_users_style_tokens(): string {
 	$tokens = '';
 
-	if ( '' !== trim( (string) diluxone_users_option( 'diluxone_users_style_accent' ) ) ) {
+	/*
+	 * The accent picked on this screen, unless the colours are coming from the
+	 * theme — in which case it is the answer to a question that is no longer
+	 * being asked, and printing it would quietly beat the palette.
+	 */
+	if (
+		! diluxone_users_colors_from_theme()
+		&& '' !== trim( (string) diluxone_users_option( 'diluxone_users_style_accent' ) )
+	) {
 		$accent  = (string) sanitize_hex_color( diluxone_users_style_accent() );
 		$tokens .= '--diluxone-users-accent:' . $accent . ';';
 		$tokens .= '--diluxone-users-accent-bg:' . $accent . ';';
@@ -164,7 +172,9 @@ function diluxone_users_style_css(): string {
 	$tokens = diluxone_users_style_tokens();
 	$css    = '' === $tokens ? '' : ':root{' . $tokens . '}';
 
-	return $css . diluxone_users_notice_css() . diluxone_users_account_css();
+	// The theme's palette goes first, so the plugin's own answers — an accent
+	// picked on this screen, a button shape — still land on top of it.
+	return diluxone_users_theme_colors_css() . $css . diluxone_users_notice_css() . diluxone_users_account_css();
 }
 
 /**

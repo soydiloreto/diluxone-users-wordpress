@@ -237,6 +237,34 @@ Set them wherever you like — `:root`, the page, the block:
 }
 ```
 
+### The theme's colours
+
+The plugin can take its palette from the active theme instead of having one:
+Design → Your brand → "Use my theme's colours". It reads what the theme
+publishes in its `theme.json`, through `wp_get_global_settings()`, and maps it
+onto `--diluxone-users-accent` and the rest.
+
+Which colour plays which part is asked and not assumed. A theme whose slugs
+follow the names WordPress suggests — `base`, `contrast`, `primary`, `accent`
+— is mapped without anybody being asked; a theme that numbers its colours is
+not guessed at, and the screen shows the palette with a list per part.
+
+Many themes publish variables rather than colours — Astra hands over
+`var(--ast-global-color-0)`. Those are kept as they are rather than resolved,
+so the plugin follows the theme live, including whatever the theme does in
+dark mode.
+
+```php
+// A theme that keeps its colours somewhere of its own adds them here.
+add_filter( 'diluxone_users_theme_palette', function ( array $palette ): array {
+    $palette['brand'] = array( 'name' => 'Brand', 'color' => 'var(--my-brand)' );
+    return $palette;
+} );
+```
+
+Values are checked before they reach the stylesheet: a hex, an `rgb()/rgba()`,
+an `hsl()/hsla()`, or a `var(--name)`. Anything else is dropped.
+
 ### Headings are the theme's
 
 There is no property here for the size of a heading, and there will not be

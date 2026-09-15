@@ -469,10 +469,75 @@ function diluxone_users_screen_design_brand(): void {
 			</td>
 		</tr>
 		<tr>
+			<th scope="row"><?php esc_html_e( 'The colours', 'diluxone-users' ); ?></th>
+			<td>
+				<?php
+				$diluxone_users_palette = diluxone_users_theme_palette();
+				$diluxone_users_theme   = wp_get_theme()->get( 'Name' );
+				?>
+				<label class="diluxone-users-roles__item">
+					<input type="radio" name="diluxone_users_colors" value="own" <?php checked( ! diluxone_users_colors_from_theme() ); ?>>
+					<?php esc_html_e( 'The plugin’s own, set below', 'diluxone-users' ); ?>
+				</label>
+				<label class="diluxone-users-roles__item">
+					<input type="radio" name="diluxone_users_colors" value="theme" <?php checked( diluxone_users_colors_from_theme() ); ?> <?php disabled( array() === $diluxone_users_palette ); ?>>
+					<?php
+					printf(
+						/* translators: %s: the active theme's name */
+						esc_html__( 'Use my theme’s colours — %s', 'diluxone-users' ),
+						esc_html( $diluxone_users_theme )
+					);
+					?>
+				</label>
+
+				<?php if ( array() === $diluxone_users_palette ) : ?>
+					<p class="description"><?php esc_html_e( 'Your theme publishes no palette, so there is nothing to borrow. A theme declares one in its theme.json; most themes written since 2022 do.', 'diluxone-users' ); ?></p>
+				<?php else : ?>
+					<p class="description"><?php esc_html_e( 'The palette your theme publishes, used live: where it hands over a variable rather than a colour — most themes do — this follows the theme even into its dark mode.', 'diluxone-users' ); ?></p>
+				<?php endif; ?>
+			</td>
+		</tr>
+
+		<?php if ( array() !== $diluxone_users_palette ) : ?>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Which colour does what', 'diluxone-users' ); ?></th>
+				<td>
+					<?php
+					/*
+					 * The one thing that cannot be known from outside. A slug
+					 * called "primary" is the brand on most themes and is
+					 * something else on some, and a theme that numbers its
+					 * colours says nothing at all. So: guessed where the slug
+					 * says so, asked where it does not, and always shown.
+					 */
+					$diluxone_users_map = diluxone_users_color_map();
+
+					foreach ( diluxone_users_color_roles() as $diluxone_users_role => $diluxone_users_what ) :
+						$diluxone_users_now = $diluxone_users_map[ $diluxone_users_role ] ?? '';
+						?>
+						<p class="diluxone-users-palette__row">
+							<span class="diluxone-users-palette__chip" style="background: <?php echo esc_attr( '' !== $diluxone_users_now ? $diluxone_users_palette[ $diluxone_users_now ]['color'] : 'transparent' ); ?>" aria-hidden="true"></span>
+							<select name="diluxone_users_color_map[<?php echo esc_attr( $diluxone_users_role ); ?>]">
+								<option value=""><?php esc_html_e( '— leave it to the plugin', 'diluxone-users' ); ?></option>
+								<?php foreach ( $diluxone_users_palette as $diluxone_users_slug => $diluxone_users_colour ) : ?>
+									<option value="<?php echo esc_attr( $diluxone_users_slug ); ?>" <?php selected( $diluxone_users_now, $diluxone_users_slug ); ?>>
+										<?php echo esc_html( $diluxone_users_colour['name'] ); ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+							<span class="description"><?php echo esc_html( $diluxone_users_what ); ?></span>
+						</p>
+					<?php endforeach; ?>
+					<p class="description"><?php esc_html_e( 'Pre-filled from the names your theme uses, where they say enough. A theme that numbers its colours is not guessed at — that is what these are for.', 'diluxone-users' ); ?></p>
+				</td>
+			</tr>
+		<?php endif; ?>
+
+		<tr>
 			<th scope="row"><label for="diluxone_users_style_accent"><?php esc_html_e( 'Accent colour', 'diluxone-users' ); ?></label></th>
 			<td>
-				<input type="color" id="diluxone_users_style_accent" name="diluxone_users_style_accent" value="<?php echo esc_attr( diluxone_users_style_accent() ); ?>">
-				<p class="description"><?php esc_html_e( 'Buttons, the open tab, links and the drawn avatars.', 'diluxone-users' ); ?></p>
+				<input type="color" id="diluxone_users_style_accent" name="diluxone_users_style_accent" value="<?php echo esc_attr( diluxone_users_style_accent() ); ?>" <?php disabled( diluxone_users_colors_from_theme() ); ?>>
+				<p class="description"><?php esc_html_e( 'Buttons, the open tab, links and the drawn avatars. With the theme’s colours in use this is not read: the palette answers it.', 'diluxone-users' ); ?></p>
 			</td>
 		</tr>
 		<tr>

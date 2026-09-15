@@ -34,6 +34,9 @@ function diluxone_users_design_brand_save(): void {
 	diluxone_users_save_options(
 		array(
 			'diluxone_users_styles'        => isset( $_POST['diluxone_users_styles'] ) ? 1 : 0,
+			'diluxone_users_colors'        => 'theme' === sanitize_key( wp_unslash( $_POST['diluxone_users_colors'] ?? '' ) ) ? 'theme' : 'own',
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- the saver sanitises the map key by key.
+			'diluxone_users_color_map'     => (array) wp_unslash( $_POST['diluxone_users_color_map'] ?? array() ),
 			'diluxone_users_style_accent'  => sanitize_hex_color( wp_unslash( $_POST['diluxone_users_style_accent'] ?? '' ) ) ?? '',
 			'diluxone_users_style_radius'  => sanitize_text_field( wp_unslash( $_POST['diluxone_users_style_radius'] ?? '' ) ),
 			'diluxone_users_style_control' => sanitize_text_field( wp_unslash( $_POST['diluxone_users_style_control'] ?? '' ) ),

@@ -223,6 +223,14 @@ function diluxone_users_option_defaults(): array {
 		// ── Appearance ────────────────────────────────────────────────
 		// The plugin stylesheet. Off, the site styles the diluxone-users-* classes.
 		'diluxone_users_styles'              => 1,
+		// Where the colours come from: 'own' the ones below, 'theme' the
+		// palette the active theme publishes in its theme.json. The second is
+		// what stops a site from having to write a stylesheet that repoints
+		// every token by hand and then goes stale.
+		'diluxone_users_colors'              => 'own',
+		// Which colour of that palette plays which part. Empty means whatever
+		// the slugs suggested; a part left empty here is left to the plugin.
+		'diluxone_users_color_map'           => array(),
 		// The two values that change everything else, because the rest of the
 		// sheet derives from them. Empty = the ones the sheet ships with.
 		'diluxone_users_style_accent'        => '',
@@ -504,10 +512,25 @@ function diluxone_users_save_options( array $input ): void {
 			continue;
 		}
 
-		// A list of keys — the blocked roles are the only one so far. It is
+		// A list of keys — the blocked roles, the second-factor methods. It is
 		// stored sanitised element by element and with no stray indexes.
 		if ( is_array( $default ) ) {
-			update_option( $key, array_values( array_unique( array_map( 'sanitize_key', (array) $value ) ) ) );
+			$clean = array();
+
+			foreach ( (array) $value as $one_key => $one ) {
+				// A map keeps its keys; a list does not have any worth
+				// keeping. Both arrive here and both have to come out
+				// sanitised, which is why the key is looked at rather than
+				// assumed.
+				if ( is_string( $one_key ) ) {
+					$clean[ sanitize_key( $one_key ) ] = sanitize_key( (string) $one );
+					continue;
+				}
+
+				$clean[] = sanitize_key( (string) $one );
+			}
+
+			update_option( $key, array() === $clean || isset( $clean[0] ) ? array_values( array_unique( $clean ) ) : $clean );
 			continue;
 		}
 
