@@ -122,16 +122,25 @@
 	transition: border-color .12s ease, background .12s ease;
 }
 .du-choices .du-choice { margin: 0; }
+/* `is-on` is what the server drew; `:has(input:checked)` is what is true
+   right now. When they disagree — somebody just picked another card — what
+   is true wins, so a group never shows two cards chosen at once. */
+.du-choice.is-on:not(:has(input:checked)) {
+	border-color: var(--du-line);
+	background: var(--du-ground);
+}
 .du-choice:hover,
 .diluxone-users-admin .diluxone-users-roles__item:hover { border-color: var(--du-accent-edge, #8c8f94); }
 
 /* Chosen: the accent, washed, so which one is on is seen from across the
    room and not by finding the filled circle. */
+.du-choice:has(input:checked),
 .du-choice.is-on,
 .diluxone-users-admin .diluxone-users-roles__item:has(input:checked) {
 	border-color: var(--du-accent, #2271b1);
 	background: var(--du-accent-wash, #f0f6fc);
 }
+.du-choice:has(input:disabled),
 .du-choice.is-locked,
 .diluxone-users-admin .diluxone-users-roles__item:has(input:disabled) {
 	opacity: .65;
@@ -980,6 +989,37 @@
 .diluxone-users-row--dim .diluxone-users-not-now { opacity: 1; }
 table.diluxone-users-row--dim th, table.diluxone-users-row--dim td > *:not(.diluxone-users-not-now) { opacity: .55; }
 
+/* The "everybody / only some roles" control keeps WordPress's plain radios:
+   it is a qualifier on the question above it, not a question of its own, and
+   drawing it as cards would give it the same weight as the thing it
+   qualifies. What it does get is the room to read as a group. */
+.diluxone-users-admin [data-diluxone-users-scope] { margin: var(--du-2) 0 0; }
+.diluxone-users-admin [data-diluxone-users-scope] > label {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--du-1);
+	margin-right: var(--du-4);
+	font-size: 13px;
+}
+.diluxone-users-admin [data-diluxone-users-scope] > br { display: none; }
+.diluxone-users-admin .diluxone-users-scope__roles {
+	margin: var(--du-2) 0 0;
+	padding: var(--du-3) var(--du-4);
+	border: 1px solid var(--du-line);
+	border-radius: var(--du-radius-sm);
+	background: var(--du-ground-alt);
+}
+.diluxone-users-admin .diluxone-users-scope__roles .diluxone-users-roles__item {
+	display: inline-flex;
+	max-width: none;
+	margin: 0 var(--du-4) var(--du-1) 0;
+	padding: 0;
+	border: 0;
+	background: none;
+	font-size: 13px;
+}
+.diluxone-users-admin .diluxone-users-scope__roles .diluxone-users-roles__item:has(input:checked) { background: none; }
+
 /* A role that is never reached, on the list and not choosable. */
 .diluxone-users-roles__item--fixed { opacity: .7; }
 
@@ -1009,7 +1049,10 @@ span.diluxone-users-state {
    WordPress's own, with the open one marked in the scheme's accent instead
    of by being one shade lighter than the rest. Which tab you are on is the
    thing a person loses first on a screen with six of them. */
-.diluxone-users-admin .nav-tab-wrapper { border-bottom: 1px solid var(--du-line, #c3c4c7); }
+.diluxone-users-admin .nav-tab-wrapper {
+	margin-bottom: var(--du-5, 24px);
+	border-bottom: 1px solid var(--du-line, #c3c4c7);
+}
 .diluxone-users-admin .nav-tab {
 	border-bottom: 0;
 	font-size: 13px;

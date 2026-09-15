@@ -82,17 +82,6 @@ function diluxone_users_notice_origin( string $key ): string {
 }
 
 /**
- * Is a code by e-mail one of the second steps this site offers?
- *
- * Two settings have to agree: two-step verification has to be on at all, and
- * the e-mail has to be among its methods. Either alone sends no code.
- */
-function diluxone_users_notice_2fa_email(): bool {
-	return 'off' !== (string) diluxone_users_option( 'diluxone_users_2fa_mode' )
-		&& in_array( 'email', (array) diluxone_users_option( 'diluxone_users_2fa_methods' ), true );
-}
-
-/**
  * Everything that leaves this site by e-mail, one row each.
  *
  * First the notices with a rule, then the ones nobody can refuse. The latter
@@ -190,30 +179,32 @@ function diluxone_users_screen_notices_rules(): void {
 		return;
 	}
 	?>
-	<table class="form-table diluxone-users-rules" role="presentation">
-		<?php foreach ( $prefs as $key => $notice ) : ?>
-			<?php $policy = diluxone_users_notice_policy( (string) $key ); ?>
-			<tr>
-				<th scope="row">
-					<label for="diluxone_users_notice_rules_<?php echo esc_attr( (string) $key ); ?>"><?php echo esc_html( (string) $notice['label'] ); ?></label>
-					<?php if ( '' !== (string) ( $notice['help'] ?? '' ) ) : ?>
-						<p class="description"><?php echo esc_html( (string) $notice['help'] ); ?></p>
-					<?php endif; ?>
-				</th>
-				<td>
-					<select id="diluxone_users_notice_rules_<?php echo esc_attr( (string) $key ); ?>" name="diluxone_users_notice_rules[<?php echo esc_attr( (string) $key ); ?>]">
-						<?php foreach ( $policies as $value => $words ) : ?>
-							<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $policy, $value ); ?>><?php echo esc_html( $words ); ?></option>
-						<?php endforeach; ?>
-					</select>
-					<p class="description">
-						<code><?php echo esc_html( (string) $key ); ?></code>
-						· <?php echo esc_html( diluxone_users_notice_origin( (string) $key ) ); ?>
-					</p>
-				</td>
-			</tr>
-		<?php endforeach; ?>
-	</table>
+	<div class="diluxone-users-rules">
+		<?php
+		/*
+		 * Each notice is one block and not a row of a two-column table: what it
+		 * is called and what it is were in different cells, so the sentence
+		 * explaining a notice sat beside the rule of the one above it. Name,
+		 * rule and explanation now belong to the same piece, in that order.
+		 */
+		foreach ( $prefs as $key => $notice ) :
+			$id     = 'diluxone_users_notice_rules_' . (string) $key;
+			$policy = diluxone_users_notice_policy( (string) $key );
+
+			diluxone_users_ui_field_open( (string) $notice['label'], $id );
+			?>
+			<select id="<?php echo esc_attr( $id ); ?>" name="diluxone_users_notice_rules[<?php echo esc_attr( (string) $key ); ?>]">
+				<?php foreach ( $policies as $value => $words ) : ?>
+					<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $policy, $value ); ?>><?php echo esc_html( $words ); ?></option>
+				<?php endforeach; ?>
+			</select>
+			<?php
+			diluxone_users_ui_field_close(
+				trim( (string) ( $notice['help'] ?? '' ) . '<br><code>' . esc_html( (string) $key ) . '</code> · ' . esc_html( diluxone_users_notice_origin( (string) $key ) ) )
+			);
+		endforeach;
+		?>
+	</div>
 	<?php
 }
 

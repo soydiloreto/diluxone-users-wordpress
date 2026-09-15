@@ -492,145 +492,182 @@ function diluxone_users_screen_field_edit( string $key ): void {
 		<?php wp_nonce_field( 'diluxone_users_field', 'diluxone_users_field_nonce' ); ?>
 		<input type="hidden" name="diluxone_users_field[key]" value="<?php echo esc_attr( $field['key'] ); ?>">
 
-		<table class="form-table" role="presentation">
-			<tr>
-				<th scope="row"><label for="diluxone-users-label"><?php esc_html_e( 'Name', 'diluxone-users' ); ?></label></th>
-				<td>
-					<input type="text" id="diluxone-users-label" name="diluxone_users_field[label]" class="regular-text" value="<?php echo esc_attr( $field['label'] ); ?>" required>
-					<?php if ( ! $fresh ) : ?>
-						<p class="description"><?php esc_html_e( 'Key:', 'diluxone-users' ); ?> <code><?php echo esc_html( $field['key'] ); ?></code> — <?php esc_html_e( 'it cannot change: it is the name the data is stored under.', 'diluxone-users' ); ?></p>
-					<?php else : ?>
-						<p class="description"><?php esc_html_e( 'The key is generated from the name.', 'diluxone-users' ); ?></p>
-					<?php endif; ?>
-				</td>
-			</tr>
-			<tr>
-				<th scope="row"><label for="diluxone-users-type"><?php esc_html_e( 'Type', 'diluxone-users' ); ?></label></th>
-				<td>
-					<?php
-					/*
-					 * WordPress's own come with their type set: changing the type
-					 * of the first name does not improve it, and can break it.
-					 */
-					?>
-					<select id="diluxone-users-type" name="diluxone_users_field[type]" <?php disabled( diluxone_users_field_is_native( $field['key'] ) ); ?>>
-						<?php foreach ( diluxone_users_field_types() as $value => $name ) : ?>
-							<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $field['type'], $value ); ?>><?php echo esc_html( $name ); ?></option>
-						<?php endforeach; ?>
-					</select>
+		<?php diluxone_users_ui_section( __( 'What it is', 'diluxone-users' ) ); ?>
 
-					<?php if ( diluxone_users_field_is_native( $field['key'] ) ) : ?>
-						<input type="hidden" name="diluxone_users_field[type]" value="<?php echo esc_attr( $field['type'] ); ?>">
-						<p class="description"><?php esc_html_e( 'This one is WordPress’s own: it can be renamed, reordered, made required or hidden, but it keeps its type and cannot be deleted.', 'diluxone-users' ); ?></p>
-					<?php else : ?>
-						<p class="description"><?php esc_html_e( '“Country” shows the full list with its dial codes; “Phone with country code” splits the number in two and stores it in international format.', 'diluxone-users' ); ?></p>
-					<?php endif; ?>
-				</td>
-			</tr>
-			<tr>
-				<th scope="row"><?php esc_html_e( 'Who can change it', 'diluxone-users' ); ?></th>
-				<td>
-					<?php
-					$modes = array(
-						'always'  => __( 'Whenever they want', 'diluxone-users' ),
-						'limited' => __( 'Only a few times, and then no more', 'diluxone-users' ),
-						'never'   => __( 'Never — they can see it, only an administrator changes it', 'diluxone-users' ),
-					);
+		<?php diluxone_users_ui_field_open( __( 'Name', 'diluxone-users' ), 'diluxone-users-label' ); ?>
+			<input type="text" id="diluxone-users-label" name="diluxone_users_field[label]" class="regular-text" value="<?php echo esc_attr( $field['label'] ); ?>" required>
+		<?php
+		diluxone_users_ui_field_close(
+			$fresh
+				? __( 'The key is generated from the name.', 'diluxone-users' )
+				: sprintf(
+					/* translators: %s: the key the answers are stored under */
+					__( 'Key: <code>%s</code> — it cannot change: it is the name the data is stored under.', 'diluxone-users' ),
+					esc_html( $field['key'] )
+				)
+		);
+		?>
 
-					foreach ( $modes as $mode_key => $label ) :
+		<?php diluxone_users_ui_field_open( __( 'Type', 'diluxone-users' ), 'diluxone-users-type' ); ?>
+			<?php
+			/*
+			 * WordPress's own come with their type set: changing the type of
+			 * the first name does not improve it, and can break it.
+			 */
+			?>
+			<select id="diluxone-users-type" name="diluxone_users_field[type]" <?php disabled( diluxone_users_field_is_native( $field['key'] ) ); ?>>
+				<?php foreach ( diluxone_users_field_types() as $value => $name ) : ?>
+					<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $field['type'], $value ); ?>><?php echo esc_html( $name ); ?></option>
+				<?php endforeach; ?>
+			</select>
+			<?php if ( diluxone_users_field_is_native( $field['key'] ) ) : ?>
+				<input type="hidden" name="diluxone_users_field[type]" value="<?php echo esc_attr( $field['type'] ); ?>">
+			<?php endif; ?>
+		<?php
+		diluxone_users_ui_field_close(
+			diluxone_users_field_is_native( $field['key'] )
+				? __( 'This one is WordPress’s own: it can be renamed, reordered, made required or hidden, but it keeps its type and cannot be deleted.', 'diluxone-users' )
+				: __( '“Country” shows the full list with its dial codes; “Phone with country code” splits the number in two and stores it in international format.', 'diluxone-users' )
+		);
+		?>
+
+		<?php
+		/*
+		 * "How many times" belongs to the answer that limits them, and to no
+		 * other. Loose underneath the three, it was a number nobody could
+		 * place: it did nothing under two of the answers and the screen never
+		 * said which one it was for.
+		 */
+		diluxone_users_ui_section(
+			__( 'Who can change it', 'diluxone-users' ),
+			__( 'This is about the person the data belongs to. Whoever administers the site can always change it from that person’s profile: otherwise a field with one change in it turns into a typo nobody can fix.', 'diluxone-users' )
+		);
+
+		diluxone_users_ui_choices(
+			array(
+				array(
+					'name'    => 'diluxone_users_field[edit]',
+					'value'   => 'always',
+					'checked' => 'always' === $field['edit'],
+					'title'   => __( 'Whenever they want', 'diluxone-users' ),
+					'help'    => __( 'The field stays open in their account area, and they correct it the day it changes.', 'diluxone-users' ),
+				),
+				array(
+					'name'     => 'diluxone_users_field[edit]',
+					'value'    => 'limited',
+					'checked'  => 'limited' === $field['edit'],
+					'title'    => __( 'Only a few times, and then no more', 'diluxone-users' ),
+					'help'     => __( 'The field closes once they have used up their goes. For what should not keep moving: a document number, a date of birth.', 'diluxone-users' ),
+					'children' => static function () use ( $field ): void {
+						diluxone_users_ui_field_open( __( 'How many times', 'diluxone-users' ), 'diluxone-users-edit-max' );
 						?>
-						<label class="diluxone-users-roles__item">
-							<input type="radio" name="diluxone_users_field[edit]" value="<?php echo esc_attr( $mode_key ); ?>" <?php checked( $field['edit'], $mode_key ); ?>>
-							<?php echo esc_html( $label ); ?>
-						</label>
-					<?php endforeach; ?>
-
-					<p class="diluxone-users-if-type-edit">
-						<label for="diluxone-users-edit-max"><?php esc_html_e( 'How many times', 'diluxone-users' ); ?></label>
 						<input type="number" id="diluxone-users-edit-max" name="diluxone_users_field[edit_max]" min="1" max="99" class="small-text" value="<?php echo esc_attr( (string) $field['edit_max'] ); ?>">
-					</p>
-
-					<p class="description"><?php esc_html_e( 'This is about the person who owns the data. An administrator can always change it, from the user’s profile: otherwise a one-change field turns into a typo nobody can fix.', 'diluxone-users' ); ?></p>
-				</td>
-			</tr>
-			<tr>
-				<th scope="row"><label for="diluxone-users-group"><?php esc_html_e( 'Where it goes', 'diluxone-users' ); ?></label></th>
-				<td>
-					<select id="diluxone-users-group" name="diluxone_users_field[group]">
-						<?php foreach ( diluxone_users_groups() as $g => $g_label ) : ?>
-							<option value="<?php echo esc_attr( $g ); ?>" <?php selected( $field['group'], $g ); ?>><?php echo esc_html( $g_label ); ?></option>
-						<?php endforeach; ?>
-					</select>
-					<p class="description"><?php esc_html_e( 'The profile form shows two blocks: the essentials first, and underneath the optional ones with their own explanation. This decides which one the field lands in.', 'diluxone-users' ); ?></p>
-				</td>
-			</tr>
-			<tr>
-				<th scope="row"><label for="diluxone-users-help"><?php esc_html_e( 'Help text', 'diluxone-users' ); ?></label></th>
-				<td>
-					<input type="text" id="diluxone-users-help" name="diluxone_users_field[help]" class="large-text" value="<?php echo esc_attr( $field['help'] ); ?>">
-					<p class="description"><?php esc_html_e( 'Why we are asking. Shown under the field.', 'diluxone-users' ); ?></p>
-				</td>
-			</tr>
-			<tr class="diluxone-users-if-type" data-type="text textarea email url number datalist phone">
-				<th scope="row"><label for="diluxone-users-placeholder"><?php esc_html_e( 'Placeholder text', 'diluxone-users' ); ?></label></th>
-				<td>
-					<input type="text" id="diluxone-users-placeholder" name="diluxone_users_field[placeholder]" class="regular-text" value="<?php echo esc_attr( $field['placeholder'] ); ?>">
-					<p class="description"><?php esc_html_e( 'Shown in grey inside the empty field.', 'diluxone-users' ); ?></p>
-				</td>
-			</tr>
-			<tr class="diluxone-users-if-type" data-type="select datalist">
-				<th scope="row"><label for="diluxone-users-options"><?php esc_html_e( 'Values', 'diluxone-users' ); ?></label></th>
-				<td>
-					<textarea id="diluxone-users-options" name="diluxone_users_field[options]" class="large-text code" rows="5"><?php echo esc_textarea( implode( "\n", 'country' === $field['type'] || 'phone' === $field['type'] ? array() : $field['options'] ) ); ?></textarea>
-					<p class="description"><?php esc_html_e( 'One per line. In a fixed list they are the only accepted values; in text with suggestions they are just hints and the person can write something else.', 'diluxone-users' ); ?></p>
-				</td>
-			</tr>
-
-			<tr class="diluxone-users-if-type" data-type="country">
-				<th scope="row"><label for="diluxone-users-preferred"><?php esc_html_e( 'Countries shown first', 'diluxone-users' ); ?></label></th>
-				<td>
-					<select id="diluxone-users-preferred" name="diluxone_users_field[preferred][]" multiple size="8" class="diluxone-users-multi">
-						<?php foreach ( diluxone_users_countries_sorted() as $iso => $country_name ) : ?>
-							<option value="<?php echo esc_attr( $iso ); ?>" <?php selected( in_array( $iso, $field['options'], true ) ); ?>>
-								<?php echo esc_html( $country_name ); ?>
-							</option>
-						<?php endforeach; ?>
-					</select>
-					<p class="description">
 						<?php
-						printf(
-								/* translators: %d: number of countries */
-							esc_html__( 'Optional. The list of %d countries comes with the plugin — there is nothing to load. These ones go on top, separated from the rest, so nobody has to scroll to find the one next door.', 'diluxone-users' ),
-							count( diluxone_users_countries() )
-						);
-						?>
-					</p>
-				</td>
-			</tr>
+						diluxone_users_ui_field_close( __( 'Counted one person at a time, and only for the changes they make themselves: saving the same thing again spends nothing, and an administrator fixing it spends nobody’s goes.', 'diluxone-users' ) );
+					},
+				),
+				array(
+					'name'    => 'diluxone_users_field[edit]',
+					'value'   => 'never',
+					'checked' => 'never' === $field['edit'],
+					'title'   => __( 'Never: they see it, and whoever administers changes it', 'diluxone-users' ),
+					'help'    => __( 'It is shown to them and cannot be typed in. For what the site decides and not the person: a membership number, a category.', 'diluxone-users' ),
+				),
+			)
+		);
+	?>
 
-			<tr class="diluxone-users-if-type" data-type="phone">
-				<th scope="row"><label for="diluxone-users-default-country"><?php esc_html_e( 'Country selected by default', 'diluxone-users' ); ?></label></th>
-				<td>
-					<select id="diluxone-users-default-country" name="diluxone_users_field[default_country]">
-						<option value=""><?php esc_html_e( '— None —', 'diluxone-users' ); ?></option>
-						<?php foreach ( diluxone_users_countries_sorted() as $iso => $country_name ) : ?>
-							<option value="<?php echo esc_attr( $iso ); ?>" <?php selected( ( $field['options'][0] ?? '' ), $iso ); ?>>
-								<?php echo esc_html( $country_name . ' +' . diluxone_users_country_dial( $iso ) ); ?>
-							</option>
-						<?php endforeach; ?>
-					</select>
-					<p class="description"><?php esc_html_e( 'The dial code the field comes with. The person can change it: the full list is always there.', 'diluxone-users' ); ?></p>
-				</td>
-			</tr>
+		<?php diluxone_users_ui_section( __( 'What the person sees', 'diluxone-users' ) ); ?>
 
-			<tr>
-				<th scope="row"><?php esc_html_e( 'Behaviour', 'diluxone-users' ); ?></th>
-				<td>
-					<label><input type="checkbox" name="diluxone_users_field[required]" value="1" <?php checked( $field['required'], 1 ); ?>> <?php esc_html_e( 'Required', 'diluxone-users' ); ?></label><br>
-					<label><input type="checkbox" name="diluxone_users_field[active]" value="1" <?php checked( $field['active'], 1 ); ?>> <?php esc_html_e( 'Active: show it in the forms', 'diluxone-users' ); ?></label>
-				</td>
-			</tr>
-		</table>
+		<?php diluxone_users_ui_field_open( __( 'Where it goes', 'diluxone-users' ), 'diluxone-users-group' ); ?>
+			<select id="diluxone-users-group" name="diluxone_users_field[group]">
+				<?php foreach ( diluxone_users_groups() as $g => $g_label ) : ?>
+					<option value="<?php echo esc_attr( $g ); ?>" <?php selected( $field['group'], $g ); ?>><?php echo esc_html( $g_label ); ?></option>
+				<?php endforeach; ?>
+			</select>
+		<?php diluxone_users_ui_field_close( __( 'The profile form shows two blocks: the essentials first, and underneath the optional ones with their own explanation. This decides which one the field lands in.', 'diluxone-users' ) ); ?>
+
+		<?php diluxone_users_ui_field_open( __( 'Help text', 'diluxone-users' ), 'diluxone-users-help' ); ?>
+			<input type="text" id="diluxone-users-help" name="diluxone_users_field[help]" class="large-text" value="<?php echo esc_attr( $field['help'] ); ?>">
+		<?php diluxone_users_ui_field_close( __( 'Why we are asking. Shown under the field.', 'diluxone-users' ) ); ?>
+
+		<?php
+		/*
+		 * The rest of this block belongs to a type and not to every field: a
+		 * date has no list of values and a country needs no placeholder. The
+		 * wrapper is what the script hides — the piece the design system
+		 * draws knows nothing about types, and does not need to.
+		 */
+		?>
+		<div class="diluxone-users-if-type" data-type="text textarea email url number datalist phone">
+			<?php diluxone_users_ui_field_open( __( 'Placeholder text', 'diluxone-users' ), 'diluxone-users-placeholder' ); ?>
+				<input type="text" id="diluxone-users-placeholder" name="diluxone_users_field[placeholder]" class="regular-text" value="<?php echo esc_attr( $field['placeholder'] ); ?>">
+			<?php diluxone_users_ui_field_close( __( 'Shown in grey inside the empty field.', 'diluxone-users' ) ); ?>
+		</div>
+
+		<div class="diluxone-users-if-type" data-type="select datalist">
+			<?php diluxone_users_ui_field_open( __( 'Values', 'diluxone-users' ), 'diluxone-users-options' ); ?>
+				<textarea id="diluxone-users-options" name="diluxone_users_field[options]" class="large-text code" rows="5"><?php echo esc_textarea( implode( "\n", 'country' === $field['type'] || 'phone' === $field['type'] ? array() : $field['options'] ) ); ?></textarea>
+			<?php diluxone_users_ui_field_close( __( 'One per line. In a fixed list they are the only accepted values; in text with suggestions they are just hints and the person can write something else.', 'diluxone-users' ) ); ?>
+		</div>
+
+		<div class="diluxone-users-if-type" data-type="country">
+			<?php diluxone_users_ui_field_open( __( 'Countries shown first', 'diluxone-users' ), 'diluxone-users-preferred' ); ?>
+				<select id="diluxone-users-preferred" name="diluxone_users_field[preferred][]" multiple size="8" class="diluxone-users-multi">
+					<?php foreach ( diluxone_users_countries_sorted() as $iso => $country_name ) : ?>
+						<option value="<?php echo esc_attr( $iso ); ?>" <?php selected( in_array( $iso, $field['options'], true ) ); ?>>
+							<?php echo esc_html( $country_name ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+			<?php
+			diluxone_users_ui_field_close(
+				sprintf(
+					/* translators: %d: number of countries */
+					esc_html__( 'Optional. The list of %d countries comes with the plugin — there is nothing to load. These ones go on top, separated from the rest, so nobody has to scroll to find the one next door.', 'diluxone-users' ),
+					count( diluxone_users_countries() )
+				)
+			);
+			?>
+		</div>
+
+		<div class="diluxone-users-if-type" data-type="phone">
+			<?php diluxone_users_ui_field_open( __( 'Country selected by default', 'diluxone-users' ), 'diluxone-users-default-country' ); ?>
+				<select id="diluxone-users-default-country" name="diluxone_users_field[default_country]">
+					<option value=""><?php esc_html_e( '— None —', 'diluxone-users' ); ?></option>
+					<?php foreach ( diluxone_users_countries_sorted() as $iso => $country_name ) : ?>
+						<option value="<?php echo esc_attr( $iso ); ?>" <?php selected( ( $field['options'][0] ?? '' ), $iso ); ?>>
+							<?php echo esc_html( $country_name . ' +' . diluxone_users_country_dial( $iso ) ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+			<?php diluxone_users_ui_field_close( __( 'The dial code the field comes with. The person can change it: the full list is always there.', 'diluxone-users' ) ); ?>
+		</div>
+
+		<?php
+		diluxone_users_ui_section( __( 'What the form does with it', 'diluxone-users' ) );
+
+		diluxone_users_ui_choices(
+			array(
+				array(
+					'type'    => 'checkbox',
+					'name'    => 'diluxone_users_field[required]',
+					'value'   => '1',
+					'checked' => (bool) $field['required'],
+					'title'   => __( 'Required: no form goes through without it', 'diluxone-users' ),
+					'help'    => __( 'It is also one of the things asked for on the registration form, before the account exists.', 'diluxone-users' ),
+				),
+				array(
+					'type'    => 'checkbox',
+					'name'    => 'diluxone_users_field[active]',
+					'value'   => '1',
+					'checked' => (bool) $field['active'],
+					'title'   => __( 'Active: it shows up in the forms', 'diluxone-users' ),
+					'help'    => __( 'Unticked it leaves every form and keeps both its definition and everything already answered, waiting for the day it comes back.', 'diluxone-users' ),
+				),
+			)
+		);
+		?>
 
 		<?php submit_button( $fresh ? __( 'Add field', 'diluxone-users' ) : __( 'Save field', 'diluxone-users' ) ); ?>
 	</form>

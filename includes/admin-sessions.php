@@ -27,6 +27,7 @@ function diluxone_users_sessions_panels(): void {
 			'position' => 30,
 			'render'   => 'diluxone_users_screen_sessions',
 			'save'     => 'diluxone_users_sessions_save',
+
 			/*
 			 * The tab holds two things that post to two different places: the
 			 * settings, to this screen, and every "close sessions" button, to

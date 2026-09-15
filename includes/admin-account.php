@@ -166,11 +166,17 @@ function diluxone_users_account_actions(): void {
 	$id     = sanitize_key( wp_unslash( $_GET['section'] ) );
 	$action = sanitize_key( wp_unslash( $_GET['diluxone_users_action'] ) );
 
-	$back = array( 'section' => $id );
+	// The tab travels with it: without it the redirect lands on the first tab
+	// of the screen, which is the summary, and the section just turned on is
+	// nowhere to be seen.
+	$back = array(
+		'tab'     => 'sections',
+		'section' => $id,
+	);
 
 	if ( 'delete' === $action ) {
 		diluxone_users_section_delete( $id );
-		$back = array();
+		$back = array( 'tab' => 'sections' );
 	} elseif ( 'on' === $action || 'off' === $action ) {
 		diluxone_users_section_config_save( $id, array( 'enabled' => 'on' === $action ? 1 : 0 ) );
 	}
@@ -191,9 +197,14 @@ function diluxone_users_screen_account(): void {
 /**
  * Its tabs, by the registry, so an add-on can add one of its own.
  *
- * The sections tab keeps its own forms — a list to reorder and a detail to
- * edit are not one settings form — and posts them to admin_init as before;
- * the registry only draws the tab around it.
+ * The sections tab keeps its own forms — a list to reorder, a detail to edit
+ * and the two switches that belong to one of the sections are not one
+ * settings form — and posts them to admin_init as before; the registry only
+ * draws the tab around it.
+ *
+ * There is no tab for what a person may do with their own data. Exporting and
+ * deleting are not a subject of their own: they are one section of the account
+ * area, the one called "Your data", and they are asked for beside it.
  */
 function diluxone_users_account_panels(): void {
 	diluxone_users_register_panel(
@@ -250,17 +261,6 @@ function diluxone_users_account_panels(): void {
 			'save'     => 'diluxone_users_account_dashboard_save',
 		)
 	);
-
-	diluxone_users_register_panel(
-		'diluxone-users-account',
-		'privacy',
-		array(
-			'label'    => __( 'Their data', 'diluxone-users' ),
-			'position' => 50,
-			'render'   => 'diluxone_users_screen_account_privacy',
-			'save'     => 'diluxone_users_account_privacy_save',
-		)
-	);
 }
 add_action( 'diluxone_users_register_panels', 'diluxone_users_account_panels' );
 
@@ -300,7 +300,7 @@ function diluxone_users_account_dashboard_save(): void {
 
 /** What each person can do with their own data. */
 function diluxone_users_account_privacy_save(): void {
-	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the panel verifies it.
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- diluxone_users_account_post() verifies it.
 	diluxone_users_save_options(
 		array(
 			'diluxone_users_privacy_export' => isset( $_POST['diluxone_users_privacy_export'] ) ? 1 : 0,
@@ -333,6 +333,17 @@ function diluxone_users_account_post(): void {
 		diluxone_users_account_back( 'order', $open_box );
 	}
 
+	/*
+	 * The two switches of the "Your data" section. They are saved here and not
+	 * by the panel registry because the sections tab registers no form of its
+	 * own — it has three, and one of them wraps a rich-text editor.
+	 */
+	if ( isset( $_POST['diluxone_users_privacy_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['diluxone_users_privacy_nonce'] ) ), 'diluxone_users_privacy' ) ) {
+		diluxone_users_account_privacy_save();
+
+		diluxone_users_account_back( 'privacy', 'privacy' );
+	}
+
 	if ( isset( $_POST['diluxone_users_seccion_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['diluxone_users_seccion_nonce'] ) ), 'diluxone_users_seccion' ) ) {
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- diluxone_users_section_save() sanitises it field by field.
 		$saved = diluxone_users_section_save( (array) wp_unslash( $_POST['diluxone_users_seccion'] ?? array() ) );
@@ -349,7 +360,13 @@ add_action( 'admin_init', 'diluxone_users_account_post' );
 
 /** Back to the screen, on the right section, with the notice in place. */
 function diluxone_users_account_back( string $msg, string $section = '' ): void {
-	$args = array( 'diluxone_users_msg' => $msg );
+	// Everything that comes through here was posted from the sections tab, so
+	// that is where it goes back to: the tab is not in the POST and without it
+	// the screen opens on its first one.
+	$args = array(
+		'tab'                => 'sections',
+		'diluxone_users_msg' => $msg,
+	);
 
 	if ( '' !== $section ) {
 		$args['section'] = $section;
@@ -365,6 +382,7 @@ function diluxone_users_account_notice(): void {
 		'order'    => array( 'success', __( 'New order saved.', 'diluxone-users' ) ),
 		'guardada' => array( 'success', __( 'Section saved.', 'diluxone-users' ) ),
 		'borrada'  => array( 'success', __( 'Section removed.', 'diluxone-users' ) ),
+		'privacy'  => array( 'success', __( 'Saved.', 'diluxone-users' ) ),
 		'error'    => array( 'error', __( 'That section needs a name, and an address that is not taken.', 'diluxone-users' ) ),
 	);
 
@@ -399,7 +417,19 @@ function diluxone_users_screen_account_sections(): void {
 	<div class="diluxone-users-endpoints">
 		<div class="diluxone-users-endpoints__head">
 			<h2><?php esc_html_e( 'The sections of “my account”', 'diluxone-users' ); ?></h2>
-			<a class="button button-primary" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-account', array( 'section' => 'diluxone-users-new' ) ) ); ?>"><?php esc_html_e( 'Add section', 'diluxone-users' ); ?></a>
+			<a class="button button-primary" href="
+			<?php
+			echo esc_url(
+				diluxone_users_admin_url(
+					'diluxone-users-account',
+					array(
+						'tab'     => 'sections',
+						'section' => 'diluxone-users-new',
+					)
+				)
+			);
+			?>
+			"><?php esc_html_e( 'Add section', 'diluxone-users' ); ?></a>
 		</div>
 
 		<div class="diluxone-users-endpoints__body">
@@ -410,7 +440,19 @@ function diluxone_users_screen_account_sections(): void {
 					<?php foreach ( $sections as $id => $section ) : ?>
 						<li class="diluxone-users-endpoint <?php echo $id === $actual ? 'is-current' : ''; ?> <?php echo $section['enabled'] && diluxone_users_section_available( $section ) ? '' : 'is-off'; ?>">
 							<input type="hidden" name="diluxone_users_orden[]" value="<?php echo esc_attr( $id ); ?>">
-							<a class="diluxone-users-endpoint__name" href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-account', array( 'section' => $id ) ) ); ?>"><?php echo esc_html( $section['label'] ); ?></a>
+							<a class="diluxone-users-endpoint__name" href="
+						<?php
+						echo esc_url(
+							diluxone_users_admin_url(
+								'diluxone-users-account',
+								array(
+									'tab'     => 'sections',
+									'section' => $id,
+								)
+							)
+						);
+						?>
+						"><?php echo esc_html( $section['label'] ); ?></a>
 							<span class="diluxone-users-endpoint__grip" aria-hidden="true"></span>
 						</li>
 					<?php endforeach; ?>
@@ -429,7 +471,21 @@ function diluxone_users_screen_account_sections(): void {
 			</form>
 
 			<div class="diluxone-users-endpoints__detail">
-				<?php diluxone_users_screen_account_section( $actual, $sections, $page ); ?>
+				<?php
+				/*
+				 * The two switches of "Your data" are asked for above the
+				 * section itself, because they are what is in it and what
+				 * decides whether it is shown at all. Above and not below: a
+				 * section that says it is on but is not showing says so at the
+				 * top of the detail, and the answer has to be within reach of
+				 * the question.
+				 */
+				if ( 'privacy' === $actual ) {
+					diluxone_users_screen_account_privacy();
+				}
+
+				diluxone_users_screen_account_section( $actual, $sections, $page );
+				?>
 			</div>
 		</div>
 	</div>
@@ -774,7 +830,13 @@ function diluxone_users_screen_account_summary(): void {
 						)
 					)
 				),
-				'url'    => $tab( 'privacy' ),
+				'url'    => diluxone_users_admin_url(
+					'diluxone-users-account',
+					array(
+						'tab'     => 'sections',
+						'section' => 'privacy',
+					)
+				),
 			),
 		)
 	);
@@ -834,106 +896,172 @@ function diluxone_users_screen_account_page(): void {
 	<?php
 }
 
-/** The two things WordPress shows a signed-in person that the site may not want. */
+/**
+ * The two things WordPress shows a signed-in person that the site may not want.
+ *
+ * The roles that keep the toolbar hang off the one answer that needs them —
+ * "only for some roles" — instead of sitting in a row underneath it. Three
+ * rows down, a list of roles is a list of roles; inside the option it belongs
+ * to, it is the rest of the sentence.
+ */
 function diluxone_users_screen_account_dashboard(): void {
-	$page = (int) diluxone_users_account_page_id();
-	$bar  = 'hide' === (string) diluxone_users_option( 'diluxone_users_admin_bar' )
+	$page    = (int) diluxone_users_account_page_id();
+	$profile = (string) diluxone_users_option( 'diluxone_users_wp_profile' );
+	$bar     = 'hide' === (string) diluxone_users_option( 'diluxone_users_admin_bar' )
 		? ( 'some' === (string) diluxone_users_option( 'diluxone_users_admin_bar_scope' ) ? 'hide-some' : 'hide-all' )
 		: 'wp';
 
 	diluxone_users_intro( __( 'Two things WordPress shows to anybody signed in — its own profile screen and its toolbar — that a site with an account area of its own may not want.', 'diluxone-users' ) );
-	?>
-	<table class="form-table" role="presentation">
-		<tr>
-			<th scope="row"><?php esc_html_e( 'The dashboard profile (wp-admin/profile.php)', 'diluxone-users' ); ?></th>
-			<td>
-				<?php if ( $page <= 0 ) : ?>
-					<?php diluxone_users_not_now( __( 'There is no account area to send anybody to, so the second answer does nothing yet.', 'diluxone-users' ), diluxone_users_admin_url( 'diluxone-users-account', array( 'tab' => 'page' ) ), __( 'Choose the page →', 'diluxone-users' ) ); ?>
-				<?php endif; ?>
-				<?php
-				$profile = array(
-					'allow'    => __( 'Leave it as WordPress ships it', 'diluxone-users' ),
-					'redirect' => __( 'Send people to their account on the site instead', 'diluxone-users' ),
-					'block'    => __( 'Close it — their details are edited on the site only', 'diluxone-users' ),
-				);
 
-				foreach ( $profile as $key => $label ) :
-					?>
-					<label class="diluxone-users-roles__item">
-						<input type="radio" name="diluxone_users_wp_profile" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_wp_profile' ), $key ); ?>>
-						<?php echo esc_html( $label ); ?>
-					</label>
-				<?php endforeach; ?>
-				<p class="description"><?php esc_html_e( 'The dashboard profile does not know about the required fields or the edit limits set up here. Two screens for the same data is how a person ends up editing their name in one and their phone in the other, under different rules.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'For whom', 'diluxone-users' ); ?></th>
-			<td>
-				<?php
-				diluxone_users_scope_control(
-					'diluxone_users_wp_profile',
-					'',
-					__( 'Whoever can edit users is never reached: they are the person who has to be able to fix what broke, and the dashboard profile is where it gets fixed.', 'diluxone-users' )
-				);
-				?>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'The WordPress toolbar', 'diluxone-users' ); ?></th>
-			<td>
-				<?php
-				$bars = array(
-					'wp'        => __( 'Show it to everybody, as WordPress does', 'diluxone-users' ),
-					'hide-all'  => __( 'Hide it on the site for everybody', 'diluxone-users' ),
-					'hide-some' => __( 'Hide it on the site only for some roles', 'diluxone-users' ),
-				);
+	diluxone_users_ui_section(
+		__( 'The dashboard profile (wp-admin/profile.php)', 'diluxone-users' ),
+		__( 'It does not know about the required fields or the edit limits set up here. Two screens for the same data is how somebody ends up editing their name in one and their phone in the other, under different rules.', 'diluxone-users' )
+	);
 
-				foreach ( $bars as $key => $label ) :
-					?>
-					<label class="diluxone-users-roles__item">
-						<input type="radio" name="diluxone_users_admin_bar" value="<?php echo esc_attr( $key ); ?>" <?php checked( $bar, $key ); ?> data-diluxone-users-bar>
-						<?php echo esc_html( $label ); ?>
-					</label>
-				<?php endforeach; ?>
+	if ( $page <= 0 ) {
+		diluxone_users_not_now(
+			__( 'There is no account area to send anybody to, so the second answer does nothing yet.', 'diluxone-users' ),
+			diluxone_users_admin_url( 'diluxone-users-account', array( 'tab' => 'page' ) ),
+			__( 'Choose the page →', 'diluxone-users' )
+		);
+	}
 
-				<div class="diluxone-users-scope__roles" data-diluxone-users-bar-roles <?php echo 'hide-some' === $bar ? '' : 'hidden'; ?>>
-					<?php
-					$diluxone_users_fixed = diluxone_users_option( 'diluxone_users_admin_bar_keep_admins' ) ? diluxone_users_roles_that_edit_users() : array();
-					$diluxone_users_roles = (array) diluxone_users_option( 'diluxone_users_admin_bar_roles' );
+	diluxone_users_ui_choices(
+		array(
+			array(
+				'name'    => 'diluxone_users_wp_profile',
+				'value'   => 'allow',
+				'checked' => 'allow' === $profile,
+				'title'   => __( 'Leave it as WordPress ships it', 'diluxone-users' ),
+				'help'    => __( 'Anybody who can reach the dashboard edits their details there as well as on the site.', 'diluxone-users' ),
+			),
+			array(
+				'name'    => 'diluxone_users_wp_profile',
+				'value'   => 'redirect',
+				'checked' => 'redirect' === $profile,
+				'title'   => __( 'Send people to their account on the site instead', 'diluxone-users' ),
+				'help'    => __( 'Opening it lands them on the account page. One screen for their details, and it is the one this plugin knows the rules of.', 'diluxone-users' ),
+			),
+			array(
+				'name'    => 'diluxone_users_wp_profile',
+				'value'   => 'block',
+				'checked' => 'block' === $profile,
+				'title'   => __( 'Close it — their details are edited on the site only', 'diluxone-users' ),
+				'help'    => __( 'The screen answers that it is not available. For a site where the dashboard is not part of what people were given.', 'diluxone-users' ),
+			),
+		)
+	);
+
+	diluxone_users_ui_field_open( __( 'For whom', 'diluxone-users' ) );
+	diluxone_users_scope_control(
+		'diluxone_users_wp_profile',
+		'',
+		__( 'Whoever can edit users is never reached: they are the person who has to be able to fix what broke, and the dashboard profile is where it gets fixed.', 'diluxone-users' )
+	);
+	diluxone_users_ui_field_close();
+
+	diluxone_users_ui_section(
+		__( 'The WordPress toolbar', 'diluxone-users' ),
+		__( 'The black strip across the top of the site. Hiding it locks nobody out — /wp-admin stays open — which is why this is a choice and not a rule.', 'diluxone-users' )
+	);
+
+	diluxone_users_ui_choices(
+		array(
+			array(
+				'name'    => 'diluxone_users_admin_bar',
+				'value'   => 'wp',
+				'checked' => 'wp' === $bar,
+				'title'   => __( 'Show it to everybody, as WordPress does', 'diluxone-users' ),
+				'help'    => __( 'Whoever is signed in sees the strip on the site, with the way back to the dashboard in it.', 'diluxone-users' ),
+			),
+			array(
+				'name'    => 'diluxone_users_admin_bar',
+				'value'   => 'hide-all',
+				'checked' => 'hide-all' === $bar,
+				'title'   => __( 'Hide it on the site for everybody', 'diluxone-users' ),
+				'help'    => __( 'The site looks the same signed in as signed out. The dashboard keeps its own toolbar.', 'diluxone-users' ),
+			),
+			array(
+				'name'     => 'diluxone_users_admin_bar',
+				'value'    => 'hide-some',
+				'checked'  => 'hide-some' === $bar,
+				'title'    => __( 'Hide it on the site only for some roles', 'diluxone-users' ),
+				'help'     => __( 'The usual answer for a site with members: the strip goes for them and stays for whoever runs the place.', 'diluxone-users' ),
+				// The roles live inside the answer that needs them, and appear
+				// with it.
+				'children' => static function (): void {
+					$fixed = diluxone_users_option( 'diluxone_users_admin_bar_keep_admins' ) ? diluxone_users_roles_that_edit_users() : array();
+					$roles = (array) diluxone_users_option( 'diluxone_users_admin_bar_roles' );
+
+					diluxone_users_ui_field_open( __( 'The roles it is hidden from', 'diluxone-users' ) );
+
+					// The same wrapper the other role pickers use: inside it a
+					// role is a line in a list, and not a card of its own. A
+					// dozen cards for a dozen roles is a screen that scrolls.
+					echo '<div class="diluxone-users-scope__roles">';
 
 					foreach ( wp_roles()->get_names() as $diluxone_users_role => $diluxone_users_label ) :
-						?>
-						<?php if ( in_array( (string) $diluxone_users_role, $diluxone_users_fixed, true ) ) : ?>
+						if ( in_array( (string) $diluxone_users_role, $fixed, true ) ) :
+							?>
 							<label class="diluxone-users-roles__item diluxone-users-roles__item--fixed">
 								<input type="checkbox" disabled>
 								<?php echo esc_html( translate_user_role( $diluxone_users_label ) ); ?>
 								<span class="description"><?php esc_html_e( '— always keeps it', 'diluxone-users' ); ?></span>
 							</label>
-						<?php else : ?>
+							<?php
+						else :
+							?>
 							<label class="diluxone-users-roles__item">
-								<input type="checkbox" name="diluxone_users_admin_bar_roles[]" value="<?php echo esc_attr( (string) $diluxone_users_role ); ?>" <?php checked( in_array( (string) $diluxone_users_role, $diluxone_users_roles, true ) ); ?>>
+								<input type="checkbox" name="diluxone_users_admin_bar_roles[]" value="<?php echo esc_attr( (string) $diluxone_users_role ); ?>" <?php checked( in_array( (string) $diluxone_users_role, $roles, true ) ); ?>>
 								<?php echo esc_html( translate_user_role( $diluxone_users_label ) ); ?>
 							</label>
-						<?php endif; ?>
-					<?php endforeach; ?>
-				</div>
+							<?php
+						endif;
+					endforeach;
 
-				<label class="diluxone-users-roles__item">
-					<input type="checkbox" name="diluxone_users_admin_bar_keep_admins" value="1" <?php checked( diluxone_users_option( 'diluxone_users_admin_bar_keep_admins' ), 1 ); ?>>
-					<?php esc_html_e( 'Whoever can edit users always keeps it, whatever is chosen above', 'diluxone-users' ); ?>
-				</label>
-				<p class="description"><?php esc_html_e( 'Hiding the toolbar locks nobody out — /wp-admin stays open — which is why this is a choice and not a rule. It is on because the person who administers the site is the one who most needs the way back.', 'diluxone-users' ); ?></p>
+					echo '</div>';
 
-				<label class="diluxone-users-roles__item">
-					<input type="checkbox" name="diluxone_users_bar_account" value="1" <?php checked( diluxone_users_option( 'diluxone_users_bar_account' ), 1 ); ?>>
-					<?php esc_html_e( 'While it is shown, its user menu points at the account area', 'diluxone-users' ); ?>
-				</label>
-				<p class="description"><?php esc_html_e( 'Their name, their picture and “Edit profile” lead to the account page instead of the dashboard.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-	</table>
-	<?php
+					diluxone_users_ui_field_close( __( 'Nothing ticked and the strip stays for everybody, which is the same as the first answer.', 'diluxone-users' ) );
+				},
+			),
+		)
+	);
+
+	/*
+	 * The next two are not a fourth and a fifth answer to the question above,
+	 * so they are not in that group: one is the exception to whatever was
+	 * answered, and the other is about where the toolbar points while it is
+	 * there at all.
+	 */
+	diluxone_users_ui_field_open( __( 'The exception', 'diluxone-users' ) );
+	diluxone_users_ui_choices(
+		array(
+			array(
+				'type'    => 'checkbox',
+				'name'    => 'diluxone_users_admin_bar_keep_admins',
+				'value'   => '1',
+				'checked' => (bool) diluxone_users_option( 'diluxone_users_admin_bar_keep_admins' ),
+				'title'   => __( 'Whoever can edit users always keeps it, whatever is chosen above', 'diluxone-users' ),
+				'help'    => __( 'It is on because the person who administers the site is the one who most needs the way back.', 'diluxone-users' ),
+			),
+		)
+	);
+	diluxone_users_ui_field_close();
+
+	diluxone_users_ui_field_open( __( 'Its user menu', 'diluxone-users' ) );
+	diluxone_users_ui_choices(
+		array(
+			array(
+				'type'    => 'checkbox',
+				'name'    => 'diluxone_users_bar_account',
+				'value'   => '1',
+				'checked' => (bool) diluxone_users_option( 'diluxone_users_bar_account' ),
+				'title'   => __( 'While the toolbar is shown, its user menu points at the account area', 'diluxone-users' ),
+				'help'    => __( 'Their name, their picture and “Edit profile” lead to the account page instead of the dashboard.', 'diluxone-users' ),
+			),
+		)
+	);
+	diluxone_users_ui_field_close();
 }
 
 /** The public name and its rules. */
@@ -1055,37 +1183,55 @@ function diluxone_users_screen_account_handle(): void {
 /**
  * What each person can do with their own data, without asking anyone.
  *
+ * Drawn beside the section it governs and not on a tab of its own. Exporting
+ * and deleting are not a subject: they are one section of the account area,
+ * the one called "Your data", and these two switches are what is inside it.
+ * They also decide whether it appears at all — with both off there is nothing
+ * in it and it is left out — which is a fact that belongs next to the section
+ * rather than three tabs away from it.
+ *
  * Both come turned on because that is what is right. Turning them off is not
  * hiding the obligation: it is saying those requests are handled by hand, and
- * in that case the whole section disappears from the front end instead of
- * offering buttons that lead nowhere.
+ * in that case the section disappears instead of offering buttons that lead
+ * nowhere.
+ *
+ * Its own form and its own nonce, saved by diluxone_users_account_post(): the
+ * sections tab registers no form of its own — it already has one for the order
+ * and one for the detail — and a form inside a form is thrown away.
  */
 function diluxone_users_screen_account_privacy(): void {
-	diluxone_users_intro( __( 'What each person can do with their own data from the site, without asking anybody.', 'diluxone-users' ) );
+	diluxone_users_ui_section(
+		__( 'What people can do with their data', 'diluxone-users' ),
+		__( 'This is what the section holds. With neither of them on there is nothing in it, and it is not shown.', 'diluxone-users' )
+	);
 	?>
-	<table class="form-table" role="presentation">
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Their data', 'diluxone-users' ); ?></th>
-			<td>
-				<label>
-					<input type="checkbox" name="diluxone_users_privacy_export" value="1" <?php checked( diluxone_users_option( 'diluxone_users_privacy_export' ), 1 ); ?>>
-					<?php esc_html_e( 'They can ask for a copy of everything and download it', 'diluxone-users' ); ?>
-				</label>
-				<p class="description"><?php esc_html_e( 'It is the export WordPress already knows how to make: it asks for confirmation by email and leaves the file ready.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Their account', 'diluxone-users' ); ?></th>
-			<td>
-				<label>
-					<input type="checkbox" name="diluxone_users_privacy_delete" value="1" <?php checked( diluxone_users_option( 'diluxone_users_privacy_delete' ), 1 ); ?>>
-					<?php esc_html_e( 'They can ask for their account to be deleted', 'diluxone-users' ); ?>
-				</label>
-				<p class="description"><?php esc_html_e( 'Also confirmed by email, and never for an account that administers the site: it would leave the site with nobody in charge.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-	</table>
+	<form method="post" class="diluxone-users-endpoint-form">
+		<?php
+		wp_nonce_field( 'diluxone_users_privacy', 'diluxone_users_privacy_nonce' );
 
-	<p class="description"><?php esc_html_e( 'With both off, the “Your data” section stops showing: an empty section is worse than no section.', 'diluxone-users' ); ?></p>
+		diluxone_users_ui_choices(
+			array(
+				array(
+					'type'    => 'checkbox',
+					'name'    => 'diluxone_users_privacy_export',
+					'value'   => '1',
+					'checked' => (bool) diluxone_users_option( 'diluxone_users_privacy_export' ),
+					'title'   => __( 'They can ask for a copy of everything and download it', 'diluxone-users' ),
+					'help'    => __( 'The export WordPress already knows how to make: it asks the person to confirm by email and leaves the file ready.', 'diluxone-users' ),
+				),
+				array(
+					'type'    => 'checkbox',
+					'name'    => 'diluxone_users_privacy_delete',
+					'value'   => '1',
+					'checked' => (bool) diluxone_users_option( 'diluxone_users_privacy_delete' ),
+					'title'   => __( 'They can ask for their account to be deleted', 'diluxone-users' ),
+					'help'    => __( 'Confirmed by email too, and never for an account that administers the site: it would leave the site with nobody in charge.', 'diluxone-users' ),
+				),
+			)
+		);
+
+		submit_button( __( 'Save what they can do', 'diluxone-users' ), 'primary', 'diluxone_users_privacy_submit' );
+		?>
+	</form>
 	<?php
 }

@@ -22,6 +22,9 @@ class NotificationsTest extends TestCase {
 
 		require_once DILUXONE_USERS_DIR . 'includes/options.php';
 		require_once DILUXONE_USERS_DIR . 'includes/notify.php';
+		// What goes out whatever anybody says depends on the doors the site
+		// opened, and that is what login.php answers.
+		require_once DILUXONE_USERS_DIR . 'includes/login.php';
 		require_once DILUXONE_USERS_DIR . 'includes/account-sections.php';
 
 		$GLOBALS['diluxone_users_test_user_meta'] = array();
@@ -143,13 +146,73 @@ class NotificationsTest extends TestCase {
 		$this->assertSame( '', diluxone_users_notification_choices()[ self::LOGIN ]['default'] );
 	}
 
-	public function test_with_every_notice_decided_by_the_site_the_section_goes_away(): void {
+	/**
+	 * Every rule decided by the site: no switch left, and the section stays.
+	 *
+	 * It used to go away, which answered "what can I choose" and left "what
+	 * does this site send me" — the question somebody opens that section
+	 * with — unanswered on exactly the sites where it matters most.
+	 */
+	public function test_with_every_notice_decided_by_the_site_the_section_still_shows_what_goes_out(): void {
 		$GLOBALS['_test_wp_options']['diluxone_users_notice_rules'] = array(
 			self::LOGIN                       => 'always',
 			'diluxone_users_notify_security' => 'never',
 		);
 
+		$this->assertSame( array(), diluxone_users_notification_choices() );
+		$this->assertTrue( diluxone_users_notifications_any() );
+	}
+
+	public function test_the_section_goes_away_only_when_there_is_nothing_at_all_to_show(): void {
+		$GLOBALS['_test_wp_options']['diluxone_users_notice_rules'] = array(
+			self::LOGIN                       => 'always',
+			'diluxone_users_notify_security' => 'never',
+		);
+
+		// Passwords only, and no code by e-mail: nothing with a switch, and
+		// nothing without one either.
+		$GLOBALS['_test_wp_options']['diluxone_users_login_method'] = 'password';
+		$GLOBALS['_test_wp_options']['diluxone_users_2fa_mode']     = 'off';
+
 		$this->assertFalse( diluxone_users_notifications_any() );
+	}
+
+	/* ── What goes out whatever anybody says ─────────────────────────── */
+
+	public function test_the_sign_in_link_is_listed_with_the_reason_it_cannot_be_refused(): void {
+		$musts = diluxone_users_notification_musts();
+
+		$this->assertArrayHasKey( 'diluxone_users_notify_link', $musts );
+		$this->assertNotSame( '', $musts['diluxone_users_notify_link']['why'] );
+	}
+
+	public function test_a_site_that_signs_people_in_with_a_password_does_not_list_the_link(): void {
+		$GLOBALS['_test_wp_options']['diluxone_users_login_method'] = 'password';
+
+		$this->assertArrayNotHasKey( 'diluxone_users_notify_link', diluxone_users_notification_musts() );
+	}
+
+	public function test_the_second_step_code_is_listed_only_where_a_code_is_offered(): void {
+		$this->assertArrayHasKey( 'diluxone_users_notify_2fa', diluxone_users_notification_musts() );
+
+		// Two-step verification on, but by app only: no code ever leaves.
+		$GLOBALS['_test_wp_options']['diluxone_users_2fa_methods'] = array( 'totp' );
+		$this->assertArrayNotHasKey( 'diluxone_users_notify_2fa', diluxone_users_notification_musts() );
+
+		// The e-mail among the methods, but two-step verification off: same.
+		$GLOBALS['_test_wp_options']['diluxone_users_2fa_methods'] = array( 'totp', 'email' );
+		$GLOBALS['_test_wp_options']['diluxone_users_2fa_mode']    = 'off';
+		$this->assertArrayNotHasKey( 'diluxone_users_notify_2fa', diluxone_users_notification_musts() );
+	}
+
+	public function test_nothing_without_a_switch_is_ever_something_the_save_could_write(): void {
+		// Saving walks the switches and nothing else, so what matters is that
+		// none of these is one of them: no meta row is ever written for a
+		// notice the person was shown greyed out.
+		foreach ( array_keys( diluxone_users_notification_musts() ) as $key ) {
+			$this->assertArrayNotHasKey( $key, diluxone_users_notification_prefs() );
+			$this->assertArrayNotHasKey( $key, diluxone_users_notification_choices() );
+		}
 	}
 
 	/* ── What the admin screen writes down ───────────────────────────── */

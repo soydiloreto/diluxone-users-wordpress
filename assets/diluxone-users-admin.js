@@ -112,6 +112,7 @@ diluxoneUsersFieldTypes( document );
 				body.appendChild( document.adoptNode( form ) );
 
 				diluxoneUsersFieldTypes( form );
+				diluxoneUsersChoiceGroups( form );
 				addCancel( form );
 
 				var first = form.querySelector( 'input:not([type="hidden"]), select, textarea' );
@@ -395,52 +396,32 @@ diluxoneUsersFieldTypes( document );
  * submitted, which is the same answer: a setting that belongs to an option
  * nobody chose changes nothing either way.
  */
+function diluxoneUsersChoiceGroups( root ) {
+	( root || document ).querySelectorAll( '[data-diluxone-users-group]' ).forEach( function ( group ) {
+		var input = group.querySelector( 'input[type="radio"], input[type="checkbox"]' );
+
+		if ( input ) {
+			group.classList.toggle( 'is-open', input.checked );
+		}
+	} );
+}
+
 ( function () {
 	'use strict';
 
-	var groups = document.querySelectorAll( '[data-diluxone-users-group]' );
-
-	if ( ! groups.length ) {
-		return;
-	}
-
-	function sync( form ) {
-		groups.forEach( function ( group ) {
-			var input = group.querySelector( 'input[type="radio"], input[type="checkbox"]' );
-
-			if ( input && ( ! form || input.form === form ) ) {
-				group.classList.toggle( 'is-open', input.checked );
-			}
-		} );
-	}
-
+	/*
+	 * On the document and not on the groups found at load: the field editor
+	 * fetches its form and drops it into a dialog afterwards, and a listener
+	 * bound to what was on the page at load never hears from it. The dialog
+	 * calls the function above when it lands; this keeps the rest in step.
+	 */
 	document.addEventListener( 'change', function ( event ) {
 		if ( event.target.matches( 'input[type="radio"], input[type="checkbox"]' ) ) {
-			sync( event.target.form );
+			diluxoneUsersChoiceGroups( event.target.form || document );
 		}
 	} );
 
-	sync( null );
-}() );
-
-/**
- * The toolbar's roles hang under the one answer that needs them.
- */
-( function () {
-	'use strict';
-
-	var radios = document.querySelectorAll( '[data-diluxone-users-bar]' );
-	var roles  = document.querySelector( '[data-diluxone-users-bar-roles]' );
-
-	if ( ! radios.length || ! roles ) {
-		return;
-	}
-
-	radios.forEach( function ( radio ) {
-		radio.addEventListener( 'change', function () {
-			roles.hidden = 'hide-some' !== radio.value;
-		} );
-	} );
+	diluxoneUsersChoiceGroups( document );
 }() );
 
 /**

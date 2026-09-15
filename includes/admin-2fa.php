@@ -210,12 +210,15 @@ function diluxone_users_screen_login_2fa(): void {
 	echo '<p>' . diluxone_users_state_pill( $today['state'] ) . ' ' . esc_html( $today['line'] ) . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the pill escapes its own.
 	diluxone_users_ui_field_close();
 
-	diluxone_users_ui_section( __( 'Remembering a browser', 'diluxone-users' ) );
+	diluxone_users_ui_section(
+		__( 'Remembering a browser', 'diluxone-users' ),
+		__( 'A signed cookie, no more: it does not let anybody in, it only saves repeating the step on a browser that already passed it.', 'diluxone-users' )
+	);
 
-	diluxone_users_ui_field_open( __( 'How long a browser is remembered', 'diluxone-users' ), 'diluxone_users_2fa_remember_days' );
+	diluxone_users_ui_field_open( __( 'For how long', 'diluxone-users' ), 'diluxone_users_2fa_remember_days' );
 	?>
 	<input type="number" id="diluxone_users_2fa_remember_days" name="diluxone_users_2fa_remember_days" class="small-text" min="0" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_2fa_remember_days' ) ); ?>">
 	<?php
 	esc_html_e( 'days — 0 to ask every time', 'diluxone-users' );
-	diluxone_users_ui_field_close( __( 'A signed cookie, no more: it does not let anybody in, it only saves repeating the step on a browser that already passed it.', 'diluxone-users' ) );
+	diluxone_users_ui_field_close();
 }

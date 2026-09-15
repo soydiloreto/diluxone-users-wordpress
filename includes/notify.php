@@ -46,6 +46,62 @@ function diluxone_users_default_notifications(): array {
 	return $prefs;
 }
 
+/**
+ * Is a code by e-mail one of the second steps this site offers?
+ *
+ * Two settings have to agree: two-step verification has to be on at all, and
+ * the e-mail has to be among its methods. Either alone sends no code.
+ *
+ * It sits beside the notices and not on the admin screen that first asked it,
+ * because the account area asks it too: a person is only shown the code among
+ * what reaches them if a code can reach them.
+ */
+function diluxone_users_notice_2fa_email(): bool {
+	return 'off' !== (string) diluxone_users_option( 'diluxone_users_2fa_mode' )
+		&& in_array( 'email', (array) diluxone_users_option( 'diluxone_users_2fa_methods' ), true );
+}
+
+/**
+ * What this site sends whether anybody wants it or not.
+ *
+ * They are the two e-mails that are not news about the account but the way in
+ * to it: somebody who presses "send me the link" and gets nothing has no way
+ * in, and a second-step code that does not arrive locks out the person it was
+ * meant to let through. Neither has a switch, and neither should.
+ *
+ * They are listed all the same, in the account area, ticked and greyed out.
+ * Hiding them makes the section a half-answer to "what does this site send
+ * me": the two e-mails a person actually receives most often would be the two
+ * missing from the list. Showing them with the reason they cannot be turned
+ * off answers the question and closes it.
+ *
+ * Each one is here only while the site really sends it: no e-mail link, no
+ * row about the link.
+ *
+ * @return array<string, array<string, string>>
+ */
+function diluxone_users_notification_musts(): array {
+	$musts = array();
+
+	if ( diluxone_users_login_has_link() ) {
+		$musts['diluxone_users_notify_link'] = array(
+			'label' => __( 'The link that signs me in', 'diluxone-users' ),
+			'help'  => __( 'Sent the moment you ask to get in.', 'diluxone-users' ),
+			'why'   => __( 'Nobody can turn it off: without it there is no way in.', 'diluxone-users' ),
+		);
+	}
+
+	if ( diluxone_users_notice_2fa_email() ) {
+		$musts['diluxone_users_notify_2fa'] = array(
+			'label' => __( 'The code for the second step', 'diluxone-users' ),
+			'help'  => __( 'Sent halfway through signing in, when this site asks you for a code.', 'diluxone-users' ),
+			'why'   => __( 'Nobody can turn it off: a code that does not arrive leaves you out.', 'diluxone-users' ),
+		);
+	}
+
+	return $musts;
+}
+
 /* ── Quién decide ──────────────────────────────────────────────────── */
 
 /**

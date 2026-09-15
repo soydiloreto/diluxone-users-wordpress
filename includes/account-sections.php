@@ -62,7 +62,7 @@ function diluxone_users_register_own_sections(): void {
 			'position'  => 60,
 			'render'    => 'diluxone_users_section_notifications',
 			'available' => 'diluxone_users_notifications_any',
-			'why'       => __( 'There is nothing to turn on or off: no notice leaves the choice to the person.', 'diluxone-users' ),
+			'why'       => __( 'This site e-mails nobody about anything, so there is nothing to show.', 'diluxone-users' ),
 		)
 	);
 
@@ -84,9 +84,18 @@ function diluxone_users_sso_any(): bool {
 	return function_exists( 'diluxone_users_sso_available' ) && array() !== diluxone_users_sso_available();
 }
 
-/** Is there any notice a person gets to decide about? */
+/**
+ * Is there anything to show in the notifications section?
+ *
+ * The question used to be "is there anything to switch", and the section went
+ * away when there was not — which on a site where every rule is the site's own
+ * left a person with no way of finding out what it sends them. What is asked
+ * now is whether there is anything to show: a switch, or a notice that goes
+ * out whatever anybody says. With only the second kind the section still
+ * appears, and it opens by saying there is nothing to choose.
+ */
 function diluxone_users_notifications_any(): bool {
-	return array() !== diluxone_users_notification_choices();
+	return array() !== diluxone_users_notification_choices() || array() !== diluxone_users_notification_musts();
 }
 
 /** Is anybody allowed to do anything with their data? */
@@ -400,6 +409,10 @@ function diluxone_users_shortcode_notifications(): string {
 		array(
 			'user'  => wp_get_current_user(),
 			'prefs' => diluxone_users_notification_choices(),
+			// What has no switch travels apart from what has one: the template
+			// draws them differently, and nothing here should let one be
+			// mistaken for the other.
+			'musts' => diluxone_users_notification_musts(),
 		)
 	);
 }

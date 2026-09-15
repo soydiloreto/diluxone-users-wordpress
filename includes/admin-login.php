@@ -27,8 +27,9 @@ function diluxone_users_screen_login(): void {
 
 /**
  * Its tabs. Registration registers its own from its own file, onto this
- * screen; two-step verification and passkeys live on Security and are shown
- * here only as state.
+ * screen; two-step verification lives on Security and is shown here only as
+ * state. Passkeys are switched on here, with the other ways in, and set up on
+ * Security: turning a door on is a question about doors.
  */
 function diluxone_users_login_panels(): void {
 	diluxone_users_register_panel(
@@ -84,17 +85,28 @@ function diluxone_users_login_page_save(): void {
 /** With what somebody who already has an account gets in. */
 function diluxone_users_login_ways_save(): void {
 	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the panel verifies it.
-	diluxone_users_save_options(
-		array(
-			'diluxone_users_login_method'   => sanitize_key( wp_unslash( $_POST['diluxone_users_login_method'] ?? 'both' ) ),
-			'diluxone_users_login_expiry'   => absint( wp_unslash( $_POST['diluxone_users_login_expiry'] ?? 15 ) ),
-			'diluxone_users_login_throttle' => absint( wp_unslash( $_POST['diluxone_users_login_throttle'] ?? 60 ) ),
-			// It is about what the sign-in box accepts, so it is decided here;
-			// what a public name is, is decided on the account screen.
-			'diluxone_users_handle_login'   => isset( $_POST['diluxone_users_handle_login'] ) ? 1 : 0,
-			'diluxone_users_sso_login'      => isset( $_POST['diluxone_users_sso_login'] ) ? 1 : 0,
-		)
+	$saved = array(
+		'diluxone_users_login_method'   => sanitize_key( wp_unslash( $_POST['diluxone_users_login_method'] ?? 'both' ) ),
+		'diluxone_users_login_expiry'   => absint( wp_unslash( $_POST['diluxone_users_login_expiry'] ?? 15 ) ),
+		'diluxone_users_login_throttle' => absint( wp_unslash( $_POST['diluxone_users_login_throttle'] ?? 60 ) ),
+		// It is about what the sign-in box accepts, so it is decided here;
+		// what a public name is, is decided on the account screen.
+		'diluxone_users_handle_login'   => isset( $_POST['diluxone_users_handle_login'] ) ? 1 : 0,
+		'diluxone_users_sso_login'      => isset( $_POST['diluxone_users_sso_login'] ) ? 1 : 0,
 	);
+
+	/*
+	 * Passkeys are switched on here, with the other ways in, and set up on
+	 * Security, where the feature lives. Only when the feature is installed:
+	 * an install without it never draws the box, and writing a 0 for a box
+	 * nobody drew is how a setting gets turned off by somebody who came to
+	 * change something else.
+	 */
+	if ( function_exists( 'diluxone_users_passkeys_enabled' ) ) {
+		$saved['diluxone_users_passkey_enabled'] = isset( $_POST['diluxone_users_passkey_enabled'] ) ? 1 : 0;
+	}
+
+	diluxone_users_save_options( $saved );
 	// phpcs:enable
 }
 
@@ -185,7 +197,7 @@ function diluxone_users_doors(): array {
 		'detail' => diluxone_users_has_passkeys()
 			? esc_html__( 'For whoever added one. It counts as both steps at once.', 'diluxone-users' )
 			: esc_html__( 'Not offered.', 'diluxone-users' ),
-		'url'    => diluxone_users_admin_url( 'diluxone-users-security', array( 'tab' => 'passkeys' ) ),
+		'url'    => $tab( 'ways' ),
 	);
 
 	$made = array();
@@ -255,210 +267,286 @@ function diluxone_users_screen_login_summary(): void {
 	<?php
 }
 
+/**
+ * Is wp-login.php still a screen somebody lands on?
+ *
+ * The tab asks it twice — whether it is worth saying how that screen looks,
+ * and whether an answer that sends people there means anything — so it is
+ * answered once. Kept, it is a screen; taken over, it is not; and 'auto'
+ * takes it over only while the e-mail link is the only way in, so a site with
+ * a password still has it. With no sign-in page chosen nothing has been
+ * decided yet, and a result nobody has asked for is not worth drawing.
+ */
+function diluxone_users_wp_login_seen(): bool {
+	// With no page of its own, wp-login.php is not one of the ways in: it is
+	// the only one. That is the moment how it looks matters most, so it is
+	// answered first and the rest of the rules do not get a say.
+	if ( (int) diluxone_users_option( 'diluxone_users_login_page' ) <= 0 ) {
+		return true;
+	}
+
+	$chosen = diluxone_users_wp_screens();
+
+	return 'wp' === $chosen || ( 'auto' === $chosen && ! diluxone_users_login_only_link() );
+}
+
 /** Where people sign in, and what becomes of wp-login.php. */
 function diluxone_users_screen_login_page(): void {
 	$page   = (int) diluxone_users_option( 'diluxone_users_login_page' );
+	$lost   = (string) diluxone_users_option( 'diluxone_users_lost_password' );
 	$chosen = diluxone_users_wp_screens();
+	$seen   = diluxone_users_wp_login_seen();
+	$taken  = $page > 0 && diluxone_users_wp_screens_taken();
+	$link   = diluxone_users_login_has_link();
 
-	diluxone_users_intro( __( 'The page holding the sign-in form, and what happens to the screen WordPress brings for the same job. Put the [diluxone_users_login] shortcode on the page you pick.', 'diluxone-users' ) );
-	?>
-	<table class="form-table" role="presentation">
-		<tr>
-			<th scope="row"><label for="diluxone_users_login_page"><?php esc_html_e( 'Sign-in page', 'diluxone-users' ); ?></label></th>
-			<td>
-				<?php
-				/** @var array<string, mixed> $diluxone_users_dropdown */
-				$diluxone_users_dropdown = array(
-					'name'              => 'diluxone_users_login_page',
-					'id'                => 'diluxone_users_login_page',
-					'selected'          => $page,
-					'show_option_none'  => __( '— None: wp-login.php does the job —', 'diluxone-users' ),
-					'option_none_value' => 0,
-				);
+	diluxone_users_intro( __( 'The page holding the sign-in form, and what becomes of wp-login.php. Put the [diluxone_users_login] shortcode on the page you pick.', 'diluxone-users' ) );
 
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_dropdown_pages() escapes its own and prints it.
-				wp_dropdown_pages( $diluxone_users_dropdown );
-				?>
-				<p class="description"><?php esc_html_e( 'With none chosen, everybody signs in on wp-login.php and nothing below applies.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr class="<?php echo 0 === $page ? 'diluxone-users-row--dim' : ''; ?>">
-			<th scope="row"><?php esc_html_e( 'What happens to wp-login.php', 'diluxone-users' ); ?></th>
-			<td>
-				<?php if ( 0 === $page ) : ?>
-					<?php diluxone_users_not_now( __( 'There is no sign-in page to send anybody to. What is chosen here waits for one.', 'diluxone-users' ) ); ?>
-				<?php endif; ?>
-				<?php
-				$screens = array(
-					'mine' => __( 'Send everybody to the sign-in page above', 'diluxone-users' ),
-					'wp'   => __( 'Keep it as a second sign-in screen', 'diluxone-users' ),
-					'auto' => __( 'Send people to the page only while the e-mail link is the only way in', 'diluxone-users' ),
-				);
+	diluxone_users_ui_field_open( __( 'The sign-in page', 'diluxone-users' ), 'diluxone_users_login_page' );
 
-				foreach ( $screens as $key => $label ) :
-					?>
-					<label class="diluxone-users-roles__item">
-						<input type="radio" name="diluxone_users_wp_screens" value="<?php echo esc_attr( $key ); ?>" <?php checked( $chosen, $key ); ?>>
-						<?php echo esc_html( $label ); ?>
-					</label>
-				<?php endforeach; ?>
+	/** @var array<string, mixed> $diluxone_users_dropdown */
+	$diluxone_users_dropdown = array(
+		'name'              => 'diluxone_users_login_page',
+		'id'                => 'diluxone_users_login_page',
+		'selected'          => $page,
+		'show_option_none'  => __( '— None: wp-login.php does the job —', 'diluxone-users' ),
+		'option_none_value' => 0,
+	);
 
-				<p class="description"><?php esc_html_e( 'Sent to the page, wp-login.php and its “register” link land on this site’s own pages. Whoever can administer the site keeps an emergency way in either way — it is on the Summary tab.', 'diluxone-users' ); ?></p>
-				<?php if ( 'wp' === $chosen && $page > 0 ) : ?>
-					<p class="description">
-						<?php esc_html_e( 'Kept, this site has two sign-in screens: yours and the one WordPress brings. Anybody landing on wp-login.php from an old bookmark or a plugin sees the second.', 'diluxone-users' ); ?>
-						<a href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-design', array( 'tab' => 'wp' ) ) ); ?>"><?php esc_html_e( 'Put the site’s logo on it →', 'diluxone-users' ); ?></a>
-					</p>
-				<?php endif; ?>
-			</td>
-		</tr>
-		<?php
-		$no_password = ! diluxone_users_login_has_password();
-		$no_link     = ! diluxone_users_login_has_link();
-		$dim_lost    = $no_link || 0 === $page;
+	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_dropdown_pages() escapes its own and prints it.
+	wp_dropdown_pages( $diluxone_users_dropdown );
+
+	diluxone_users_ui_field_close( __( 'With none chosen, everybody signs in on wp-login.php and nothing below applies.', 'diluxone-users' ) );
+
+	diluxone_users_ui_section(
+		__( 'What happens to wp-login.php', 'diluxone-users' ),
+		__( 'wp-login.php is the sign-in screen WordPress brings with it, at /wp-login.php: the grey box with the logo on it that everybody has seen. It keeps working whatever is chosen here — what changes is whether anybody still lands on it.', 'diluxone-users' )
+	);
+
+	if ( $page <= 0 ) {
+		diluxone_users_not_now( __( 'There is no sign-in page to send anybody to. What is chosen here waits for one.', 'diluxone-users' ) );
+	}
+
+	diluxone_users_ui_choices(
+		array(
+			array(
+				'name'    => 'diluxone_users_wp_screens',
+				'value'   => 'mine',
+				'checked' => 'mine' === $chosen,
+				'title'   => __( 'Send everybody to the sign-in page above', 'diluxone-users' ),
+				'help'    => __( 'wp-login.php stops being a screen: an old bookmark, a plugin’s link or its “register” link all land on this site’s own pages. Whoever administers the site keeps the emergency way in on the Summary tab.', 'diluxone-users' ),
+			),
+			array(
+				'name'    => 'diluxone_users_wp_screens',
+				'value'   => 'wp',
+				'checked' => 'wp' === $chosen,
+				'title'   => __( 'Keep it as a second sign-in screen', 'diluxone-users' ),
+				'help'    => __( 'The site has two screens that sign people in: yours, and the one WordPress brings. Anybody arriving on wp-login.php from a bookmark or a plugin sees the second.', 'diluxone-users' ),
+			),
+			array(
+				'name'    => 'diluxone_users_wp_screens',
+				'value'   => 'auto',
+				'checked' => 'auto' === $chosen,
+				'title'   => __( 'Send people to the page only while the e-mail link is the only way in', 'diluxone-users' ),
+				'help'    => __( 'While a password still opens something here, wp-login.php is left alone. The day the link is the only way in, its form could not work anyway.', 'diluxone-users' ),
+			),
+		)
+	);
+
+	/*
+	 * How that screen looks is worth a line only while somebody can see it.
+	 * Sent to the page, nobody does; with no page chosen, nothing has been
+	 * decided. Either way the answer is the same and the row goes.
+	 */
+	if ( $seen ) {
+		diluxone_users_ui_section(
+			__( 'How wp-login.php looks', 'diluxone-users' ),
+			__( 'People still land on that screen, so it is worth it looking like the rest of the site. It is set on Design, with the rest of what the site looks like.', 'diluxone-users' )
+		);
 		?>
-		<tr class="<?php echo $dim_lost ? 'diluxone-users-row--dim' : ''; ?>">
-			<th scope="row"><?php esc_html_e( 'Where “I forgot my password” goes', 'diluxone-users' ); ?></th>
-			<td>
-				<?php if ( $no_password ) : ?>
-					<?php diluxone_users_not_now( __( 'There is no password on this site, so there is nothing to forget: the link is the way back in.', 'diluxone-users' ) ); ?>
-				<?php elseif ( $no_link ) : ?>
-					<?php diluxone_users_not_now( __( 'Without the e-mail link there is nowhere else to send them: WordPress’s reset stays.', 'diluxone-users' ) ); ?>
-				<?php elseif ( 0 === $page ) : ?>
-					<?php diluxone_users_not_now( __( 'No sign-in page is chosen, so there is nowhere to point it yet.', 'diluxone-users' ) ); ?>
-				<?php endif; ?>
-				<?php
-				$lost = array(
-					'wp'   => __( 'WordPress’s reset screen', 'diluxone-users' ),
-					'site' => __( 'The sign-in page — the e-mail link is the way back in', 'diluxone-users' ),
-				);
+		<p>
+			<?php echo diluxone_users_option( 'diluxone_users_wp_login_brand' ) ? esc_html__( 'With the site’s logo and colour on it.', 'diluxone-users' ) : esc_html__( 'As WordPress ships it.', 'diluxone-users' ); ?>
+			<a href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-design', array( 'tab' => 'wp' ) ) ); ?>"><?php esc_html_e( 'Change it →', 'diluxone-users' ); ?></a>
+		</p>
+		<?php
+	}
 
-				foreach ( $lost as $key => $label ) :
-					?>
-					<label class="diluxone-users-roles__item">
-						<input type="radio" name="diluxone_users_lost_password" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_lost_password' ), $key ); ?>>
-						<?php echo esc_html( $label ); ?>
-					</label>
-				<?php endforeach; ?>
-				<p class="description"><?php esc_html_e( 'On a site where a link signs people in, the reset screen asks for the same address and sends a second e-mail to do what the first one already does.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'How wp-login.php looks', 'diluxone-users' ); ?></th>
-			<td>
-				<p>
-					<?php echo diluxone_users_option( 'diluxone_users_wp_login_brand' ) ? esc_html__( 'With the site’s logo and colour on it.', 'diluxone-users' ) : esc_html__( 'As WordPress ships it.', 'diluxone-users' ); ?>
-					<a href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-design', array( 'tab' => 'wp' ) ) ); ?>"><?php esc_html_e( 'Change it →', 'diluxone-users' ); ?></a>
-				</p>
-			</td>
-		</tr>
-	</table>
-	<?php
+	diluxone_users_ui_section(
+		__( 'If somebody forgets their password', 'diluxone-users' ),
+		__( 'Forgetting a password is about changing it, not about getting in. Whichever answer is chosen, the new password is typed on this site’s own screen whenever wp-login.php is taken over and a sign-in page is chosen, and on WordPress’s otherwise.', 'diluxone-users' )
+	);
+
+	if ( ! diluxone_users_login_has_password() ) {
+		diluxone_users_not_now( __( 'There is no password on this site, so there is nothing to forget. What is chosen here waits for one.', 'diluxone-users' ) );
+	}
+
+	diluxone_users_ui_choices(
+		array(
+			array(
+				'name'    => 'diluxone_users_lost_password',
+				'value'   => 'wp',
+				'checked' => 'site' !== $lost,
+				'title'   => __( 'WordPress’s reset screen', 'diluxone-users' ),
+				'help'    => __( 'The one WordPress brings: the person asks there for a reset e-mail, and the link in it ends on the screen where the new password is typed.', 'diluxone-users' ),
+				'state'   => $taken ? 'off' : '',
+				'note'    => $taken ? __( 'wp-login.php is taken over, so asking for a reset lands on the sign-in page anyway', 'diluxone-users' ) : '',
+			),
+			array(
+				'name'    => 'diluxone_users_lost_password',
+				'value'   => 'site',
+				'checked' => 'site' === $lost,
+				'title'   => __( 'The sign-in page: they get in with the e-mail link, and the password stays as it was', 'diluxone-users' ),
+				'help'    => __( 'Nothing is reset. On a site where a link already opens the door, the reset screen asks for the same address to send a second e-mail doing what the first one does.', 'diluxone-users' ),
+				'state'   => $link ? '' : 'off',
+				'note'    => $link ? '' : __( 'the e-mail link is not one of the ways in, so this sends them nowhere they can use', 'diluxone-users' ),
+			),
+		)
+	);
 }
 
 /** With what somebody who already has an account gets in. */
 function diluxone_users_screen_login_ways(): void {
-	$method = diluxone_users_login_method();
-	$social = diluxone_users_sso_working_names();
+	$method   = diluxone_users_login_method();
+	$social   = diluxone_users_sso_working_names();
+	$handles  = (bool) diluxone_users_option( 'diluxone_users_handle_enabled' );
+	$passkeys = function_exists( 'diluxone_users_passkeys_enabled' );
 
-	diluxone_users_intro( __( 'With what somebody who already has an account gets in. Who gets an account is the Registration tab.', 'diluxone-users' ) );
+	diluxone_users_intro( __( 'With what somebody who already has an account gets in. Every way in is switched on here; what each one does once it is on is set where that feature lives. Who gets an account is the Registration tab.', 'diluxone-users' ) );
+
+	diluxone_users_ui_section( __( 'The e-mail link and the password', 'diluxone-users' ), __( 'The two the sign-in form draws itself. Only the second answer closes anything.', 'diluxone-users' ) );
+
+	diluxone_users_forzado_aviso( 'diluxone_users_login_method' );
+
+	diluxone_users_ui_choices(
+		array(
+			array(
+				'name'    => 'diluxone_users_login_method',
+				'value'   => 'both',
+				'checked' => 'both' === $method,
+				'title'   => __( 'The e-mail link and the password, both', 'diluxone-users' ),
+				'help'    => __( 'The form takes an address and sends a link, and it takes a password from whoever has one. Nothing is closed.', 'diluxone-users' ),
+			),
+			array(
+				'name'    => 'diluxone_users_login_method',
+				'value'   => 'link',
+				'checked' => 'link' === $method,
+				'title'   => __( 'Only the e-mail link — no passwords on this site', 'diluxone-users' ),
+				'help'    => __( 'wp-login.php stops showing its password form and WordPress’s own registration is locked shut, because a password would open nothing.', 'diluxone-users' ),
+			),
+			array(
+				'name'    => 'diluxone_users_login_method',
+				'value'   => 'password',
+				'checked' => 'password' === $method,
+				'title'   => __( 'Only username and password', 'diluxone-users' ),
+				'help'    => __( 'Nobody can ask for a link: the form asks for a password and nothing else.', 'diluxone-users' ),
+			),
+		)
+	);
+
+	/*
+	 * What the link does belongs to the link, and the link is two of the three
+	 * answers above — so it cannot hang inside one card, and the same three
+	 * fields printed in two cards would post two values for one setting. It is
+	 * a group of its own, and the line above it says when the group is moot.
+	 */
+	diluxone_users_ui_section( __( 'The e-mail link', 'diluxone-users' ), __( 'How long a link lasts, how often one can be asked for, and what the box accepts.', 'diluxone-users' ) );
+
+	if ( ! diluxone_users_login_has_link() ) {
+		diluxone_users_not_now( __( 'The link is not one of the ways in right now. What is set here waits for it.', 'diluxone-users' ) );
+	}
 	?>
-	<table class="form-table" role="presentation">
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Ways in', 'diluxone-users' ); ?></th>
-			<td>
-				<?php diluxone_users_forzado_aviso( 'diluxone_users_login_method' ); ?>
-				<?php
-				$methods = array(
-					'both'     => __( 'The e-mail link and the password, both', 'diluxone-users' ),
-					'link'     => __( 'Only the e-mail link — no passwords on this site', 'diluxone-users' ),
-					'password' => __( 'Only username and password', 'diluxone-users' ),
-				);
+	<div class="du-fields">
+		<?php diluxone_users_ui_field_open( __( 'The link expires after', 'diluxone-users' ), 'diluxone_users_login_expiry' ); ?>
+		<input type="number" id="diluxone_users_login_expiry" name="diluxone_users_login_expiry" min="1" max="1440" class="small-text" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_login_expiry' ) ); ?>">
+		<?php
+		esc_html_e( 'minutes', 'diluxone-users' );
+		diluxone_users_ui_field_close();
 
-				foreach ( $methods as $key => $label ) :
-					?>
-					<label class="diluxone-users-roles__item">
-						<input type="radio" name="diluxone_users_login_method" value="<?php echo esc_attr( $key ); ?>" <?php checked( $method, $key ); ?>>
-						<?php echo esc_html( $label ); ?>
-					</label>
-				<?php endforeach; ?>
-				<p class="description"><?php esc_html_e( 'Only the second closes anything: with it, wp-login.php stops showing its password form and WordPress’s own registration is locked shut, because a password would open nothing.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-	</table>
-
-	<h2><?php esc_html_e( 'The e-mail link', 'diluxone-users' ); ?></h2>
-	<table class="form-table <?php echo 'password' === $method ? 'diluxone-users-row--dim' : ''; ?>" role="presentation">
-		<?php if ( 'password' === $method ) : ?>
-			<tr><td colspan="2"><?php diluxone_users_not_now( __( 'The link is not one of the ways in right now. What is set here waits for it.', 'diluxone-users' ) ); ?></td></tr>
-		<?php endif; ?>
-		<tr>
-			<th scope="row"><label for="diluxone_users_login_expiry"><?php esc_html_e( 'The link expires after', 'diluxone-users' ); ?></label></th>
-			<td>
-				<input type="number" id="diluxone_users_login_expiry" name="diluxone_users_login_expiry" min="1" max="1440" class="small-text" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_login_expiry' ) ); ?>">
-				<?php esc_html_e( 'minutes', 'diluxone-users' ); ?>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><label for="diluxone_users_login_throttle"><?php esc_html_e( 'Wait between two requests', 'diluxone-users' ); ?></label></th>
-			<td>
-				<input type="number" id="diluxone_users_login_throttle" name="diluxone_users_login_throttle" min="0" class="small-text" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_login_throttle' ) ); ?>">
-				<?php esc_html_e( 'seconds, for the same address', 'diluxone-users' ); ?>
-				<p class="description"><?php esc_html_e( 'Stops the form being used as a machine for e-mailing third parties.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'What the box accepts', 'diluxone-users' ); ?></th>
-			<td>
-				<?php if ( ! diluxone_users_option( 'diluxone_users_handle_enabled' ) ) : ?>
-					<?php diluxone_users_not_now( __( 'Public names are off, so only the e-mail address is accepted.', 'diluxone-users' ), diluxone_users_admin_url( 'diluxone-users-account', array( 'tab' => 'handle' ) ), __( 'Turn them on →', 'diluxone-users' ) ); ?>
-				<?php endif; ?>
-				<label>
-					<input type="checkbox" name="diluxone_users_handle_login" value="1" <?php checked( diluxone_users_option( 'diluxone_users_handle_login' ), 1 ); ?>>
-					<?php esc_html_e( 'The public name as well as the e-mail address', 'diluxone-users' ); ?>
-				</label>
-				<p class="description"><?php esc_html_e( 'The link still goes to the address on the account, never to what was typed. It only saves people from remembering which address they used.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-	</table>
-
-	<h2><?php esc_html_e( 'Social accounts', 'diluxone-users' ); ?></h2>
-	<table class="form-table" role="presentation">
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Social buttons on the sign-in form', 'diluxone-users' ); ?></th>
-			<td>
-				<?php if ( array() === $social ) : ?>
-					<?php diluxone_users_not_now( __( 'Nothing shows yet: no provider is working.', 'diluxone-users' ), diluxone_users_admin_url( 'diluxone-users-social' ), __( 'Set one up →', 'diluxone-users' ) ); ?>
-				<?php endif; ?>
-				<label>
-					<input type="checkbox" name="diluxone_users_sso_login" value="1" <?php checked( diluxone_users_option( 'diluxone_users_sso_login' ), 1 ); ?>>
-					<?php esc_html_e( 'Show them', 'diluxone-users' ); ?>
-					<?php if ( array() !== $social ) : ?>
-						<span class="description">
-							<?php
-							echo esc_html(
-								sprintf(
-								/* translators: %s: providers working, comma separated */
-									__( '— working: %s', 'diluxone-users' ),
-									implode( ', ', $social )
-								)
-							);
-							?>
-						</span>
-					<?php endif; ?>
-				</label>
-				<p class="description"><?php esc_html_e( 'Off, the buttons go from the form. Whoever already linked a social account keeps it and can unlink it from their account area.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-	</table>
-
-	<h2><?php esc_html_e( 'Passkeys', 'diluxone-users' ); ?></h2>
-	<p>
-		<?php echo diluxone_users_state_pill( diluxone_users_has_passkeys() ? 'active' : 'off' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>
-		<?php echo diluxone_users_has_passkeys() ? esc_html__( 'Offered to whoever wants one.', 'diluxone-users' ) : esc_html__( 'Not offered.', 'diluxone-users' ); ?>
-		<a href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-security', array( 'tab' => 'passkeys' ) ) ); ?>"><?php esc_html_e( 'Change it →', 'diluxone-users' ); ?></a>
-	</p>
+		diluxone_users_ui_field_open( __( 'Wait between two requests', 'diluxone-users' ), 'diluxone_users_login_throttle' );
+		?>
+		<input type="number" id="diluxone_users_login_throttle" name="diluxone_users_login_throttle" min="0" class="small-text" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_login_throttle' ) ); ?>">
+		<?php
+		esc_html_e( 'seconds, for the same address', 'diluxone-users' );
+		diluxone_users_ui_field_close( __( 'Stops the form being used as a machine for e-mailing third parties.', 'diluxone-users' ) );
+		?>
+	</div>
 	<?php
+	if ( ! $handles ) {
+		diluxone_users_not_now(
+			__( 'Public names are off, so only the e-mail address is accepted.', 'diluxone-users' ),
+			diluxone_users_admin_url( 'diluxone-users-account', array( 'tab' => 'handle' ) ),
+			__( 'Turn them on →', 'diluxone-users' )
+		);
+	}
+
+	diluxone_users_ui_choices(
+		array(
+			array(
+				'type'    => 'checkbox',
+				'name'    => 'diluxone_users_handle_login',
+				'value'   => '1',
+				'checked' => (bool) diluxone_users_option( 'diluxone_users_handle_login' ),
+				'title'   => __( 'The box takes the public name as well as the e-mail address', 'diluxone-users' ),
+				'help'    => __( 'The link still goes to the address on the account, never to what was typed. It only saves people from remembering which address they used.', 'diluxone-users' ),
+			),
+		)
+	);
+
+	/*
+	 * Switching a way in on belongs with the other ways in; what it does once
+	 * it is on belongs where the feature lives. So both boxes are here and
+	 * both cards carry the way to the rest of their settings — the passkeys
+	 * box used to be on Security, which is why nobody found it from the one
+	 * screen that lists the doors.
+	 */
+	diluxone_users_ui_section( __( 'Other ways in', 'diluxone-users' ), __( 'Switched on here, one by one. What each one does once it is on is set where that feature lives.', 'diluxone-users' ) );
+
+	$diluxone_users_social_help = __( 'The buttons under the form. Off, they go, and whoever already linked a social account keeps it and can unlink it from their account.', 'diluxone-users' );
+
+	if ( array() !== $social ) {
+		$diluxone_users_social_help = sprintf(
+			/* translators: %s: providers working, comma separated */
+			__( 'Working right now: %s. Off, the buttons go, and whoever already linked a social account keeps it.', 'diluxone-users' ),
+			implode( ', ', $social )
+		);
+	}
+
+	$diluxone_users_ways = array(
+		array(
+			'type'    => 'checkbox',
+			'name'    => 'diluxone_users_sso_login',
+			'value'   => '1',
+			'checked' => (bool) diluxone_users_option( 'diluxone_users_sso_login' ),
+			'title'   => __( 'A social account', 'diluxone-users' ),
+			'help'    => esc_html( $diluxone_users_social_help ) . sprintf(
+				' <a href="%1$s">%2$s</a>',
+				esc_url( diluxone_users_admin_url( 'diluxone-users-social' ) ),
+				esc_html__( 'More social options →', 'diluxone-users' )
+			),
+			'state'   => array() === $social ? 'pending' : '',
+			'note'    => array() === $social ? __( 'no provider is working yet', 'diluxone-users' ) : '',
+		),
+	);
+
+	if ( $passkeys ) {
+		$diluxone_users_insecure = ! is_ssl() && 'local' !== wp_get_environment_type();
+
+		$diluxone_users_ways[] = array(
+			'type'    => 'checkbox',
+			'name'    => 'diluxone_users_passkey_enabled',
+			'value'   => '1',
+			'checked' => diluxone_users_passkeys_enabled(),
+			'title'   => __( 'A passkey', 'diluxone-users' ),
+			'help'    => esc_html__( 'A key that stays on the person’s device or keychain: nothing to type, nothing to phish, and it counts as both steps at once.', 'diluxone-users' ) . sprintf(
+				' <a href="%1$s">%2$s</a>',
+				esc_url( diluxone_users_admin_url( 'diluxone-users-security', array( 'tab' => 'passkeys' ) ) ),
+				esc_html__( 'More passkey options →', 'diluxone-users' )
+			),
+			'state'   => $diluxone_users_insecure ? 'pending' : '',
+			'note'    => $diluxone_users_insecure ? __( 'this site is not on HTTPS, and browsers refuse passkeys until it is', 'diluxone-users' ) : '',
+		);
+	}
+
+	diluxone_users_ui_choices( $diluxone_users_ways );
 }
 
 /** The text of the e-mail carrying the sign-in link. */
