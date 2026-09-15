@@ -4903,491 +4903,491 @@ msgstr "Una dirección o rango por línea, como 203.0.113.0/24. Los rangos priva
 
 #: includes/account-sections.php:65
 msgid "This site e-mails nobody about anything, so there is nothing to show."
-msgstr ""
+msgstr "Este sitio no envía correos a nadie por nada, así que no hay nada que mostrar."
 
 #: includes/admin-2fa.php:69
 msgid "Nothing is asked: the second step is off for the whole site, whatever is chosen here."
-msgstr ""
+msgstr "No se pide nada: el segundo paso está apagado para todo el sitio, se elija lo que se elija aquí."
 
 #: includes/admin-2fa.php:76
 msgid "The second step is asked of somebody who came in by link, whichever one they have."
-msgstr ""
+msgstr "A quien entró por enlace se le pide el segundo paso, sea cual sea el que tenga."
 
 #: includes/admin-2fa.php:83
 msgid "Nothing is asked of somebody who came in by link: following it is the whole of it."
-msgstr ""
+msgstr "A quien entró por enlace no se le pide nada: seguir el enlace es todo."
 
 #: includes/admin-2fa.php:91
 msgid "The second step is asked: a method that is on does not arrive by e-mail, so it proves something the link did not."
-msgstr ""
+msgstr "Se pide el segundo paso: hay un método encendido que no llega por correo, así que prueba algo que el enlace no probó."
 
 #: includes/admin-2fa.php:98
 msgid "Nothing is asked: every method that is on arrives by e-mail, at the inbox the person just opened."
-msgstr ""
+msgstr "No se pide nada: todos los métodos encendidos llegan por correo, a la misma bandeja que la persona acaba de abrir."
 
 #: includes/admin-2fa.php:118
 msgid "Six digits to the address on the account. Nothing to install, which is why it is the one people actually turn on."
-msgstr ""
+msgstr "Seis dígitos a la dirección de la cuenta. No hay nada que instalar, y por eso es el que la gente realmente enciende."
 
 #: includes/admin-2fa.php:122
 msgid "Six digits that change every thirty seconds, from Google Authenticator, 1Password or Aegis. The stronger one: the code never travels."
-msgstr ""
+msgstr "Seis dígitos que cambian cada treinta segundos, desde Google Authenticator, 1Password o Aegis. El más fuerte: el código nunca viaja."
 
 #: includes/admin-2fa.php:138
 msgid "Optional: whoever wants it turns it on from their account"
-msgstr ""
+msgstr "Opcional: quien lo quiera lo enciende desde su cuenta"
 
 #: includes/admin-2fa.php:139
 msgid "Nobody is made to do anything, and whoever turned it on is asked from then on."
-msgstr ""
+msgstr "No se obliga a nadie, y a quien lo encendió se le pide de ahí en adelante."
 
 #: includes/admin-2fa.php:145
 msgid "Required: everybody it applies to has to set it up"
-msgstr ""
+msgstr "Obligatorio: todos a los que alcanza tienen que configurarlo"
 
 #: includes/admin-2fa.php:146
 msgid "They are walked through it the next time they sign in, and there is no way past."
-msgstr ""
+msgstr "Se les guía la próxima vez que entren, y no hay forma de saltárselo."
 
 #: includes/admin-2fa.php:153
 msgid "Nobody is asked, not even whoever had it set up. What they set up is kept and works again the day this comes back on."
-msgstr ""
+msgstr "No se le pide a nadie, ni siquiera a quien ya lo tenía configurado. Lo que configuró se conserva y vuelve a funcionar el día que esto se encienda de nuevo."
 
 #: includes/admin-2fa.php:188
 msgid "A code sent to the inbox the person has just opened to follow the link proves nothing the link did not prove already. An app does, so on an app it asks."
-msgstr ""
+msgstr "Un código que llega a la misma bandeja que la persona acaba de abrir para seguir el enlace no prueba nada que el enlace no haya probado ya. Una aplicación sí, así que con una aplicación lo pide."
 
 #: includes/admin-2fa.php:195
 msgid "The second step on every link, including the errand of a code going back to the same inbox."
-msgstr ""
+msgstr "El segundo paso en todos los enlaces, incluido el trámite de un código que vuelve a la misma bandeja."
 
 #: includes/admin-2fa.php:202
 msgid "Following the link is the whole of it. The quickest way in, and the weakest of the three."
-msgstr ""
+msgstr "Seguir el enlace es todo. La forma más rápida de entrar, y la más débil de las tres."
 
 #: includes/admin-2fa.php:209
 msgid "With that, today"
-msgstr ""
+msgstr "Con eso, hoy"
 
 #: includes/admin-2fa.php:214
 msgid "Remembering a browser"
-msgstr ""
+msgstr "Recordar un navegador"
 
 #: includes/admin-2fa.php:218
 msgid "For how long"
-msgstr ""
+msgstr "Durante cuánto tiempo"
 
 #: includes/admin-account.php:918
 msgid "It does not know about the required fields or the edit limits set up here. Two screens for the same data is how somebody ends up editing their name in one and their phone in the other, under different rules."
-msgstr ""
+msgstr "No sabe nada de los campos obligatorios ni de los límites de edición que se configuran aquí. Dos pantallas para los mismos datos es como alguien acaba editando su nombre en una y su teléfono en la otra, con reglas distintas."
 
 #: includes/admin-account.php:936
 msgid "Anybody who can reach the dashboard edits their details there as well as on the site."
-msgstr ""
+msgstr "Quien pueda llegar al escritorio edita sus datos ahí además de en el sitio."
 
 #: includes/admin-account.php:943
 msgid "Opening it lands them on the account page. One screen for their details, and it is the one this plugin knows the rules of."
-msgstr ""
+msgstr "Abrirlo los lleva a la página de la cuenta. Una sola pantalla para sus datos, y es la que este plugin sabe con qué reglas funciona."
 
 #: includes/admin-account.php:950
 msgid "The screen answers that it is not available. For a site where the dashboard is not part of what people were given."
-msgstr ""
+msgstr "La pantalla responde que no está disponible. Para un sitio donde el escritorio no forma parte de lo que se le dio a la gente."
 
 #: includes/admin-account.php:965
 msgid "The black strip across the top of the site. Hiding it locks nobody out — /wp-admin stays open — which is why this is a choice and not a rule."
-msgstr ""
+msgstr "La franja negra que cruza la parte de arriba del sitio. Esconderla no le cierra la puerta a nadie —/wp-admin sigue abierto—, y por eso esto es una elección y no una regla."
 
 #: includes/admin-account.php:975
 msgid "Whoever is signed in sees the strip on the site, with the way back to the dashboard in it."
-msgstr ""
+msgstr "Quien haya iniciado sesión ve la franja en el sitio, con el camino de vuelta al escritorio dentro."
 
 #: includes/admin-account.php:982
 msgid "The site looks the same signed in as signed out. The dashboard keeps its own toolbar."
-msgstr ""
+msgstr "El sitio se ve igual con la sesión iniciada que sin ella. El escritorio conserva su propia barra de herramientas."
 
 #: includes/admin-account.php:989
 msgid "The usual answer for a site with members: the strip goes for them and stays for whoever runs the place."
-msgstr ""
+msgstr "La respuesta habitual para un sitio con miembros: la franja se va para ellos y se queda para quien maneja el lugar."
 
 #: includes/admin-account.php:996
 msgid "The roles it is hidden from"
-msgstr ""
+msgstr "Los roles a los que se les esconde"
 
 #: includes/admin-account.php:1024
 msgid "Nothing ticked and the strip stays for everybody, which is the same as the first answer."
-msgstr ""
+msgstr "Sin nada marcado la franja se queda para todos, que es lo mismo que la primera respuesta."
 
 #: includes/admin-account.php:1036
 msgid "The exception"
-msgstr ""
+msgstr "La excepción"
 
 #: includes/admin-account.php:1045
 msgid "It is on because the person who administers the site is the one who most needs the way back."
-msgstr ""
+msgstr "Está encendido porque la persona que administra el sitio es la que más necesita el camino de vuelta."
 
 #: includes/admin-account.php:1051
 msgid "Its user menu"
-msgstr ""
+msgstr "Su menú de usuario"
 
 #: includes/admin-account.php:1059
 msgid "While the toolbar is shown, its user menu points at the account area"
-msgstr ""
+msgstr "Mientras se muestre la barra de herramientas, su menú de usuario apunta al área de cuenta"
 
 #: includes/admin-account.php:1204
 msgid "What people can do with their data"
-msgstr ""
+msgstr "Qué puede hacer la gente con sus datos"
 
 #: includes/admin-account.php:1205
 msgid "This is what the section holds. With neither of them on there is nothing in it, and it is not shown."
-msgstr ""
+msgstr "Esto es lo que contiene la sección. Sin ninguno de los dos encendido no hay nada dentro, y no se muestra."
 
 #: includes/admin-account.php:1220
 msgid "The export WordPress already knows how to make: it asks the person to confirm by email and leaves the file ready."
-msgstr ""
+msgstr "La exportación que WordPress ya sabe hacer: le pide a la persona que confirme por correo y deja el archivo listo."
 
 #: includes/admin-account.php:1228
 msgid "Confirmed by email too, and never for an account that administers the site: it would leave the site with nobody in charge."
-msgstr ""
+msgstr "También se confirma por correo, y nunca para una cuenta que administra el sitio: dejaría al sitio sin nadie al mando."
 
 #: includes/admin-account.php:1233
 msgid "Save what they can do"
-msgstr ""
+msgstr "Guardar qué pueden hacer"
 
 #: includes/admin-fields.php:495
 msgid "What it is"
-msgstr ""
+msgstr "Qué es"
 
 #. translators: %s: the key the answers are stored under
 #: includes/admin-fields.php:505
 #, php-format
 msgid "Key: <code>%s</code> — it cannot change: it is the name the data is stored under."
-msgstr ""
+msgstr "Clave: <code>%s</code> — no se puede cambiar: es el nombre con el que se guardan los datos."
 
 #: includes/admin-fields.php:543
 msgid "This is about the person the data belongs to. Whoever administers the site can always change it from that person’s profile: otherwise a field with one change in it turns into a typo nobody can fix."
-msgstr ""
+msgstr "Esto es sobre la persona dueña de los datos. Quien administra el sitio siempre puede cambiarlo desde el perfil de esa persona: si no, un campo con un solo cambio se convierte en un error de dedo que nadie puede arreglar."
 
 #: includes/admin-fields.php:553
 msgid "The field stays open in their account area, and they correct it the day it changes."
-msgstr ""
+msgstr "El campo queda abierto en su área de cuenta, y lo corrigen el día que cambia."
 
 #: includes/admin-fields.php:560
 msgid "The field closes once they have used up their goes. For what should not keep moving: a document number, a date of birth."
-msgstr ""
+msgstr "El campo se cierra cuando gastaron sus cambios. Para lo que no debería seguir moviéndose: un número de documento, una fecha de nacimiento."
 
 #: includes/admin-fields.php:566
 msgid "Counted one person at a time, and only for the changes they make themselves: saving the same thing again spends nothing, and an administrator fixing it spends nobody’s goes."
-msgstr ""
+msgstr "Se cuenta persona por persona, y solo los cambios que hace cada una: volver a guardar lo mismo no gasta nada, y un administrador que lo corrige no le gasta cambios a nadie."
 
 #: includes/admin-fields.php:573
 msgid "Never: they see it, and whoever administers changes it"
-msgstr ""
+msgstr "Nunca: lo ven, y lo cambia quien administra"
 
 #: includes/admin-fields.php:574
 msgid "It is shown to them and cannot be typed in. For what the site decides and not the person: a membership number, a category."
-msgstr ""
+msgstr "Se les muestra y no se puede escribir. Para lo que decide el sitio y no la persona: un número de socio, una categoría."
 
 #: includes/admin-fields.php:580
 msgid "What the person sees"
-msgstr ""
+msgstr "Qué ve la persona"
 
 #: includes/admin-fields.php:648
 msgid "What the form does with it"
-msgstr ""
+msgstr "Qué hace el formulario con él"
 
 #: includes/admin-fields.php:657
 msgid "Required: no form goes through without it"
-msgstr ""
+msgstr "Obligatorio: ningún formulario pasa sin él"
 
 #: includes/admin-fields.php:658
 msgid "It is also one of the things asked for on the registration form, before the account exists."
-msgstr ""
+msgstr "También es una de las cosas que se piden en el formulario de registro, antes de que la cuenta exista."
 
 #: includes/admin-fields.php:665
 msgid "Active: it shows up in the forms"
-msgstr ""
+msgstr "Activo: aparece en los formularios"
 
 #: includes/admin-fields.php:666
 msgid "Unticked it leaves every form and keeps both its definition and everything already answered, waiting for the day it comes back."
-msgstr ""
+msgstr "Desmarcado se va de todos los formularios y conserva tanto su definición como todo lo ya respondido, esperando el día que vuelva."
 
 #: includes/admin-login.php:302
 msgid "The page holding the sign-in form, and what becomes of wp-login.php. Put the [diluxone_users_login] shortcode on the page you pick."
-msgstr ""
+msgstr "La página que tiene el formulario de acceso, y qué pasa con wp-login.php. Pon el shortcode [diluxone_users_login] en la página que elijas."
 
 #: includes/admin-login.php:322
 msgid "wp-login.php is the sign-in screen WordPress brings with it, at /wp-login.php: the grey box with the logo on it that everybody has seen. It keeps working whatever is chosen here — what changes is whether anybody still lands on it."
-msgstr ""
+msgstr "wp-login.php es la pantalla de acceso que trae WordPress, en /wp-login.php: la caja gris con el logo que todo el mundo vio. Sigue funcionando se elija lo que se elija aquí: lo que cambia es si alguien todavía cae ahí."
 
 #: includes/admin-login.php:336
 msgid "wp-login.php stops being a screen: an old bookmark, a plugin’s link or its “register” link all land on this site’s own pages. Whoever administers the site keeps the emergency way in on the Summary tab."
-msgstr ""
+msgstr "wp-login.php deja de ser una pantalla: un marcador antiguo, el enlace de un plugin o su enlace de \"registrarse\" caen todos en las páginas propias del sitio. Quien administra el sitio conserva la entrada de emergencia en la pestaña Resumen."
 
 #: includes/admin-login.php:343
 msgid "The site has two screens that sign people in: yours, and the one WordPress brings. Anybody arriving on wp-login.php from a bookmark or a plugin sees the second."
-msgstr ""
+msgstr "El sitio tiene dos pantallas que hacen entrar a la gente: la tuya y la que trae WordPress. Quien llegue a wp-login.php desde un marcador o desde un plugin ve la segunda."
 
 #: includes/admin-login.php:350
 msgid "While a password still opens something here, wp-login.php is left alone. The day the link is the only way in, its form could not work anyway."
-msgstr ""
+msgstr "Mientras una contraseña todavía abra algo aquí, a wp-login.php no se le toca. El día que el enlace sea la única forma de entrar, su formulario no podría funcionar de todos modos."
 
 #: includes/admin-login.php:363
 msgid "People still land on that screen, so it is worth it looking like the rest of the site. It is set on Design, with the rest of what the site looks like."
-msgstr ""
+msgstr "La gente todavía cae en esa pantalla, así que vale la pena que se parezca al resto del sitio. Se configura en Diseño, junto con el resto de lo que el sitio muestra."
 
 #: includes/admin-login.php:374
 msgid "If somebody forgets their password"
-msgstr ""
+msgstr "Si alguien olvida su contraseña"
 
 #: includes/admin-login.php:375
 msgid "Forgetting a password is about changing it, not about getting in. Whichever answer is chosen, the new password is typed on this site’s own screen whenever wp-login.php is taken over and a sign-in page is chosen, and on WordPress’s otherwise."
-msgstr ""
+msgstr "Olvidar la contraseña va de cambiarla, no de entrar. Se elija la respuesta que se elija, la contraseña nueva se escribe en la pantalla propia del sitio siempre que se tome wp-login.php y haya una página de acceso elegida, y en la de WordPress si no."
 
 #: includes/admin-login.php:379
 msgid "There is no password on this site, so there is nothing to forget. What is chosen here waits for one."
-msgstr ""
+msgstr "En este sitio no hay contraseña, así que no hay nada que olvidar. Lo que se elija aquí espera a que la haya."
 
 #: includes/admin-login.php:389
 msgid "The one WordPress brings: the person asks there for a reset e-mail, and the link in it ends on the screen where the new password is typed."
-msgstr ""
+msgstr "La que trae WordPress: la persona pide ahí un correo de restablecimiento, y el enlace termina en la pantalla donde se escribe la contraseña nueva."
 
 #: includes/admin-login.php:391
 msgid "wp-login.php is taken over, so asking for a reset lands on the sign-in page anyway"
-msgstr ""
+msgstr "wp-login.php está tomado, así que pedir un restablecimiento cae de todos modos en la página de acceso"
 
 #: includes/admin-login.php:397
 msgid "The sign-in page: they get in with the e-mail link, and the password stays as it was"
-msgstr ""
+msgstr "La página de acceso: entran con el enlace por correo, y la contraseña queda como estaba"
 
 #: includes/admin-login.php:398
 msgid "Nothing is reset. On a site where a link already opens the door, the reset screen asks for the same address to send a second e-mail doing what the first one does."
-msgstr ""
+msgstr "No se restablece nada. En un sitio donde un enlace ya abre la puerta, la pantalla de restablecimiento pide la misma dirección para enviar un segundo correo que hace lo que hace el primero."
 
 #: includes/admin-login.php:400
 msgid "the e-mail link is not one of the ways in, so this sends them nowhere they can use"
-msgstr ""
+msgstr "el enlace por correo no es una de las formas de entrar, así que esto los envía a un lugar que no les sirve"
 
 #: includes/admin-login.php:413
 msgid "With what somebody who already has an account gets in. Every way in is switched on here; what each one does once it is on is set where that feature lives. Who gets an account is the Registration tab."
-msgstr ""
+msgstr "Con qué entra alguien que ya tiene cuenta. Todas las formas de entrar se encienden aquí; lo que hace cada una una vez encendida se configura donde vive esa función. Quién consigue una cuenta es la pestaña Registro."
 
 #: includes/admin-login.php:415
 msgid "The e-mail link and the password"
-msgstr ""
+msgstr "El enlace por correo y la contraseña"
 
 #: includes/admin-login.php:415
 msgid "The two the sign-in form draws itself. Only the second answer closes anything."
-msgstr ""
+msgstr "Los dos que el formulario de acceso dibuja por su cuenta. Solo la segunda respuesta cierra algo."
 
 #: includes/admin-login.php:426
 msgid "The form takes an address and sends a link, and it takes a password from whoever has one. Nothing is closed."
-msgstr ""
+msgstr "El formulario toma una dirección y envía un enlace, y toma una contraseña de quien tenga una. No se cierra nada."
 
 #: includes/admin-login.php:433
 msgid "wp-login.php stops showing its password form and WordPress’s own registration is locked shut, because a password would open nothing."
-msgstr ""
+msgstr "wp-login.php deja de mostrar su formulario de contraseña y el registro propio de WordPress queda cerrado con llave, porque una contraseña no abriría nada."
 
 #: includes/admin-login.php:440
 msgid "Nobody can ask for a link: the form asks for a password and nothing else."
-msgstr ""
+msgstr "Nadie puede pedir un enlace: el formulario pide una contraseña y nada más."
 
 #: includes/admin-login.php:451
 msgid "How long a link lasts, how often one can be asked for, and what the box accepts."
-msgstr ""
+msgstr "Cuánto dura un enlace, cada cuánto se puede pedir uno y qué acepta el campo."
 
 #: includes/admin-login.php:488
 msgid "The box takes the public name as well as the e-mail address"
-msgstr ""
+msgstr "El campo acepta el nombre público además de la dirección de correo"
 
 #: includes/admin-login.php:501
 msgid "Other ways in"
-msgstr ""
+msgstr "Otras formas de entrar"
 
 #: includes/admin-login.php:501
 msgid "Switched on here, one by one. What each one does once it is on is set where that feature lives."
-msgstr ""
+msgstr "Se encienden aquí, una por una. Lo que hace cada una una vez encendida se configura donde vive esa función."
 
 #: includes/admin-login.php:503
 msgid "The buttons under the form. Off, they go, and whoever already linked a social account keeps it and can unlink it from their account."
-msgstr ""
+msgstr "Los botones debajo del formulario. Apagados, se van, y quien ya vinculó una cuenta social la conserva y puede desvincularla desde su cuenta."
 
 #. translators: %s: providers working, comma separated
 #: includes/admin-login.php:508
 #, php-format
 msgid "Working right now: %s. Off, the buttons go, and whoever already linked a social account keeps it."
-msgstr ""
+msgstr "Funcionando ahora mismo: %s. Apagado, los botones se van, y quien ya vinculó una cuenta social la conserva."
 
 #: includes/admin-login.php:523
 msgid "More social options →"
-msgstr ""
+msgstr "Más opciones de login social →"
 
 #: includes/admin-login.php:539
 msgid "A key that stays on the person’s device or keychain: nothing to type, nothing to phish, and it counts as both steps at once."
-msgstr ""
+msgstr "Una clave que se queda en el dispositivo o en el llavero de la persona: nada que escribir, nada que phishear, y cuenta como los dos pasos a la vez."
 
 #: includes/admin-login.php:542
 msgid "More passkey options →"
-msgstr ""
+msgstr "Más opciones de passkeys →"
 
 #: includes/admin-login.php:545
 msgid "this site is not on HTTPS, and browsers refuse passkeys until it is"
-msgstr ""
+msgstr "este sitio no está en HTTPS, y los navegadores rechazan las passkeys hasta que lo esté"
 
 #: includes/admin-passkeys.php:73
 msgid "Offered on this site"
-msgstr ""
+msgstr "Se ofrecen en este sitio"
 
 #. translators: %s: the domain the passkeys end up tied to
 #: includes/admin-passkeys.php:78
 #, php-format
 msgid "People can add passkeys and sign in with them. They are tied to %s: if the site moves to another domain they stop working and have to be added again, which is exactly what makes them unphishable."
-msgstr ""
+msgstr "La gente puede añadir passkeys y entrar con ellas. Están atadas a %s: si el sitio se muda a otro dominio dejan de funcionar y hay que añadirlas de nuevo, que es exactamente lo que las hace imposibles de phishear."
 
 #: includes/admin-passkeys.php:81
 msgid "Nobody can add one or sign in with one. It is turned on beside the other ways in."
-msgstr ""
+msgstr "Nadie puede añadir una ni entrar con una. Se enciende junto a las otras formas de entrar."
 
 #: includes/admin-passkeys.php:84
 msgid "Access › Ways in →"
-msgstr ""
+msgstr "Acceso › Formas de entrar →"
 
 #: includes/admin-passkeys.php:85
 #: includes/admin-passkeys.php:103
 msgid "Turn them on → Access › Ways in"
-msgstr ""
+msgstr "Enciéndelas → Acceso › Formas de entrar"
 
 #: includes/admin-passkeys.php:94
 msgid "Which passkeys are accepted"
-msgstr ""
+msgstr "Qué passkeys se aceptan"
 
 #: includes/admin-passkeys.php:101
 msgid "Passkeys are not one of the ways in yet, so nothing below is in use. What is chosen here applies the day they are."
-msgstr ""
+msgstr "Las passkeys todavía no son una de las formas de entrar, así que nada de lo de abajo está en uso. Lo que se elija aquí se aplica el día que lo sean."
 
 #: includes/admin-passkeys.php:114
 msgid "Somebody at a laptop can register using their phone, and a hardware key works. It is what most people expect."
-msgstr ""
+msgstr "Alguien en una laptop puede registrar usando su celular, y una llave de hardware funciona. Es lo que espera la mayoría."
 
 #: includes/admin-passkeys.php:121
 msgid "Everything stays on the machine in front of them. Some organisations require it; everybody else finds it annoying."
-msgstr ""
+msgstr "Todo se queda en la máquina que tienen delante. Algunas organizaciones lo exigen; al resto le resulta molesto."
 
 #: includes/admin-passkeys.php:126
 msgid "Proof that it is them holding the device"
-msgstr ""
+msgstr "Prueba de que quien tiene el dispositivo es esa persona"
 
 #: includes/admin-passkeys.php:136
 msgid "This is what makes a passkey count as two things at once: something they have and something they are. Unticked, whoever is holding an unlocked device gets in, and the passkey is worth one factor."
-msgstr ""
+msgstr "Esto es lo que hace que una passkey cuente como dos cosas a la vez: algo que tiene y algo que es. Desmarcado, entra cualquiera que tenga el dispositivo desbloqueado en la mano, y la passkey vale un solo factor."
 
 #: includes/admin-register.php:87
 msgid "Somebody types an address the site has never seen, gets a link, and the account exists by the time they are in. Nothing to fill in."
-msgstr ""
+msgstr "Alguien escribe una dirección que el sitio nunca vio, recibe un enlace, y para cuando entró la cuenta ya existe. No hay nada que llenar."
 
 #: includes/admin-register.php:95
 msgid "The same thing through Google or Microsoft. Off, a social account only lets in somebody who already has one here."
-msgstr ""
+msgstr "Lo mismo a través de Google o Microsoft. Apagado, una cuenta social solo deja entrar a alguien que ya tenga cuenta aquí."
 
 #: includes/admin-register.php:104
 msgid "A registration form of the site’s own"
-msgstr ""
+msgstr "Un formulario de registro propio del sitio"
 
 #: includes/admin-register.php:105
 msgid "For a site that asks for more than an address before letting anybody in. It asks for the required fields, then sends the same link."
-msgstr ""
+msgstr "Para un sitio que pide más que una dirección antes de dejar entrar a nadie. Pide los campos obligatorios y después envía el mismo enlace."
 
 #: includes/admin-register.php:107
 msgid "it has no page yet"
-msgstr ""
+msgstr "todavía no tiene página"
 
 #: includes/admin-register.php:111
 msgid "The page holding it"
-msgstr ""
+msgstr "La página que lo tiene"
 
 #: includes/admin-register.php:118
 msgid "— Choose one —"
-msgstr ""
+msgstr "— Elige una —"
 
 #: includes/admin-register.php:126
 msgid "Without a page nobody can reach the form, so this door is not open yet."
-msgstr ""
+msgstr "Sin una página nadie puede llegar al formulario, así que esta puerta todavía no está abierta."
 
 #: includes/admin-register.php:139
 msgid "The same switch as Settings → General → “Anyone can register”: changing it here or there changes both."
-msgstr ""
+msgstr "El mismo interruptor que Ajustes → Generales → \"Cualquiera puede registrarse\": cambiarlo aquí o allí cambia los dos."
 
 #: includes/admin-register.php:141
 msgid "locked: the e-mail link is the only way in, and that form hands out passwords"
-msgstr ""
+msgstr "cerrado: el enlace por correo es la única forma de entrar, y ese formulario reparte contraseñas"
 
 #: includes/admin-register.php:154
 msgid "The same one whichever door they came through: a role per door is a quiet way of handing out privileges. Roles that can edit the site are not offered — an account anybody can create should not be able to."
-msgstr ""
+msgstr "El mismo sin importar por qué puerta entraron: un rol por puerta es una forma silenciosa de repartir privilegios. Los roles que pueden editar el sitio no se ofrecen: una cuenta que cualquiera puede crear no debería poder hacerlo."
 
 #: includes/admin-sessions.php:133
 msgid "A session is what keeps somebody signed in after they close the tab. Below: how long one lasts on this site, and every person who has one open right now."
-msgstr ""
+msgstr "Una sesión es lo que mantiene a alguien con la sesión iniciada después de cerrar la pestaña. Abajo: cuánto dura una en este sitio, y todas las personas que tienen una abierta ahora mismo."
 
 #: includes/admin-sessions.php:147
 msgid "How long a session lasts"
-msgstr ""
+msgstr "Cuánto dura una sesión"
 
 #: includes/admin-sessions.php:148
 msgid "WordPress ends one after 2 days, or 14 with “remember me”. On a site people come into by e-mail link, that is the inbox again every other day."
-msgstr ""
+msgstr "WordPress la termina a los 2 días, o a los 14 con \"recordarme\". En un sitio al que la gente entra con un enlace por correo, eso es volver a la bandeja un día sí y otro no."
 
 #: includes/admin-sessions.php:158
 msgid "Without it"
-msgstr ""
+msgstr "Sin eso"
 
 #: includes/admin-sessions.php:161
 msgid "What somebody gets when they leave the box unticked on a form that offers it."
-msgstr ""
+msgstr "Lo que le toca a alguien que deja la casilla desmarcada en un formulario que la ofrece."
 
 #: includes/admin-sessions.php:174
 msgid "Each person sees where they are signed in, and can close it"
-msgstr ""
+msgstr "Cada persona ve dónde tiene la sesión iniciada, y puede cerrarla"
 
 #: includes/admin-sessions.php:175
 msgid "A box under Security in their account area, with one line per device. Unticked, the box is not there and closing a session stays an administrator’s job, from the list below."
-msgstr ""
+msgstr "Un recuadro bajo Seguridad en su área de cuenta, con una línea por dispositivo. Desmarcado, el recuadro no está y cerrar una sesión sigue siendo tarea de un administrador, desde la lista de abajo."
 
 #: includes/admin-sessions.php:200
 msgid "Who is signed in right now, from where, and until when. Closing somebody’s sessions signs them out everywhere at once; they can come back in as always."
-msgstr ""
+msgstr "Quién tiene la sesión iniciada ahora mismo, desde dónde y hasta cuándo. Cerrarle las sesiones a alguien lo saca de todos lados de una vez; puede volver a entrar como siempre."
 
 #: includes/notify.php:88
 msgid "The link that signs me in"
-msgstr ""
+msgstr "El enlace que me hace entrar"
 
 #: includes/notify.php:89
 msgid "Sent the moment you ask to get in."
-msgstr ""
+msgstr "Se envía en el momento en que pides entrar."
 
 #: includes/notify.php:90
 msgid "Nobody can turn it off: without it there is no way in."
-msgstr ""
+msgstr "Nadie puede apagarlo: sin él no hay forma de entrar."
 
 #: includes/notify.php:96
 msgid "The code for the second step"
-msgstr ""
+msgstr "El código del segundo paso"
 
 #: includes/notify.php:97
 msgid "Sent halfway through signing in, when this site asks you for a code."
-msgstr ""
+msgstr "Se envía a mitad del acceso, cuando este sitio te pide un código."
 
 #: includes/notify.php:98
 msgid "Nobody can turn it off: a code that does not arrive leaves you out."
-msgstr ""
+msgstr "Nadie puede apagarlo: un código que no llega te deja fuera."
 
 #: templates/account/notifications.php:62
 msgid "This site does not email you about anything."
-msgstr ""
+msgstr "Este sitio no te envía correos por nada."
 
 #: templates/account/notifications.php:67
 msgid "There is nothing to choose here: this site decides what it sends. This is what reaches you."
-msgstr ""
+msgstr "Aquí no hay nada que elegir: este sitio decide qué envía. Esto es lo que te llega."
 
 #: templates/account/notifications.php:89
 msgid "Always sent"
-msgstr ""
+msgstr "Se envía siempre"
