@@ -99,6 +99,8 @@ function diluxone_users_design_account_save(): void {
 			'diluxone_users_account_row_w'       => sanitize_text_field( wp_unslash( $_POST['diluxone_users_account_row_w'] ?? '' ) ),
 			'diluxone_users_account_row_pad'     => sanitize_text_field( wp_unslash( $_POST['diluxone_users_account_row_pad'] ?? '' ) ),
 			'diluxone_users_account_body_pad'    => sanitize_text_field( wp_unslash( $_POST['diluxone_users_account_body_pad'] ?? '' ) ),
+			'diluxone_users_account_bar_pad'     => sanitize_text_field( wp_unslash( $_POST['diluxone_users_account_bar_pad'] ?? '' ) ),
+			'diluxone_users_account_bar_gap'     => sanitize_text_field( wp_unslash( $_POST['diluxone_users_account_bar_gap'] ?? '' ) ),
 		)
 	);
 	// phpcs:enable

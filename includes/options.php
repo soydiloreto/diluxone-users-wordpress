@@ -257,6 +257,11 @@ function diluxone_users_option_defaults(): array {
 		'diluxone_users_account_row_w'       => '',
 		'diluxone_users_account_row_pad'     => '',
 		'diluxone_users_account_body_pad'    => '',
+		// The strip the menu sits in: the air inside it, and the gap between
+		// it and what comes next. Empty means the plugin's own — 10 and 28 —
+		// which are the numbers that make every menu shape sit the same.
+		'diluxone_users_account_bar_pad'     => '',
+		'diluxone_users_account_bar_gap'     => '',
 
 		// ── Second factor ─────────────────────────────────────────────
 		// 'off' is never asked; 'optional' only of whoever turned it on;

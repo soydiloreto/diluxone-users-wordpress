@@ -196,6 +196,28 @@ function diluxone_users_account_css(): string {
 		. '.diluxone-users-account__nav--row,'
 		. '.diluxone-users-account__body{' . $rows . '}';
 
+	// The strip's own measurements ride as properties, because the sheet
+	// already reads them with the plugin's numbers as the fallback: unset,
+	// nothing is printed and nothing is overruled.
+	$bar = '';
+
+	$diluxone_users_bars = array(
+		'bar_pad' => 'bar-pad',
+		'bar_gap' => 'bar-gap',
+	);
+
+	foreach ( $diluxone_users_bars as $diluxone_users_key => $diluxone_users_token ) {
+		$diluxone_users_value = (string) diluxone_users_option( 'diluxone_users_account_' . $diluxone_users_key );
+
+		if ( '' !== trim( $diluxone_users_value ) ) {
+			$bar .= '--diluxone-users-' . $diluxone_users_token . ':' . (int) $diluxone_users_value . 'px;';
+		}
+	}
+
+	if ( '' !== $bar ) {
+		$css .= ':root{' . $bar . '}';
+	}
+
 	if ( '' !== trim( $body ) ) {
 		// As a property and not as a rule of its own: the sheet already gives
 		// a cover its air at the end, and two rules for one measurement is
