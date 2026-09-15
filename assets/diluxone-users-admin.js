@@ -389,6 +389,45 @@ diluxoneUsersFieldTypes( document );
 }() );
 
 /**
+ * The way back to the default, and the box that turns a colour on.
+ *
+ * Both exist for the same reason: a field can be put into a state it cannot
+ * be got back out of. A number that is empty means "whatever the plugin
+ * does", and once a number is typed there is nothing to say the box used to
+ * be blank. A colour picker cannot hold "no colour" at all — the moment it is
+ * touched it has one.
+ */
+( function () {
+	'use strict';
+
+	document.querySelectorAll( '[data-diluxone-users-default]' ).forEach( function ( button ) {
+		button.addEventListener( 'click', function () {
+			document.querySelectorAll( button.dataset.diluxoneUsersDefault ).forEach( function ( field ) {
+				field.value = '';
+			} );
+
+			// The preview listens on the form and a value cleared from here
+			// does not announce itself.
+			if ( button.form ) {
+				button.form.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+			}
+		} );
+	} );
+
+	document.querySelectorAll( '[data-diluxone-users-toggle]' ).forEach( function ( box ) {
+		var target = document.querySelector( box.dataset.diluxoneUsersToggle );
+
+		if ( ! target ) {
+			return;
+		}
+
+		box.addEventListener( 'change', function () {
+			target.disabled = ! box.checked;
+		} );
+	} );
+}() );
+
+/**
  * The preview window, and what size of window it is pretending to be.
  *
  * The preview is a document in an iframe, so `50vw` inside it means half of

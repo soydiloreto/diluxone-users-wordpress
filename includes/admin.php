@@ -307,6 +307,24 @@ function diluxone_users_scope_posted( string $prefix ): array {
 }
 
 /**
+ * The way back to what the plugin would have done.
+ *
+ * Every one of these numbers reads "empty means the plugin's own", and empty
+ * is a state a field can be put into but not easily got back to: once a
+ * number is typed, the person has to remember that the box used to be blank
+ * and that blank meant something. The button remembers instead.
+ *
+ * @param string $fields CSS selectors of the fields it empties, comma separated.
+ */
+function diluxone_users_default_button( string $fields ): void {
+	printf(
+		'<p><button type="button" class="button-link diluxone-users-default" data-diluxone-users-default="%s">%s</button></p>',
+		esc_attr( $fields ),
+		esc_html__( 'Back to the default', 'diluxone-users' )
+	);
+}
+
+/**
  * A picture chosen from the media library.
  *
  * The library and not a URL box: whoever is setting this up already has the

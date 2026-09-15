@@ -743,6 +743,15 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
    stacked, not a menu. */
 .diluxone-users-account__nav--column .diluxone-users-account__tab { text-align: left; }
 
+/* Where it sits along the strip. `start` is the sheet's own and says nothing,
+   so a menu that was never asked about does not move. Across the top it is
+   where the row begins; down the side it is where each line of text begins,
+   which is the same question asked of a column. */
+.diluxone-users-account__nav--center.diluxone-users-account__nav--row { justify-content: center; }
+.diluxone-users-account__nav--end.diluxone-users-account__nav--row { justify-content: flex-end; }
+.diluxone-users-account__nav--center.diluxone-users-account__nav--column .diluxone-users-account__tab { text-align: center; }
+.diluxone-users-account__nav--end.diluxone-users-account__nav--column .diluxone-users-account__tab { text-align: right; }
+
 /* Filled: the open one is a block of colour. */
 .diluxone-users-account__nav--pills .diluxone-users-account__tab:hover { background: var(--diluxone-users-surface-alt); }
 .diluxone-users-account__nav--pills .diluxone-users-account__tab.is-current {
@@ -864,16 +873,23 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
    underlined one only looked right by accident. The strip is one thing and
    it has one height, whatever is drawn inside it. */
 .diluxone-users-account__bar {
-	/* Symmetric, so whatever is drawn inside sits in the middle of it. */
-	padding-block: var(--diluxone-users-bar-pad, 10px);
+	/* flow-root, so the menu's own margins stay inside the strip instead of
+	   collapsing through it and pushing the strip around. */
+	display: flow-root;
 	margin-bottom: var(--diluxone-users-bar-gap, 28px);
 	background: var(--diluxone-users-bar-bg, transparent);
 	border-bottom: var(--diluxone-users-bar-rule, 0 none);
 }
-/* The menu carries its own gap to what follows when it is placed on its own.
-   Inside the strip, the strip carries it, and counting it twice is what left
-   a hole between the menu and the heading. */
-.diluxone-users-account__bar .diluxone-users-account__nav { margin-bottom: 0; }
+/* Four sides, which is how everybody has written a margin since 1996. The
+   top and bottom are equal by default, and that is what keeps the menu in the
+   middle of its strip whichever shape it has. */
+.diluxone-users-account__bar .diluxone-users-account__nav {
+	margin:
+		var(--diluxone-users-nav-top, 10px)
+		var(--diluxone-users-nav-right, 0px)
+		var(--diluxone-users-nav-bottom, 10px)
+		var(--diluxone-users-nav-left, 0px);
+}
 /* With no header the area opens with the strip, against whatever the site has
    above it — its own header, usually. The opening air belongs to the area and
    not to the strip: on the strip it would push the menu off centre. */

@@ -240,8 +240,23 @@ function diluxone_users_screen_appearance_template(): void {
 		<tr>
 			<th scope="row"><label for="diluxone_users_account_cover"><?php esc_html_e( 'The cover colour', 'diluxone-users' ); ?></label></th>
 			<td>
-				<input type="color" id="diluxone_users_account_cover" name="diluxone_users_account_cover" value="<?php echo esc_attr( '' !== diluxone_users_account_cover() ? diluxone_users_account_cover() : diluxone_users_style_accent() ); ?>">
-				<p class="description"><?php esc_html_e( 'Only the template with a cover uses it. Left as the accent colour it follows the accent, instead of becoming a second colour that drifts from the first.', 'diluxone-users' ); ?></p>
+				<?php
+				/*
+				 * The option's own answer is "empty: follow the accent", and a
+				 * colour picker cannot say empty — once it is touched it has a
+				 * value and there is no way back. So the way back is a box of
+				 * its own, and it is the one that is ticked to begin with.
+				 */
+				$diluxone_users_own = '' !== diluxone_users_account_cover();
+				?>
+				<label class="diluxone-users-roles__item">
+					<input type="checkbox" name="diluxone_users_account_cover_own" value="1" <?php checked( $diluxone_users_own ); ?> data-diluxone-users-toggle="#diluxone_users_account_cover">
+					<?php esc_html_e( 'A colour of its own', 'diluxone-users' ); ?>
+				</label>
+
+				<input type="color" id="diluxone_users_account_cover" name="diluxone_users_account_cover" value="<?php echo esc_attr( $diluxone_users_own ? diluxone_users_account_cover() : diluxone_users_style_accent() ); ?>" <?php disabled( ! $diluxone_users_own ); ?>>
+
+				<p class="description"><?php esc_html_e( 'Unticked it follows the accent colour, which is what it does out of the box: a site that changes its accent gets a cover that follows instead of a second colour, set once, drifting from the first.', 'diluxone-users' ); ?></p>
 				<p class="description"><?php esc_html_e( 'It is also what goes over the picture in the third answer above, so the two never drift apart.', 'diluxone-users' ); ?></p>
 			</td>
 		</tr>
@@ -301,16 +316,61 @@ function diluxone_users_screen_appearance_template(): void {
 			</td>
 		</tr>
 		<tr>
-			<th scope="row"><?php esc_html_e( 'The menu’s strip', 'diluxone-users' ); ?></th>
+			<th scope="row"><?php esc_html_e( 'Where the menu sits', 'diluxone-users' ); ?></th>
 			<td>
-				<label for="diluxone_users_account_bar_pad"><?php esc_html_e( 'Air inside it', 'diluxone-users' ); ?></label>
-				<input type="number" id="diluxone_users_account_bar_pad" name="diluxone_users_account_bar_pad" class="small-text" min="0" max="80" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_account_bar_pad' ) ); ?>">
+				<?php
+				/*
+				 * Named after the edges and not after the sides: in a language
+				 * written right to left, "the start" is the right-hand one,
+				 * and the site should not have to know that to answer.
+				 */
+				$diluxone_users_aligns = array(
+					'start'  => __( 'At the start', 'diluxone-users' ),
+					'center' => __( 'In the middle', 'diluxone-users' ),
+					'end'    => __( 'At the end', 'diluxone-users' ),
+				);
 
-				<label for="diluxone_users_account_bar_gap" style="margin-left:14px"><?php esc_html_e( 'Gap under it', 'diluxone-users' ); ?></label>
-				<input type="number" id="diluxone_users_account_bar_gap" name="diluxone_users_account_bar_gap" class="small-text" min="0" max="120" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_account_bar_gap' ) ); ?>">
+				foreach ( $diluxone_users_aligns as $diluxone_users_key => $diluxone_users_label ) :
+					?>
+					<label class="diluxone-users-roles__item">
+						<input type="radio" name="diluxone_users_account_nav_align" value="<?php echo esc_attr( $diluxone_users_key ); ?>" <?php checked( diluxone_users_account_nav_align(), $diluxone_users_key ); ?> data-diluxone-users-piece="nav_align">
+						<?php echo esc_html( $diluxone_users_label ); ?>
+					</label>
+				<?php endforeach; ?>
+				<p class="description"><?php esc_html_e( 'Across the top, where the row begins, sits in the middle or ends. Down the side it is where the words in each line begin, which is the same question asked of a column.', 'diluxone-users' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'The menu’s margin', 'diluxone-users' ); ?></th>
+			<td>
+				<?php
+				$diluxone_users_sides = array(
+					'nav_top'    => __( 'Top', 'diluxone-users' ),
+					'nav_bottom' => __( 'Bottom', 'diluxone-users' ),
+					'nav_left'   => __( 'Left', 'diluxone-users' ),
+					'nav_right'  => __( 'Right', 'diluxone-users' ),
+				);
 
-				<p class="description"><?php esc_html_e( 'Pixels, and empty for the plugin’s own — 10 and 28. The air is above and below in equal measure, which is what keeps the menu in the middle of its strip whichever shape it has.', 'diluxone-users' ); ?></p>
-				<p class="description"><?php esc_html_e( 'Only the menu across the top has a strip. Down the side it is a column inside the content, and what spaces it is the menu itself.', 'diluxone-users' ); ?></p>
+				foreach ( $diluxone_users_sides as $diluxone_users_side => $diluxone_users_label ) :
+					$diluxone_users_name = 'diluxone_users_account_' . $diluxone_users_side;
+					?>
+					<span class="diluxone-users-sides__one">
+						<label for="<?php echo esc_attr( $diluxone_users_name ); ?>"><?php echo esc_html( $diluxone_users_label ); ?></label>
+						<input type="number" id="<?php echo esc_attr( $diluxone_users_name ); ?>" name="<?php echo esc_attr( $diluxone_users_name ); ?>" class="small-text" min="0" max="120" value="<?php echo esc_attr( (string) diluxone_users_option( $diluxone_users_name ) ); ?>">
+					</span>
+				<?php endforeach; ?>
+
+				<p class="description"><?php esc_html_e( 'Pixels around the menu, inside its strip. Empty for the plugin’s own — 10, 10, 0 and 0. Top and bottom equal is what keeps the menu in the middle of its strip whichever shape it has.', 'diluxone-users' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Left and right move the menu without moving the strip, so a background or a rule on it still runs the whole width.', 'diluxone-users' ); ?></p>
+				<?php diluxone_users_default_button( '#diluxone_users_account_nav_top,#diluxone_users_account_nav_bottom,#diluxone_users_account_nav_left,#diluxone_users_account_nav_right' ); ?>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><label for="diluxone_users_account_bar_gap"><?php esc_html_e( 'Under the strip', 'diluxone-users' ); ?></label></th>
+			<td>
+				<input type="number" id="diluxone_users_account_bar_gap" name="diluxone_users_account_bar_gap" class="small-text" min="0" max="160" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_account_bar_gap' ) ); ?>">
+				<p class="description"><?php esc_html_e( 'The gap between the strip and the content below it. Pixels, empty for 28. Only the menu across the top has a strip: down the side it is a column inside the content.', 'diluxone-users' ); ?></p>
+				<?php diluxone_users_default_button( '#diluxone_users_account_bar_gap' ); ?>
 			</td>
 		</tr>
 		<tr>
@@ -327,6 +387,7 @@ function diluxone_users_screen_appearance_template(): void {
 
 				<p class="description"><?php esc_html_e( 'The header, the menu and the content are three rows, and this is the width they line up to and the air inside them. Pixels, and empty means the plugin says nothing about it: whatever your theme already does with the page stands.', 'diluxone-users' ); ?></p>
 				<p class="description"><?php esc_html_e( 'Empty and not zero, and the difference matters: a zero is an answer, and an answer printed into the stylesheet would overrule a theme that had already lined these rows up itself.', 'diluxone-users' ); ?></p>
+				<?php diluxone_users_default_button( '#diluxone_users_account_row_w,#diluxone_users_account_row_pad,#diluxone_users_account_body_pad' ); ?>
 			</td>
 		</tr>
 		<tr>

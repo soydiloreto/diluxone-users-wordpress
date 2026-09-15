@@ -161,6 +161,10 @@ function diluxone_users_option_defaults(): array {
 		// underlined tabs — and a look that changes as a side effect of a
 		// choice about the header is a look nobody can predict.
 		'diluxone_users_account_nav_style'   => 'pills',
+		// And where along the strip it sits. Three answers and not a number:
+		// a menu is at one end, in the middle, or at the other end, and
+		// anything between those is a menu that looks misplaced.
+		'diluxone_users_account_nav_align'   => 'start',
 		// The front page with avatar, name and member-since date.
 		'diluxone_users_account_header'      => 1,
 		// And what that header is made of. They are separate options and not
@@ -257,10 +261,14 @@ function diluxone_users_option_defaults(): array {
 		'diluxone_users_account_row_w'       => '',
 		'diluxone_users_account_row_pad'     => '',
 		'diluxone_users_account_body_pad'    => '',
-		// The strip the menu sits in: the air inside it, and the gap between
-		// it and what comes next. Empty means the plugin's own — 10 and 28 —
-		// which are the numbers that make every menu shape sit the same.
-		'diluxone_users_account_bar_pad'     => '',
+		// The margin around the menu inside its strip, on the four sides, and
+		// the gap between the strip and the content under it. Empty means the
+		// plugin's own — 10, 10, 0, 0 and 28 — which are the numbers that
+		// make every menu shape sit the same way in its strip.
+		'diluxone_users_account_nav_top'     => '',
+		'diluxone_users_account_nav_bottom'  => '',
+		'diluxone_users_account_nav_left'    => '',
+		'diluxone_users_account_nav_right'   => '',
 		'diluxone_users_account_bar_gap'     => '',
 
 		// ── Second factor ─────────────────────────────────────────────

@@ -10,6 +10,7 @@
  * @var string                              $current
  * @var array<string, array<string, mixed>> $sections
  * @var string                              $style   'pills', 'underline' or 'plain'.
+ * @var string                              $align   'start', 'center' or 'end'.
  * @var bool                                $column  Down the side rather than across.
  *
  * @package DiluxOneUsers
@@ -21,6 +22,7 @@ $diluxone_users_nav = array(
 	'diluxone-users-account__nav',
 	'diluxone-users-account__nav--' . $style,
 	'diluxone-users-account__nav--' . ( $column ? 'column' : 'row' ),
+	'diluxone-users-account__nav--' . $align,
 );
 ?>
 <nav class="<?php echo esc_attr( implode( ' ', $diluxone_users_nav ) ); ?>" aria-label="<?php esc_attr_e( 'Account sections', 'diluxone-users' ); ?>">

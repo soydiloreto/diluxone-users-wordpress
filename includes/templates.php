@@ -202,8 +202,11 @@ function diluxone_users_account_css(): string {
 	$bar = '';
 
 	$diluxone_users_bars = array(
-		'bar_pad' => 'bar-pad',
-		'bar_gap' => 'bar-gap',
+		'nav_top'    => 'nav-top',
+		'nav_bottom' => 'nav-bottom',
+		'nav_left'   => 'nav-left',
+		'nav_right'  => 'nav-right',
+		'bar_gap'    => 'bar-gap',
 	);
 
 	foreach ( $diluxone_users_bars as $diluxone_users_key => $diluxone_users_token ) {

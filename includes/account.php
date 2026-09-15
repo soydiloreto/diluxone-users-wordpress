@@ -517,6 +517,7 @@ function diluxone_users_account_nav( ?array $sections = null, string $current = 
 			'sections' => $sections,
 			'current'  => $current,
 			'style'    => diluxone_users_account_nav_style(),
+			'align'    => diluxone_users_account_nav_align(),
 			// The menu can be placed on its own with the shortcode, far from
 			// the area it navigates, so it carries its own direction rather
 			// than waiting to be told by a parent that may not be there.
@@ -597,6 +598,19 @@ function diluxone_users_account_nav_styles(): array {
 	 * @param array<string, array<string, string>> $styles Keyed by slug.
 	 */
 	return (array) apply_filters( 'diluxone_users_account_nav_styles', $styles );
+}
+
+/**
+ * Where the menu sits along its strip.
+ *
+ * It is named after the edges and not after the sides — start and end rather
+ * than left and right — because in a language written right to left the menu
+ * at "the start" is on the right, and a site should not have to know that.
+ */
+function diluxone_users_account_nav_align(): string {
+	$align = (string) diluxone_users_option( 'diluxone_users_account_nav_align' );
+
+	return in_array( $align, array( 'center', 'end' ), true ) ? $align : 'start';
 }
 
 /** How wide the content runs. */
