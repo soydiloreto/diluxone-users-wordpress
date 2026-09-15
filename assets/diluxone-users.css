@@ -880,15 +880,13 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	background: var(--diluxone-users-bar-bg, transparent);
 	border-bottom: var(--diluxone-users-bar-rule, 0 none);
 }
-/* Four sides, which is how everybody has written a margin since 1996. The
-   top and bottom are equal by default, and that is what keeps the menu in the
-   middle of its strip whichever shape it has. */
+/* Top and bottom only, on purpose. The strip's menu is centred by an
+   `auto` margin — the plugin's own in "contained", a site's in its grid — and
+   a four-sided shorthand with 0 at the sides beat that `auto` and shoved the
+   menu against the window's edge. Left and right are printed from PHP only
+   when somebody typed them, as padding, so they never fight the centring. */
 .diluxone-users-account__bar .diluxone-users-account__nav {
-	margin:
-		var(--diluxone-users-nav-top, 10px)
-		var(--diluxone-users-nav-right, 0px)
-		var(--diluxone-users-nav-bottom, 10px)
-		var(--diluxone-users-nav-left, 0px);
+	margin-block: var(--diluxone-users-nav-top, 10px) var(--diluxone-users-nav-bottom, 10px);
 }
 /* With no header the area opens with the strip, against whatever the site has
    above it — its own header, usually. The opening air belongs to the area and

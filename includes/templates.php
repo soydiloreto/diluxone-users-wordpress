@@ -214,8 +214,6 @@ function diluxone_users_account_css(): string {
 	$diluxone_users_bars = array(
 		'nav_top'    => 'nav-top',
 		'nav_bottom' => 'nav-bottom',
-		'nav_left'   => 'nav-left',
-		'nav_right'  => 'nav-right',
 		'bar_gap'    => 'bar-gap',
 	);
 
@@ -229,6 +227,19 @@ function diluxone_users_account_css(): string {
 
 	if ( '' !== $bar ) {
 		$css .= ':root{' . $bar . '}';
+	}
+
+	// Left and right are a rule and not a property, printed only when typed:
+	// the menu is centred by an `auto` margin the plugin must not touch, so
+	// they go on as padding — which moves the menu and leaves the strip's
+	// background running the whole width, as the screen says.
+	$left  = (string) diluxone_users_option( 'diluxone_users_account_nav_left' );
+	$right = (string) diluxone_users_option( 'diluxone_users_account_nav_right' );
+
+	if ( '' !== trim( $left ) || '' !== trim( $right ) ) {
+		$css .= '.diluxone-users-account__bar .diluxone-users-account__nav{padding-inline:'
+			. ( '' !== trim( $left ) ? (int) $left : 0 ) . 'px '
+			. ( '' !== trim( $right ) ? (int) $right : 0 ) . 'px;}';
 	}
 
 	if ( '' !== trim( $body ) ) {
