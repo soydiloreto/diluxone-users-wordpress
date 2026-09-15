@@ -75,60 +75,74 @@ function diluxone_users_screen_register(): void {
 		<tr>
 			<th scope="row"><?php esc_html_e( 'Who can create an account', 'diluxone-users' ); ?></th>
 			<td>
-				<label class="diluxone-users-roles__item">
-					<input type="checkbox" name="diluxone_users_login_register" value="1" <?php checked( diluxone_users_option( 'diluxone_users_login_register' ), 1 ); ?>>
-					<?php esc_html_e( 'Signing in with the e-mail link creates the account', 'diluxone-users' ); ?>
-				</label>
-				<p class="description"><?php esc_html_e( 'The plugin at its simplest: somebody types their address, gets a link, and the account appears if it was not there. Nothing to fill in.', 'diluxone-users' ); ?></p>
-
-				<label class="diluxone-users-roles__item">
-					<input type="checkbox" name="diluxone_users_sso_register" value="1" <?php checked( diluxone_users_option( 'diluxone_users_sso_register' ), 1 ); ?>>
-					<?php esc_html_e( 'Signing in with a social account creates the account', 'diluxone-users' ); ?>
-					<?php if ( array() === $social ) : ?>
-						<span class="description"><?php esc_html_e( '— no provider is working yet, so this does nothing until one is', 'diluxone-users' ); ?></span>
-					<?php endif; ?>
-				</label>
-				<p class="description"><?php esc_html_e( 'Off, a social account only signs in people who already have one here.', 'diluxone-users' ); ?></p>
-
-				<label class="diluxone-users-roles__item">
-					<input type="checkbox" name="diluxone_users_register_form" value="1" <?php checked( $form ); ?>>
-					<?php esc_html_e( 'The site’s own registration form', 'diluxone-users' ); ?>
-					<?php if ( $form && $page <= 0 ) : ?>
-						<span class="description"><?php esc_html_e( '— it has no page yet, so nobody can reach it', 'diluxone-users' ); ?></span>
-					<?php endif; ?>
-				</label>
-				<p class="description"><?php esc_html_e( 'For a site that asks for more than an address before letting somebody in. It asks for the fields marked required, then sends the same link.', 'diluxone-users' ); ?></p>
-
-				<label class="diluxone-users-roles__item">
-					<input type="checkbox" name="diluxone_users_wp_register" value="1" <?php checked( (bool) get_option( 'users_can_register' ) && ! $locked ); ?> <?php disabled( $locked ); ?>>
-					<?php esc_html_e( 'WordPress’s own form (wp-login.php?action=register)', 'diluxone-users' ); ?>
-					<?php if ( $locked ) : ?>
-						<span class="description"><?php esc_html_e( '— off and locked while the e-mail link is the only way in', 'diluxone-users' ); ?></span>
-					<?php endif; ?>
-				</label>
-				<p class="description"><?php esc_html_e( 'This is the same switch as Settings → General → “Anyone can register”: changing it here or there changes both. It stays off while the e-mail link is the only way in — that form creates accounts with a password, and on this site a password opens nothing.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr class="<?php echo $form ? '' : 'diluxone-users-row--dim'; ?>">
-			<th scope="row"><label for="diluxone_users_register_page"><?php esc_html_e( 'The registration page', 'diluxone-users' ); ?></label></th>
-			<td>
-				<?php if ( ! $form ) : ?>
-					<?php diluxone_users_not_now( __( 'The site’s own form is not one of the doors right now. What is chosen here waits for it.', 'diluxone-users' ) ); ?>
-				<?php endif; ?>
 				<?php
-				/** @var array<string, mixed> $diluxone_users_dropdown */
-				$diluxone_users_dropdown = array(
-					'name'              => 'diluxone_users_register_page',
-					'id'                => 'diluxone_users_register_page',
-					'selected'          => $page,
-					'show_option_none'  => __( '— None —', 'diluxone-users' ),
-					'option_none_value' => 0,
-				);
+				diluxone_users_ui_choices(
+					array(
+						array(
+							'type'    => 'checkbox',
+							'name'    => 'diluxone_users_login_register',
+							'value'   => '1',
+							'checked' => (bool) diluxone_users_option( 'diluxone_users_login_register' ),
+							'title'   => __( 'Signing in with the e-mail link creates the account', 'diluxone-users' ),
+							'help'    => __( 'Somebody types an address the site has never seen, gets a link, and the account exists by the time they are in. Nothing to fill in.', 'diluxone-users' ),
+						),
+						array(
+							'type'    => 'checkbox',
+							'name'    => 'diluxone_users_sso_register',
+							'value'   => '1',
+							'checked' => (bool) diluxone_users_option( 'diluxone_users_sso_register' ),
+							'title'   => __( 'Signing in with a social account creates the account', 'diluxone-users' ),
+							'help'    => __( 'The same thing through Google or Microsoft. Off, a social account only lets in somebody who already has one here.', 'diluxone-users' ),
+							'state'   => array() === $social ? 'pending' : '',
+							'note'    => array() === $social ? __( 'no provider is working yet', 'diluxone-users' ) : '',
+						),
+						array(
+							'type'     => 'checkbox',
+							'name'     => 'diluxone_users_register_form',
+							'value'    => '1',
+							'checked'  => $form,
+							'title'    => __( 'A registration form of the site’s own', 'diluxone-users' ),
+							'help'     => __( 'For a site that asks for more than an address before letting anybody in. It asks for the required fields, then sends the same link.', 'diluxone-users' ),
+							'state'    => $form && $page <= 0 ? 'pending' : '',
+							'note'     => $form && $page <= 0 ? __( 'it has no page yet', 'diluxone-users' ) : '',
+							// The page it needs lives inside the box that turns
+							// it on, and appears with it.
+							'children' => static function () use ( $page ): void {
+								diluxone_users_ui_field_open( __( 'The page holding it', 'diluxone-users' ), 'diluxone_users_register_page' );
 
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_dropdown_pages() escapes its own and prints it.
-				wp_dropdown_pages( $diluxone_users_dropdown );
+								/** @var array<string, mixed> $diluxone_users_dropdown */
+								$diluxone_users_dropdown = array(
+									'name'              => 'diluxone_users_register_page',
+									'id'                => 'diluxone_users_register_page',
+									'selected'          => $page,
+									'show_option_none'  => __( '— Choose one —', 'diluxone-users' ),
+									'option_none_value' => 0,
+								);
+
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_dropdown_pages() escapes its own and prints it.
+								wp_dropdown_pages( $diluxone_users_dropdown );
+
+								if ( $page <= 0 ) {
+									diluxone_users_not_now( __( 'Without a page nobody can reach the form, so this door is not open yet.', 'diluxone-users' ) );
+								}
+
+								diluxone_users_ui_field_close( __( 'The page with the [diluxone_users_register] shortcode. What the form says is on Design → Registration.', 'diluxone-users' ) );
+							},
+						),
+						array(
+							'type'     => 'checkbox',
+							'name'     => 'diluxone_users_wp_register',
+							'value'    => '1',
+							'checked'  => (bool) get_option( 'users_can_register' ) && ! $locked,
+							'disabled' => $locked,
+							'title'    => __( 'WordPress’s own form (wp-login.php?action=register)', 'diluxone-users' ),
+							'help'     => __( 'The same switch as Settings → General → “Anyone can register”: changing it here or there changes both.', 'diluxone-users' ),
+							'state'    => $locked ? 'off' : '',
+							'note'     => $locked ? __( 'locked: the e-mail link is the only way in, and that form hands out passwords', 'diluxone-users' ) : '',
+						),
+					)
+				);
 				?>
-				<p class="description"><?php esc_html_e( 'The page with the [diluxone_users_register] shortcode. What the form says is on Design → Registration.', 'diluxone-users' ); ?></p>
 			</td>
 		</tr>
 		<tr>
@@ -137,7 +151,7 @@ function diluxone_users_screen_register(): void {
 				<select name="diluxone_users_login_role" id="diluxone_users_login_role">
 					<?php wp_dropdown_roles( (string) diluxone_users_option( 'diluxone_users_login_role' ) ); ?>
 				</select>
-				<p class="description"><?php esc_html_e( 'The same one whichever door they came through: a role per door is a quiet way of handing out privileges.', 'diluxone-users' ); ?></p>
+				<p class="description"><?php esc_html_e( 'The same one whichever door they came through: a role per door is a quiet way of handing out privileges. Roles that can edit the site are not offered — an account anybody can create should not be able to.', 'diluxone-users' ); ?></p>
 			</td>
 		</tr>
 		<tr>
@@ -150,7 +164,7 @@ function diluxone_users_screen_register(): void {
 						? esc_html__( 'Only the e-mail address: no field is marked as required.', 'diluxone-users' )
 						: esc_html(
 							sprintf(
-							/* translators: %s: the required fields, separated by dots */
+								/* translators: %s: the required fields, separated by dots */
 								__( 'The address, plus: %s', 'diluxone-users' ),
 								implode( ' · ', wp_list_pluck( $diluxone_users_asked, 'label' ) )
 							)

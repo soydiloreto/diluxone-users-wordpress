@@ -429,6 +429,11 @@ function diluxone_users_admin_styles( string $hook ): void {
 
 	wp_enqueue_style( 'diluxone-users-admin', DILUXONE_USERS_URL . 'assets/diluxone-users-admin.css', array(), diluxone_users_asset_version( 'assets/diluxone-users-admin.css' ) );
 
+	// The colours come from the admin colour scheme this person picked, so
+	// they ride with the request and not with the file: two administrators of
+	// the same site can have picked different ones.
+	wp_add_inline_style( 'diluxone-users-admin', diluxone_users_admin_tokens() );
+
 	// The media modal, for the screens that let a picture be chosen. It is
 	// WordPress's own and it is not small, so it is loaded where it is used.
 	if ( false !== strpos( $hook, 'diluxone-users-design' ) ) {

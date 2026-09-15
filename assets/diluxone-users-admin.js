@@ -389,6 +389,41 @@ diluxoneUsersFieldTypes( document );
 }() );
 
 /**
+ * What hangs off an option shows while that option is the one chosen.
+ *
+ * With the script off every group is open and the server reads whatever was
+ * submitted, which is the same answer: a setting that belongs to an option
+ * nobody chose changes nothing either way.
+ */
+( function () {
+	'use strict';
+
+	var groups = document.querySelectorAll( '[data-diluxone-users-group]' );
+
+	if ( ! groups.length ) {
+		return;
+	}
+
+	function sync( form ) {
+		groups.forEach( function ( group ) {
+			var input = group.querySelector( 'input[type="radio"], input[type="checkbox"]' );
+
+			if ( input && ( ! form || input.form === form ) ) {
+				group.classList.toggle( 'is-open', input.checked );
+			}
+		} );
+	}
+
+	document.addEventListener( 'change', function ( event ) {
+		if ( event.target.matches( 'input[type="radio"], input[type="checkbox"]' ) ) {
+			sync( event.target.form );
+		}
+	} );
+
+	sync( null );
+}() );
+
+/**
  * The toolbar's roles hang under the one answer that needs them.
  */
 ( function () {

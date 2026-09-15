@@ -1,6 +1,11 @@
 <?php
 /**
- * The sessions screen: who is in and how long theirs lasts.
+ * The sessions screen: how long one lasts, and who has one open.
+ *
+ * The two used to be separate tabs, and the list of open sessions sat between
+ * two screens of settings looking like something that had wandered in. They
+ * are one subject — a session — so they are one tab: what the rule is, and
+ * then who is living under it.
  *
  * The list is searched and paginated against the database. A dropdown with
  * every user would be half a megabyte of HTML on each load on a site with
@@ -12,29 +17,25 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/** Its two tabs on the security screen. */
+/** Its tab on the security screen. */
 function diluxone_users_sessions_panels(): void {
 	diluxone_users_register_panel(
 		DILUXONE_USERS_SECURITY,
 		'sessions',
 		array(
-			'label'    => __( 'Open sessions', 'diluxone-users' ),
+			'label'    => __( 'Sessions', 'diluxone-users' ),
 			'position' => 30,
-			'render'   => 'diluxone_users_screen_sessions_list',
-			// The list posts to admin-post and comes back: it is not a
-			// settings form and must not be wrapped in one.
-			'form'     => false,
-		)
-	);
-
-	diluxone_users_register_panel(
-		DILUXONE_USERS_SECURITY,
-		'duration',
-		array(
-			'label'    => __( 'How long they last', 'diluxone-users' ),
-			'position' => 40,
-			'render'   => 'diluxone_users_screen_sessions_duration',
+			'render'   => 'diluxone_users_screen_sessions',
 			'save'     => 'diluxone_users_sessions_save',
+			/*
+			 * The tab holds two things that post to two different places: the
+			 * settings, to this screen, and every "close sessions" button, to
+			 * admin-post. A form inside a form is thrown away by the browser,
+			 * so the screen wraps nothing and the settings carry their own
+			 * form and their own nonce — the same nonce the panel checks, so
+			 * saving works exactly as it does on every other tab.
+			 */
+			'form'     => false,
 		)
 	);
 }
@@ -126,37 +127,58 @@ function diluxone_users_sessions_save(): void {
 	// phpcs:enable
 }
 
-/** Screen sessions duration. */
+/** The rule first, then who is living under it. */
+function diluxone_users_screen_sessions(): void {
+	diluxone_users_intro( __( 'A session is what keeps somebody signed in after they close the tab. Below: how long one lasts on this site, and every person who has one open right now.', 'diluxone-users' ) );
+
+	diluxone_users_screen_sessions_duration();
+	diluxone_users_screen_sessions_list();
+}
+
+/** How long a session lasts, and whether each person can see their own. */
 function diluxone_users_screen_sessions_duration(): void {
-	diluxone_users_intro( __( 'By default WordPress ends the session after 2 days, or 14 with “remember me”. On a passwordless site that means going through the email again and again.', 'diluxone-users' ) );
 	?>
-	<table class="form-table" role="presentation">
-			<tr>
-				<th scope="row"><label for="diluxone_users_session_long_days"><?php esc_html_e( 'With “remember me”', 'diluxone-users' ); ?></label></th>
-				<td>
-					<input type="number" id="diluxone_users_session_long_days" name="diluxone_users_session_long_days" min="1" class="small-text" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_session_long_days' ) ); ?>">
-					<?php esc_html_e( 'days', 'diluxone-users' ); ?>
-					<p class="description"><?php esc_html_e( 'The sign-in link always counts as “remember me”: there is no password to type again.', 'diluxone-users' ); ?></p>
-				</td>
-			</tr>
-			<tr>
-				<th scope="row"><label for="diluxone_users_session_short_days"><?php esc_html_e( 'Without “remember me”', 'diluxone-users' ); ?></label></th>
-				<td>
-					<input type="number" id="diluxone_users_session_short_days" name="diluxone_users_session_short_days" min="1" class="small-text" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_session_short_days' ) ); ?>">
-					<?php esc_html_e( 'days', 'diluxone-users' ); ?>
-				</td>
-			</tr>
-			<tr>
-				<th scope="row"><?php esc_html_e( 'In their account', 'diluxone-users' ); ?></th>
-				<td>
-					<label>
-						<input type="checkbox" name="diluxone_users_sessions_show" value="1" <?php checked( diluxone_users_option( 'diluxone_users_sessions_show' ), 1 ); ?>>
-						<?php esc_html_e( 'Each person sees where they have a session open, and can close them', 'diluxone-users' ); ?>
-					</label>
-					<p class="description"><?php esc_html_e( 'It shows up under Security. With this off, that box is not there —and closing sessions stays an administrator job, from here.', 'diluxone-users' ); ?></p>
-				</td>
-			</tr>
-	</table>
+	<form method="post">
+		<?php wp_nonce_field( 'diluxone_users_panel_' . DILUXONE_USERS_SECURITY, 'diluxone_users_panel_nonce' ); ?>
+
+		<?php
+		diluxone_users_ui_section(
+			__( 'How long a session lasts', 'diluxone-users' ),
+			__( 'WordPress ends one after 2 days, or 14 with “remember me”. On a site people come into by e-mail link, that is the inbox again every other day.', 'diluxone-users' )
+		);
+		?>
+
+		<div class="du-fields">
+			<?php diluxone_users_ui_field_open( __( 'With “remember me”', 'diluxone-users' ), 'diluxone_users_session_long_days' ); ?>
+				<input type="number" id="diluxone_users_session_long_days" name="diluxone_users_session_long_days" min="1" class="small-text" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_session_long_days' ) ); ?>">
+				<?php esc_html_e( 'days', 'diluxone-users' ); ?>
+			<?php diluxone_users_ui_field_close( __( 'The sign-in link always counts as “remember me”: there is no password to type again.', 'diluxone-users' ) ); ?>
+
+			<?php diluxone_users_ui_field_open( __( 'Without it', 'diluxone-users' ), 'diluxone_users_session_short_days' ); ?>
+				<input type="number" id="diluxone_users_session_short_days" name="diluxone_users_session_short_days" min="1" class="small-text" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_session_short_days' ) ); ?>">
+				<?php esc_html_e( 'days', 'diluxone-users' ); ?>
+			<?php diluxone_users_ui_field_close( __( 'What somebody gets when they leave the box unticked on a form that offers it.', 'diluxone-users' ) ); ?>
+		</div>
+
+		<?php
+		diluxone_users_ui_section( __( 'In their account', 'diluxone-users' ) );
+
+		diluxone_users_ui_choices(
+			array(
+				array(
+					'type'    => 'checkbox',
+					'name'    => 'diluxone_users_sessions_show',
+					'value'   => '1',
+					'checked' => (bool) diluxone_users_option( 'diluxone_users_sessions_show' ),
+					'title'   => __( 'Each person sees where they are signed in, and can close it', 'diluxone-users' ),
+					'help'    => __( 'A box under Security in their account area, with one line per device. Unticked, the box is not there and closing a session stays an administrator’s job, from the list below.', 'diluxone-users' ),
+				),
+			)
+		);
+
+		submit_button();
+		?>
+	</form>
 	<?php
 }
 
@@ -171,6 +193,11 @@ function diluxone_users_screen_sessions_list(): void {
 	$result = diluxone_users_sessions_search( $search, $page, $per );
 	$total  = $result['total'];
 	$pages  = (int) max( 1, ceil( $total / $per ) );
+
+	diluxone_users_ui_section(
+		__( 'Open sessions', 'diluxone-users' ),
+		__( 'Who is signed in right now, from where, and until when. Closing somebody’s sessions signs them out everywhere at once; they can come back in as always.', 'diluxone-users' )
+	);
 	?>
 	<form method="get" class="diluxone-users-search">
 		<input type="hidden" name="page" value="<?php echo esc_attr( DILUXONE_USERS_SECURITY ); ?>">
@@ -207,6 +234,7 @@ function diluxone_users_screen_sessions_list(): void {
 		$diluxone_users_refresh = diluxone_users_admin_url(
 			DILUXONE_USERS_SECURITY,
 			array(
+				'tab'   => 'sessions',
 				's'     => $search,
 				'per'   => $per,
 				'paged' => $page,
@@ -287,6 +315,7 @@ function diluxone_users_screen_sessions_list(): void {
 			$diluxone_users_base = diluxone_users_admin_url(
 				DILUXONE_USERS_SECURITY,
 				array(
+					'tab' => 'sessions',
 					's'   => $search,
 					'per' => $per,
 				)

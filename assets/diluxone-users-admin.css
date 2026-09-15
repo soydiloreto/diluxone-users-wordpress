@@ -1,10 +1,205 @@
 /**
  * The plugin admin styles.
  *
- * Everything that can be is left to WordPress's own classes (.wp-list-table,
- * .form-table, .button): what is here is only what WordPress does not bring —
- * the provider grid, the state pills and a couple of reading-width fixes.
+ * WordPress's own classes do what they can (.wp-list-table, .form-table,
+ * .button). What is added on top is rank: a title that reads as a title, an
+ * option that reads as one thing, a state you can see without reading.
+ *
+ * The colour is not chosen here. It arrives as --du-accent from the admin
+ * colour scheme the person picked (see includes/admin-ui.php), so the plugin
+ * follows their dashboard instead of painting itself over it.
  */
+
+/* ── The design system ───────────────────────────────────────────────────
+   Tokens first, and only these: a scale of space, a scale of type, three
+   greys and the accent that comes from the scheme. Everything below is built
+   out of them, which is the only way a screen written next month looks like
+   the ones written today. */
+.diluxone-users-admin {
+	--du-1: 4px;
+	--du-2: 8px;
+	--du-3: 12px;
+	--du-4: 16px;
+	--du-5: 24px;
+	--du-6: 32px;
+
+	--du-radius: 6px;
+	--du-radius-sm: 4px;
+
+	--du-line: #dcdcde;
+	--du-line-soft: #f0f0f1;
+	--du-ground: #fff;
+	--du-ground-alt: #f6f7f7;
+	--du-text: #1d2327;
+	--du-muted: #646970;
+
+	--du-title: 15px;
+	--du-help: 13px;
+}
+
+/* The screen's own rhythm. WordPress gives .wrap a margin and nothing else;
+   what a settings screen needs is room to separate one question from the
+   next, and that room is what was missing. */
+.diluxone-users-admin .form-table > tbody > tr > th {
+	width: 240px;
+	padding: var(--du-5) var(--du-4) var(--du-5) 0;
+	font-size: var(--du-title);
+	font-weight: 600;
+	color: var(--du-text);
+	line-height: 1.5;
+}
+.diluxone-users-admin .form-table > tbody > tr > td {
+	padding: var(--du-5) 0;
+}
+/* A rule between questions, so where one ends is visible rather than
+   inferred from the gap. */
+.diluxone-users-admin .form-table > tbody > tr + tr > th,
+.diluxone-users-admin .form-table > tbody > tr + tr > td {
+	border-top: 1px solid var(--du-line-soft);
+}
+/* No width cap on a paragraph. It was asked for and taken out more than once
+   before, and it came back here in a new place: a sentence that stops at 60
+   characters in the middle of a 1300px screen reads as a broken layout. What
+   limits the line is the thing it is inside — a card, a table cell — and
+   nothing else. */
+.diluxone-users-admin .form-table .description,
+.diluxone-users-admin .du-field__help {
+	font-size: var(--du-help);
+	line-height: 1.6;
+	color: var(--du-muted);
+}
+
+/* The sentence under a tab's title: it introduces the whole tab, so it is not
+   the same thing as the help under a control and does not look like it. */
+.diluxone-users-admin__intro {
+	margin: 0 0 var(--du-5);
+	padding-bottom: var(--du-4);
+	border-bottom: 1px solid var(--du-line);
+	font-size: 14px;
+	line-height: 1.6;
+	color: var(--du-muted);
+}
+.diluxone-users-admin__actions { margin: var(--du-4) 0; }
+
+/* A heading for a group of settings inside a tab. */
+.diluxone-users-admin .du-section {
+	margin: var(--du-6) 0 var(--du-2);
+	padding-top: var(--du-5);
+	border-top: 1px solid var(--du-line);
+	font-size: var(--du-title);
+	font-weight: 600;
+	color: var(--du-text);
+}
+.diluxone-users-admin .du-section__intro {
+	margin: 0 0 var(--du-3);
+	font-size: var(--du-help);
+	color: var(--du-muted);
+}
+
+/* ── An option, as one thing ─────────────────────────────────────────────
+   The card is the whole point. A radio with its title beside it and its
+   explanation in a grey paragraph underneath belongs to nothing: the eye
+   cannot tell which option that paragraph is about. Inside a border, it can.
+   `.diluxone-users-roles__item` is the same component under its older name,
+   so every screen already using it gets this without being touched. */
+/* The cards stop at a width where a title and two lines of help read as
+   one block; wider than this and the eye loses the left edge on the way
+   back. It is the card that is limited, not the sentence inside it. */
+.du-choices { display: flex; flex-direction: column; gap: var(--du-2); max-width: 880px; }
+
+.du-choice,
+.diluxone-users-admin .diluxone-users-roles__item {
+	max-width: 880px;
+	display: flex;
+	align-items: flex-start;
+	gap: var(--du-3);
+	margin: 0 0 var(--du-2);
+	padding: var(--du-3) var(--du-4);
+	border: 1px solid var(--du-line);
+	border-radius: var(--du-radius);
+	background: var(--du-ground);
+	cursor: pointer;
+	transition: border-color .12s ease, background .12s ease;
+}
+.du-choices .du-choice { margin: 0; }
+.du-choice:hover,
+.diluxone-users-admin .diluxone-users-roles__item:hover { border-color: var(--du-accent-edge, #8c8f94); }
+
+/* Chosen: the accent, washed, so which one is on is seen from across the
+   room and not by finding the filled circle. */
+.du-choice.is-on,
+.diluxone-users-admin .diluxone-users-roles__item:has(input:checked) {
+	border-color: var(--du-accent, #2271b1);
+	background: var(--du-accent-wash, #f0f6fc);
+}
+.du-choice.is-locked,
+.diluxone-users-admin .diluxone-users-roles__item:has(input:disabled) {
+	opacity: .65;
+	cursor: default;
+	background: var(--du-ground-alt);
+}
+
+.du-choice input,
+.diluxone-users-admin .diluxone-users-roles__item > input { margin: 2px 0 0; flex: 0 0 auto; }
+
+.du-choice__text { display: block; }
+.du-choice__title,
+.diluxone-users-admin .diluxone-users-roles__item > strong {
+	display: block;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--du-text);
+	line-height: 1.45;
+}
+.du-choice__help,
+.diluxone-users-admin .diluxone-users-roles__item > .description {
+	display: block;
+	margin: var(--du-1) 0 0;
+	font-size: var(--du-help);
+	line-height: 1.55;
+	color: var(--du-muted);
+}
+/* The older markup put the description on the same line with a dash in
+   front; inside a card it is a line of its own and the dash is noise. */
+.diluxone-users-admin .diluxone-users-roles__item > .description:first-line { text-indent: 0; }
+
+/* What hangs off the option that turns it on: inside it, indented, and gone
+   while it is off. A setting that only exists because of another one is not
+   a row three rows below it. */
+.du-choice-group { border-left: 2px solid transparent; }
+.du-choice-group.is-open { border-left-color: var(--du-accent-edge, #c3c4c7); }
+.du-choice__children {
+	margin: 0 0 var(--du-3) var(--du-6);
+	padding-left: var(--du-4);
+}
+.du-choice-group:not(.is-open) .du-choice__children { display: none; }
+
+/* A control that is not a choice: label over it, help under it. */
+.du-field { margin: 0 0 var(--du-4); }
+.du-field__label {
+	display: block;
+	margin-bottom: var(--du-1);
+	font-size: var(--du-help);
+	font-weight: 600;
+	color: var(--du-text);
+}
+.du-field__help { margin: var(--du-1) 0 0; }
+.du-fields { display: flex; flex-wrap: wrap; gap: var(--du-5); }
+
+/* Buttons and inputs: WordPress's, with the scheme's accent on the primary
+   one so it belongs to the same dashboard as everything else. */
+.diluxone-users-admin .button-primary {
+	background: var(--du-accent, #2271b1);
+	border-color: var(--du-accent, #2271b1);
+}
+.diluxone-users-admin input[type="text"]:focus,
+.diluxone-users-admin input[type="number"]:focus,
+.diluxone-users-admin input[type="email"]:focus,
+.diluxone-users-admin select:focus,
+.diluxone-users-admin textarea:focus {
+	border-color: var(--du-accent, #2271b1);
+	box-shadow: 0 0 0 1px var(--du-accent, #2271b1);
+}
 
 /* No reading-width cap anywhere on these screens. A paragraph that stops
    at 72 characters in the middle of a 1400px screen reads as a broken
@@ -113,16 +308,34 @@
 	display: grid; gap: 16px; margin: 20px 0 28px;
 	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
+/* A card carries a thin band of the scheme's accent along its top. It is the
+   cheapest thing that makes a row of numbers look like it was designed and
+   not like four boxes: the eye reads the row as one object, and the colour is
+   the dashboard's own rather than one this plugin picked. */
 .diluxone-users-card {
+	position: relative;
 	display: flex; gap: 14px; align-items: flex-start;
-	background: #fff; border: 1px solid #dcdcde; border-radius: 4px;
+	background: #fff; border: 1px solid var(--du-line, #dcdcde);
+	border-radius: var(--du-radius, 6px);
 	padding: 20px;
+	overflow: hidden;
+	transition: box-shadow .12s ease, border-color .12s ease;
+}
+.diluxone-users-card::before {
+	content: "";
+	position: absolute; inset: 0 0 auto 0; height: 3px;
+	background: var(--du-accent, #2271b1);
+}
+.diluxone-users-card:hover {
+	border-color: var(--du-accent-edge, #8c8f94);
+	box-shadow: 0 2px 8px rgba( 0, 0, 0, .06 );
 }
 .diluxone-users-card__icon {
 	flex: 0 0 auto; width: 40px; height: 40px;
 	display: flex; align-items: center; justify-content: center;
-	border-radius: 50%; background: #f0f6fc;
-	color: var(--diluxone-users-accent, #2271b1);
+	border-radius: 50%;
+	background: var(--du-accent-wash, #f0f6fc);
+	color: var(--du-accent, #2271b1);
 	font-size: 22px; line-height: 1;
 }
 .diluxone-users-card__icon::before { font-size: 22px; width: auto; height: auto; }
@@ -139,9 +352,28 @@
 .diluxone-users-card__detail { margin: 6px 0 0; color: #50575e; }
 .diluxone-users-card__link { display: inline-block; margin-top: 10px; text-decoration: none; }
 
+/* The welcome strip: the one place on these screens that is allowed a block
+   of colour, because it is the first thing seen and it is not a control. */
+.diluxone-users-admin .diluxone-users-welcome {
+	margin: 0 0 4px;
+	padding: 22px 24px;
+	border: 1px solid var(--du-line, #dcdcde);
+	border-left: 4px solid var(--du-accent, #2271b1);
+	border-radius: var(--du-radius, 6px);
+	background: linear-gradient( 100deg, var(--du-accent-wash, #f0f6fc), #fff 70% );
+}
+.diluxone-users-admin .diluxone-users-welcome h2 { margin: 0; font-size: 18px; }
+.diluxone-users-admin .diluxone-users-welcome p { margin: 4px 0 0; color: var(--du-muted, #646970); }
+
 /* The four panels under the cards: they tell, and the buttons at the foot
    lead to the screen where the thing is actually changed. */
-.diluxone-users-panel { margin-top: 20px; }
+.diluxone-users-panel {
+	margin-top: 20px;
+	padding: 20px 24px;
+	border: 1px solid var(--du-line, #dcdcde);
+	border-radius: var(--du-radius, 6px);
+	background: #fff;
+}
 .diluxone-users-panel > h2 { margin-top: 0; }
 .diluxone-users-panel__actions { margin: 18px 0 0; }
 .diluxone-users-panel__actions .button { margin-right: 6px; }
@@ -772,3 +1004,22 @@ span.diluxone-users-state {
 .diluxone-users-summary__state { width: 260px; }
 .diluxone-users-summary__change { width: 160px; text-align: right; white-space: nowrap; }
 .diluxone-users-not-now { margin: 0 0 8px; color: #50575e; }
+
+/* ── The tabs ────────────────────────────────────────────────────────────
+   WordPress's own, with the open one marked in the scheme's accent instead
+   of by being one shade lighter than the rest. Which tab you are on is the
+   thing a person loses first on a screen with six of them. */
+.diluxone-users-admin .nav-tab-wrapper { border-bottom: 1px solid var(--du-line, #c3c4c7); }
+.diluxone-users-admin .nav-tab {
+	border-bottom: 0;
+	font-size: 13px;
+	transition: color .12s ease, border-color .12s ease;
+}
+.diluxone-users-admin .nav-tab-active,
+.diluxone-users-admin .nav-tab-active:focus,
+.diluxone-users-admin .nav-tab-active:hover {
+	border-top: 3px solid var(--du-accent, #2271b1);
+	padding-top: 4px;
+	color: var(--du-text, #1d2327);
+	font-weight: 600;
+}
