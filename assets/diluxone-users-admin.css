@@ -190,7 +190,12 @@
    One scrollbar and not two: the dialog is a flex column that never overflows
    — head, body, foot — and only the body scrolls. Giving both a max-height
    put a bar inside a bar, which is exactly what it looked like. */
-.diluxone-users-dialog {
+/* A closed <dialog> is hidden by the browser with `display: none`, and the
+   `display: flex` below was beating that rule: once it had been opened and
+   closed, the dialog stayed on the page — in the flow, at the foot, with the
+   form still in it. So the layout only applies while it is open. */
+.diluxone-users-dialog:not([open]) { display: none; }
+.diluxone-users-dialog[open] {
 	display: flex;
 	flex-direction: column;
 	width: min(1040px, calc(100vw - 40px));
@@ -242,7 +247,7 @@
 /* On a phone it is not a dialog floating over a page — there is no page left
    to float over. It is the screen: edge to edge, no corners, no gap. */
 @media screen and (max-width: 782px) {
-	.diluxone-users-dialog {
+	.diluxone-users-dialog[open] {
 		width: 100vw;
 		height: 100dvh;
 		max-height: 100dvh;
