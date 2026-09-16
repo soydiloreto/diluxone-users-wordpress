@@ -223,14 +223,6 @@ function diluxone_users_screen_fields(): void {
 		return;
 	}
 
-	$tabs    = array(
-		'list'  => __( 'Fields', 'diluxone-users' ),
-		'usage' => __( 'How to use them', 'diluxone-users' ),
-	);
-	$current = diluxone_users_tab( $tabs );
-
-	diluxone_users_screen_open( __( 'User fields', 'diluxone-users' ), 'diluxone-users-fields', $tabs, $current );
-
 	$notices = array(
 		'saved'   => __( 'Field saved.', 'diluxone-users' ),
 		'delete'  => __( 'Field deleted. The data already stored was left alone.', 'diluxone-users' ),
@@ -241,14 +233,40 @@ function diluxone_users_screen_fields(): void {
 		diluxone_users_notice( $notices[ $done ], 'nolabel' === $done ? 'error' : 'success' );
 	}
 
-	if ( 'usage' === $current ) {
-		diluxone_users_screen_fields_usage();
-	} else {
-		diluxone_users_screen_fields_list();
-	}
-
-	diluxone_users_screen_close();
+	diluxone_users_screen_panels( 'diluxone-users-fields', __( 'User fields', 'diluxone-users' ) );
 }
+
+/**
+ * Its tabs, by the registry, so an add-on can add one of its own.
+ *
+ * Both of them draw their own markup and neither is a settings form — the
+ * list has its own actions and the other only explains — so both go in with
+ * `form => false`.
+ */
+function diluxone_users_fields_panels(): void {
+	diluxone_users_register_panel(
+		'diluxone-users-fields',
+		'list',
+		array(
+			'label'    => __( 'Fields', 'diluxone-users' ),
+			'position' => 10,
+			'render'   => 'diluxone_users_screen_fields_list',
+			'form'     => false,
+		)
+	);
+
+	diluxone_users_register_panel(
+		'diluxone-users-fields',
+		'usage',
+		array(
+			'label'    => __( 'How to use them', 'diluxone-users' ),
+			'position' => 20,
+			'render'   => 'diluxone_users_screen_fields_usage',
+			'form'     => false,
+		)
+	);
+}
+add_action( 'diluxone_users_register_panels', 'diluxone_users_fields_panels' );
 
 /** Screen fields list. */
 function diluxone_users_screen_fields_list(): void {

@@ -41,16 +41,6 @@ function diluxone_users_screen_social(): void {
 		exit;
 	}
 
-	// What the buttons look like is not here: it is on the Design screen with
-	// everything else the plugin draws. This screen answers who can get in
-	// with a network and how the accounts are joined up.
-	$tabs = array(
-		'providers' => __( 'Providers', 'diluxone-users' ),
-		'general'   => __( 'Rules', 'diluxone-users' ),
-	);
-
-	$current = diluxone_users_tab( $tabs );
-
 	if ( isset( $_POST['diluxone_users_social_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['diluxone_users_social_nonce'] ) ), 'diluxone_users_social' ) ) {
 		diluxone_users_save_options(
 			array(
@@ -65,13 +55,49 @@ function diluxone_users_screen_social(): void {
 		diluxone_users_notice( __( 'Settings saved.', 'diluxone-users' ) );
 	}
 
-	diluxone_users_screen_open( __( 'Social login', 'diluxone-users' ), 'diluxone-users-social', $tabs, $current );
+	diluxone_users_screen_panels( 'diluxone-users-social', __( 'Social login', 'diluxone-users' ) );
+}
 
-	if ( 'general' === $current ) {
-		diluxone_users_screen_social_general();
-		diluxone_users_screen_close();
-		return;
-	}
+/**
+ * Its tabs, by the registry, so an add-on bringing its own providers can add
+ * a tab beside them.
+ *
+ * What the buttons look like is not here: it is on the Design screen with
+ * everything else the plugin draws. This screen answers who can get in with a
+ * network and how the accounts are joined up.
+ *
+ * Both draw their own markup — a grid of cards, and a form with a nonce of
+ * its own that predates the panel registry — so neither asks the screen for
+ * a form.
+ */
+function diluxone_users_social_panels(): void {
+	diluxone_users_register_panel(
+		'diluxone-users-social',
+		'providers',
+		array(
+			'label'    => __( 'Providers', 'diluxone-users' ),
+			'position' => 10,
+			'render'   => 'diluxone_users_screen_social_providers',
+			'form'     => false,
+		)
+	);
+
+	diluxone_users_register_panel(
+		'diluxone-users-social',
+		'general',
+		array(
+			'label'    => __( 'Rules', 'diluxone-users' ),
+			'position' => 20,
+			'render'   => 'diluxone_users_screen_social_general',
+			'form'     => false,
+		)
+	);
+}
+add_action( 'diluxone_users_register_panels', 'diluxone_users_social_panels' );
+
+/** The grid of providers. */
+function diluxone_users_screen_social_providers(): void {
+	$providers = diluxone_users_sso_providers();
 
 	diluxone_users_intro( __( 'One app per network: create it in the provider’s developer console, paste the client ID and the secret, and copy the redirect URL that each card shows. Then run the live test — a provider cannot be enabled until the round trip actually works.', 'diluxone-users' ) );
 	?>
@@ -128,7 +154,6 @@ function diluxone_users_screen_social(): void {
 		<?php esc_html_e( 'Apple signs its client secret with a JWT that has to be regenerated every six months and answers by POST; Steam does not use OAuth 2 at all and never returns an email address. Both need their own flow, so they are not here yet: a button that does not work is worse than no button.', 'diluxone-users' ); ?>
 	</p>
 	<?php
-	diluxone_users_screen_close();
 }
 
 /** A provider's state pill. */

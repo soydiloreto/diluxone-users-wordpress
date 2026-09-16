@@ -71,6 +71,22 @@ function diluxone_users_option_defaults(): array {
 		'diluxone_users_login_side'            => 'left',
 		'diluxone_users_login_image'           => 0,
 		'diluxone_users_login_logo'            => 0,
+		// What the split layout's panel says. Half a window of photograph is
+		// half a window saying nothing, and every site that wanted a sentence
+		// on it had to copy a page template to get one. Empty is the answer
+		// that was there before: the picture on its own.
+		// The title takes a line per line, because a heading on a panel like
+		// this is written as two or three deliberate lines and not as a
+		// sentence broken wherever the column happens to end.
+		'diluxone_users_login_panel_title'     => '',
+		'diluxone_users_login_panel_text'      => '',
+		// One advantage per line.
+		'diluxone_users_login_panel_points'    => '',
+		'diluxone_users_login_panel_foot'      => '',
+		// The mark on the panel, which is rarely the same file as the mark
+		// above the form: this one sits on a block of colour and usually has
+		// to be the light version of it.
+		'diluxone_users_login_panel_logo'      => 0,
 
 		// ── The black bar across the top ─────────────────────────────
 		// 'wp' leaves it exactly as WordPress shows it. 'hide' takes it away
@@ -181,6 +197,12 @@ function diluxone_users_option_defaults(): array {
 		'diluxone_users_account_since'         => 1,
 		// The button on the far side of the header, to their own details.
 		'diluxone_users_account_action'        => 0,
+		// The colour the whole area sits on. Empty means the plugin says
+		// nothing and the page's own ground shows through, which is what it
+		// always did. It is asked because white cards on white are not cards:
+		// a site whose page is white needs a shade behind the area for the
+		// boxes in it to have an edge at all.
+		'diluxone_users_account_ground'        => '',
 		// The colour behind the cover. Empty means the accent colour, so a
 		// site that only changes its accent gets a cover that matches without
 		// setting a second colour that would then drift from the first.

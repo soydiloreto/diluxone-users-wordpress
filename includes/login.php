@@ -96,6 +96,110 @@ function diluxone_users_button_icon( string $name ): string {
 }
 
 /**
+ * What the split layout's panel says, in pieces, or nothing.
+ *
+ * Half the window was a photograph and no more: a site that wanted a sentence
+ * on it had to copy a page template, which is the sign of a missing seam
+ * rather than of a site doing something unusual. Every piece is optional and
+ * all of them empty means what it always meant — the picture on its own.
+ *
+ * The title arrives as lines because that is how a panel heading is written:
+ * two or three deliberate lines, not a sentence broken wherever the column
+ * happens to end. The points arrive the same way, one per line, for the same
+ * reason a list is a list.
+ *
+ * @return array{title: array<int, string>, text: string, points: array<int, string>, foot: string, logo: string}
+ */
+function diluxone_users_login_panel(): array {
+	return array(
+		'title'  => diluxone_users_lines( (string) diluxone_users_option( 'diluxone_users_login_panel_title' ) ),
+		'text'   => trim( (string) diluxone_users_option( 'diluxone_users_login_panel_text' ) ),
+		'points' => diluxone_users_lines( (string) diluxone_users_option( 'diluxone_users_login_panel_points' ) ),
+		'foot'   => trim( (string) diluxone_users_option( 'diluxone_users_login_panel_foot' ) ),
+		'logo'   => diluxone_users_login_image( 'diluxone_users_login_panel_logo' ),
+	);
+}
+
+/**
+ * A textarea read as the lines somebody typed.
+ *
+ * Blank lines go: they are how a person separates while typing, not something
+ * they meant to appear.
+ *
+ * @return array<int, string>
+ */
+function diluxone_users_lines( string $text ): array {
+	$lines = array_map( 'trim', preg_split( '/\R/', $text ) ?: array() );
+
+	return array_values( array_filter( $lines, static fn( string $line ): bool => '' !== $line ) );
+}
+
+/** Is there anything to write on the panel at all? */
+function diluxone_users_login_panel_has_words( array $panel ): bool {
+	return array() !== $panel['title'] || '' !== $panel['text'] || array() !== $panel['points'] || '' !== $panel['foot'] || '' !== $panel['logo'];
+}
+
+/**
+ * The panel of the split layout, with whatever the site wrote on it.
+ *
+ * Three rows — the mark, what it says, the line at the foot — so that the
+ * first and the last sit against the top and the bottom of the panel however
+ * much there is in the middle. Any of them can be missing.
+ */
+function diluxone_users_login_panel_words( array $panel ): void {
+	echo '<div class="diluxone-users-login-frame__words">';
+
+	if ( '' !== $panel['logo'] ) {
+		printf(
+			'<p class="diluxone-users-login-frame__mark"><img src="%1$s" alt="%2$s"></p>',
+			esc_url( $panel['logo'] ),
+			esc_attr( get_bloginfo( 'name' ) )
+		);
+	} else {
+		// The row still has to be there, or "what it says" would be pushed to
+		// the top of the panel by the space-between and the foot would be the
+		// only thing holding the bottom.
+		echo '<span aria-hidden="true"></span>';
+	}
+
+	echo '<div class="diluxone-users-login-frame__say">';
+
+	if ( array() !== $panel['title'] ) {
+		echo '<h2 class="diluxone-users-login-frame__title">';
+
+		foreach ( $panel['title'] as $line ) {
+			printf( '<span>%s</span>', esc_html( $line ) );
+		}
+
+		echo '</h2>';
+	}
+
+	if ( '' !== $panel['text'] ) {
+		printf( '<p class="diluxone-users-login-frame__text">%s</p>', esc_html( $panel['text'] ) );
+	}
+
+	if ( array() !== $panel['points'] ) {
+		echo '<ul class="diluxone-users-login-frame__points">';
+
+		foreach ( $panel['points'] as $point ) {
+			printf( '<li>%s</li>', esc_html( $point ) );
+		}
+
+		echo '</ul>';
+	}
+
+	echo '</div>';
+
+	if ( '' !== $panel['foot'] ) {
+		printf( '<p class="diluxone-users-login-frame__foot">%s</p>', esc_html( $panel['foot'] ) );
+	} else {
+		echo '<span aria-hidden="true"></span>';
+	}
+
+	echo '</div>';
+}
+
+/**
  * The frame around the sign-in form, opened.
  *
  * It lives here and not in the template because both steps of signing in go
@@ -142,7 +246,31 @@ function diluxone_users_login_frame_open(): void {
 	);
 
 	if ( 'split' === $template ) {
-		echo '<div class="diluxone-users-login-frame__picture" aria-hidden="true"></div>';
+		$panel = diluxone_users_login_panel();
+		$words = diluxone_users_login_panel_has_words( $panel );
+
+		/*
+		 * With nothing written on it the panel is decoration and says so: it
+		 * is hidden from screen readers and carries no alt text to invent.
+		 * With words on it, it is content, and the two stop being the same
+		 * element in every way except the class.
+		 *
+		 * A picture underneath words needs something between them or neither
+		 * is readable — the same thing the backdrop layout does, for the same
+		 * reason, and the same property so a site can change it once.
+		 */
+		printf(
+			'<div class="diluxone-users-login-frame__picture%1$s%2$s"%3$s>',
+			$words ? ' diluxone-users-login-frame__picture--words' : '',
+			$words && '' !== $image ? ' diluxone-users-login-frame__picture--over' : '',
+			$words ? '' : ' aria-hidden="true"'
+		);
+
+		if ( $words ) {
+			diluxone_users_login_panel_words( $panel );
+		}
+
+		echo '</div>';
 	}
 
 	echo '<div class="diluxone-users-login-frame__box">';

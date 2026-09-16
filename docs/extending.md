@@ -42,13 +42,18 @@ add_action( 'diluxone_users_register_panels', function () {
 The screen supplies the form, the nonce, the submit button and the "Saved."
 notice. `render` prints the fields and nothing else.
 
-Every screen takes panels: `diluxone-users` (Overview), `diluxone-users-login`
-(Access — sign-in page, ways in, registration), `diluxone-users-security`,
-`diluxone-users-social`, `diluxone-users-account`, `diluxone-users-fields`,
-`diluxone-users-design`, `diluxone-users-notices`, `diluxone-users-status`
-(Maintenance — status, tools, lockout). `diluxone-users-register` and
-`diluxone-users-tools` are not screens any more; their slugs redirect to the
-tab they became.
+Every screen takes panels, with no exceptions left: `diluxone-users`
+(Overview), `diluxone-users-login` (Access — sign-in page, ways in,
+registration), `diluxone-users-security`, `diluxone-users-social`,
+`diluxone-users-account`, `diluxone-users-fields`, `diluxone-users-design`,
+`diluxone-users-notices`, `diluxone-users-status` (Maintenance — status,
+tools, lockout). `diluxone-users-register` and `diluxone-users-tools` are not
+screens any more; their slugs redirect to the tab they became.
+
+A tab that draws its own markup — a list with its own actions, a form with a
+nonce of its own — registers with `'form' => false` and the screen stays out
+of its way. That is how the field list, the provider grid and the open
+sessions live beside ordinary settings tabs.
 
 A tab exists because something registered it. Nothing registered means no tab
 — not an empty one.
