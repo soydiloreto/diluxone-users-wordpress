@@ -639,6 +639,28 @@ function diluxone_users_words_field( string $key, string $label, string $fallbac
 	<?php
 }
 
+/**
+ * The same, for the sentences that come in more than one line.
+ *
+ * A heading on a panel is written as lines and a list of advantages is
+ * written as lines, and both of them typed into a one-line box is how a site
+ * ends up with a template copied to get a `<br>` into a title.
+ */
+function diluxone_users_words_area( string $key, string $label, string $placeholder, string $help = '', int $rows = 3 ): void {
+	?>
+	<tr>
+		<th scope="row"><label for="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></label></th>
+		<td>
+			<textarea class="large-text" rows="<?php echo (int) $rows; ?>" id="<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( $key ); ?>"
+				placeholder="<?php echo esc_attr( $placeholder ); ?>"><?php echo esc_textarea( (string) diluxone_users_option( $key ) ); ?></textarea>
+			<?php if ( '' !== $help ) : ?>
+				<p class="description"><?php echo esc_html( $help ); ?></p>
+			<?php endif; ?>
+		</td>
+	</tr>
+	<?php
+}
+
 /** What the sign-in screen says, in the site's own words. */
 function diluxone_users_screen_login_words(): void {
 	diluxone_users_intro( __( 'The sentences on the sign-in screen. Leave a box empty and the plugin says its own, which is what the grey text in each box shows — so a site that changes nothing still reads correctly, and changing one is never a step somebody has to remember.', 'diluxone-users' ) );
@@ -809,6 +831,64 @@ function diluxone_users_screen_login_shape(): void {
 				<p class="description"><?php esc_html_e( 'Only the split template uses this.', 'diluxone-users' ); ?></p>
 			</td>
 		</tr>
+	</table>
+
+	<h2><?php esc_html_e( 'What the panel says', 'diluxone-users' ); ?></h2>
+	<?php
+	diluxone_users_intro( __( 'Half the window, with something written on it. Leave it all empty and the panel is the picture on its own, which is what it was. With a picture behind them the words get a shade over it so they stay readable, and with no picture they sit on the colour.', 'diluxone-users' ) );
+
+	if ( 'split' !== diluxone_users_login_template() ) {
+		diluxone_users_intro( __( 'Only the split template has a panel. What is written here waits for the day that is the shape chosen above.', 'diluxone-users' ) );
+	}
+	?>
+	<table class="form-table" role="presentation">
+		<tr>
+			<th scope="row"><?php esc_html_e( 'The mark on it', 'diluxone-users' ); ?></th>
+			<td>
+				<?php
+				diluxone_users_image_field(
+					'diluxone_users_login_panel_logo',
+					__( 'It sits at the top of the panel. Rarely the same file as the one above the form: this one lands on a block of colour and usually has to be the light version.', 'diluxone-users' )
+				);
+				?>
+			</td>
+		</tr>
+		<?php
+		diluxone_users_words_area(
+			'diluxone_users_login_panel_title',
+			__( 'The heading', 'diluxone-users' ),
+			__( "One account.\nNo passwords.", 'diluxone-users' ),
+			__( 'One line per line. A heading on a panel is written in deliberate lines, not broken wherever the column happens to end.', 'diluxone-users' ),
+			2
+		);
+
+		diluxone_users_words_area(
+			'diluxone_users_login_panel_text',
+			__( 'The paragraph under it', 'diluxone-users' ),
+			__( 'Sign in with the account you already have, or with a link we email you.', 'diluxone-users' ),
+			'',
+			3
+		);
+
+		diluxone_users_words_area(
+			'diluxone_users_login_panel_points',
+			__( 'What they get', 'diluxone-users' ),
+			__( "Everything on the site\nYour certificates\nWord when we go live", 'diluxone-users' ),
+			__( 'One per line, each with a tick beside it. Three or four: a panel is not a features page.', 'diluxone-users' ),
+			4
+		);
+
+		diluxone_users_words_field(
+			'diluxone_users_login_panel_foot',
+			__( 'The line at the foot', 'diluxone-users' ),
+			__( 'Already 25,000 of us.', 'diluxone-users' ),
+			__( 'It holds the bottom of the panel. Somewhere for the one fact that makes signing up feel less like a form.', 'diluxone-users' )
+		);
+		?>
+	</table>
+
+	<h2><?php esc_html_e( 'Your mark', 'diluxone-users' ); ?></h2>
+	<table class="form-table" role="presentation">
 		<tr>
 			<th scope="row"><?php esc_html_e( 'Logo', 'diluxone-users' ); ?></th>
 			<td>

@@ -64,16 +64,24 @@ function diluxone_users_design_login_save(): void {
 	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the panel verifies it.
 	diluxone_users_save_options(
 		array(
-			'diluxone_users_login_template' => sanitize_key( wp_unslash( $_POST['diluxone_users_login_template'] ?? 'plain' ) ),
-			'diluxone_users_login_side'     => 'right' === sanitize_key( wp_unslash( $_POST['diluxone_users_login_side'] ?? 'left' ) ) ? 'right' : 'left',
-			'diluxone_users_login_image'    => absint( wp_unslash( $_POST['diluxone_users_login_image'] ?? 0 ) ),
-			'diluxone_users_login_title'    => sanitize_text_field( wp_unslash( $_POST['diluxone_users_login_title'] ?? '' ) ),
-			'diluxone_users_login_intro'    => sanitize_text_field( wp_unslash( $_POST['diluxone_users_login_intro'] ?? '' ) ),
+			'diluxone_users_login_template'     => sanitize_key( wp_unslash( $_POST['diluxone_users_login_template'] ?? 'plain' ) ),
+			'diluxone_users_login_side'         => 'right' === sanitize_key( wp_unslash( $_POST['diluxone_users_login_side'] ?? 'left' ) ) ? 'right' : 'left',
+			'diluxone_users_login_image'        => absint( wp_unslash( $_POST['diluxone_users_login_image'] ?? 0 ) ),
+			// The panel's words. The three that come in lines keep their
+			// newlines — that is what makes them lines — so they are cleaned
+			// as areas and not as fields.
+			'diluxone_users_login_panel_logo'   => absint( wp_unslash( $_POST['diluxone_users_login_panel_logo'] ?? 0 ) ),
+			'diluxone_users_login_panel_title'  => sanitize_textarea_field( wp_unslash( $_POST['diluxone_users_login_panel_title'] ?? '' ) ),
+			'diluxone_users_login_panel_text'   => sanitize_textarea_field( wp_unslash( $_POST['diluxone_users_login_panel_text'] ?? '' ) ),
+			'diluxone_users_login_panel_points' => sanitize_textarea_field( wp_unslash( $_POST['diluxone_users_login_panel_points'] ?? '' ) ),
+			'diluxone_users_login_panel_foot'   => sanitize_text_field( wp_unslash( $_POST['diluxone_users_login_panel_foot'] ?? '' ) ),
+			'diluxone_users_login_title'        => sanitize_text_field( wp_unslash( $_POST['diluxone_users_login_title'] ?? '' ) ),
+			'diluxone_users_login_intro'        => sanitize_text_field( wp_unslash( $_POST['diluxone_users_login_intro'] ?? '' ) ),
 			// Links allowed, and only links: the terms and the privacy policy
 			// are pages, and a legal line that cannot point at them is not one.
-			'diluxone_users_login_legal'    => wp_kses_post( wp_unslash( $_POST['diluxone_users_login_legal'] ?? '' ) ),
-			'diluxone_users_sent_title'     => sanitize_text_field( wp_unslash( $_POST['diluxone_users_sent_title'] ?? '' ) ),
-			'diluxone_users_sent_note'      => sanitize_text_field( wp_unslash( $_POST['diluxone_users_sent_note'] ?? '' ) ),
+			'diluxone_users_login_legal'        => wp_kses_post( wp_unslash( $_POST['diluxone_users_login_legal'] ?? '' ) ),
+			'diluxone_users_sent_title'         => sanitize_text_field( wp_unslash( $_POST['diluxone_users_sent_title'] ?? '' ) ),
+			'diluxone_users_sent_note'          => sanitize_text_field( wp_unslash( $_POST['diluxone_users_sent_note'] ?? '' ) ),
 		)
 	);
 	// phpcs:enable
@@ -101,6 +109,11 @@ function diluxone_users_design_account_save(): void {
 			// a colour nobody chose.
 			'diluxone_users_account_cover'       => isset( $_POST['diluxone_users_account_cover_own'] )
 				? ( sanitize_hex_color( wp_unslash( $_POST['diluxone_users_account_cover'] ?? '' ) ) ?? '' )
+				: '',
+			// Same tick-box-decides shape as the cover colour above, and for
+			// the same reason: a colour picker has no way of saying "none".
+			'diluxone_users_account_ground'      => isset( $_POST['diluxone_users_account_ground_own'] )
+				? ( sanitize_hex_color( wp_unslash( $_POST['diluxone_users_account_ground'] ?? '' ) ) ?? '' )
 				: '',
 			'diluxone_users_account_cover_kind'  => sanitize_key( wp_unslash( $_POST['diluxone_users_account_cover_kind'] ?? 'color' ) ),
 			'diluxone_users_account_cover_image' => absint( wp_unslash( $_POST['diluxone_users_account_cover_image'] ?? 0 ) ),

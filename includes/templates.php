@@ -194,17 +194,40 @@ function diluxone_users_account_css(): string {
 	$body  = (string) diluxone_users_option( 'diluxone_users_account_body_pad' );
 	$rows  = '';
 
+	/*
+	 * The number typed on the screen goes in as the FALLBACK of a property,
+	 * not as the value. The rule still only exists because somebody answered
+	 * — which is the part that matters — and the answer stays a value a site
+	 * can move: a gutter that is 24px on a wide screen and 20px on a phone is
+	 * one line of `@media` on `:root` rather than a rule about our classes,
+	 * which is the thing this whole page exists to avoid.
+	 */
 	if ( '' !== trim( $width ) ) {
-		$rows .= 'max-width:' . (int) $width . 'px;margin-inline:auto;';
+		$rows .= 'max-width:var(--diluxone-users-row-w,' . (int) $width . 'px);margin-inline:auto;';
 	}
 
 	if ( '' !== trim( $pad ) ) {
-		$rows .= 'padding-inline:' . (int) $pad . 'px;';
+		$rows .= 'padding-inline:var(--diluxone-users-row-pad,' . (int) $pad . 'px);';
 	}
 
 	$css = '' === $rows ? '' : '.diluxone-users-account__header-inner,'
 		. '.diluxone-users-account__nav--row,'
 		. '.diluxone-users-account__body{' . $rows . '}';
+
+	/*
+	 * The colour the area sits on, and the same reasoning as the rows: white
+	 * boxes on a white page are not boxes, and a site that needs a shade
+	 * behind the area was writing a rule for it. Printed only when answered,
+	 * and through a property so the site can point it at its own token — a
+	 * hex here would be one more colour that does not turn round with the
+	 * rest of the site when the page goes dark.
+	 */
+	$ground = (string) diluxone_users_option( 'diluxone_users_account_ground' );
+
+	if ( '' !== trim( $ground ) ) {
+		$css .= '.diluxone-users-account{background:var(--diluxone-users-ground,'
+			. (string) sanitize_hex_color( $ground ) . ');}';
+	}
 
 	// The strip's own measurements ride as properties, because the sheet
 	// already reads them with the plugin's numbers as the fallback: unset,
@@ -243,11 +266,17 @@ function diluxone_users_account_css(): string {
 	}
 
 	if ( '' !== trim( $body ) ) {
-		// As a property and not as a rule of its own: the sheet already gives
-		// a cover its air at the end, and two rules for one measurement is
-		// two rules to keep in step.
-		$css .= ':root{--diluxone-users-body-end:' . (int) $body . 'px;}'
-			. '.diluxone-users-account__body{padding-top:' . (int) $body . 'px;}';
+		/*
+		 * Both ends, and both of them through the property the sheet already
+		 * reads. It used to declare `--diluxone-users-body-end` on `:root`,
+		 * which was a token shadowing itself: this block is printed after the
+		 * site's stylesheet, so a site that had set that property got the
+		 * number from this screen instead — the one place a documented
+		 * property could not be set. As a fallback it is the other way round,
+		 * which is the way round the rest of them work.
+		 */
+		$css .= '.diluxone-users-account__body{padding-top:var(--diluxone-users-body-top,' . (int) $body . 'px);}'
+			. '.diluxone-users-account--cover .diluxone-users-account__body{padding-bottom:var(--diluxone-users-body-end,' . (int) $body . 'px);}';
 	}
 
 	return $css;

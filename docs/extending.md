@@ -215,6 +215,23 @@ Colours and corners are CSS custom properties — `--diluxone-users-accent`,
 `--diluxone-users-radius` and the rest — so a site or an add-on can repoint
 them from a stylesheet without any PHP at all.
 
+### The split layout's panel
+
+The half of the window the split shape gives to a picture can carry words
+instead, or as well. They are written in **Design → The sign-in page → What
+the panel says**: a mark, a heading, a paragraph, a list of what an account
+gets, and the line that holds the bottom. Empty is the answer that was there
+before — the picture on its own, hidden from screen readers.
+
+The heading and the list are read a line at a time, because that is how both
+are written: two deliberate lines of heading, one advantage per line. With a
+picture underneath, a shade goes between the two so the words stay readable
+(`--diluxone-users-login-panel-over`).
+
+This is the seam a site was missing: before it, the only way to put a sentence
+on that panel was to copy a page template, and a copied template does not
+follow the plugin when the plugin changes.
+
 ## Styling it from a site
 
 **Set a value. Do not write a selector.** This is the one rule on this page
@@ -259,7 +276,35 @@ added. So the measurements are properties too, not only the colours:
 | `--diluxone-users-dial-w` | The dial-code column of a phone field | `minmax(0, 9rem)` |
 | `--diluxone-users-border-w` | A control's edge — inputs and buttons | `1px` |
 | `--diluxone-users-accent-soft` | The accent with the volume down | the accent at 12% |
+| `--diluxone-users-panel-gap` | Between the rows of a panel's body | `normal` |
 | `--diluxone-users-body-end` | Under the content, on a cover | `64px` |
+| `--diluxone-users-body-top` | Above it | none |
+| `--diluxone-users-ground` | The colour the whole account area sits on | none |
+| `--diluxone-users-row-w` | The width the area's three rows line up to | from the admin |
+| `--diluxone-users-row-pad` | And the gutter inside them | from the admin |
+| `--diluxone-users-pad` | The gutter a cover band keeps once the breakout is off | the row gutter |
+| `--diluxone-users-display-font` | The face for the headings the plugin does size — the sign-in screens it takes over | inherit |
+| `--diluxone-users-login-min` | How tall a frame that took over the page is, at least | `min(720px, 80vh)` |
+| `--diluxone-users-login-w` | The column the sign-in block is held to | none |
+| `--diluxone-users-login-box-w` | The box the form sits in, on a split | `520px` |
+| `--diluxone-users-login-box-pad` | The air inside it | `48px` |
+| `--diluxone-users-login-title` | The form's heading, inside a frame | `clamp(26px, 2.4vw, 34px)` |
+| `--diluxone-users-login-title-weight` | And its weight | `800` |
+| `--diluxone-users-login-panel-bg` | The split panel's colour | the accent |
+| `--diluxone-users-login-panel-ink` | The words on it | `#fff` |
+| `--diluxone-users-login-panel-pad` | The air inside it | `56px` / `36px 20px` |
+| `--diluxone-users-login-panel-w` | The column the words are held to | `480px` |
+| `--diluxone-users-login-panel-mark` | The mark at the top of it | `42px` |
+| `--diluxone-users-login-panel-title` | Its heading | `clamp(30px, 3.4vw, 50px)` |
+| `--diluxone-users-login-panel-title-weight` | And its weight | `800` |
+| `--diluxone-users-login-panel-art` | A drawing over its colour, whole: `url(…) 0 0 / cover no-repeat` | none |
+| `--diluxone-users-login-panel-art-opacity` | How loud that drawing is | `1` |
+| `--diluxone-users-login-panel-over` | The shade between a picture and the words on it | `rgba(0,0,0,.45)` |
+| `--diluxone-users-login-point-mark` | The mark before each advantage, as a mask | a tick |
+| `--diluxone-users-note-bg` | Behind the note beside a drawing | transparent |
+| `--diluxone-users-note-pad` | The air inside it, which turns it into a box | `0` |
+| `--diluxone-users-note-gap` | Between the drawing and the words | `8px` |
+| `--diluxone-users-note-mark` | The drawing's own colour | the note's |
 
 The last two are also asked from the admin — Design → Your brand — so a site
 that is not writing CSS at all still gets them. Everything on this page can be
@@ -320,6 +365,15 @@ got everything else on the page in it and this in one-and-a-half times the
 body face. That is why the site was writing a rule — not to customise the
 plugin, but to undo it.
 
+The sign-in page is the one place this is the other way round, and the line is
+worth saying out loud: **in `plain` the heading is the theme's, and inside the
+three frames that take the page over it is the plugin's.** A designed screen,
+edge to edge, with a theme's `h2` dropped into it reads as a form that landed
+in a blog post; a form the theme placed itself should look like everything
+else the theme places, and does. Those sizes are properties —
+`--diluxone-users-login-title`, `--diluxone-users-login-panel-title` — so a
+site with a scale of its own still says it once, as a value.
+
 What the plugin does keep is the layout of its own header: the margins around
 the name, the gap beside the picture, the air at the end of a cover. Those are
 this block's, not the theme's.
@@ -340,6 +394,14 @@ overrule anybody is the one that is not printed.
 
 So where the plugin has no opinion, it prints no rule — and where a site
 wants one, it answers the question and the plugin prints exactly that.
+
+What it prints is the number as the **fallback of a property**, not as the
+value: `padding-inline: var(--diluxone-users-row-pad, 24px)`. The rule still
+exists only because somebody answered — that is the part that mattered — and
+the answer stays something a stylesheet can move, which is what a gutter that
+is 24px on a wide screen and 20px on a phone needs. A screen of numbers cannot
+ask a media query. The same goes for the width, for the air above and below
+the content, and for the colour the area sits on.
 
 When you do need a selector — your own typeface on the name, your own colour
 on the open item — **style what the thing is, not what a template implies it

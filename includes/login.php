@@ -129,12 +129,17 @@ function diluxone_users_login_panel(): array {
  * @return array<int, string>
  */
 function diluxone_users_lines( string $text ): array {
-	$lines = array_map( 'trim', preg_split( '/\R/', $text ) ?: array() );
+	$split = preg_split( '/\R/', $text );
+	$lines = array_map( 'trim', false === $split ? array() : $split );
 
 	return array_values( array_filter( $lines, static fn( string $line ): bool => '' !== $line ) );
 }
 
-/** Is there anything to write on the panel at all? */
+/**
+ * Is there anything to write on the panel at all?
+ *
+ * @param array{title: array<int, string>, text: string, points: array<int, string>, foot: string, logo: string} $panel
+ */
 function diluxone_users_login_panel_has_words( array $panel ): bool {
 	return array() !== $panel['title'] || '' !== $panel['text'] || array() !== $panel['points'] || '' !== $panel['foot'] || '' !== $panel['logo'];
 }
@@ -145,6 +150,8 @@ function diluxone_users_login_panel_has_words( array $panel ): bool {
  * Three rows — the mark, what it says, the line at the foot — so that the
  * first and the last sit against the top and the bottom of the panel however
  * much there is in the middle. Any of them can be missing.
+ *
+ * @param array{title: array<int, string>, text: string, points: array<int, string>, foot: string, logo: string} $panel
  */
 function diluxone_users_login_panel_words( array $panel ): void {
 	echo '<div class="diluxone-users-login-frame__words">';

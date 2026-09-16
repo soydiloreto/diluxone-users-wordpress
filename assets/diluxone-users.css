@@ -193,7 +193,15 @@ details.diluxone-users-panel[open] > .diluxone-users-panel__head .diluxone-users
 .diluxone-users-panel__head:hover .diluxone-users-panel__arrow { background-color: color-mix( in srgb, var(--diluxone-users-accent) 16%, var(--diluxone-users-surface-alt) ); }
 .diluxone-users-panel__head:focus-visible { outline: 2px solid var(--diluxone-users-accent); outline-offset: -3px; border-radius: var(--diluxone-users-radius); }
 
-.diluxone-users-panel__body { padding: 4px 26px 24px; }
+/* A panel's body is a column, so a site putting a form of its own inside one
+   sets the air between its rows with a value instead of a selector on this
+   class. `normal` is the flow's own spacing, which is what it did before. */
+.diluxone-users-panel__body {
+	display: flex;
+	flex-direction: column;
+	gap: var(--diluxone-users-panel-gap, normal);
+	padding: 4px 26px 24px;
+}
 .diluxone-users-panel__body > :first-child { margin-top: 0; }
 .diluxone-users-panel__body > :last-child { margin-bottom: 0; }
 
@@ -541,9 +549,13 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 .diluxone-users-login-frame--card,
 .diluxone-users-login-frame--split,
 .diluxone-users-login-frame--backdrop {
-	margin-left: calc(50% - 50vw);
-	margin-right: calc(50% - 50vw);
-	padding: 48px max(20px, calc(50vw - 50%));
+	/* The same property the account cover breaks out with, and the same
+	   reason it is one number: a site that is already full width sets
+	   `--diluxone-users-bleed: 0px` once and every full-bleed piece the
+	   plugin has stops breaking out together. Two of them to keep in step
+	   would be one to forget. */
+	margin-inline: var(--diluxone-users-bleed, calc(50% - 50vw));
+	padding: 48px max(20px, calc(-1 * var(--diluxone-users-bleed, calc(50% - 50vw))));
 }
 .diluxone-users-login-frame__box {
 	background: var(--diluxone-users-surface);
@@ -553,6 +565,18 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	width: 100%;
 	max-width: 440px;
 	margin-inline: auto;
+}
+
+/* The heading inside a frame that took over the page is the plugin's, and in
+   'plain' it is the theme's — which is the difference between the two
+   answers. A designed screen with the theme's h2 on it reads as a form that
+   landed in a blog post; a form the theme placed itself should look like the
+   rest of the site's headings and does. */
+.diluxone-users-login-frame__box .diluxone-users-login__title {
+	font-family: var(--diluxone-users-display-font, inherit);
+	font-size: var(--diluxone-users-login-title, clamp(26px, 2.4vw, 34px));
+	font-weight: var(--diluxone-users-login-title-weight, 800);
+	line-height: 1.1;
 }
 
 /* Centred: a card on the page's own ground. */
@@ -571,13 +595,27 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	gap: 0;
 	padding: 0;
 	align-items: stretch;
-	min-height: min(720px, 80vh);
+	min-height: var(--diluxone-users-login-min, min(720px, 80vh));
 }
 .diluxone-users-login-frame--split .diluxone-users-login-frame__picture {
+	position: relative;
+	overflow: hidden;
 	background-image: var(--diluxone-users-login-image);
 	background-size: cover;
 	background-position: center;
-	background-color: var(--diluxone-users-accent);
+	background-color: var(--diluxone-users-login-panel-bg, var(--diluxone-users-accent));
+}
+/* A drawing over the panel's colour: rings, a pattern, a corner of a logo.
+   It travels as one value — image, position, size, repeat — the way the
+   menu's rule does, because half a background declared in four properties is
+   four properties to keep in step. Unset it draws nothing. */
+.diluxone-users-login-frame--split .diluxone-users-login-frame__picture::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: var(--diluxone-users-login-panel-art, none);
+	opacity: var(--diluxone-users-login-panel-art-opacity, 1);
 }
 .diluxone-users-login-frame--split .diluxone-users-login-frame__box {
 	border: 0;
@@ -585,9 +623,78 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	padding: 48px;
-	max-width: 520px;
+	padding: var(--diluxone-users-login-box-pad, 48px);
+	max-width: var(--diluxone-users-login-box-w, 520px);
 }
+
+/* ── What the panel says ──────────────────────────────────────────────
+   Three rows, so the mark holds the top and the closing line holds the
+   bottom however much is written between them. The rows that are empty are
+   still there and empty: laying out three things and drawing two is how a
+   panel ends up with its heading against the ceiling. */
+.diluxone-users-login-frame__words {
+	position: relative;
+	z-index: 1;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	gap: 32px;
+	padding: var(--diluxone-users-login-panel-pad, 56px);
+	color: var(--diluxone-users-login-panel-ink, #fff);
+}
+/* A photograph is not a background until something separates it from the
+   words on top. Only when there is both: a panel that is just a colour needs
+   nothing laid over it, and laying something anyway darkens the colour the
+   site chose. */
+.diluxone-users-login-frame__picture--over::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: var(--diluxone-users-login-panel-over, rgba(0, 0, 0, .45));
+}
+.diluxone-users-login-frame__mark img { display: block; max-height: var(--diluxone-users-login-panel-mark, 42px); width: auto; }
+.diluxone-users-login-frame__mark { margin: 0; }
+.diluxone-users-login-frame__say { max-width: var(--diluxone-users-login-panel-w, 480px); }
+/* The one heading the plugin does give a size to, and the reason it differs
+   from the account area's is that this one is not in the theme's page: it is
+   the plugin's own panel, edge to edge, and a theme's h2 dropped onto it
+   comes out as body copy in a block of colour. It is still a value and not a
+   selector, so a site that has a scale of its own says so once. */
+.diluxone-users-login-frame__title {
+	margin: 0 0 20px;
+	font-family: var(--diluxone-users-display-font, inherit);
+	font-size: var(--diluxone-users-login-panel-title, clamp(30px, 3.4vw, 50px));
+	font-weight: var(--diluxone-users-login-panel-title-weight, 800);
+	line-height: 1.06;
+	color: inherit;
+}
+/* Each line of the heading is a line. Somebody who writes two lines means two
+   lines, not one sentence that breaks where the column ends. */
+.diluxone-users-login-frame__title span { display: block; }
+.diluxone-users-login-frame__text { margin: 0; font-size: 1.1em; line-height: 1.6; opacity: .86; }
+.diluxone-users-login-frame__points {
+	list-style: none;
+	margin: 36px 0 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+.diluxone-users-login-frame__points li { display: flex; align-items: center; gap: 12px; }
+/* The mark before each point is drawn as a mask and not as a picture, so it
+   takes the panel's ink instead of arriving painted: white on a dark panel,
+   dark on a light one, and neither of them a second colour to set. */
+.diluxone-users-login-frame__points li::before {
+	content: "";
+	flex: 0 0 20px;
+	width: 20px;
+	height: 20px;
+	background: currentColor;
+	-webkit-mask: var(--diluxone-users-login-point-mark, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12.5 9.5 18 20 6.5'/%3E%3C/svg%3E")) center / contain no-repeat;
+	mask: var(--diluxone-users-login-point-mark, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12.5 9.5 18 20 6.5'/%3E%3C/svg%3E")) center / contain no-repeat;
+}
+.diluxone-users-login-frame__foot { margin: 0; font-size: 0.95em; opacity: .62; }
 /* Which side the picture is on: the box moves, the picture keeps its cell. */
 .diluxone-users-login-frame--split.diluxone-users-login-frame--right .diluxone-users-login-frame__picture { order: 2; }
 
@@ -620,8 +727,16 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 @media (max-width: 782px) {
 	/* The picture is the first thing that goes: on a phone, half a screen of
 	   photograph is half a screen not spent signing in. */
-	.diluxone-users-login-frame--split { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+	/* The doubled class is not decoration: the rule that lays the two columns
+	   out carries it, and one class in here loses to two out there however
+	   far down the sheet it sits. A phone got a half-width form. */
+	.diluxone-users-login-frame.diluxone-users-login-frame--split { grid-template-columns: minmax(0, 1fr); min-height: 0; }
 	.diluxone-users-login-frame--split .diluxone-users-login-frame__picture { display: none; }
+	/* Unless something is written on it. A sentence the site wrote is not
+	   decoration, and taking it away on a phone takes away what the page came
+	   to say — it stacks above the form instead, with less air in it. */
+	.diluxone-users-login-frame--split .diluxone-users-login-frame__picture--words { display: block; }
+	.diluxone-users-login-frame__words { padding: var(--diluxone-users-login-panel-pad-sm, 36px 20px); gap: 24px; }
 	.diluxone-users-login-frame--split .diluxone-users-login-frame__box { padding: 32px 20px; max-width: none; }
 	.diluxone-users-login-frame__box { padding: 28px 20px; }
 	.diluxone-users-login-frame { padding-block: 24px; }
@@ -630,6 +745,17 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 /* The site's own sentences: the line under a heading, and the terms line at
    the foot of the sign-in form — small, quiet, and still readable. */
 .diluxone-users-login__intro { margin: 0 0 18px; color: var(--diluxone-users-muted); }
+
+/* The sign-in block itself. A reading column is the right measure for a form
+   in a page and the wrong one for the one thing a screen exists to do, so in
+   here the form takes the room the frame gives it and the two doors — the
+   passkey and the link — go the whole way across. How wide "the whole way"
+   is, is the frame's business, and a site that wants a narrower column than
+   the frame says so once. */
+.diluxone-users-login { width: 100%; max-width: var(--diluxone-users-login-w, none); margin-inline: auto; }
+.diluxone-users-login .diluxone-users-form { max-width: none; }
+.diluxone-users-login .diluxone-users-form > .diluxone-users-button,
+.diluxone-users-login .diluxone-users-form > button { align-self: stretch; }
 
 /* The two drawings on this screen. They take the surrounding colour, so the
    envelope over "check your email" is the accent and the one beside a note is
@@ -649,13 +775,29 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	border-radius: 50%;
 	background: var(--diluxone-users-accent-soft);
 }
-.diluxone-users-note--icon { display: flex; align-items: flex-start; gap: 8px; }
-.diluxone-users-note--icon .diluxone-users-icon { margin-top: 1px; }
+/* The explaining note beside a drawing. It is a line by default and a box
+   when a site says so: the padding and the ground are one property each, and
+   with neither set nothing is painted and nothing takes any room. */
+.diluxone-users-note--icon {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--diluxone-users-note-gap, 8px);
+	padding: var(--diluxone-users-note-pad, 0);
+	background: var(--diluxone-users-note-bg, transparent);
+	border-radius: var(--diluxone-users-radius-sm);
+}
+/* The drawing beside it follows the note, unless the site would rather it
+   were the thing the eye lands on. */
+.diluxone-users-note--icon .diluxone-users-icon { margin-top: 1px; color: var(--diluxone-users-note-mark, currentColor); }
 
 /* The way back out of "check your email". */
 .diluxone-users-login__again { margin: 18px 0 14px; }
+/* Centred, because it belongs to the form above it and not to the left edge:
+   ranged left under a column of full-width buttons it reads as one more
+   thing to do rather than as the small print. */
 .diluxone-users-login__legal {
 	margin: 20px 0 0;
+	text-align: center;
 	font-size: 0.85em;
 	line-height: 1.6;
 	color: var(--diluxone-users-muted);
@@ -816,7 +958,11 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	   already running full width sets `--diluxone-users-bleed: 0px` and both
 	   stop together. Two properties to keep in step would be one to forget. */
 	margin-inline: var(--diluxone-users-bleed, calc(50% - 50vw));
-	padding-inline: max(var(--diluxone-users-pad, 20px), calc(-1 * var(--diluxone-users-bleed, calc(50% - 50vw))));
+	/* The gutter the band keeps once the breakout is off. It falls back to
+	   the gutter the rows were given, because it is the same gutter: the
+	   band's edge and the row inside it line up or the header is the one
+	   thing on the page that does not. */
+	padding-inline: max(var(--diluxone-users-pad, var(--diluxone-users-row-pad, 20px)), calc(-1 * var(--diluxone-users-bleed, calc(50% - 50vw))));
 }
 /* The band already carries the gutter, so the row inside it does not add a
    second one: they are the same gutter seen from two elements. */
@@ -829,6 +975,10 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	height: var(--diluxone-users-avatar, 96px);
 	flex-basis: var(--diluxone-users-avatar, 96px);
 	background: var(--diluxone-users-surface);
+	/* The initials, when that is what the picture is. The base rule writes
+	   them in the ink that reads on the accent — and here the disc is the
+	   surface, so that ink is white on white and the initials are gone. */
+	color: var(--diluxone-users-accent);
 	border: var(--diluxone-users-avatar-ring, 3px solid rgba(255, 255, 255, .35));
 }
 /* A picture instead of the colour, and a picture with the colour laid over
@@ -1000,11 +1150,17 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 .diluxone-users-card-summary__value.is-text { font-size: 1.15em; font-weight: 700; line-height: 1.3; }
 .diluxone-users-card-summary__note { font-size: 0.92em; color: var(--diluxone-users-muted); }
 .diluxone-users-card-summary__cta { margin-top: 10px; font-weight: 700; color: var(--diluxone-users-accent); }
+/* The arrow belongs to the look and not to the sentence: written into each
+   card it would be one more thing to translate, and one card would end up
+   without it. */
+.diluxone-users-card-summary__cta::after { content: " \2192"; }
 
 /* ── Acceso ─────────────────────────────────────────────────────────── */
 
 .diluxone-users-login__title, .diluxone-users-fields__title { margin: 0 0 6px; }
-.diluxone-users-login__email { font-weight: 700; }
+/* The address somebody just typed, read back to them. It is the one word on
+   that screen they have to check, so it is the one word in colour. */
+.diluxone-users-login__email { margin: 8px 0 18px; font-size: 1.15em; font-weight: 700; color: var(--diluxone-users-accent); }
 .diluxone-users-divider {
 	display: flex;
 	align-items: center;

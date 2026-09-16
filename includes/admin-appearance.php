@@ -193,6 +193,29 @@ function diluxone_users_screen_appearance_template(): void {
 			</td>
 		</tr>
 		<tr>
+			<th scope="row"><label for="diluxone_users_account_ground"><?php esc_html_e( 'Behind the whole area', 'diluxone-users' ); ?></label></th>
+			<td>
+				<?php
+				/*
+				 * Empty and not a colour, for the reason the rows above it
+				 * are empty: with no answer the plugin prints no rule, and
+				 * the page's own ground is whatever the theme makes it. A
+				 * "white" default would be an answer, and an answer that
+				 * loads after the site's stylesheet wins over it.
+				 */
+				$diluxone_users_ground = (string) diluxone_users_option( 'diluxone_users_account_ground' );
+				?>
+				<label class="diluxone-users-roles__item">
+					<input type="checkbox" name="diluxone_users_account_ground_own" value="1" <?php checked( '' !== $diluxone_users_ground ); ?> data-diluxone-users-toggle="#diluxone_users_account_ground">
+					<?php esc_html_e( 'A colour of its own', 'diluxone-users' ); ?>
+				</label>
+
+				<input type="color" id="diluxone_users_account_ground" name="diluxone_users_account_ground" value="<?php echo esc_attr( '' !== $diluxone_users_ground ? $diluxone_users_ground : '#f5f6f8' ); ?>" <?php disabled( '' === $diluxone_users_ground ); ?>>
+
+				<p class="description"><?php esc_html_e( 'The shade the area sits on. Unticked it sits on whatever the page is, which is what it always did — and on a white page white boxes have no edge, so this is how they get one.', 'diluxone-users' ); ?></p>
+			</td>
+		</tr>
+		<tr>
 			<th scope="row"><?php esc_html_e( 'What the cover is', 'diluxone-users' ); ?></th>
 			<td>
 				<?php
