@@ -1,0 +1,162 @@
+# End-to-end tests
+
+The suites below this one prove that the functions behave. These prove that a
+person can get in — which is a different claim, and the only one that covers
+the parts nothing else can reach: a form that posts to `admin-post.php` and
+comes back as a redirect, a credential that arrives by e-mail, a cookie that
+only exists once a real browser has been handed one, and a `required` field
+that stops a button from ever submitting.
+
+## Running them
+
+```bash
+make env        # once: the wp-env stack (WordPress at http://localhost:8892)
+make test-e2e   # the suite
+make test-e2e-ui  # the same, in Playwright's own window, for writing one
+```
+
+The first run on a machine also needs the browser:
+
+```bash
+npx playwright install chromium
+```
+
+Nothing else. `npm install` brings `@playwright/test`; `make env` brings
+WordPress; the rest of what the suite needs lives in the repo.
+
+Point it somewhere else with `WP_BASE_URL`, and give it another
+administrator with `WP_USER` / `WP_PASS`:
+
+```bash
+WP_BASE_URL=http://localhost:8892 WP_USER=admin WP_PASS=password make test-e2e
+```
+
+Run one file, or one test:
+
+```bash
+npx playwright test magic-link
+npx playwright test -g "the second time it is spent"
+```
+
+A failed run leaves a trace in `build/e2e-results/`. Open it with
+`npx playwright show-trace build/e2e-results/<...>/trace.zip` and you get the
+browser back, frame by frame.
+
+## What has to be up
+
+- **wp-env**, on port 8892 (`make env`). The dev site mounts the repo root, so
+  what runs is the working tree.
+- **The e2e mu-plugin**, which `.wp-env.json` maps into `wp-content/mu-plugins/`
+  from `tests/e2e/mu-plugin/diluxone-e2e.php`. If you change `.wp-env.json` you
+  have to `npx @wordpress/env start` again for the mapping to take.
+- Nothing else. No mail server: the mu-plugin catches the mail. No OAuth
+  credentials: the mu-plugin answers as the provider. No HTTPS: `localhost`
+  counts as a secure context, which is what passkeys need.
+
+## How it is put together
+
+```
+tests/e2e/
+  global.setup.ts      seeds the pages, writes down every setting it changes,
+                       and keeps one administrator session for the specs that
+                       need the dashboard
+  global.teardown.ts   puts those settings back and deletes every account the
+                       run made
+  mu-plugin/           the three things a browser cannot do on its own
+  support/             the REST side door, the locators, and a TOTP app
+  specs/               the flows
+```
+
+### The mu-plugin
+
+`tests/e2e/mu-plugin/diluxone-e2e.php` loads only when
+`wp_get_environment_type()` is `local`, and every route but one asks for the
+`X-Diluxone-E2E` header. It gives the suite four things:
+
+- **A mailbox.** `pre_wp_mail` keeps each message instead of sending it, and
+  `GET /wp-json/diluxone-e2e/v1/mail?to=…` hands them back. That is how a test
+  reads a sign-in link or a six-digit code.
+- **A social network.** A provider called `mock` is added to the plugin's
+  table, its authorize screen is a REST route that bounces straight back with
+  a code, and its token and profile endpoints are answered in-process through
+  `pre_http_request`. A test says what the provider claims — including
+  `email_verified: false` — with `POST /identity`.
+- **Settings, accounts and the clock.** `POST /options` writes settings *and
+  answers with what they were*, which is the whole restore contract;
+  `POST /user` makes somebody; `POST /expire` moves a deadline into the past so
+  expiry is tested in a second rather than in fifteen minutes.
+- **The pages.** `POST /seed` makes the three pages the shortcodes live on —
+  `e2e-login`, `e2e-register`, `e2e-account` — once, and reuses them after
+  that.
+
+The one open route is `/oauth/authorize`: the browser walks into it following
+a plain redirect and can carry no header there. It signs nobody in; it
+redirects back with a code.
+
+### Leaving the site as it was found
+
+This runs against somebody's development site, not a scratch one, so nothing
+is ever wiped. Two mechanisms, and between them a run leaves no trace:
+
+- `global.setup.ts` writes a baseline (which pages, which sign-in method, and
+  so on) and saves the previous values to `build/e2e-baseline.json`;
+  `global.teardown.ts` writes them back. Playwright runs a project's teardown
+  even when the project failed, which is exactly when you would least like to
+  be left on "only a link, no passwords".
+- Inside a test, the `options` fixture is the only way to change a setting:
+  `options.set({…})` writes and schedules the old value to be written back when
+  the test ends, pass or fail. For the tests that change a setting by pressing
+  **Save** on a dashboard screen — where nothing can intercept the write —
+  `options.keep([…])` writes the current values down beforehand.
+
+Every account the suite makes carries the `@e2e.test` domain, and the teardown
+deletes all of them. Nothing else on the site has that domain.
+
+### Writing a test here
+
+- **Locators point at markup, never at sentences.** The site this runs against
+  is in Spanish and the plugin ships eight locales. `support/ui.ts` holds the
+  selectors; where a test does have to prove that a particular message
+  appeared, it checks the class the template gives it (`--error`, `--ok`) and
+  the `diluxone-users` state in the address, which is the plugin's own name for
+  what happened and does not translate.
+- **No fixed waits.** `submitPluginForm()` waits for the answer's address;
+  `waitForMail()` polls the mailbox; everything else is `expect`.
+- **Use `guest` for the public page** in a spec that has an administrator
+  session. The sign-in and registration shortcodes draw nothing for somebody
+  already signed in, so the same browser cannot do both.
+- **Pin what the test depends on.** `register.spec.ts` pins the whole field set
+  rather than inheriting whatever the development site has configured; a
+  required field it did not expect stops the browser submitting the form and
+  the test hangs on a navigation that never comes.
+
+## What is covered
+
+| Spec | The flow |
+|---|---|
+| `magic-link.spec.ts` | Ask for the link, read the mail, open it, be signed in; the second time it is spent; an expired one; a token pointed at another account; an unknown address with registration open and with it closed; the site's own wording; the throttle. |
+| `password-login.spec.ts` | The three answers to "how do people get in" — `both`, `password`, `link` — plus **H-05**: with the screens taken over and a password still a way in, the POST to `wp-login.php` has to go through. The escape hatch, and signing out. |
+| `register.spec.ts` | The site's own form with a required field, the link, the answers already saved; an address already taken; registration closed; the six-an-hour burst. |
+| `password-reset.spec.ts` | The three answers to "where is the new password typed" — `wp`, `site`, `link`. For `site`, the whole chain: WordPress's link, the hand-off, the key into a cookie and out of the address, the mismatch, the change, the new password working. |
+| `two-factor.spec.ts` | The code by e-mail and the authenticator app. The five-try limit, the sixty-second resend wait, the expired attempt, "do not ask again on this browser", the backup codes, and the e-mail link *not* asking for a code that goes to the same inbox. |
+| `sso.spec.ts` | A new social account, one that matches an existing address, and **H-01**: an unverified address must not be handed an existing account. Silence treated as silence. "Verified only". Cancelling at the provider. Linking and unlinking. **H-02**: a link trip with no nonce. A forged `state`. |
+| `admin-settings.spec.ts` | Every tab of every settings screen renders with no PHP notice and no footer riding up into the layout; and eight settings changed by pressing Save, each checked on the public page afterwards — including **M-10**, the legal line keeping its link. |
+| `passkeys.spec.ts` | Register a passkey from the account screen and sign in with it, against Chrome's virtual authenticator; and a key the account has removed no longer opening it. |
+
+### Skipped, and why
+
+- `passkeys.spec.ts` skips itself on anything that is not Chromium: the virtual
+  authenticator is a DevTools-protocol feature and Firefox and WebKit have no
+  equivalent. On Chromium it runs in full — `http://localhost` is a secure
+  context, so no HTTPS is needed.
+
+### What this suite already changed
+
+It was written to describe the plugin, and describing it found three things it
+did not do and one it did by halves. The fourth is worth naming here because
+the test came first: a registration form submitted with `novalidate` used to
+create the account with the required field empty —
+`diluxone_users_register_request()` called `diluxone_users_save()`, which
+reports what was missing, and ignored the answer. It is now asked before the
+account exists, by `diluxone_users_register_missing()`, and the test asserts
+the refusal instead of recording the hole.

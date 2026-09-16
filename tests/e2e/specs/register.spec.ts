@@ -15,15 +15,32 @@ import { notice, registerForm, registerScreen, submitPluginForm } from '../suppo
  * Covers T-REG-03.
  */
 
-/** A required field, defined the way the Fields screen would define it. */
+/**
+ * The field set every test in this file starts from.
+ *
+ * WordPress's own two are in it on purpose and NOT required: the plugin
+ * re-seeds them on `admin_init` whenever they are missing from the list, and
+ * admin-post.php — where every one of these forms posts — is an admin request.
+ * A list that leaves them out gets them back, required, between the first
+ * submission and the second, and then the browser refuses to submit a form
+ * with an empty required field and the test hangs on a navigation that never
+ * comes. Pinning them is cheaper than fighting them.
+ */
+const PLAIN_FIELDS = [
+	{ key: 'first_name', label: 'First name', type: 'text', required: 0, active: 1, group: 'main', edit: 'always' },
+	{ key: 'last_name', label: 'Last name', type: 'text', required: 0, active: 1, group: 'main', edit: 'always' },
+];
+
+/** The same, plus a required one the site added: the reason this door exists. */
 const CITY_FIELD = [
+	...PLAIN_FIELDS,
 	{
 		key: 'e2e_city',
 		label: 'City',
 		type: 'text',
 		required: 1,
 		active: 1,
-		group: 'basic',
+		group: 'main',
 		edit: 'always',
 	},
 ];
@@ -33,7 +50,7 @@ test.describe('Registering with the site’s own form', () => {
 		// The field set is pinned and not inherited: this environment is
 		// somebody's development site, and whatever they marked required there
 		// would otherwise decide whether this form can be submitted at all.
-		await options.set({ diluxone_users_register_form: 1, diluxone_users_fields: [] });
+		await options.set({ diluxone_users_register_form: 1, diluxone_users_fields: PLAIN_FIELDS });
 	});
 
 	test('fill it in, get the link, get in, and the answers are already saved', async ({
@@ -71,7 +88,7 @@ test.describe('Registering with the site’s own form', () => {
 		await expectSignedIn(page, email);
 	});
 
-	test('a required field the browser lets through is still required by the form', async ({
+	test('a required field the browser lets through is still refused by the server', async ({
 		page,
 		site,
 		pages,
@@ -85,20 +102,18 @@ test.describe('Registering with the site’s own form', () => {
 		await page.locator('input[name="diluxone_users_email"]').fill(email);
 
 		// The browser would stop this one itself; `novalidate` is how the test
-		// asks what the server does, which is the answer that matters.
+		// asks what the server does, which is the answer that matters — it is one
+		// attribute away in the inspector, and a form posted by a script never had
+		// a browser to stop anything.
 		await page.locator('form.diluxone-users-form').evaluate((form: HTMLFormElement) => {
 			form.noValidate = true;
 		});
-		await submitPluginForm(page, registerForm(page));
 
-		// The account is made and the field is simply empty — the plugin's
-		// `diluxone_users_save()` reports what is missing and the registration
-		// handler does not act on it. Pinned as what it does, not as what it
-		// should do: see the note in tests/e2e/README.md.
-		const made = await site.user(email, ['e2e_city']);
+		expect(await submitPluginForm(page, registerForm(page))).toBe('missing');
 
-		expect(made.exists).toBe(true);
-		expect(made.fields.e2e_city).toBe('');
+		// And no account: refusing after it is made would mean deleting a person
+		// seconds after creating them.
+		expect((await site.user(email, ['e2e_city'])).exists).toBe(false);
 	});
 
 	test('an address that already has an account is told so, and offered the way in', async ({

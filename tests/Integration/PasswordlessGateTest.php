@@ -52,8 +52,28 @@ class PasswordlessGateTest extends IntegrationTestCase {
 		diluxone_users_block_wp_login();
 	}
 
-	public function test_a_post_to_a_closed_form_meets_the_wall_even_with_the_password_on(): void {
+	/**
+	 * Asking for a reset is a form of its own, and only one answer closes it.
+	 *
+	 * It used to be closed whenever the screens were taken over, which is how
+	 * a site that sends people to its own page to type a new password ended up
+	 * with no form anywhere that sends them the e-mail to get there. Where the
+	 * new password is typed is now its own question, with three answers, and
+	 * only the one that says nobody resets anything shuts the ask.
+	 */
+	public function test_asking_for_a_reset_goes_through_when_somebody_resets_something(): void {
 		update_option( 'diluxone_users_login_method', 'both' );
+		update_option( 'diluxone_users_lost_password', 'site' );
+		$this->request( 'POST', array( 'action' => 'lostpassword' ), array( 'user_login' => 'someone' ) );
+
+		diluxone_users_block_wp_login();
+
+		$this->assertTrue( true, 'The form that sends the reset e-mail is still reachable' );
+	}
+
+	public function test_asking_for_a_reset_meets_the_wall_when_there_is_no_password_to_reset(): void {
+		update_option( 'diluxone_users_login_method', 'both' );
+		update_option( 'diluxone_users_lost_password', 'link' );
 		$this->request( 'POST', array( 'action' => 'lostpassword' ), array( 'user_login' => 'someone' ) );
 
 		$this->expectException( \WPAjaxDieContinueException::class );

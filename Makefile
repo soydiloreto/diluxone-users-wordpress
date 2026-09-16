@@ -135,8 +135,23 @@ test-unit: ## Run only the unit-test suite (no WordPress runtime).
 test-integration: ## Run integration tests against the wp-env stack (must be `make env` first).
 	npx @wordpress/env run tests-cli --env-cwd=wp-content/plugins/$(REPO_DIR) ./vendor/bin/phpunit -c phpunit-integration.xml --testsuite integration
 
+# The end-to-end suite drives a real browser against the wp-env dev site, so
+# it needs `make env` running and the Playwright browsers installed once
+# (`npx playwright install chromium`). Everything else it needs — the mailbox,
+# the fake social network, the seeded pages — comes from the mu-plugin mapped
+# in .wp-env.json. See tests/e2e/README.md.
+.PHONY: test-e2e
+test-e2e: ## Run the Playwright end-to-end suite against the wp-env dev site (must be `make env` first).
+	@mkdir -p build
+	npx playwright test
+
+.PHONY: test-e2e-ui
+test-e2e-ui: ## The same suite in Playwright's own window, for writing and debugging one.
+	@mkdir -p build
+	npx playwright test --ui
+
 .PHONY: test-all
-test-all: test-unit test-integration ## Both suites: the fast one, then the one that needs wp-env running.
+test-all: test-unit test-integration test-e2e ## All three: the fast one, the one that needs wp-env, and the one that needs a browser.
 
 # -- Distribution build ------------------------------------------------
 # The repo directory is diluxone-users-wordpress (GitHub), but the plugin

@@ -708,7 +708,7 @@ msgstr "Inscription"
 #: templates/login.php:75
 #: templates/login.php:151
 #: templates/register.php:40
-#: templates/register.php:127
+#: templates/register.php:129
 msgid "Sign in"
 msgstr "Se connecter"
 
@@ -1799,7 +1799,7 @@ msgstr "Texte long"
 
 #: includes/fields.php:24
 #: templates/login.php:125
-#: templates/register.php:89
+#: templates/register.php:91
 msgid "Email address"
 msgstr "Adresse e-mail"
 
@@ -2949,6 +2949,7 @@ msgid "Link"
 msgstr "Lier"
 
 #: templates/fields.php:32
+#: templates/register.php:65
 msgid "Some required fields are missing."
 msgstr "Il manque des champs obligatoires."
 
@@ -2974,15 +2975,15 @@ msgstr "Le code"
 msgid "Do not ask again on this browser for %d days"
 msgstr "Ne plus demander sur ce navigateur pendant %d jours"
 
-#: templates/login-2fa.php:61
+#: templates/login-2fa.php:72
 msgid "Send it again"
 msgstr "L’envoyer de nouveau"
 
-#: templates/login-2fa.php:67
+#: templates/login-2fa.php:78
 msgid "Or use:"
 msgstr "Ou utilisez :"
 
-#: templates/login-2fa.php:89
+#: templates/login-2fa.php:100
 msgid "Lost the phone and the email? Use one of your backup codes: they go in the same box."
 msgstr "Vous avez perdu le téléphone et l’e-mail ? Utilisez un de vos codes de secours : ils vont dans la même case."
 
@@ -3021,7 +3022,7 @@ msgid "We could not finish signing you in with that provider. Try again or use y
 msgstr "Nous n’avons pas pu terminer votre connexion avec ce fournisseur. Réessayez ou utilisez votre e-mail."
 
 #: templates/login.php:92
-#: templates/register.php:69
+#: templates/register.php:71
 msgid "Something went wrong. Try again."
 msgstr "Quelque chose s’est mal passé. Réessayez."
 
@@ -3034,7 +3035,7 @@ msgid "or"
 msgstr "ou"
 
 #: templates/login.php:113
-#: templates/register.php:75
+#: templates/register.php:77
 msgid "or with your email"
 msgstr "ou avec votre e-mail"
 
@@ -3048,7 +3049,7 @@ msgid "Send me the sign-in link"
 msgstr "Envoyez-moi le lien de connexion"
 
 #: templates/login.php:133
-#: templates/register.php:122
+#: templates/register.php:124
 msgid "You get an email with a link. Click it and you are in: no password to choose or type."
 msgstr "Vous recevez un e-mail avec un lien. Vous cliquez et vous êtes entré : pas de mot de passe à choisir ni à taper."
 
@@ -3314,7 +3315,7 @@ msgid "The same, with a “Sign in” heading above it — for anywhere the page
 msgstr "La même chose, avec un titre « Connexion » au-dessus — pour partout où le titre de la page ne le dit pas déjà."
 
 #: templates/login.php:126
-#: templates/register.php:92
+#: templates/register.php:94
 msgctxt "placeholder for the e-mail field"
 msgid "you@example.com"
 msgstr "vous@exemple.com"
@@ -3782,15 +3783,15 @@ msgstr "Il existe déjà un compte avec cette adresse."
 msgid "Sign in instead"
 msgstr "Se connecter plutôt"
 
-#: templates/register.php:67
+#: templates/register.php:69
 msgid "This site does not take new accounts right now."
 msgstr "Ce site n'accepte pas de nouveaux comptes pour le moment."
 
-#: templates/register.php:117
+#: templates/register.php:119
 msgid "Create my account"
 msgstr "Créer mon compte"
 
-#: templates/register.php:126
+#: templates/register.php:128
 msgid "Already have an account?"
 msgstr "Vous avez déjà un compte ?"
 
@@ -3844,7 +3845,7 @@ msgstr "Vous n'êtes pas obligé·e de faire ceci : sur ce site, un lien par co
 msgid "Your password is changed. You can sign in with it now."
 msgstr "Votre mot de passe est changé. Vous pouvez vous connecter avec."
 
-#: templates/register.php:65
+#: templates/register.php:67
 msgid "One moment: wait a few seconds and try again."
 msgstr "Un instant : attendez quelques secondes et réessayez."
 
@@ -5436,7 +5437,9 @@ msgstr "Elle se place en haut du panneau. Rarement le même fichier que celle au
 msgid ""
 "One account.\n"
 "No passwords."
-msgstr "Un seul compte.\nAucun mot de passe."
+msgstr ""
+"Un seul compte.\n"
+"Aucun mot de passe."
 
 #: includes/admin-login.php:861
 msgid "One line per line. A heading on a panel is written in deliberate lines, not broken wherever the column happens to end."
@@ -5459,7 +5462,10 @@ msgid ""
 "Everything on the site\n"
 "Your certificates\n"
 "Word when we go live"
-msgstr "Tout ce qu’il y a sur le site\nVos attestations\nUn mot quand on passe en direct"
+msgstr ""
+"Tout ce qu’il y a sur le site\n"
+"Vos attestations\n"
+"Un mot quand on passe en direct"
 
 #: includes/admin-login.php:877
 msgid "One per line, each with a tick beside it. Three or four: a panel is not a features page."

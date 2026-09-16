@@ -171,7 +171,9 @@ export function linkIn(mail: Mail, pattern = /https?:\/\/\S+/): string {
 		throw new Error(`No link in the message.\n${mail.body}`);
 	}
 
-	return found[0].replace(/[).,]+$/, '');
+	// WordPress wraps its own links in angle brackets, and a sentence
+	// ending puts a full stop against the last character of the address.
+	return found[0].replace(/[>).,]+$/, '');
 }
 
 /** The six-digit code a second-step message carries. */

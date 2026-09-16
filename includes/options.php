@@ -576,6 +576,46 @@ function diluxone_users_save_options( array $input ): void {
 			continue;
 		}
 
-		update_option( $key, sanitize_textarea_field( (string) $value ) );
+		update_option(
+			$key,
+			diluxone_users_option_allows_markup( $key )
+				? wp_kses_post( (string) $value )
+				: sanitize_textarea_field( (string) $value )
+		);
 	}
+}
+
+/**
+ * Is this setting one of the few that are allowed to carry markup?
+ *
+ * Almost none are, and `sanitize_textarea_field()` is the right answer for
+ * almost all of them. The exception is the line about the terms: the terms and
+ * the privacy policy are pages, and a legal line that cannot point at them is
+ * not a legal line. Its own screen already says so and already runs it through
+ * `wp_kses_post()` — and then this function used to strip the link straight
+ * afterwards, so the setting saved, looked right on the screen it was typed
+ * on, and came out on the page as plain text. One sanitiser undoing another is
+ * the kind of thing that only shows up from the front end, which is where the
+ * test that found it looks.
+ *
+ * @param string $key Option name, with its prefix.
+ */
+function diluxone_users_option_allows_markup( string $key ): bool {
+	/**
+	 * Filters the settings whose value may hold HTML.
+	 *
+	 * Whatever is on this list is stored through `wp_kses_post()`, which is
+	 * the same set of tags a post is allowed. Anything not on it is stored as
+	 * plain text.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<int, string> $keys
+	 */
+	$keys = (array) apply_filters(
+		'diluxone_users_options_with_markup',
+		array( 'diluxone_users_login_legal' )
+	);
+
+	return in_array( $key, $keys, true );
 }

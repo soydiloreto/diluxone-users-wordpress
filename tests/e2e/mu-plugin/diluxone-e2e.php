@@ -295,10 +295,7 @@ function diluxone_e2e_seed( WP_REST_Request $request ): WP_REST_Response {
 		);
 	}
 
-	// /sso/<network>/ and /account/<section>/ are rewrite rules the plugin
-	// adds on init: without a flush they are 404s, and the SSO callback never
-	// reaches the plugin.
-	flush_rewrite_rules( false );
+	diluxone_e2e_rebuild_rules();
 
 	return new WP_REST_Response(
 		array(
@@ -367,7 +364,7 @@ function diluxone_e2e_options_write( WP_REST_Request $request ): WP_REST_Respons
 	}
 
 	if ( $request->get_param( 'flush' ) ) {
-		flush_rewrite_rules( false );
+		diluxone_e2e_rebuild_rules();
 	}
 
 	if ( $request->get_param( 'forget_transients' ) ) {
@@ -375,6 +372,21 @@ function diluxone_e2e_options_write( WP_REST_Request $request ): WP_REST_Respons
 	}
 
 	return new WP_REST_Response( array( 'previous' => $previous ) );
+}
+
+/**
+ * Asks the plugin to rebuild /sso/<network>/ and /account/<section>/.
+ *
+ * Not `flush_rewrite_rules()` here, which is what the first attempt did and
+ * why every section URL came back "Page not found": the account rule is built
+ * on `init` out of the page the settings name, so a flush in the same request
+ * that changed that setting saves the rules for the OLD page. The plugin has
+ * its own answer for exactly this — a version stamp it checks on `wp_loaded`
+ * — and taking the stamp away is asking it to rebuild them on the next
+ * request, with the settings as they are by then.
+ */
+function diluxone_e2e_rebuild_rules(): void {
+	delete_option( 'diluxone_users_rewrite_version' );
 }
 
 /** Throttles, OAuth states and the rest of the plugin's short-lived rows. */

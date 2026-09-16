@@ -75,7 +75,12 @@ export function notice(page: Page, kind: 'error' | 'ok' | 'any' = 'any'): Locato
 
 /** The social buttons, whichever networks are on. */
 export function ssoButtons(page: Page): Locator {
-	return page.locator('.diluxone-users-sso a, a.diluxone-users-sso__button, .diluxone-users-sso__button');
+	return page.locator('a.diluxone-users-social');
+}
+
+/** One network's button, by the provider id in its class. */
+export function ssoButton(page: Page, provider: string): Locator {
+	return page.locator(`a.diluxone-users-social--${provider}`);
 }
 
 /* ── Doing things ──────────────────────────────────────────────────── */
@@ -117,6 +122,69 @@ export async function signOut(page: Page): Promise<void> {
 	await page.context().clearCookies();
 }
 
+/* ── The account area ──────────────────────────────────────────────── */
+
+/**
+ * Opens the box on an account screen that holds a given thing.
+ *
+ * Every block there is a `<details>` and most of them start closed, so what a
+ * person does first is press the heading. Pressing it when it is already open
+ * would close it, which is why the state is asked before the click.
+ *
+ * @param inner A selector for something inside the box you want.
+ */
+export async function openPanel(page: Page, inner: string): Promise<Locator> {
+	const panel = page
+		.locator('details.diluxone-users-panel')
+		.filter({ has: page.locator(inner) })
+		.first();
+
+	await expect(panel).toBeAttached();
+
+	// `> summary` and not `summary`: some rows inside a box are boxes of their
+	// own — a passkey with its details — and a plain descendant selector picks
+	// up theirs as well.
+	if (!(await panel.evaluate((element: HTMLDetailsElement) => element.open))) {
+		await panel.locator('> summary').click();
+	}
+
+	await expect(panel.locator(inner).first()).toBeVisible();
+
+	return panel;
+}
+
+/**
+ * Opens every box on the screen.
+ *
+ * For the screens that split one list across two boxes — the networks already
+ * linked, and the ones still available — where a given row is depends on the
+ * state of the account, which is the thing the test is about to change.
+ */
+export async function openAllPanels(page: Page): Promise<void> {
+	// Outermost first, and read again each round: opening one box is what makes
+	// the boxes inside it clickable at all.
+	for (let round = 0; round < 3; round++) {
+		const closed = page.locator('details:not([open])');
+
+		if ((await closed.count()) === 0) {
+			return;
+		}
+
+		for (let n = 0; n < (await closed.count()); n++) {
+			const one = closed.nth(n);
+
+			if (await one.locator('> summary').isVisible()) {
+				await one.locator('> summary').click();
+			}
+		}
+	}
+}
+
+/** The address of one section of the account area. */
+export function accountSection(accountUrl: string, section: string): string {
+	return `${accountUrl.replace(/\/?$/, '/')}${section}/`;
+}
+
 /* ── The dashboard ─────────────────────────────────────────────────── */
 
 /** One of the plugin's settings screens, on one of its tabs. */
@@ -131,6 +199,10 @@ export function adminUrl(screen: string, tab?: string): string {
  * class is shared with half the dashboard, so the id is the only stable hold.
  */
 export async function savePanel(page: Page): Promise<void> {
-	await page.locator('#submit').click();
-	await expect(page.locator('.notice, .updated, .diluxone-users-notice')).toBeVisible();
+	await Promise.all([page.waitForLoadState('domcontentloaded'), page.locator('#submit').click()]);
+
+	// The screen says "Saved." through the plugin's own notice. Waiting for it
+	// and not only for the page load is what makes the next assertion about the
+	// setting rather than about whether the round trip had finished.
+	await expect(page.locator('.notice, .updated').first()).toBeVisible();
 }

@@ -785,9 +785,21 @@ function diluxone_users_backup_generate( int $user_id, int $many = 8 ): array {
 	return $plain;
 }
 
-/** How many backup codes they have left unused. */
+/**
+ * How many backup codes they have left unused.
+ *
+ * The type is asked about rather than cast, for the same reason as in
+ * `diluxone_users_2fa_email_verify()`: with no meta stored `get_user_meta()`
+ * answers `''`, and `(array) ''` is `array( '' )` — an array of one. So an
+ * account that had never been given a single code counted as having one, the
+ * screen said "1 left", and — worse — the two places that generate the set
+ * only do it `if ( 0 === diluxone_users_backup_left() )`, which was never
+ * true. Turning the second step on handed nobody any codes at all.
+ */
 function diluxone_users_backup_left( int $user_id ): int {
-	return count( (array) get_user_meta( $user_id, 'diluxone_users_backup_codes', true ) );
+	$codes = get_user_meta( $user_id, 'diluxone_users_backup_codes', true );
+
+	return is_array( $codes ) ? count( $codes ) : 0;
 }
 
 /**

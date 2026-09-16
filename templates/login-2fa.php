@@ -57,8 +57,19 @@ $diluxone_users_actual = $methods[ $method ] ?? array(
 
 		<button type="submit" class="diluxone-users-button"><?php esc_html_e( 'Confirm', 'diluxone-users' ); ?></button>
 
+		<?php
+		/*
+		 * `formnovalidate` because this button is in the same form as the code
+		 * box, and that box is `required`: without it the browser answers the
+		 * press with "fill in this field" and never sends anything — which is
+		 * to say the button did not work at the one moment it exists for, when
+		 * the code never arrived and the box is therefore empty. Asking for
+		 * another code is not the same submission as answering with one, and
+		 * the handler reads `resend` before it looks at the code.
+		 */
+		?>
 		<?php if ( isset( $methods[ $method ]['send'] ) ) : ?>
-			<button type="submit" name="diluxone_users_2fa_resend" value="1" class="diluxone-users-button diluxone-users-button--soft"><?php esc_html_e( 'Send it again', 'diluxone-users' ); ?></button>
+			<button type="submit" name="diluxone_users_2fa_resend" value="1" formnovalidate class="diluxone-users-button diluxone-users-button--soft"><?php esc_html_e( 'Send it again', 'diluxone-users' ); ?></button>
 		<?php endif; ?>
 	</form>
 

@@ -67,6 +67,40 @@ function diluxone_users_register_fields(): array {
 	return array_values( (array) apply_filters( 'diluxone_users_register_fields', $fields ) );
 }
 
+/**
+ * Which of the answers the form asks for did not arrive.
+ *
+ * Every field on that form is required — that is the whole of what puts it
+ * there — and the browser does enforce it, right up until it does not:
+ * `novalidate` is one attribute away in the inspector, and a form posted by a
+ * script never had a browser to enforce anything. So the answer that counts
+ * is this one.
+ *
+ * It is asked before the account is created and not after it is saved, even
+ * though `diluxone_users_save()` does report what it could not save. By then
+ * the person exists: refusing would mean deleting an account seconds after
+ * making it, and not refusing leaves one that can never satisfy the very
+ * fields the site said it could not do without.
+ *
+ * @param array<string, mixed> $input The form, unslashed.
+ * @return array<int, string> The labels of what is missing.
+ */
+function diluxone_users_register_missing( array $input ): array {
+	$missing = array();
+
+	foreach ( diluxone_users_register_fields() as $field ) {
+		$raw = isset( $input[ $field['key'] ] ) && is_scalar( $input[ $field['key'] ] )
+			? (string) $input[ $field['key'] ]
+			: '';
+
+		if ( '' === diluxone_users_sanitize( $field, $raw ) ) {
+			$missing[] = (string) $field['label'];
+		}
+	}
+
+	return $missing;
+}
+
 /** The whole registration form. Shortcode: [diluxone_users_register] */
 function diluxone_users_shortcode_register(): string {
 	if ( is_user_logged_in() ) {
@@ -170,6 +204,12 @@ function diluxone_users_register_request(): void {
 		exit;
 	}
 
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- verified above; each field is sanitised by type inside.
+	if ( array() !== diluxone_users_register_missing( (array) wp_unslash( $_POST ) ) ) {
+		wp_safe_redirect( add_query_arg( 'diluxone-users', 'missing', $back ) );
+		exit;
+	}
+
 	if ( ! diluxone_users_register_allowed() ) {
 		wp_safe_redirect( add_query_arg( 'diluxone-users', 'slow', $back ) );
 		exit;
@@ -190,7 +230,9 @@ function diluxone_users_register_request(): void {
 	}
 
 	// The answers arrive with the form and are saved before the first sign-in:
-	// asking again on the other side would be asking twice.
+	// asking again on the other side would be asking twice. What it reports as
+	// missing was already refused above, before there was an account to save
+	// it to.
 	// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- verified above; each field is sanitised by type.
 	diluxone_users_save( $user_id, (array) wp_unslash( $_POST ) );
 

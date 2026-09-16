@@ -21,12 +21,22 @@ export const PAGES_FILE = 'build/e2e-pages.json';
 export interface Options {
 	/** Writes settings now and schedules the old values to be written back. */
 	set(values: Record<string, unknown>): Promise<void>;
+
+	/**
+	 * Writes nothing, but promises to put these back.
+	 *
+	 * For the tests that change a setting the way a person does — by pressing
+	 * Save on a dashboard screen. Nothing here can intercept that, so what
+	 * they were is written down beforehand instead.
+	 */
+	keep(keys: string[]): Promise<void>;
 }
 
 export const test = base.extend<{
 	site: Site;
 	pages: SeedPages['pages'];
 	options: Options;
+	guest: Page;
 	freshCounters: void;
 }>({
 	site: async ({ request }, use) => {
@@ -49,6 +59,22 @@ export const test = base.extend<{
 		{ auto: true },
 	],
 
+	/**
+	 * A second browser with nobody signed in.
+	 *
+	 * The sign-in and registration shortcodes draw nothing for somebody who is
+	 * already in — which is right, and which means a spec that saves a setting
+	 * from the dashboard cannot then look at the public page in the same
+	 * browser. This is that other browser.
+	 */
+	guest: async ({ browser, baseURL }, use) => {
+		const context = await browser.newContext({ baseURL, storageState: undefined });
+		const page = await context.newPage();
+
+		await use(page);
+		await context.close();
+	},
+
 	pages: async ({}, use) => {
 		await use(JSON.parse(readFileSync(PAGES_FILE, 'utf8')) as SeedPages['pages']);
 	},
@@ -59,15 +85,21 @@ export const test = base.extend<{
 		// not what the first one left.
 		const original: OptionBag = {};
 
+		const remember = (values: OptionBag) => {
+			for (const [key, was] of Object.entries(values)) {
+				if (!(key in original)) {
+					original[key] = was;
+				}
+			}
+		};
+
 		await use({
 			async set(values: Record<string, unknown>) {
-				const previous = await site.setOptions(values);
+				remember(await site.setOptions(values));
+			},
 
-				for (const [key, was] of Object.entries(previous)) {
-					if (!(key in original)) {
-						original[key] = was;
-					}
-				}
+			async keep(keys: string[]) {
+				remember(await site.getOptions(keys));
 			},
 		});
 

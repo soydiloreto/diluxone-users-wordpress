@@ -47,6 +47,11 @@ psalm.xml.dist
 psalm-baseline.xml
 .psalm
 
+# End-to-end runner (browser tests; never part of what ships)
+playwright.config.ts
+playwright-report
+test-results
+
 # Tests and test artifacts
 phpunit.xml
 phpunit.xml.dist

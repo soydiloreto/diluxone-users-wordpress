@@ -91,13 +91,20 @@ setup('keep an administrator session for the specs that need one', async ({ page
 	const user = process.env.WP_USER ?? 'admin';
 	const pass = process.env.WP_PASS ?? 'password';
 
+	// The escape hatch, always: whatever a previous run left behind — including
+	// "only a link, no passwords" — this is the door that stays open, and it is
+	// the one an administrator would use in the same situation.
+	//
 	// By name and not by label: this site is in Spanish and the plugin ships
 	// eight locales — the markup is the contract, the wording is a setting.
 	await page.goto('/wp-login.php?diluxone-users-admin=1');
-	await page.locator('input[name="log"]').fill(user);
-	await page.locator('input[name="pwd"]').fill(pass);
-	await page.locator('#wp-submit').click();
 
-	await expect(page).toHaveURL(/wp-admin/);
+	const login = page.locator('input[name="log"]');
+
+	await expect(login, 'wp-login.php has to draw its own form for the hatch').toBeVisible();
+	await login.fill(user);
+	await page.locator('input[name="pwd"]').fill(pass);
+
+	await Promise.all([page.waitForURL(/wp-admin/), page.locator('#wp-submit').click()]);
 	await context.storageState({ path: ADMIN_STATE });
 });
