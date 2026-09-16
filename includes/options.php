@@ -106,9 +106,14 @@ function diluxone_users_option_defaults(): array {
 		'diluxone_users_wp_login_brand'        => 0,
 		'diluxone_users_wp_login_logo'         => 0,
 		'diluxone_users_wp_login_bg'           => '',
-		// Where "I forgot my password" goes. On a site where an e-mail link
-		// signs people in, the link IS the way back in, and the reset screen
-		// only asks for the same address twice.
+		// Where somebody who forgot their password ends up choosing a new one.
+		// 'wp'   — WordPress's own screen, at wp-login.php.
+		// 'site' — the site's own, on the sign-in page: the link WordPress
+		// builds still goes to wp-login.php, and is sent on from
+		// there, because WordPress offers no filter for that address.
+		// 'link' — nowhere: "I forgot my password" leads to the sign-in page,
+		// they get in with the e-mail link and the password is left
+		// exactly as it was. Only worth it where the link is a way in.
 		'diluxone_users_lost_password'         => 'wp',
 
 		// ── What the sign-in screen says ──────────────────────────────

@@ -23,6 +23,7 @@ class PasswordlessTest extends TestCase {
 	}
 
 	protected function tearDown(): void {
+		unset($GLOBALS['_test_wp_options']['diluxone_users_lost_password']);
 		Monkey\tearDown();
 		parent::tearDown();
 	}
@@ -42,8 +43,38 @@ class PasswordlessTest extends TestCase {
 			'default login'         => [''],
 			'explicit login'        => ['login'],
 			'native registration'   => ['register'],
-			'I forgot my password'  => ['lostpassword'],
 			'unknown action'        => ['something-that-does-not-exist'],
+		];
+	}
+
+	/**
+	 * Asking for a password reset is not the same screen as choosing the new
+	 * password, and only one of the three answers is about closing the ask.
+	 *
+	 * It used to be closed always, which meant a site that sent people to its
+	 * own screen to type a new password had taken away the only form that
+	 * sends them the e-mail to get there.
+	 *
+	 * @dataProvider lostPasswordAnswers
+	 */
+	public function test_asking_for_a_reset_is_only_closed_when_nobody_resets_anything(string $answer, bool $closed): void {
+		// Through the options store the stubs keep, not by redefining
+		// get_option(): the stub file is loaded before Patchwork and cannot be
+		// rerouted afterwards.
+		$GLOBALS['_test_wp_options']['diluxone_users_lost_password'] = $answer;
+
+		$this->assertSame(
+			$closed,
+			diluxone_users_should_redirect('lostpassword'),
+			"With '{$answer}', asking for a reset should " . ($closed ? 'go to the sign-in page' : 'stay on WordPress\'s form')
+		);
+	}
+
+	public static function lostPasswordAnswers(): array {
+		return [
+			"WordPress's screen"  => ['wp', false],
+			"the site's screen"   => ['site', false],
+			'nobody resets'       => ['link', true],
 		];
 	}
 

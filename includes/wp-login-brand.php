@@ -116,7 +116,10 @@ add_filter( 'login_headertext', 'diluxone_users_wp_login_text' );
  * only way back in it has.
  */
 function diluxone_users_lost_password_url( string $url ): string {
-	if ( 'site' !== (string) diluxone_users_option( 'diluxone_users_lost_password' ) ) {
+	// Only for the answer that says nobody resets anything here: the other two
+	// send people to a form that asks for a reset, which is where the link
+	// already goes.
+	if ( 'link' !== (string) diluxone_users_option( 'diluxone_users_lost_password' ) ) {
 		return $url;
 	}
 

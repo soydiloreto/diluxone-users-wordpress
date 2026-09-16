@@ -48,7 +48,12 @@ function diluxone_users_reset_to_site(): void {
 		return;
 	}
 
-	if ( isset( $_GET['diluxone-users-admin'] ) || ! diluxone_users_wp_screens_taken() ) {
+	// It used to ride on "what happens to wp-login.php", which is a different
+	// question: somebody could have every screen taken over and still be sent
+	// to WordPress's box to type a new password, or the other way round, and
+	// neither was asked anywhere. Now the screen that asks about forgetting a
+	// password is the one that decides where the new one is typed.
+	if ( isset( $_GET['diluxone-users-admin'] ) || 'site' !== (string) diluxone_users_option( 'diluxone_users_lost_password' ) ) {
 		return;
 	}
 
@@ -101,6 +106,18 @@ function diluxone_users_should_redirect( string $action, array $query = array() 
 	$action = '' === $action ? 'login' : $action;
 
 	if ( in_array( $action, DILUXONE_USERS_LOGIN_ALLOWED, true ) ) {
+		return false;
+	}
+
+	/*
+	 * Asking for a reset is not the same screen as choosing the new password.
+	 * WordPress's form is where it is asked for; where it is chosen is the
+	 * question on the Access screen. So unless this site answers "nobody
+	 * resets anything, the link is the way back in", the asking form is left
+	 * reachable — taking it over would send somebody who wants a new password
+	 * to a form that sends them a link instead, which is not what they asked.
+	 */
+	if ( 'lostpassword' === $action && 'link' !== (string) diluxone_users_option( 'diluxone_users_lost_password' ) ) {
 		return false;
 	}
 

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-15T23:45:25+00:00\n"
+"POT-Creation-Date: 2026-09-16T00:40:08+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: diluxone-users\n"
@@ -909,7 +909,7 @@ msgid "What the account area is shaped like, and what it is made of. The shape i
 msgstr ""
 
 #: includes/admin-appearance.php:155
-#: includes/admin-login.php:759
+#: includes/admin-login.php:768
 msgid "Template"
 msgstr ""
 
@@ -1310,8 +1310,8 @@ msgstr ""
 
 #: includes/admin-design.php:193
 #: includes/admin-login.php:50
-#: includes/admin-login.php:154
-#: includes/admin-login.php:304
+#: includes/admin-login.php:156
+#: includes/admin-login.php:306
 msgid "The sign-in page"
 msgstr ""
 
@@ -1360,7 +1360,7 @@ msgid "The words on the registration form. Its shape — the frame, the picture,
 msgstr ""
 
 #: includes/admin-design.php:278
-#: includes/admin-login.php:654
+#: includes/admin-login.php:663
 msgid "The heading"
 msgstr ""
 
@@ -1370,7 +1370,7 @@ msgid "Create your account"
 msgstr ""
 
 #: includes/admin-design.php:284
-#: includes/admin-login.php:661
+#: includes/admin-login.php:670
 msgid "The line under it"
 msgstr ""
 
@@ -1833,8 +1833,8 @@ msgid "%s%%"
 msgstr ""
 
 #: includes/admin-home.php:317
-#: includes/admin-login.php:655
-#: includes/passwordless.php:199
+#: includes/admin-login.php:664
+#: includes/passwordless.php:216
 #: templates/account-guest.php:15
 #: templates/login.php:75
 #: templates/login.php:151
@@ -1966,549 +1966,557 @@ msgstr ""
 msgid "Ways in"
 msgstr ""
 
-#: includes/admin-login.php:158
+#: includes/admin-login.php:160
 msgid "None: wp-login.php does the job."
 msgstr ""
 
-#: includes/admin-login.php:163
-#: includes/admin-login.php:451
+#: includes/admin-login.php:165
+#: includes/admin-login.php:460
 msgid "The e-mail link"
 msgstr ""
 
 #. translators: %d: minutes
-#: includes/admin-login.php:168
+#: includes/admin-login.php:170
 #, php-format
 msgid "A single-use link, good for %d minutes."
 msgstr ""
 
-#: includes/admin-login.php:171
+#: includes/admin-login.php:173
 msgid "Nobody can ask for a link."
 msgstr ""
 
-#: includes/admin-login.php:176
+#: includes/admin-login.php:178
 msgid "Username and password"
 msgstr ""
 
-#: includes/admin-login.php:179
+#: includes/admin-login.php:181
 msgid "WordPress’s own form, underneath the link."
 msgstr ""
 
-#: includes/admin-login.php:180
+#: includes/admin-login.php:182
 msgid "Closed: on this site a password opens nothing."
 msgstr ""
 
-#: includes/admin-login.php:185
-#: includes/admin-login.php:519
+#: includes/admin-login.php:187
+#: includes/admin-login.php:528
 msgid "A social account"
 msgstr ""
 
-#: includes/admin-login.php:187
-#: includes/admin-login.php:526
+#: includes/admin-login.php:189
+#: includes/admin-login.php:535
 #: includes/admin-register.php:97
 msgid "no provider is working yet"
 msgstr ""
 
-#: includes/admin-login.php:190
+#: includes/admin-login.php:192
 msgid "The buttons are switched on but there is nothing to show."
 msgstr ""
 
-#: includes/admin-login.php:195
-#: includes/admin-login.php:538
+#: includes/admin-login.php:197
+#: includes/admin-login.php:547
 msgid "A passkey"
 msgstr ""
 
-#: includes/admin-login.php:198
+#: includes/admin-login.php:200
 msgid "For whoever added one. It counts as both steps at once."
 msgstr ""
 
-#: includes/admin-login.php:199
+#: includes/admin-login.php:201
 msgid "Not offered."
 msgstr ""
 
-#: includes/admin-login.php:206
+#: includes/admin-login.php:208
 msgid "the e-mail link"
 msgstr ""
 
-#: includes/admin-login.php:210
+#: includes/admin-login.php:212
 #: includes/auth.php:262
 #: includes/notify.php:321
 msgid "a social account"
 msgstr ""
 
-#: includes/admin-login.php:214
+#: includes/admin-login.php:216
 msgid "the site’s own form"
 msgstr ""
 
-#: includes/admin-login.php:218
+#: includes/admin-login.php:220
 msgid "WordPress’s own form"
 msgstr ""
 
-#: includes/admin-login.php:222
+#: includes/admin-login.php:224
 msgid "Creating an account"
 msgstr ""
 
-#: includes/admin-login.php:224
+#: includes/admin-login.php:226
 msgid "the form has no page yet"
 msgstr ""
 
 #. translators: %s: the ways an account gets created, comma separated
-#: includes/admin-login.php:229
+#: includes/admin-login.php:231
 #, php-format
 msgid "Accounts are created by: %s."
 msgstr ""
 
-#: includes/admin-login.php:233
+#: includes/admin-login.php:235
 msgid "Nobody registers themselves: accounts are made under Users."
 msgstr ""
 
-#: includes/admin-login.php:238
+#: includes/admin-login.php:240
 msgid "After the door"
 msgstr ""
 
-#: includes/admin-login.php:241
+#: includes/admin-login.php:243
 msgid "A second step is asked, as set on Security."
 msgstr ""
 
-#: includes/admin-login.php:242
+#: includes/admin-login.php:244
 msgid "No second step."
 msgstr ""
 
-#: includes/admin-login.php:244
+#: includes/admin-login.php:246
 msgid "Security →"
 msgstr ""
 
-#: includes/admin-login.php:252
+#: includes/admin-login.php:254
 msgid "Every way into this site and the state each one is in, read from the settings the other tabs write. Nothing is edited here."
 msgstr ""
 
-#: includes/admin-login.php:256
+#: includes/admin-login.php:258
 #: includes/admin-status.php:45
 msgid "If you get locked out"
 msgstr ""
 
 #. translators: 1: the emergency URL, 2: the WP-CLI command
-#: includes/admin-login.php:261
+#: includes/admin-login.php:263
 #, php-format
 msgid "Whoever can administer the site always has a way in through %1$s, whatever is chosen on the other tabs. With a shell, %2$s prints a single-use link and needs no e-mail to work."
 msgstr ""
 
-#: includes/admin-login.php:302
+#: includes/admin-login.php:304
 msgid "The page holding the sign-in form, and what becomes of wp-login.php. Put the [diluxone_users_login] shortcode on the page you pick."
 msgstr ""
 
-#: includes/admin-login.php:311
+#: includes/admin-login.php:313
 msgid "— None: wp-login.php does the job —"
 msgstr ""
 
-#: includes/admin-login.php:318
+#: includes/admin-login.php:320
 msgid "With none chosen, everybody signs in on wp-login.php and nothing below applies."
 msgstr ""
 
-#: includes/admin-login.php:321
+#: includes/admin-login.php:323
 msgid "What happens to wp-login.php"
 msgstr ""
 
-#: includes/admin-login.php:322
+#: includes/admin-login.php:324
 msgid "wp-login.php is the sign-in screen WordPress brings with it, at /wp-login.php: the grey box with the logo on it that everybody has seen. It keeps working whatever is chosen here — what changes is whether anybody still lands on it."
 msgstr ""
 
-#: includes/admin-login.php:326
+#: includes/admin-login.php:328
 msgid "There is no sign-in page to send anybody to. What is chosen here waits for one."
 msgstr ""
 
-#: includes/admin-login.php:335
+#: includes/admin-login.php:337
 msgid "Send everybody to the sign-in page above"
 msgstr ""
 
-#: includes/admin-login.php:336
+#: includes/admin-login.php:338
 msgid "wp-login.php stops being a screen: an old bookmark, a plugin’s link or its “register” link all land on this site’s own pages. Whoever administers the site keeps the emergency way in on the Summary tab."
 msgstr ""
 
-#: includes/admin-login.php:342
+#: includes/admin-login.php:344
 msgid "Keep it as a second sign-in screen"
 msgstr ""
 
-#: includes/admin-login.php:343
+#: includes/admin-login.php:345
 msgid "The site has two screens that sign people in: yours, and the one WordPress brings. Anybody arriving on wp-login.php from a bookmark or a plugin sees the second."
 msgstr ""
 
-#: includes/admin-login.php:349
+#: includes/admin-login.php:351
 msgid "Send people to the page only while the e-mail link is the only way in"
 msgstr ""
 
-#: includes/admin-login.php:350
+#: includes/admin-login.php:352
 msgid "While a password still opens something here, wp-login.php is left alone. The day the link is the only way in, its form could not work anyway."
 msgstr ""
 
-#: includes/admin-login.php:362
+#: includes/admin-login.php:364
 msgid "How wp-login.php looks"
 msgstr ""
 
-#: includes/admin-login.php:363
+#: includes/admin-login.php:365
 msgid "People still land on that screen, so it is worth it looking like the rest of the site. It is set on Design, with the rest of what the site looks like."
 msgstr ""
 
-#: includes/admin-login.php:367
+#: includes/admin-login.php:369
 msgid "With the site’s logo and colour on it."
 msgstr ""
 
-#: includes/admin-login.php:367
+#: includes/admin-login.php:369
 msgid "As WordPress ships it."
 msgstr ""
 
-#: includes/admin-login.php:368
+#: includes/admin-login.php:370
 #: includes/admin-register.php:173
 #: includes/admin-social.php:309
 #: includes/admin-state.php:80
 msgid "Change it →"
 msgstr ""
 
-#: includes/admin-login.php:374
+#: includes/admin-login.php:376
 msgid "If somebody forgets their password"
 msgstr ""
 
-#: includes/admin-login.php:375
-msgid "Forgetting a password is about changing it, not about getting in. Whichever answer is chosen, the new password is typed on this site’s own screen whenever wp-login.php is taken over and a sign-in page is chosen, and on WordPress’s otherwise."
+#: includes/admin-login.php:377
+msgid "Forgetting a password is about changing it, not about getting in. This is where the new one is typed — or whether one is typed at all."
 msgstr ""
 
-#: includes/admin-login.php:379
+#: includes/admin-login.php:381
 msgid "There is no password on this site, so there is nothing to forget. What is chosen here waits for one."
 msgstr ""
 
-#: includes/admin-login.php:388
-msgid "WordPress’s reset screen"
-msgstr ""
-
-#: includes/admin-login.php:389
-msgid "The one WordPress brings: the person asks there for a reset e-mail, and the link in it ends on the screen where the new password is typed."
+#: includes/admin-login.php:390
+msgid "WordPress’s screen"
 msgstr ""
 
 #: includes/admin-login.php:391
-msgid "wp-login.php is taken over, so asking for a reset lands on the sign-in page anyway"
+msgid "They ask for a reset e-mail on wp-login.php, and the link in it lands on wp-login.php to type the new password. Two screens that look like WordPress, at the moment somebody is worried about their account."
 msgstr ""
 
 #: includes/admin-login.php:397
-msgid "The sign-in page: they get in with the e-mail link, and the password stays as it was"
+msgid "This site’s screen"
 msgstr ""
 
 #: includes/admin-login.php:398
-msgid "Nothing is reset. On a site where a link already opens the door, the reset screen asks for the same address to send a second e-mail doing what the first one does."
+msgid "They still ask on WordPress’s form — it is the only place that sends the e-mail — but the link lands on your sign-in page, and the new password is typed there, in your design."
 msgstr ""
 
 #: includes/admin-login.php:400
+msgid "there is no sign-in page to land on yet"
+msgstr ""
+
+#: includes/admin-login.php:406
+msgid "Nowhere: “I forgot my password” leads to the sign-in page"
+msgstr ""
+
+#: includes/admin-login.php:407
+msgid "Nothing is reset and the password is left as it was. On a site where a link already opens the door, a reset asks for the same address to send a second e-mail doing what the first one does."
+msgstr ""
+
+#: includes/admin-login.php:409
 msgid "the e-mail link is not one of the ways in, so this sends them nowhere they can use"
 msgstr ""
 
-#: includes/admin-login.php:413
+#: includes/admin-login.php:422
 msgid "With what somebody who already has an account gets in. Every way in is switched on here; what each one does once it is on is set where that feature lives. Who gets an account is the Registration tab."
 msgstr ""
 
-#: includes/admin-login.php:415
+#: includes/admin-login.php:424
 msgid "The e-mail link and the password"
 msgstr ""
 
-#: includes/admin-login.php:415
+#: includes/admin-login.php:424
 msgid "The two the sign-in form draws itself. Only the second answer closes anything."
 msgstr ""
 
-#: includes/admin-login.php:425
+#: includes/admin-login.php:434
 msgid "The e-mail link and the password, both"
 msgstr ""
 
-#: includes/admin-login.php:426
+#: includes/admin-login.php:435
 msgid "The form takes an address and sends a link, and it takes a password from whoever has one. Nothing is closed."
 msgstr ""
 
-#: includes/admin-login.php:432
+#: includes/admin-login.php:441
 msgid "Only the e-mail link — no passwords on this site"
 msgstr ""
 
-#: includes/admin-login.php:433
+#: includes/admin-login.php:442
 msgid "wp-login.php stops showing its password form and WordPress’s own registration is locked shut, because a password would open nothing."
 msgstr ""
 
-#: includes/admin-login.php:439
+#: includes/admin-login.php:448
 msgid "Only username and password"
 msgstr ""
 
-#: includes/admin-login.php:440
+#: includes/admin-login.php:449
 msgid "Nobody can ask for a link: the form asks for a password and nothing else."
 msgstr ""
 
-#: includes/admin-login.php:451
+#: includes/admin-login.php:460
 msgid "How long a link lasts, how often one can be asked for, and what the box accepts."
 msgstr ""
 
-#: includes/admin-login.php:454
+#: includes/admin-login.php:463
 msgid "The link is not one of the ways in right now. What is set here waits for it."
 msgstr ""
 
-#: includes/admin-login.php:458
+#: includes/admin-login.php:467
 msgid "The link expires after"
 msgstr ""
 
-#: includes/admin-login.php:461
+#: includes/admin-login.php:470
 msgid "minutes"
 msgstr ""
 
-#: includes/admin-login.php:464
+#: includes/admin-login.php:473
 msgid "Wait between two requests"
 msgstr ""
 
-#: includes/admin-login.php:468
+#: includes/admin-login.php:477
 msgid "seconds, for the same address"
 msgstr ""
 
-#: includes/admin-login.php:469
+#: includes/admin-login.php:478
 msgid "Stops the form being used as a machine for e-mailing third parties."
 msgstr ""
 
-#: includes/admin-login.php:475
+#: includes/admin-login.php:484
 msgid "Public names are off, so only the e-mail address is accepted."
 msgstr ""
 
-#: includes/admin-login.php:477
+#: includes/admin-login.php:486
 msgid "Turn them on →"
 msgstr ""
 
-#: includes/admin-login.php:488
+#: includes/admin-login.php:497
 msgid "The box takes the public name as well as the e-mail address"
 msgstr ""
 
-#: includes/admin-login.php:489
+#: includes/admin-login.php:498
 msgid "The link still goes to the address on the account, never to what was typed. It only saves people from remembering which address they used."
 msgstr ""
 
-#: includes/admin-login.php:501
+#: includes/admin-login.php:510
 msgid "Other ways in"
 msgstr ""
 
-#: includes/admin-login.php:501
+#: includes/admin-login.php:510
 msgid "Switched on here, one by one. What each one does once it is on is set where that feature lives."
 msgstr ""
 
-#: includes/admin-login.php:503
+#: includes/admin-login.php:512
 msgid "The buttons under the form. Off, they go, and whoever already linked a social account keeps it and can unlink it from their account."
 msgstr ""
 
 #. translators: %s: providers working, comma separated
-#: includes/admin-login.php:508
+#: includes/admin-login.php:517
 #, php-format
 msgid "Working right now: %s. Off, the buttons go, and whoever already linked a social account keeps it."
 msgstr ""
 
-#: includes/admin-login.php:523
+#: includes/admin-login.php:532
 msgid "More social options →"
 msgstr ""
 
-#: includes/admin-login.php:539
+#: includes/admin-login.php:548
 msgid "A key that stays on the person’s device or keychain: nothing to type, nothing to phish, and it counts as both steps at once."
 msgstr ""
 
-#: includes/admin-login.php:542
+#: includes/admin-login.php:551
 msgid "More passkey options →"
 msgstr ""
 
-#: includes/admin-login.php:545
+#: includes/admin-login.php:554
 msgid "this site is not on HTTPS, and browsers refuse passkeys until it is"
 msgstr ""
 
-#: includes/admin-login.php:554
+#: includes/admin-login.php:563
 msgid "This is what lands in the inbox. Leave it empty to use the text the plugin ships with."
 msgstr ""
 
-#: includes/admin-login.php:558
+#: includes/admin-login.php:567
 msgid "Subject"
 msgstr ""
 
-#: includes/admin-login.php:562
+#: includes/admin-login.php:571
 msgid "Message"
 msgstr ""
 
 #. translators: 1 and 2: placeholders that get replaced
-#: includes/admin-login.php:569
+#: includes/admin-login.php:578
 #, php-format
 msgid "%1$s and %2$s are replaced. Empty uses the text above."
 msgstr ""
 
-#: includes/admin-login.php:635
+#: includes/admin-login.php:644
 msgid "The sentences on the sign-in screen. Leave a box empty and the plugin says its own, which is what the grey text in each box shows — so a site that changes nothing still reads correctly, and changing one is never a step somebody has to remember."
 msgstr ""
 
-#: includes/admin-login.php:639
+#: includes/admin-login.php:648
 msgid "The envelope on “check your email”"
 msgstr ""
 
-#: includes/admin-login.php:643
+#: includes/admin-login.php:652
 msgid "On its own"
 msgstr ""
 
-#: includes/admin-login.php:647
+#: includes/admin-login.php:656
 msgid "In a circle of washed colour"
 msgstr ""
 
-#: includes/admin-login.php:656
+#: includes/admin-login.php:665
 msgid "Writing one shows it even when the shortcode was not asked for a heading: naming this screen is meant to be read."
 msgstr ""
 
-#: includes/admin-login.php:663
+#: includes/admin-login.php:672
 msgid "Nothing by default. This is where a site says something like “if it is your first time, the account is created in the same step”."
 msgstr ""
 
-#: includes/admin-login.php:667
+#: includes/admin-login.php:676
 msgid "The terms line"
 msgstr ""
 
-#: includes/admin-login.php:670
+#: includes/admin-login.php:679
 msgid "Goes under the form, small. On a site where signing in also creates the account, this is the only place the rules can be stated — there is no separate registration form to put them on."
 msgstr ""
 
 #. translators: %s: an example of a link, literal HTML
-#: includes/admin-login.php:675
+#: includes/admin-login.php:684
 #, php-format
 msgid "Links are allowed, and they are the point: %s"
 msgstr ""
 
-#: includes/admin-login.php:676
+#: includes/admin-login.php:685
 msgid "terms"
 msgstr ""
 
-#: includes/admin-login.php:685
+#: includes/admin-login.php:694
 msgid "After the link is sent"
 msgstr ""
 
-#: includes/admin-login.php:686
+#: includes/admin-login.php:695
 #: templates/login.php:31
 msgid "Check your email"
 msgstr ""
 
-#: includes/admin-login.php:687
+#: includes/admin-login.php:696
 msgid "The screen somebody lands on once the e-mail is on its way."
 msgstr ""
 
-#: includes/admin-login.php:692
+#: includes/admin-login.php:701
 msgid "And the note under it"
 msgstr ""
 
-#: includes/admin-login.php:693
+#: includes/admin-login.php:702
 #: templates/login.php:60
 #: templates/register.php:31
 msgid "Did not arrive? Check your spam or promotions folder."
 msgstr ""
 
-#: includes/admin-login.php:713
+#: includes/admin-login.php:722
 msgid "In the page"
 msgstr ""
 
-#: includes/admin-login.php:714
+#: includes/admin-login.php:723
 msgid "The form where the theme put it, with nothing around it. For a site that already designed this page."
 msgstr ""
 
-#: includes/admin-login.php:718
+#: includes/admin-login.php:727
 msgid "A centred card"
 msgstr ""
 
-#: includes/admin-login.php:719
+#: includes/admin-login.php:728
 msgid "The form in a box in the middle of the page. The safe answer when there is no design for this screen."
 msgstr ""
 
-#: includes/admin-login.php:723
+#: includes/admin-login.php:732
 msgid "Split with a picture"
 msgstr ""
 
-#: includes/admin-login.php:724
+#: includes/admin-login.php:733
 msgid "Half the window is a picture and the other half is the form. On a phone the picture goes and the form stays."
 msgstr ""
 
-#: includes/admin-login.php:728
+#: includes/admin-login.php:737
 msgid "On a full background"
 msgstr ""
 
-#: includes/admin-login.php:729
+#: includes/admin-login.php:738
 msgid "The picture behind everything and the form on top of it, darkened enough to stay readable."
 msgstr ""
 
-#: includes/admin-login.php:753
+#: includes/admin-login.php:762
 msgid "The shape of the page"
 msgstr ""
 
-#: includes/admin-login.php:755
+#: includes/admin-login.php:764
 msgid "What surrounds the form. Three of the four take over the page, edge to edge; the first leaves it exactly where your theme put it."
 msgstr ""
 
-#: includes/admin-login.php:774
+#: includes/admin-login.php:783
 msgid "The picture"
 msgstr ""
 
-#: includes/admin-login.php:779
+#: includes/admin-login.php:788
 msgid "Used by the two templates that have one. It is decoration, so it carries no alternative text: nothing that has to be read should live in it."
 msgstr ""
 
-#: includes/admin-login.php:785
+#: includes/admin-login.php:794
 msgid "Which side"
 msgstr ""
 
-#: includes/admin-login.php:789
+#: includes/admin-login.php:798
 msgid "Picture on the left, form on the right"
 msgstr ""
 
-#: includes/admin-login.php:790
+#: includes/admin-login.php:799
 msgid "Picture on the right, form on the left"
 msgstr ""
 
-#: includes/admin-login.php:800
+#: includes/admin-login.php:809
 msgid "Only the split template uses this."
 msgstr ""
 
-#: includes/admin-login.php:804
+#: includes/admin-login.php:813
 msgid "Logo"
 msgstr ""
 
-#: includes/admin-login.php:807
+#: includes/admin-login.php:816
 msgid "The site’s logo, above the form in every template."
 msgstr ""
 
-#: includes/admin-login.php:807
+#: includes/admin-login.php:816
 msgid "None yet."
 msgstr ""
 
-#: includes/admin-login.php:808
+#: includes/admin-login.php:817
 msgid "It is set on Your brand →"
 msgstr ""
 
-#: includes/admin-login.php:819
+#: includes/admin-login.php:828
 msgid "WordPress’s own screen"
 msgstr ""
 
-#: includes/admin-login.php:821
+#: includes/admin-login.php:830
 msgid "Even with everybody sent to the page above, this one is still shown to somebody: an administrator coming in through the emergency door, and anybody finishing a password reset — WordPress builds that link and it goes here and nowhere else. Left alone it is a grey box with the WordPress logo on it."
 msgstr ""
 
-#: includes/admin-login.php:825
+#: includes/admin-login.php:834
 msgid "Your face on it"
 msgstr ""
 
-#: includes/admin-login.php:829
+#: includes/admin-login.php:838
 msgid "Put the site’s name, mark and colour on wp-login.php"
 msgstr ""
 
-#: includes/admin-login.php:831
+#: includes/admin-login.php:840
 msgid "Off by default: a plugin that repaints a screen nobody asked it about is a plugin that gets blamed for the repaint."
 msgstr ""
 
-#: includes/admin-login.php:835
+#: includes/admin-login.php:844
 msgid "The mark there"
 msgstr ""
 
-#: includes/admin-login.php:840
+#: includes/admin-login.php:849
 msgid "Replaces the WordPress logo above the box. Without one, the site’s name is written there instead — which is still better than somebody else’s logo."
 msgstr ""
 
-#: includes/admin-login.php:846
+#: includes/admin-login.php:855
 msgid "The colour there"
 msgstr ""
 
-#: includes/admin-login.php:849
+#: includes/admin-login.php:858
 msgid "Left as the accent colour it follows the accent, instead of becoming a second colour that drifts from the first."
 msgstr ""
 
@@ -4237,23 +4245,23 @@ msgid ""
 "%3$s"
 msgstr ""
 
-#: includes/passwordless.php:198
+#: includes/passwordless.php:215
 msgid "This site signs you in without a password: with your email or with a social account."
 msgstr ""
 
-#: includes/passwordless.php:258
+#: includes/passwordless.php:275
 msgid "“Anyone can register” is off and locked: on this site the e-mail link is the only way in, and that form would create accounts with a password. The same switch, and the reason, are on the Access screen."
 msgstr ""
 
-#: includes/passwordless.php:260
+#: includes/passwordless.php:277
 msgid "Open it →"
 msgstr ""
 
-#: includes/passwordless.php:312
+#: includes/passwordless.php:329
 msgid "Your details are edited from your account on the site, not from here."
 msgstr ""
 
-#: includes/passwordless.php:313
+#: includes/passwordless.php:330
 msgid "Not from here"
 msgstr ""
 

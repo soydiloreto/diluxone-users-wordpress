@@ -76,7 +76,9 @@ function diluxone_users_login_page_save(): void {
 			'diluxone_users_wp_screens'    => in_array( $_POST['diluxone_users_wp_screens'] ?? '', array( 'auto', 'mine', 'wp' ), true )
 				? sanitize_key( wp_unslash( $_POST['diluxone_users_wp_screens'] ) )
 				: 'auto',
-			'diluxone_users_lost_password' => 'site' === sanitize_key( wp_unslash( $_POST['diluxone_users_lost_password'] ?? 'wp' ) ) ? 'site' : 'wp',
+			'diluxone_users_lost_password' => in_array( $_POST['diluxone_users_lost_password'] ?? '', array( 'wp', 'site', 'link' ), true )
+				? sanitize_key( wp_unslash( $_POST['diluxone_users_lost_password'] ) )
+				: 'wp',
 		)
 	);
 	// phpcs:enable
@@ -372,7 +374,7 @@ function diluxone_users_screen_login_page(): void {
 
 	diluxone_users_ui_section(
 		__( 'If somebody forgets their password', 'diluxone-users' ),
-		__( 'Forgetting a password is about changing it, not about getting in. Whichever answer is chosen, the new password is typed on this site’s own screen whenever wp-login.php is taken over and a sign-in page is chosen, and on WordPress’s otherwise.', 'diluxone-users' )
+		__( 'Forgetting a password is about changing it, not about getting in. This is where the new one is typed — or whether one is typed at all.', 'diluxone-users' )
 	);
 
 	if ( ! diluxone_users_login_has_password() ) {
@@ -384,18 +386,25 @@ function diluxone_users_screen_login_page(): void {
 			array(
 				'name'    => 'diluxone_users_lost_password',
 				'value'   => 'wp',
-				'checked' => 'site' !== $lost,
-				'title'   => __( 'WordPress’s reset screen', 'diluxone-users' ),
-				'help'    => __( 'The one WordPress brings: the person asks there for a reset e-mail, and the link in it ends on the screen where the new password is typed.', 'diluxone-users' ),
-				'state'   => $taken ? 'off' : '',
-				'note'    => $taken ? __( 'wp-login.php is taken over, so asking for a reset lands on the sign-in page anyway', 'diluxone-users' ) : '',
+				'checked' => 'wp' === $lost,
+				'title'   => __( 'WordPress’s screen', 'diluxone-users' ),
+				'help'    => __( 'They ask for a reset e-mail on wp-login.php, and the link in it lands on wp-login.php to type the new password. Two screens that look like WordPress, at the moment somebody is worried about their account.', 'diluxone-users' ),
 			),
 			array(
 				'name'    => 'diluxone_users_lost_password',
 				'value'   => 'site',
 				'checked' => 'site' === $lost,
-				'title'   => __( 'The sign-in page: they get in with the e-mail link, and the password stays as it was', 'diluxone-users' ),
-				'help'    => __( 'Nothing is reset. On a site where a link already opens the door, the reset screen asks for the same address to send a second e-mail doing what the first one does.', 'diluxone-users' ),
+				'title'   => __( 'This site’s screen', 'diluxone-users' ),
+				'help'    => __( 'They still ask on WordPress’s form — it is the only place that sends the e-mail — but the link lands on your sign-in page, and the new password is typed there, in your design.', 'diluxone-users' ),
+				'state'   => $page > 0 ? '' : 'off',
+				'note'    => $page > 0 ? '' : __( 'there is no sign-in page to land on yet', 'diluxone-users' ),
+			),
+			array(
+				'name'    => 'diluxone_users_lost_password',
+				'value'   => 'link',
+				'checked' => 'link' === $lost,
+				'title'   => __( 'Nowhere: “I forgot my password” leads to the sign-in page', 'diluxone-users' ),
+				'help'    => __( 'Nothing is reset and the password is left as it was. On a site where a link already opens the door, a reset asks for the same address to send a second e-mail doing what the first one does.', 'diluxone-users' ),
 				'state'   => $link ? '' : 'off',
 				'note'    => $link ? '' : __( 'the e-mail link is not one of the ways in, so this sends them nowhere they can use', 'diluxone-users' ),
 			),

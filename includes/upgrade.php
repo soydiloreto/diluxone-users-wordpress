@@ -304,4 +304,34 @@ function diluxone_users_migrate_registration(): void {
 	update_option( 'diluxone_users_registration_v2', 1, false );
 }
 add_action( 'admin_init', 'diluxone_users_migrate_registration', 1 );
+
+/**
+ * "I forgot my password" grows a third answer, and nobody's site moves.
+ *
+ * It used to have two, and where the new password was actually typed was
+ * decided somewhere else entirely — by what happens to wp-login.php. So the
+ * old value is read together with that, and written as the answer that keeps
+ * the site doing exactly what it did:
+ *
+ *   'site'  meant "the lost-password link goes to the sign-in page"  → 'link'
+ *   'wp'    with wp-login taken over, meant the new password was typed on the
+ *           site's own screen                                        → 'site'
+ *   'wp'    otherwise                                                → 'wp'
+ */
+function diluxone_users_migrate_lost_password(): void {
+	if ( get_option( 'diluxone_users_lost_password_v2' ) ) {
+		return;
+	}
+
+	$old = (string) get_option( 'diluxone_users_lost_password', 'wp' );
+
+	if ( 'site' === $old ) {
+		update_option( 'diluxone_users_lost_password', 'link' );
+	} elseif ( diluxone_users_wp_screens_taken() && (int) get_option( 'diluxone_users_login_page' ) > 0 ) {
+		update_option( 'diluxone_users_lost_password', 'site' );
+	}
+
+	update_option( 'diluxone_users_lost_password_v2', 1, false );
+}
+add_action( 'admin_init', 'diluxone_users_migrate_lost_password', 1 );
 add_action( 'wp_initialize_site', 'diluxone_users_migrate' );
