@@ -175,6 +175,19 @@ if (!function_exists('sanitize_key')) {
 	}
 }
 
+if (!function_exists('remove_accents')) {
+	// Enough of it for a key built from a label: the accented Latin letters a
+	// field name is likely to carry, folded to their plain form.
+	function remove_accents(string $text): string {
+		$from = ['á','à','ä','â','ã','å','é','è','ë','ê','í','ì','ï','î','ó','ò','ö','ô','õ','ú','ù','ü','û','ñ','ç',
+		         'Á','À','Ä','Â','Ã','Å','É','È','Ë','Ê','Í','Ì','Ï','Î','Ó','Ò','Ö','Ô','Õ','Ú','Ù','Ü','Û','Ñ','Ç'];
+		$to   = ['a','a','a','a','a','a','e','e','e','e','i','i','i','i','o','o','o','o','o','u','u','u','u','n','c',
+		         'A','A','A','A','A','A','E','E','E','E','I','I','I','I','O','O','O','O','O','U','U','U','U','N','C'];
+
+		return str_replace($from, $to, $text);
+	}
+}
+
 // ── User meta in memory ─────────────────────────────────────────
 //
 // Enough to exercise the sign-in token logic with no database.

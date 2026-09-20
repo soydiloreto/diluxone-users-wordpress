@@ -64,9 +64,12 @@ add_action( 'diluxone_users_register_panels', 'diluxone_users_status_panels' );
  * @param string $why    The reason, for a pending one.
  * @param string $url    Where to fix it, if anywhere.
  * @param string $change What the link says, when not "Change it".
- * @return array{label: string, state: string, detail: string, why: string, url: string, change?: string}
+ * @param string $word   What to call that state here, when the check's title
+ *                       names a thing that has no switch on it — see
+ *                       `diluxone_users_state_pill()`.
+ * @return array{label: string, state: string, detail: string, why: string, url: string, change?: string, word?: string}
  */
-function diluxone_users_check( string $label, string $state, string $detail = '', string $why = '', string $url = '', string $change = '' ): array {
+function diluxone_users_check( string $label, string $state, string $detail = '', string $why = '', string $url = '', string $change = '', string $word = '' ): array {
 	$row = array(
 		'label'  => $label,
 		'state'  => $state,
@@ -74,6 +77,12 @@ function diluxone_users_check( string $label, string $state, string $detail = ''
 		'why'    => $why,
 		'url'    => $url,
 	);
+
+	// Same rule as the link below: left out rather than empty, so the table
+	// falls back to the state's own word.
+	if ( '' !== $word ) {
+		$row['word'] = $word;
+	}
 
 	// Left out rather than empty: the table falls back to "Change it" only
 	// when the key is missing, and an empty string would print as nothing.
@@ -96,7 +105,7 @@ function diluxone_users_check( string $label, string $state, string $detail = ''
  * @param string $shortcode The shortcode that page has to contain.
  * @param string $label     What that page is called in here.
  * @param string $screen    The plugin screen where the page is chosen.
- * @return array{label: string, state: string, detail: string, why: string, url: string, change?: string}
+ * @return array{label: string, state: string, detail: string, why: string, url: string, change?: string, word?: string}
  */
 function diluxone_users_check_page( string $option, string $shortcode, string $label, string $screen ): array {
 	$id     = (int) diluxone_users_option( $option );
@@ -174,13 +183,19 @@ function diluxone_users_check_page( string $option, string $shortcode, string $l
  * guess dressed as a fact. The overview reuses this row, so the two screens
  * never disagree about the mail.
  *
- * @return array{label: string, state: string, detail: string, why: string, url: string, change?: string}
+ * @return array{label: string, state: string, detail: string, why: string, url: string, change?: string, word?: string}
  */
 function diluxone_users_check_mail(): array {
 	$mail  = diluxone_users_mail_status();
 	$label = __( 'Outgoing mail', 'diluxone-users' );
 	$test  = diluxone_users_admin_url( DILUXONE_USERS_STATUS, array( 'tab' => 'tools' ) );
 
+	/*
+	 * The words, and not the state's own: nobody turns outgoing mail off, so
+	 * "Off" on this row reads as a setting somebody could go and put back.
+	 * What it means is that the last message did not leave. The state, and so
+	 * the colour, is the same one every other row speaks.
+	 */
 	if ( 'fail' === $mail['state'] ) {
 		return diluxone_users_check(
 			$label,
@@ -190,7 +205,8 @@ function diluxone_users_check_mail(): array {
 				: __( 'The last message could not be sent.', 'diluxone-users' ),
 			'',
 			$test,
-			__( 'Send a test →', 'diluxone-users' )
+			__( 'Send a test →', 'diluxone-users' ),
+			__( 'Failing', 'diluxone-users' )
 		);
 	}
 
@@ -202,7 +218,11 @@ function diluxone_users_check_mail(): array {
 				/* translators: %s: how long ago, e.g. "2 hours" */
 				__( 'Last message sent %s ago.', 'diluxone-users' ),
 				human_time_diff( $mail['time'] )
-			)
+			),
+			'',
+			'',
+			'',
+			__( 'Going out', 'diluxone-users' )
 		);
 	}
 
@@ -219,7 +239,7 @@ function diluxone_users_check_mail(): array {
 /**
  * Every check, in order of how much it hurts.
  *
- * @return array<int, array{label: string, state: string, detail: string, why: string, url: string, change?: string}>
+ * @return array<int, array{label: string, state: string, detail: string, why: string, url: string, change?: string, word?: string}>
  */
 function diluxone_users_checks(): array {
 	$checks = array();
@@ -304,7 +324,7 @@ function diluxone_users_checks(): array {
  * comes in — not even the administrator — and the site is locked from the
  * inside.
  *
- * @return array{label: string, state: string, detail: string, why: string, url: string, change?: string}
+ * @return array{label: string, state: string, detail: string, why: string, url: string, change?: string, word?: string}
  */
 function diluxone_users_check_ways_in(): array {
 	$label  = __( 'Ways in', 'diluxone-users' );
@@ -349,7 +369,7 @@ function diluxone_users_check_ways_in(): array {
  * filled in, it is saved, and the button does not appear because the provider
  * was never ticked.
  *
- * @return array{label: string, state: string, detail: string, why: string, url: string, change?: string}|null
+ * @return array{label: string, state: string, detail: string, why: string, url: string, change?: string, word?: string}|null
  */
 function diluxone_users_check_social(): ?array {
 	$ready   = array();
@@ -485,8 +505,8 @@ function diluxone_users_screen_status_checks(): void {
 
 	$stats = diluxone_users_stats();
 
-	printf( '<h2>%s</h2>', esc_html__( 'Usage', 'diluxone-users' ) );
-	echo '<table class="widefat striped"><tbody>';
+	diluxone_users_ui_section( __( 'Usage', 'diluxone-users' ) );
+	echo '<table class="widefat striped diluxone-users-summary"><tbody>';
 
 	$rows = array(
 		__( 'Accounts', 'diluxone-users' )           => $stats['users'],
@@ -506,9 +526,12 @@ function diluxone_users_screen_status_checks(): void {
 
 	echo '</tbody></table>';
 
-	printf( '<h2>%s</h2>', esc_html__( 'Environment', 'diluxone-users' ) );
-	diluxone_users_intro( __( 'Copy this into a support message and half the back-and-forth disappears.', 'diluxone-users' ) );
-	echo '<table class="widefat striped"><tbody>';
+	diluxone_users_ui_section(
+		__( 'Environment', 'diluxone-users' ),
+		__( 'Copy this into a support message and half the back-and-forth disappears.', 'diluxone-users' )
+	);
+
+	echo '<table class="widefat striped diluxone-users-summary"><tbody>';
 
 	foreach ( diluxone_users_environment() as $label => $value ) {
 		printf(
@@ -526,8 +549,11 @@ function diluxone_users_screen_status_checks(): void {
 	 * documentation for whoever writes the theme, and this is the screen that
 	 * gets pasted into a support message.
 	 */
-	printf( '<h2>%s</h2>', esc_html__( 'Templates a theme can replace', 'diluxone-users' ) );
-	diluxone_users_intro( __( 'Copy any file from the plugin’s templates/ folder into the folder below and edit it there. The plugin will use yours.', 'diluxone-users' ) );
+	diluxone_users_ui_section(
+		__( 'Templates a theme can replace', 'diluxone-users' ),
+		__( 'Copy any file from the plugin’s templates/ folder into the folder below and edit it there. The plugin will use yours.', 'diluxone-users' )
+	);
+
 	printf( '<p><code>%s</code></p>', esc_html( 'wp-content/themes/' . get_stylesheet() . '/diluxone-users/' ) );
 
 	echo '<p class="description">';
@@ -552,13 +578,19 @@ function diluxone_users_screen_status_lockout(): void {
 
 	diluxone_users_intro( __( 'On a site without passwords and without outgoing mail, an expired session leaves you outside. There are two ways back that do not depend on either.', 'diluxone-users' ) );
 
-	printf( '<h2>%s</h2>', esc_html__( 'From the server', 'diluxone-users' ) );
-	printf( '<p><code>%s</code></p>', esc_html( 'wp diluxone-users login ' . wp_get_current_user()->user_email ) );
-	diluxone_users_intro( __( 'That prints a single-use link and does not need the mail to work. It is WP-CLI, so it needs a shell on the server.', 'diluxone-users' ) );
+	diluxone_users_ui_section(
+		__( 'From the server', 'diluxone-users' ),
+		__( 'That prints a single-use link and does not need the mail to work. It is WP-CLI, so it needs a shell on the server.', 'diluxone-users' )
+	);
 
-	printf( '<h2>%s</h2>', esc_html__( 'From the browser', 'diluxone-users' ) );
+	printf( '<p><code>%s</code></p>', esc_html( 'wp diluxone-users login ' . wp_get_current_user()->user_email ) );
+
+	diluxone_users_ui_section(
+		__( 'From the browser', 'diluxone-users' ),
+		__( 'That address shows the WordPress form with a username and a password, whatever the site is set to. It is no secret: the password is still what keeps the door shut, so it opens only for an account that has one.', 'diluxone-users' )
+	);
+
 	printf( '<p><code>%s</code></p>', esc_html( wp_login_url() . '?diluxone-users-admin=1' ) );
-	diluxone_users_intro( __( 'That address shows the WordPress form with a username and a password, whatever the site is set to. It is no secret: the password is still what keeps the door shut, so it opens only for an account that has one.', 'diluxone-users' ) );
 
 	diluxone_users_panel_actions(
 		array(

@@ -35,3 +35,7 @@ build/
 # wp-env local override (machine-specific dev config)
 .wp-env.override.json
 phpcs.json
+
+# AI tooling
+.claude/
+.cursor/

@@ -66,13 +66,30 @@ class PasskeyStoreTest extends IntegrationTestCase {
 		$this->assertSame( 0, diluxone_users_passkey_owner( $this->id( 'x' ) ) );
 	}
 
-	public function test_a_key_stored_before_the_index_is_found_and_indexed_on_the_way(): void {
+	public function test_the_lookup_is_the_index_and_nothing_else(): void {
+		// A list written straight into the meta, with no index row beside it,
+		// is a state the plugin cannot produce: every key it stores goes
+		// through diluxone_users_passkeys_save(), which writes the index in
+		// the same call, and 1.0.0 is the first version there is — so there
+		// are no keys from before it either.
+		//
+		// There used to be a fallback here for exactly that state, and what
+		// it really was is five hundred accounts' lists opened one at a time,
+		// on an unauthenticated request, for a credential id anybody can make
+		// up. So the answer is no, and this is the test that keeps it no.
 		$user = $this->make_user();
 
-		update_user_meta( $user, 'diluxone_users_passkeys', array( $this->key( $this->id( 'old' ) ) ) );
+		update_user_meta( $user, 'diluxone_users_passkeys', array( $this->key( $this->id( 'orphan' ) ) ) );
 
-		$this->assertSame( $user, diluxone_users_passkey_owner( $this->id( 'old' ) ) );
-		$this->assertSame( '1', get_user_meta( $user, diluxone_users_passkey_index_key( $this->id( 'old' ) ), true ) );
+		$this->assertSame( 0, diluxone_users_passkey_owner( $this->id( 'orphan' ) ) );
+
+		// Stored the way the plugin stores one, the same id is found: the
+		// index is written by the save, in the same call.
+		$other = $this->make_user();
+
+		diluxone_users_passkeys_save( $other, array( $this->key( $this->id( 'proper' ) ) ) );
+
+		$this->assertSame( $other, diluxone_users_passkey_owner( $this->id( 'proper' ) ) );
 	}
 
 	public function test_a_credential_id_belongs_to_one_account(): void {

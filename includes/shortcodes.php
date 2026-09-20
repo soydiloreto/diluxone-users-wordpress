@@ -170,7 +170,7 @@ function diluxone_users_save_fields_form(): void {
 	check_admin_referer( 'diluxone_users_fields_save' );
 
 	$group   = sanitize_key( wp_unslash( $_POST['diluxone_users_group'] ?? '' ) );
-	$missing = diluxone_users_save( get_current_user_id(), $_POST, $group );
+	$missing = diluxone_users_save( get_current_user_id(), diluxone_users_posted_fields( $group ), $group );
 	$back    = wp_get_referer();
 	$back    = $back ? $back : home_url( '/' );
 

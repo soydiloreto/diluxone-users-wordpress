@@ -673,25 +673,36 @@ function diluxone_users_sso_user( string $id, array $identity ): int {
 }
 
 /**
- * Is this role forbidden from signing in with a social account?
+ * Is this role kept out of signing in with a social account?
  *
  * The account with the most power is the one most worth protecting, and an
  * administrator account that gets in through Google depends on that Google
  * account not being lost. With e-mail-link access always available, closing
- * the social door to the chosen roles leaves nobody out.
+ * the social door to a role leaves nobody out.
+ *
+ * Asked of the allowed list and not of a blocked one. The setting used to be
+ * the roles that could not — the only rule in the plugin written backwards,
+ * where an empty list meant "everybody may" and a reader had to work that out
+ * from the absence of anything.
  *
  * @param int $user_id User to check.
  */
 function diluxone_users_sso_role_blocked( int $user_id ): bool {
-	$blocked = (array) diluxone_users_option( 'diluxone_users_sso_blocked_roles' );
-
-	if ( array() === $blocked ) {
+	if ( 'some' !== diluxone_users_option( 'diluxone_users_sso_scope' ) ) {
 		return false;
 	}
 
-	$user = get_userdata( $user_id );
+	$allowed = (array) diluxone_users_option( 'diluxone_users_sso_roles' );
+	$user    = get_userdata( $user_id );
 
-	return $user instanceof WP_User && array() !== array_intersect( $blocked, (array) $user->roles );
+	if ( ! $user instanceof WP_User ) {
+		return false;
+	}
+
+	// "Only some roles" with none ticked reaches nobody, which is what it
+	// says. It is the answer somebody is halfway through giving, and the one
+	// the screen warns about rather than quietly reading as "everybody".
+	return array() === array_intersect( $allowed, (array) $user->roles );
 }
 
 /**
@@ -708,8 +719,24 @@ function diluxone_users_sso_query( bool $fresh = false ): array {
 	static $query = null;
 
 	if ( null === $query || $fresh ) {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- this is the copy, not the use.
-		$query = wp_unslash( $_GET );
+		$query = array();
+
+		// By name, and not the whole of `$_GET`. The seven below are every
+		// parameter this file ever asks for — `diluxone_users_sso_param()` and
+		// `diluxone_users_sso_has()` are the only readers, and they are only
+		// ever called with these. Copying the request wholesale said nothing
+		// about which of it mattered, to a reader or to a reviewer.
+		foreach ( array( 'diluxone_users_sso', 'diluxone_users_go', 'diluxone_users_nonce', 'diluxone_users_test', 'state', 'code', 'error', 'error_description' ) as $name ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- this is the copy; every use below verifies the state transient, the browser cookie and the nonce.
+			if ( ! isset( $_GET[ $name ] ) ) {
+				continue;
+			}
+
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- as above; each reader sanitises for its own use.
+			$value = wp_unslash( $_GET[ $name ] );
+
+			$query[ $name ] = is_scalar( $value ) ? (string) $value : '';
+		}
 	}
 
 	return $query;

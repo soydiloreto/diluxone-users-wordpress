@@ -466,13 +466,6 @@ function diluxone_users_account_heading_html( array $section, string $id, WP_Use
 	return $html;
 }
 
-/** Are we in the account area? */
-function diluxone_users_is_account(): bool {
-	$page = diluxone_users_account_page_id();
-
-	return $page > 0 && is_page( $page );
-}
-
 /* ── Pintado ───────────────────────────────────────────────────────── */
 
 /** Somebody's visible name: the one they wrote, or whatever there is. */

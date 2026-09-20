@@ -11,6 +11,11 @@ name: i18n validation
 # enforces a subset of i18n rules at PHPCS time. This workflow adds
 # the WP-CLI i18n linter, which catches a different (and overlapping)
 # set of issues — together they form a fairly tight i18n net.
+#
+# Then it checks the other half of the subject, which none of those
+# look at: that the eight locales this plugin ships are actually
+# complete. A string can be perfectly extractable and still reach a
+# reader in English.
 
 on:
   pull_request:
@@ -91,6 +96,27 @@ jobs:
             echo "::error::POT file extracted no translatable strings."
             exit 1
           fi
+
+      - name: Check the shipped locales are complete
+        # `make i18n-check`, as CI can run it. Extraction warnings above say
+        # the strings can be translated; this says they HAVE been. Without it
+        # a pull request that adds a sentence and forgets the eight .po files
+        # lands green and ships a screen half in English — which is how the
+        # gate came to be green only on the machine it was run from.
+        run: |
+          set -e
+          sudo apt-get update -qq && sudo apt-get install -y -qq gettext
+          fail=0
+          for po in languages/*.po; do
+            out=$(msgfmt --check --statistics -o /dev/null "$po" 2>&1) || fail=1
+            printf '%-36s %s\n' "$po" "$out"
+            case "$out" in *untranslated*|*fuzzy*) fail=1;; esac
+          done
+          if [ "$fail" -ne 0 ]; then
+            echo "::error::A shipped locale is incomplete, fuzzy or malformed. Run \`make i18n-update\`, translate the new strings, then \`make i18n-mo\`."
+            exit 1
+          fi
+          echo "Every locale complete."
 
       - name: Upload .pot artefact
         uses: actions/upload-artifact@v4

@@ -195,9 +195,26 @@ function diluxone_users_block_wp_login(): void {
 	 * as a hidden field, and read from both places. The action is read the
 	 * same way, because that is how wp-login.php itself reads it.
 	 */
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.NonceVerification.Missing
-	$request = array_merge( (array) $_GET, (array) $_POST );
-	$action  = is_scalar( $request['action'] ?? null ) ? sanitize_key( (string) $request['action'] ) : '';
+	$request = array();
+
+	// Three names, and they are the three `diluxone_users_should_redirect()`
+	// reads: the hatch, WordPress's interim login, and the action. Merging the
+	// two superglobals whole was a way of saying "whatever arrives", when what
+	// arrives is only ever asked three questions.
+	foreach ( array( 'diluxone-users-admin', 'interim-login', 'action' ) as $name ) {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing -- reading which screen wp-login.php was asked for, before anything is done with it.
+		if ( isset( $_POST[ $name ] ) ) {
+			$request[ $name ] = sanitize_key( wp_unslash( $_POST[ $name ] ) );
+			continue;
+		}
+
+		if ( isset( $_GET[ $name ] ) ) {
+			$request[ $name ] = sanitize_key( wp_unslash( $_GET[ $name ] ) );
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing
+	}
+
+	$action = (string) ( $request['action'] ?? '' );
 
 	if ( ! diluxone_users_should_redirect( $action, $request ) ) {
 		return;

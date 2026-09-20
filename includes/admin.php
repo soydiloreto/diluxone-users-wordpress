@@ -68,7 +68,8 @@ function diluxone_users_screens(): array {
 		'diluxone-users'          => __( 'Overview', 'diluxone-users' ),
 		// The order is the way a person walks through it: how they get in,
 		// how they are protected once in, what they have inside, how it
-		// looks, what reaches them by e-mail, keeping it all alive.
+		// looks, what reaches them by e-mail, who is actually in right now,
+		// keeping it all alive.
 		'diluxone-users-login'    => __( 'Access', 'diluxone-users' ),
 		'diluxone-users-security' => __( 'Security', 'diluxone-users' ),
 		'diluxone-users-social'   => __( 'Social login', 'diluxone-users' ),
@@ -76,6 +77,7 @@ function diluxone_users_screens(): array {
 		'diluxone-users-fields'   => __( 'User fields', 'diluxone-users' ),
 		'diluxone-users-design'   => __( 'Design', 'diluxone-users' ),
 		'diluxone-users-notices'  => __( 'E-mail notices', 'diluxone-users' ),
+		'diluxone-users-reports'  => __( 'Reports', 'diluxone-users' ),
 		'diluxone-users-status'   => __( 'Maintenance', 'diluxone-users' ),
 	);
 }
@@ -101,6 +103,7 @@ function diluxone_users_menu(): void {
 		'diluxone-users-fields'   => 'diluxone_users_screen_fields',
 		'diluxone-users-design'   => 'diluxone_users_screen_design',
 		'diluxone-users-notices'  => 'diluxone_users_screen_notices',
+		'diluxone-users-reports'  => 'diluxone_users_screen_reports',
 		'diluxone-users-status'   => 'diluxone_users_screen_status',
 	);
 
@@ -228,15 +231,39 @@ function diluxone_users_roles_that_edit_users(): array {
 function diluxone_users_roles_picker( string $scope_name, string $roles_name, string $scope, array $chosen, string $help = '', string $spared = '', array $exclude = array(), array $fixed = array() ): void {
 	?>
 	<fieldset data-diluxone-users-scope>
-		<label>
-			<input type="radio" name="<?php echo esc_attr( $scope_name ); ?>" value="all" <?php checked( 'all', $scope ); ?>>
-			<?php esc_html_e( 'Everybody', 'diluxone-users' ); ?>
-		</label>
-		<br>
-		<label>
-			<input type="radio" name="<?php echo esc_attr( $scope_name ); ?>" value="some" <?php checked( 'some', $scope ); ?>>
-			<?php esc_html_e( 'Only some roles', 'diluxone-users' ); ?>
-		</label>
+		<?php
+		/*
+		 * The two answers are cards, like every other question on these
+		 * screens.
+		 *
+		 * They were two bare radios on one line, which is what they had
+		 * always been — the design system arrived and this control was not
+		 * carried over with the rest. On the second-step tab that is three
+		 * card questions with a pair of naked radios sitting in the middle of
+		 * them, and it reads as a piece of another plugin.
+		 *
+		 * The help line moves onto the second card for the same reason: it
+		 * explains the choice, and a card question explains itself on the
+		 * card rather than in a grey paragraph underneath the group.
+		 */
+		diluxone_users_ui_choices(
+			array(
+				array(
+					'name'    => $scope_name,
+					'value'   => 'all',
+					'checked' => 'some' !== $scope,
+					'title'   => __( 'Everybody', 'diluxone-users' ),
+				),
+				array(
+					'name'    => $scope_name,
+					'value'   => 'some',
+					'checked' => 'some' === $scope,
+					'title'   => __( 'Only some roles', 'diluxone-users' ),
+					'help'    => $help,
+				),
+			)
+		);
+		?>
 
 		<div class="diluxone-users-scope__roles" data-diluxone-users-scope-roles>
 			<?php foreach ( wp_roles()->get_names() as $role => $label ) : ?>
@@ -264,11 +291,7 @@ function diluxone_users_roles_picker( string $scope_name, string $roles_name, st
 		</div>
 
 		<?php if ( '' !== $spared ) : ?>
-			<p class="description"><?php echo esc_html( $spared ); ?></p>
-		<?php endif; ?>
-
-		<?php if ( '' !== $help ) : ?>
-			<p class="description"><?php echo esc_html( $help ); ?></p>
+			<p class="du-field__help description"><?php echo esc_html( $spared ); ?></p>
 		<?php endif; ?>
 	</fieldset>
 	<?php
@@ -457,7 +480,10 @@ function diluxone_users_admin_styles( string $hook ): void {
 	// It is loaded whatever the setting says: the account preview has to be
 	// able to show both answers without a reload, and the "off" one is drawn
 	// by stripping it back in the browser.
-	$previews = array( 'diluxone-users-account', 'diluxone-users-login', 'diluxone-users-register', 'diluxone-users-design' );
+	// The registration screen is not on this list because it is not a screen:
+	// it became a tab of the sign-in one, which is here. A slug no `$hook` can
+	// ever contain is a line that reads like it does something.
+	$previews = array( 'diluxone-users-account', 'diluxone-users-login', 'diluxone-users-design' );
 
 	foreach ( $previews as $diluxone_users_screen ) {
 		if ( false === strpos( $hook, $diluxone_users_screen ) ) {

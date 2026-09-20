@@ -32,8 +32,13 @@ function diluxone_users_wp_login_branded(): bool {
  */
 function diluxone_users_wp_login_bg(): string {
 	$own = (string) diluxone_users_option( 'diluxone_users_wp_login_bg' );
+	$hex = '' === $own ? diluxone_users_style_accent() : $own;
 
-	return '' === $own ? diluxone_users_style_accent() : (string) sanitize_hex_color( $own );
+	// Both branches are sanitised on the way out and not only the explicit
+	// one. What comes back from the accent is sanitised where it is saved,
+	// which is a different file and a promise this one cannot check — and
+	// what this returns is printed into a stylesheet.
+	return (string) sanitize_hex_color( $hex );
 }
 
 /**
@@ -53,8 +58,14 @@ function diluxone_users_wp_login_styles(): void {
 	$background = diluxone_users_wp_login_bg();
 	$logo       = (int) diluxone_users_option( 'diluxone_users_wp_login_logo' );
 	$url        = $logo > 0 ? (string) wp_get_attachment_image_url( $logo, 'medium' ) : '';
-	$radius     = (string) diluxone_users_option( 'diluxone_users_style_radius' );
-	$radius     = ( '' === $radius ? '4' : $radius ) . 'px';
+	$stored     = (string) diluxone_users_option( 'diluxone_users_style_radius' );
+
+	// A number and then "px", never the text as it was typed. It is saved
+	// with `sanitize_text_field`, so `}` and `;` survive it — and this goes
+	// straight into a stylesheet. A value with a brace in it closed the rule
+	// early and took wp-login.php with it, which is the one screen that has
+	// to work when everything else does not.
+	$radius = ( '' === $stored ? 4 : (int) $stored ) . 'px';
 
 	/*
 	 * The heading is a link with WordPress's logo as its background image and
@@ -70,7 +81,7 @@ function diluxone_users_wp_login_styles(): void {
 			// Centred by hand: the link WordPress draws is as wide as its
 			// picture, so a wider one sat against the left edge.
 			'background-image:url(%s);background-size:contain;background-position:center;background-repeat:no-repeat;display:block;width:100%%;max-width:320px;height:80px;margin:0 auto;',
-			esc_url_raw( $url )
+			esc_url( $url )
 		)
 		: 'background-image:none;width:auto;height:auto;text-indent:0;font-size:22px;font-weight:700;line-height:1.3;color:#fff;';
 

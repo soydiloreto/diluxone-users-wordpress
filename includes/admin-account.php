@@ -401,18 +401,28 @@ function diluxone_users_account_notice(): void {
  * things: the order, which is taken in at a glance and dragged, and what a
  * section is, which is eight fields and an editor. Putting the eight fields
  * inside a row warped the table and hid the order.
+ *
+ * Two panels are columns of their own, so the block says so and takes the
+ * width the window gives instead of the reading measure: held to the measure,
+ * the list of sections and the editor of one shared a thousand pixels with
+ * the rest of the screen empty beside them, which is the shape this was
+ * drawn to avoid. What is inside the editor keeps the measure — a name is
+ * still typed into a box the width of a name.
+ *
+ * The warning about there being no account page yet goes in the rail, where
+ * the same warning goes on every other tab of this screen. Above the panels
+ * it was a strip of amber pushing the thing it is about off the first
+ * screenful, which is the arrangement that reads as news rather than as
+ * context.
  */
 function diluxone_users_screen_account_sections(): void {
 	$sections = diluxone_users_sections( true );
 	$page     = diluxone_users_account_page_id();
 	$actual   = diluxone_users_screen_account_current( $sections );
+
+	diluxone_users_ui_aside_open();
+	diluxone_users_ui_wide_open();
 	?>
-	<?php if ( $page <= 0 ) : ?>
-		<div class="notice notice-warning inline diluxone-users-state-box">
-			<p><strong><?php esc_html_e( 'There is no account page yet', 'diluxone-users' ); ?></strong></p>
-			<p><?php esc_html_e( 'Pick the page that has the [diluxone_users_account] shortcode, under “Where it lives”. Until then the links below go nowhere.', 'diluxone-users' ); ?></p>
-		</div>
-	<?php endif; ?>
 
 	<div class="diluxone-users-endpoints">
 		<div class="diluxone-users-endpoints__head">
@@ -490,6 +500,26 @@ function diluxone_users_screen_account_sections(): void {
 		</div>
 	</div>
 	<?php
+	diluxone_users_ui_wide_close();
+
+	diluxone_users_ui_aside_close(
+		static function () use ( $page ): void {
+			if ( $page > 0 ) {
+				return;
+			}
+
+			diluxone_users_ui_notice(
+				'<strong>' . esc_html__( 'There is no account page yet', 'diluxone-users' ) . '</strong> '
+				. sprintf(
+					/* translators: %s: link to the tab where the account page is chosen, labelled with that tab's name. */
+					esc_html__( 'Pick the page that has the [diluxone_users_account] shortcode, on %s. Until then the links beside this go nowhere.', 'diluxone-users' ),
+					'<a href="' . esc_url( diluxone_users_admin_url( 'diluxone-users-account', array( 'tab' => 'page' ) ) ) . '">'
+					. esc_html__( 'The page', 'diluxone-users' ) . '</a>'
+				),
+				'warning'
+			);
+		}
+	);
 }
 
 /**
@@ -583,173 +613,161 @@ function diluxone_users_screen_account_section( string $id, array $sections, int
 						);
 						?>
 								"
-						onclick="return confirm(<?php echo esc_attr( (string) (string) wp_json_encode( __( 'Delete this section?', 'diluxone-users' ) ) ); ?>);">
+						onclick="return confirm(<?php echo esc_attr( (string) wp_json_encode( __( 'Delete this section?', 'diluxone-users' ) ) ); ?>);">
 						<?php esc_html_e( 'Remove', 'diluxone-users' ); ?>
 					</a>
 				<?php endif; ?>
 			<?php endif; ?>
 		</div>
 
-		<?php if ( ! $fresh && $section['enabled'] && ! diluxone_users_section_available( $section ) ) : ?>
-			<div class="notice notice-info inline diluxone-users-state-box">
-				<p><strong><?php esc_html_e( 'It is on, but it is not showing', 'diluxone-users' ); ?></strong></p>
-				<p><?php echo esc_html( (string) $section['why'] ); ?></p>
-			</div>
-		<?php endif; ?>
+		<?php
+		if ( ! $fresh && $section['enabled'] && ! diluxone_users_section_available( $section ) ) {
+			diluxone_users_ui_notice(
+				'<strong>' . esc_html__( 'It is on, but it is not showing', 'diluxone-users' ) . '</strong> '
+				. esc_html( (string) $section['why'] ),
+				'warning'
+			);
+		}
 
-		<table class="form-table" role="presentation">
-			<tr>
-				<th scope="row"><label for="diluxone-users-section-label"><?php esc_html_e( 'Name', 'diluxone-users' ); ?></label></th>
-				<td>
-					<input type="text" id="diluxone-users-section-label" class="regular-text" name="diluxone_users_seccion[label]" value="<?php echo esc_attr( $section['label'] ); ?>" required>
-					<p class="description"><?php esc_html_e( 'What people read in the menu, and the title of the section.', 'diluxone-users' ); ?></p>
-				</td>
-			</tr>
-			<tr>
-				<th scope="row"><label for="diluxone-users-section-slug"><?php esc_html_e( 'Address', 'diluxone-users' ); ?></label></th>
-				<td>
-					<input type="text" id="diluxone-users-section-slug" class="regular-text code" name="diluxone_users_seccion[slug]" value="<?php echo esc_attr( $section['slug'] ?? '' ); ?>" placeholder="<?php esc_attr_e( 'made from the name', 'diluxone-users' ); ?>">
-					<?php if ( ! $fresh && $page > 0 ) : ?>
-						<p class="description">
-							<a href="<?php echo esc_url( diluxone_users_account_url( $id ) ); ?>" target="_blank" rel="noopener"><?php echo esc_html( str_replace( home_url(), '', diluxone_users_account_url( $id ) ) ); ?></a>
-						</p>
-					<?php endif; ?>
-				</td>
-			</tr>
-			<?php if ( 'home' === $id ) : ?>
-				<tr>
-					<th scope="row"><?php esc_html_e( 'The cards it shows', 'diluxone-users' ); ?></th>
-					<td>
-						<?php
-						/*
-						 * What is stored is the list of cards turned OFF, so a
-						 * card that turns up tomorrow because a plugin was
-						 * installed appears by itself. The screen asks the
-						 * question the other way round because "show this" is
-						 * what somebody is actually deciding.
-						 */
-						$diluxone_users_off = diluxone_users_summaries_hidden();
-						$diluxone_users_all = diluxone_users_summary_cards();
-						?>
+		diluxone_users_ui_text(
+			array(
+				'label'    => __( 'Name', 'diluxone-users' ),
+				'id'       => 'diluxone-users-section-label',
+				'name'     => 'diluxone_users_seccion[label]',
+				'value'    => (string) $section['label'],
+				'required' => true,
+				'help'     => __( 'What people read in the menu, and the title of the section.', 'diluxone-users' ),
+			)
+		);
 
-						<?php
-						// A marker, because a form with every box unticked
-						// sends no "cards" at all — and without something
-						// saying the list was on screen, "show none" would be
-						// indistinguishable from "this form never had it".
-						?>
-						<input type="hidden" name="diluxone_users_seccion[cards_shown]" value="1">
+		diluxone_users_ui_text(
+			array(
+				'label'       => __( 'Address', 'diluxone-users' ),
+				'id'          => 'diluxone-users-section-slug',
+				'name'        => 'diluxone_users_seccion[slug]',
+				'value'       => (string) ( $section['slug'] ?? '' ),
+				'placeholder' => __( 'made from the name', 'diluxone-users' ),
+				'code'        => true,
+				'help'        => ! $fresh && $page > 0
+					? sprintf(
+						'<a href="%1$s" target="_blank" rel="noopener">%2$s</a>',
+						esc_url( diluxone_users_account_url( $id ) ),
+						esc_html( str_replace( home_url(), '', diluxone_users_account_url( $id ) ) )
+					)
+					: '',
+			)
+		);
 
-						<?php if ( array() === $diluxone_users_all ) : ?>
-							<p class="description"><?php esc_html_e( 'No section offers a card yet, so the front page is empty. Sections bring their own, and so does anything else installed on the site.', 'diluxone-users' ); ?></p>
-						<?php endif; ?>
+		if ( 'home' === $id ) {
+			/*
+			 * What is stored is the list of cards turned OFF, so a card that
+			 * turns up tomorrow because a plugin was installed appears by
+			 * itself. The screen asks the question the other way round
+			 * because "show this" is what somebody is actually deciding.
+			 */
+			$off   = diluxone_users_summaries_hidden();
+			$all   = diluxone_users_summary_cards();
+			$cards = array();
 
-						<?php foreach ( $diluxone_users_all as $diluxone_users_card ) : ?>
-							<label class="diluxone-users-roles__item">
-								<input type="checkbox" name="diluxone_users_seccion[cards][]" value="<?php echo esc_attr( (string) $diluxone_users_card['id'] ); ?>" <?php checked( ! in_array( (string) $diluxone_users_card['id'], $diluxone_users_off, true ) ); ?>>
-								<?php echo esc_html( (string) $diluxone_users_card['label'] ); ?>
-								<?php if ( '' === (string) $diluxone_users_card['value'] ) : ?>
-									<span class="description">— <?php esc_html_e( 'nothing to show right now', 'diluxone-users' ); ?></span>
-								<?php endif; ?>
-							</label>
-						<?php endforeach; ?>
+			foreach ( $all as $card ) {
+				$cards[] = array(
+					'type'    => 'checkbox',
+					'name'    => 'diluxone_users_seccion[cards][]',
+					'value'   => (string) $card['id'],
+					'checked' => ! in_array( (string) $card['id'], $off, true ),
+					'title'   => (string) $card['label'],
+					'help'    => '' === (string) $card['value'] ? __( 'Nothing to show right now.', 'diluxone-users' ) : '',
+				);
+			}
 
-						<p class="description"><?php esc_html_e( 'The front page is a summary: each section offers one card and the site can add its own. Untick one and it stops being shown — the section itself is untouched, and a card that has nothing to say today is left out on its own anyway.', 'diluxone-users' ); ?></p>
-					</td>
-				</tr>
-			<?php endif; ?>
+			diluxone_users_ui_field_open( __( 'The cards it shows', 'diluxone-users' ) );
 
-			<tr>
-				<th scope="row"><label for="diluxone-users-section-intro"><?php esc_html_e( 'The line under the title', 'diluxone-users' ); ?></label></th>
-				<td>
-					<input type="text" id="diluxone-users-section-intro" class="large-text" name="diluxone_users_seccion[intro]" value="<?php echo esc_attr( (string) ( $section['intro'] ?? '' ) ); ?>">
-					<p class="description"><?php esc_html_e( 'Optional. One sentence saying what this section is for, under its title.', 'diluxone-users' ); ?></p>
-				</td>
-			</tr>
-			<tr>
-				<th scope="row"><?php esc_html_e( 'Who sees it', 'diluxone-users' ); ?></th>
-				<td>
-					<?php
-					$roles = (array) ( $section['roles'] ?? array() );
+			/*
+			 * A marker, because a form with every box unticked sends no
+			 * "cards" at all — and without something saying the list was on
+			 * screen, "show none" would be indistinguishable from "this form
+			 * never had it".
+			 */
+			echo '<input type="hidden" name="diluxone_users_seccion[cards_shown]" value="1">';
 
-					diluxone_users_roles_picker(
-						'diluxone_users_seccion[visibility]',
-						'diluxone_users_seccion[roles][]',
-						diluxone_users_section_visibility( $section ),
-						$roles,
-						__( 'Everybody with an account, or only the roles ticked. Nobody who is not signed in reaches the account area at all.', 'diluxone-users' )
-					);
-					?>
-				</td>
-			</tr>
+			diluxone_users_ui_choices( $cards );
 
-			<?php if ( $with_code ) : ?>
-				<tr>
-					<th scope="row"><label for="diluxone-users-section-placement"><?php esc_html_e( 'Where your content goes', 'diluxone-users' ); ?></label></th>
-					<td>
-						<select id="diluxone-users-section-placement" name="diluxone_users_seccion[placement]">
-							<?php
-							$where = array(
-								'after'   => __( 'After what the plugin shows', 'diluxone-users' ),
-								'before'  => __( 'Before what the plugin shows', 'diluxone-users' ),
-								'replace' => __( 'Instead of it — your content replaces the section', 'diluxone-users' ),
-							);
+			diluxone_users_ui_field_close(
+				array() === $all
+					? __( 'No section offers a card yet, so the front page is empty. Sections bring their own, and so does anything else installed on the site.', 'diluxone-users' )
+					: __( 'The front page is a summary: each section offers one card and the site can add its own. Untick one and it stops being shown — the section itself is untouched, and a card that has nothing to say today is left out on its own anyway.', 'diluxone-users' )
+			);
+		}
 
-							foreach ( $where as $key => $label ) {
-								printf(
-									'<option value="%1$s"%2$s>%3$s</option>',
-									esc_attr( $key ),
-									selected( $section['placement'], $key, false ),
-									esc_html( $label )
-								);
-							}
-							?>
-						</select>
-						<p class="description"><?php esc_html_e( 'This section is drawn by code. What you write below is added to it — unless you say it replaces it.', 'diluxone-users' ); ?></p>
-					</td>
-				</tr>
-			<?php else : ?>
-				<input type="hidden" name="diluxone_users_seccion[placement]" value="replace">
-			<?php endif; ?>
+		diluxone_users_ui_text(
+			array(
+				'label' => __( 'The line under the title', 'diluxone-users' ),
+				'id'    => 'diluxone-users-section-intro',
+				'name'  => 'diluxone_users_seccion[intro]',
+				'value' => (string) ( $section['intro'] ?? '' ),
+				'help'  => __( 'Optional. One sentence saying what this section is for, under its title.', 'diluxone-users' ),
+			)
+		);
 
-			<tr>
-				<th scope="row"><label for="diluxone-users-section-content"><?php esc_html_e( 'Your content', 'diluxone-users' ); ?></label></th>
-				<td>
-					<?php
-					wp_editor(
-						(string) $section['content'],
-						'diluxone-users-section-content',
-						array(
-							'textarea_name' => 'diluxone_users_seccion[content]',
-							'textarea_rows' => 10,
-							'media_buttons' => true,
-						)
-					);
-					?>
-					<p class="description">
-						<?php
-						echo $with_code
-							? esc_html__( 'Text, HTML, or the shortcode of another plugin. Leave it empty and the section stays as the plugin draws it.', 'diluxone-users' )
-							: esc_html__( 'Text, HTML, or the shortcode of another plugin — a course plugin, a membership, a support desk. This is the whole section.', 'diluxone-users' );
-						?>
-					</p>
-				</td>
-			</tr>
+		diluxone_users_ui_field_open( __( 'Who sees it', 'diluxone-users' ) );
+		diluxone_users_roles_picker(
+			'diluxone_users_seccion[visibility]',
+			'diluxone_users_seccion[roles][]',
+			diluxone_users_section_visibility( $section ),
+			(array) ( $section['roles'] ?? array() ),
+			__( 'Everybody with an account, or only the roles ticked. Nobody who is not signed in reaches the account area at all.', 'diluxone-users' )
+		);
+		diluxone_users_ui_field_close();
 
-			<?php if ( ! $fresh && '' !== (string) $section['source'] ) : ?>
-				<tr>
-					<th scope="row"><?php esc_html_e( 'Comes from', 'diluxone-users' ); ?></th>
-					<td>
-						<p><?php echo esc_html( $section['source'] ); ?> <code><?php echo esc_html( $id ); ?></code></p>
-						<?php if ( empty( $section['custom'] ) ) : ?>
-							<p class="description"><?php esc_html_e( 'It comes from code, so it cannot be deleted —the code that draws it is still there and it would come back— but it can be hidden.', 'diluxone-users' ); ?></p>
-						<?php endif; ?>
-					</td>
-				</tr>
-			<?php endif; ?>
-		</table>
+		if ( $with_code ) {
+			$where = array(
+				'after'   => __( 'After what the plugin shows', 'diluxone-users' ),
+				'before'  => __( 'Before what the plugin shows', 'diluxone-users' ),
+				'replace' => __( 'Instead of it — your content replaces the section', 'diluxone-users' ),
+			);
 
-		<?php submit_button( $fresh ? __( 'Add section', 'diluxone-users' ) : __( 'Save section', 'diluxone-users' ) ); ?>
+			diluxone_users_ui_select(
+				array(
+					'label'   => __( 'Where your content goes', 'diluxone-users' ),
+					'id'      => 'diluxone-users-section-placement',
+					'name'    => 'diluxone_users_seccion[placement]',
+					'value'   => (string) $section['placement'],
+					'options' => $where,
+					'help'    => __( 'This section is drawn by code. What you write below is added to it — unless you say it replaces it.', 'diluxone-users' ),
+				)
+			);
+		} else {
+			echo '<input type="hidden" name="diluxone_users_seccion[placement]" value="replace">';
+		}
+
+		diluxone_users_ui_field_open( __( 'Your content', 'diluxone-users' ), 'diluxone-users-section-content' );
+		wp_editor(
+			(string) $section['content'],
+			'diluxone-users-section-content',
+			array(
+				'textarea_name' => 'diluxone_users_seccion[content]',
+				'textarea_rows' => 10,
+				'media_buttons' => true,
+			)
+		);
+		diluxone_users_ui_field_close(
+			$with_code
+				? __( 'Text, HTML, or the shortcode of another plugin. Leave it empty and the section stays as the plugin draws it.', 'diluxone-users' )
+				: __( 'Text, HTML, or the shortcode of another plugin — a course plugin, a membership, a support desk. This is the whole section.', 'diluxone-users' )
+		);
+
+		if ( ! $fresh && '' !== (string) $section['source'] ) {
+			diluxone_users_ui_note(
+				__( 'Comes from', 'diluxone-users' ),
+				esc_html( (string) $section['source'] ) . ' <code>' . esc_html( $id ) . '</code>'
+				. ( empty( $section['custom'] )
+					? '<br>' . esc_html__( 'It comes from code, so it cannot be deleted —the code that draws it is still there and it would come back— but it can be hidden.', 'diluxone-users' )
+					: '' )
+			);
+		}
+
+		submit_button( $fresh ? __( 'Add section', 'diluxone-users' ) : __( 'Save section', 'diluxone-users' ) );
+		?>
 	</form>
 	<?php
 }
@@ -775,7 +793,11 @@ function diluxone_users_screen_account_summary(): void {
 		array(
 			array(
 				'label'  => __( 'The page', 'diluxone-users' ),
-				'state'  => $page > 0 ? 'active' : 'off',
+				// Pending and not off, which is the word the status screen has
+				// always used for a page nobody has chosen yet: off says
+				// somebody turned it off, and there is no switch to turn.
+				'state'  => $page > 0 ? 'active' : 'pending',
+				'why'    => $page > 0 ? '' : __( 'No page chosen yet.', 'diluxone-users' ),
 				'detail' => $page > 0
 					? sprintf( '<a href="%s">%s</a>', esc_url( (string) get_permalink( $page ) ), esc_html( (string) get_the_title( $page ) ) )
 					: esc_html__( 'This site has no account area.', 'diluxone-users' ),
@@ -802,15 +824,30 @@ function diluxone_users_screen_account_summary(): void {
 					: esc_html__( 'The name comes from their first and last name.', 'diluxone-users' ),
 				'url'    => $tab( 'handle' ),
 			),
+
+			/*
+			 * These two rows are named after WordPress's own things — the
+			 * profile screen and the toolbar — and both used to be measured
+			 * the other way round: the pill said Active when the setting was
+			 * "keep people out of the profile", so a site with the profile
+			 * wide open read "The dashboard profile — Off". Every row in this
+			 * table reports on the thing in its first column, so these two do
+			 * too, and the word says which way, because neither of them is a
+			 * switch of this plugin's.
+			 */
 			array(
 				'label'  => __( 'The dashboard profile', 'diluxone-users' ),
-				'state'  => 'allow' === $profile ? 'off' : 'active',
+				'state'  => 'allow' === $profile ? 'active' : 'off',
+				'word'   => 'allow' === $profile ? __( 'Reachable', 'diluxone-users' ) : __( 'Kept out', 'diluxone-users' ),
 				'detail' => esc_html( $profiles[ $profile ] ?? $profiles['allow'] ),
 				'url'    => $tab( 'dashboard' ),
 			),
 			array(
 				'label'  => __( 'The WordPress toolbar', 'diluxone-users' ),
-				'state'  => 'hide' === $bar ? 'active' : 'off',
+				'state'  => 'hide' === $bar ? 'off' : 'active',
+				'word'   => 'hide' === $bar
+					? _x( 'Hidden', 'the WordPress toolbar, on the summary of the account area', 'diluxone-users' )
+					: _x( 'Shown', 'the WordPress toolbar, on the summary of the account area', 'diluxone-users' ),
 				'detail' => 'hide' === $bar
 					? ( 'some' === (string) diluxone_users_option( 'diluxone_users_admin_bar_scope' ) ? esc_html__( 'Hidden on the site for some roles.', 'diluxone-users' ) : esc_html__( 'Hidden on the site for everybody.', 'diluxone-users' ) )
 					: esc_html__( 'Shown, as WordPress does.', 'diluxone-users' ),
@@ -846,54 +883,90 @@ function diluxone_users_screen_account_summary(): void {
 function diluxone_users_screen_account_page(): void {
 	$page = (int) diluxone_users_account_page_id();
 
-	diluxone_users_intro( __( 'Which page is “my account”. Declaring it here is what lets everything else on the site — a course, a forum, a certificate — send people to the right place.', 'diluxone-users' ) );
-	?>
-	<table class="form-table" role="presentation">
-		<tr>
-			<th scope="row"><label for="diluxone_users_account_page"><?php esc_html_e( 'The account page', 'diluxone-users' ); ?></label></th>
-			<td>
-				<?php
-				/** @var array<string, mixed> $diluxone_users_dropdown */
-				$diluxone_users_dropdown = array(
-					'name'              => 'diluxone_users_account_page',
-					'id'                => 'diluxone_users_account_page',
-					'selected'          => $page,
-					'show_option_none'  => __( '— None: this site has no account area —', 'diluxone-users' ),
-					'option_none_value' => 0,
-				);
+	diluxone_users_ui_aside_open();
 
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_dropdown_pages() escapes its own and prints it.
-				wp_dropdown_pages( $diluxone_users_dropdown );
-				?>
-				<p class="description">
-					<?php
-					printf(
-						/* translators: %s: the shortcode, literal */
-						esc_html__( 'The page with %s in it.', 'diluxone-users' ),
-						'<code>[diluxone_users_account]</code>'
-					);
-					?>
-				</p>
-				<?php if ( '' === (string) get_option( 'permalink_structure' ) ) : ?>
-					<p class="description"><?php esc_html_e( 'With plain permalinks the sections go as ?seccion=…; turn on pretty permalinks in Settings → Permalinks and they become /page/section/ on their own.', 'diluxone-users' ); ?></p>
-				<?php endif; ?>
-			</td>
-		</tr>
-		<?php if ( $page <= 0 ) : ?>
-			<tr>
-				<th scope="row"><?php esc_html_e( 'With none', 'diluxone-users' ); ?></th>
-				<td>
-					<p><?php echo diluxone_users_state_pill( 'off' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?> <?php esc_html_e( 'This site has no account area. What that means:', 'diluxone-users' ); ?></p>
-					<ul class="diluxone-users-list">
-						<li><?php esc_html_e( 'Links to “my account” from the rest of the site go to the front page.', 'diluxone-users' ); ?></li>
-						<li><?php esc_html_e( 'The toolbar’s user menu is not redirected, and “send people to their account” on the next tab has nowhere to send them.', 'diluxone-users' ); ?></li>
-						<li><?php esc_html_e( 'The shortcode still works wherever somebody puts it.', 'diluxone-users' ); ?></li>
-					</ul>
-				</td>
-			</tr>
-		<?php endif; ?>
-	</table>
-	<?php
+	diluxone_users_intro( __( 'Which page is “my account”. Declaring it here is what lets everything else on the site — a course, a forum, a certificate — send people to the right place.', 'diluxone-users' ) );
+
+	diluxone_users_ui_field_open( __( 'The account page', 'diluxone-users' ), 'diluxone_users_account_page' );
+
+	/** @var array<string, mixed> $dropdown */
+	$dropdown = array(
+		'name'              => 'diluxone_users_account_page',
+		'id'                => 'diluxone_users_account_page',
+		'selected'          => $page,
+		'show_option_none'  => __( '— None: this site has no account area —', 'diluxone-users' ),
+		'option_none_value' => 0,
+	);
+
+	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_dropdown_pages() escapes its own and prints it.
+	wp_dropdown_pages( $dropdown );
+
+	$help = sprintf(
+		/* translators: %s: the shortcode, literal */
+		esc_html__( 'The page with %s in it.', 'diluxone-users' ),
+		'<code>[diluxone_users_account]</code>'
+	);
+
+	if ( '' === (string) get_option( 'permalink_structure' ) ) {
+		$help .= ' ' . esc_html__( 'With plain permalinks the sections go as ?seccion=…; turn on pretty permalinks in Settings → Permalinks and they become /page/section/ on their own.', 'diluxone-users' );
+	}
+
+	diluxone_users_ui_field_close( $help );
+
+	/*
+	 * Beside the question and not on top of it. What this tab is worth knowing
+	 * — whether the site has an account area at all, and what behaves
+	 * differently while it has not — was printed above the only control on the
+	 * screen, where it reads as news to be got past before answering. It is not
+	 * news: it is the state of the thing being configured, and beside the
+	 * control it is context.
+	 */
+	diluxone_users_ui_aside_close(
+		static function () use ( $page ): void {
+			diluxone_users_ui_note(
+				__( 'The account area', 'diluxone-users' ),
+				$page > 0
+					? sprintf(
+						'<a href="%1$s">%2$s</a>',
+						esc_url( (string) get_permalink( $page ) ),
+						esc_html( (string) get_the_title( $page ) )
+					)
+					: esc_html__( 'This site has not got one.', 'diluxone-users' ),
+				// The same fact as the summary row and the status check, so
+				// the same answer: a page nobody chose is pending, not off.
+				$page > 0 ? 'active' : 'pending',
+				$page > 0 ? '' : __( 'No page chosen yet.', 'diluxone-users' )
+			);
+
+			if ( $page <= 0 ) {
+				diluxone_users_ui_notice(
+					array(
+						'<strong>' . esc_html__( 'What that means', 'diluxone-users' ) . '</strong>',
+						esc_html__( 'Links to “my account” from the rest of the site go to the front page.', 'diluxone-users' ),
+						esc_html__( 'The toolbar’s user menu is not redirected, and “send people to their account” on the dashboard tab has nowhere to send them.', 'diluxone-users' ),
+						esc_html__( 'The shortcode still works wherever somebody puts it.', 'diluxone-users' ),
+					),
+					'warning'
+				);
+			}
+
+			diluxone_users_ui_links(
+				__( 'What goes on it', 'diluxone-users' ),
+				array(
+					array(
+						'url'   => diluxone_users_admin_url( 'diluxone-users-account', array( 'tab' => 'sections' ) ),
+						'label' => __( 'The sections it is made of', 'diluxone-users' ),
+						'help'  => __( 'What people find inside, and the order they find it in.', 'diluxone-users' ),
+					),
+					array(
+						'url'   => diluxone_users_admin_url( DILUXONE_USERS_DESIGN, array( 'tab' => 'account' ) ),
+						'label' => __( 'What it looks like', 'diluxone-users' ),
+						'help'  => __( 'Its shape, its cover and its menu, with the page itself beside the settings.', 'diluxone-users' ),
+					),
+				)
+			);
+		}
+	);
 }
 
 /**
@@ -911,20 +984,14 @@ function diluxone_users_screen_account_dashboard(): void {
 		? ( 'some' === (string) diluxone_users_option( 'diluxone_users_admin_bar_scope' ) ? 'hide-some' : 'hide-all' )
 		: 'wp';
 
+	diluxone_users_ui_aside_open();
+
 	diluxone_users_intro( __( 'Two things WordPress shows to anybody signed in — its own profile screen and its toolbar — that a site with an account area of its own may not want.', 'diluxone-users' ) );
 
 	diluxone_users_ui_section(
 		__( 'The dashboard profile (wp-admin/profile.php)', 'diluxone-users' ),
 		__( 'It does not know about the required fields or the edit limits set up here. Two screens for the same data is how somebody ends up editing their name in one and their phone in the other, under different rules.', 'diluxone-users' )
 	);
-
-	if ( $page <= 0 ) {
-		diluxone_users_not_now(
-			__( 'There is no account area to send anybody to, so the second answer does nothing yet.', 'diluxone-users' ),
-			diluxone_users_admin_url( 'diluxone-users-account', array( 'tab' => 'page' ) ),
-			__( 'Choose the page →', 'diluxone-users' )
-		);
-	}
 
 	diluxone_users_ui_choices(
 		array(
@@ -1061,7 +1128,45 @@ function diluxone_users_screen_account_dashboard(): void {
 			),
 		)
 	);
-	diluxone_users_ui_field_close();
+
+	/*
+	 * Where anybody sent away from the dashboard ends up is the one fact both
+	 * halves of this tab depend on, and it is not answered here — it is
+	 * answered on the tab before. Beside the answers it is the standing state
+	 * of the site; in the middle of them it was a paragraph interrupting a
+	 * group of options to talk about another screen.
+	 */
+	diluxone_users_ui_aside_close(
+		static function () use ( $page ): void {
+			diluxone_users_ui_note(
+				__( 'Where they are sent', 'diluxone-users' ),
+				$page > 0
+					? sprintf(
+						'<a href="%1$s">%2$s</a>',
+						esc_url( (string) get_permalink( $page ) ),
+						esc_html( (string) get_the_title( $page ) )
+					)
+					: esc_html__( 'Nowhere yet: this site has no account area, so sending people to theirs does nothing until it has one.', 'diluxone-users' ),
+				$page > 0 ? 'active' : 'pending'
+			);
+
+			diluxone_users_ui_links(
+				__( 'The other half of this', 'diluxone-users' ),
+				array(
+					array(
+						'url'   => diluxone_users_admin_url( 'diluxone-users-account', array( 'tab' => 'page' ) ),
+						'label' => __( 'The page that is “my account”', 'diluxone-users' ),
+						'help'  => __( 'Declared once, and every redirect on this tab reads it.', 'diluxone-users' ),
+					),
+					array(
+						'url'   => diluxone_users_admin_url( DILUXONE_USERS_DESIGN, array( 'tab' => 'account' ) ),
+						'label' => __( 'What they find when they get there', 'diluxone-users' ),
+						'help'  => __( 'The account area is the screen replacing the dashboard profile, so it is worth a look.', 'diluxone-users' ),
+					),
+				)
+			);
+		}
+	);
 }
 
 /** The public name and its rules. */
@@ -1086,98 +1191,158 @@ function diluxone_users_account_handle_save(): void {
  * also works for requesting the sign-in link.
  */
 function diluxone_users_screen_account_handle(): void {
+	$offered = (bool) diluxone_users_option( 'diluxone_users_handle_enabled' );
+
+	diluxone_users_ui_aside_open();
+
 	diluxone_users_intro( __( 'The email is the identity and nobody chooses it. This is the short name people see, the one that goes in the address of their profile.', 'diluxone-users' ) );
-	?>
-	<table class="form-table" role="presentation">
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Offer it', 'diluxone-users' ); ?></th>
-			<td>
-				<label>
-					<input type="checkbox" name="diluxone_users_handle_enabled" value="1" <?php checked( diluxone_users_option( 'diluxone_users_handle_enabled' ), 1 ); ?>>
-					<?php esc_html_e( 'Let people choose their public name', 'diluxone-users' ); ?>
-				</label>
-				<p class="description"><?php esc_html_e( 'Turned off, the name comes from what they wrote as their first and last name, and the profile address is made from that.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Length', 'diluxone-users' ); ?></th>
-			<td>
-				<input type="number" name="diluxone_users_handle_min" class="small-text" min="1" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_handle_min' ) ); ?>">
-				<?php esc_html_e( 'to', 'diluxone-users' ); ?>
-				<input type="number" name="diluxone_users_handle_max" class="small-text" min="1" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_handle_max' ) ); ?>">
-				<?php esc_html_e( 'characters', 'diluxone-users' ); ?>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Letters', 'diluxone-users' ); ?></th>
-			<td>
-				<?php
-				$sets = array(
-					'strict'  => __( 'Plain: a–z, digits, dot, dash and underscore', 'diluxone-users' ),
-					'unicode' => __( 'Also accents and ñ', 'diluxone-users' ),
-				);
 
-				foreach ( $sets as $key => $label ) :
-					?>
-					<label class="diluxone-users-roles__item">
-						<input type="radio" name="diluxone_users_handle_charset" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_handle_charset' ), $key ); ?>>
-						<?php echo esc_html( $label ); ?>
-					</label>
-				<?php endforeach; ?>
-				<p class="description"><?php esc_html_e( 'Whatever is typed is turned into the same thing WordPress would put in a URL, so what passes here is exactly what ends up in the address. Anything that does not fit —punctuation, symbols, emoji— is dropped, and the person sees what it turned into before saving.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Spaces', 'diluxone-users' ); ?></th>
-			<td>
-				<?php
-				$spaces = array(
-					'dash'   => __( 'Turn them into dashes: “Ana Gómez” becomes ana-gomez', 'diluxone-users' ),
-					'reject' => __( 'Refuse them and say so', 'diluxone-users' ),
-				);
+	diluxone_users_ui_choices(
+		array(
+			array(
+				'type'    => 'checkbox',
+				'name'    => 'diluxone_users_handle_enabled',
+				'value'   => '1',
+				'checked' => $offered,
+				'title'   => __( 'Let people choose their public name', 'diluxone-users' ),
+				'help'    => __( 'Turned off, the name comes from what they wrote as their first and last name, and the profile address is made from that.', 'diluxone-users' ),
+			),
+		)
+	);
 
-				foreach ( $spaces as $key => $label ) :
-					?>
-					<label class="diluxone-users-roles__item">
-						<input type="radio" name="diluxone_users_handle_spaces" value="<?php echo esc_attr( $key ); ?>" <?php checked( diluxone_users_option( 'diluxone_users_handle_spaces' ), $key ); ?>>
-						<?php echo esc_html( $label ); ?>
-					</label>
-				<?php endforeach; ?>
-				<p class="description"><?php esc_html_e( 'A web address cannot have spaces, so one of the two has to happen. The first is what almost everybody expects; the second is for a site that would rather nobody ends up with a name they did not type.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Taken names', 'diluxone-users' ); ?></th>
-			<td>
-				<p class="description">
-					<?php
-					printf(
-						/* translators: 1: user_nicename, 2: user_login */
-						esc_html__( 'Always checked, and against two things: the public names already in use (%1$s) and the usernames that came with the accounts (%2$s). The second one matters because a site that lets people sign in by public name would otherwise have two people answering to the same text, and the link would go to the wrong account.', 'diluxone-users' ),
-						'<code>user_nicename</code>',
-						'<code>user_login</code>'
-					);
-					?>
-				</p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'How often it can change', 'diluxone-users' ); ?></th>
-			<td>
-				<input type="number" name="diluxone_users_handle_cooldown" class="small-text" min="0" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_handle_cooldown' ) ); ?>">
-				<?php esc_html_e( 'days between one change and the next', 'diluxone-users' ); ?>
-				<p class="description"><?php esc_html_e( '0 means whenever they like. A name that changes every day does not identify anybody, and the old address stops working each time.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><label for="diluxone_users_handle_reserved"><?php esc_html_e( 'Names nobody can take', 'diluxone-users' ); ?></label></th>
-			<td>
-				<textarea id="diluxone_users_handle_reserved" name="diluxone_users_handle_reserved" rows="3" class="large-text code"><?php echo esc_textarea( (string) diluxone_users_option( 'diluxone_users_handle_reserved' ) ); ?></textarea>
-				<p class="description"><?php esc_html_e( 'One per line, or separated by commas. The obvious ones —admin, support, api, login— are already blocked; these are yours to add.', 'diluxone-users' ); ?></p>
-			</td>
-		</tr>
-	</table>
-	<?php
+	/*
+	 * The rules below are one subject and they were five rows of a table: a
+	 * shortest and a longest in one row, two sets of two words in the next
+	 * two, a paragraph with nothing to decide in the fourth. Under a heading
+	 * of their own they read as what they are — what a name may be — and the
+	 * paragraph stops pretending to be a setting.
+	 */
+	diluxone_users_ui_section( __( 'What a name may be', 'diluxone-users' ) );
+
+	diluxone_users_ui_range(
+		array(
+			'label'   => __( 'Length', 'diluxone-users' ),
+			'from'    => array(
+				'name'  => 'diluxone_users_handle_min',
+				'value' => (string) diluxone_users_option( 'diluxone_users_handle_min' ),
+				'min'   => 1,
+			),
+			'to'      => array(
+				'name'  => 'diluxone_users_handle_max',
+				'value' => (string) diluxone_users_option( 'diluxone_users_handle_max' ),
+				'min'   => 1,
+			),
+			'between' => __( 'to', 'diluxone-users' ),
+			'suffix'  => __( 'characters', 'diluxone-users' ),
+		)
+	);
+
+	$charset = (string) diluxone_users_option( 'diluxone_users_handle_charset' );
+
+	diluxone_users_ui_inline_choices(
+		__( 'Letters', 'diluxone-users' ),
+		array(
+			array(
+				'name'    => 'diluxone_users_handle_charset',
+				'value'   => 'strict',
+				'checked' => 'unicode' !== $charset,
+				'title'   => __( 'Plain: a–z, digits, dot, dash and underscore', 'diluxone-users' ),
+			),
+			array(
+				'name'    => 'diluxone_users_handle_charset',
+				'value'   => 'unicode',
+				'checked' => 'unicode' === $charset,
+				'title'   => __( 'Also accents and ñ', 'diluxone-users' ),
+			),
+		),
+		__( 'Whatever is typed is turned into the same thing WordPress would put in a URL, so what passes here is exactly what ends up in the address. Anything that does not fit —punctuation, symbols, emoji— is dropped, and the person sees what it turned into before saving.', 'diluxone-users' )
+	);
+
+	$spaces = (string) diluxone_users_option( 'diluxone_users_handle_spaces' );
+
+	diluxone_users_ui_inline_choices(
+		__( 'Spaces', 'diluxone-users' ),
+		array(
+			array(
+				'name'    => 'diluxone_users_handle_spaces',
+				'value'   => 'dash',
+				'checked' => 'reject' !== $spaces,
+				'title'   => __( 'Turn them into dashes: “Ana Gómez” becomes ana-gomez', 'diluxone-users' ),
+			),
+			array(
+				'name'    => 'diluxone_users_handle_spaces',
+				'value'   => 'reject',
+				'checked' => 'reject' === $spaces,
+				'title'   => __( 'Refuse them and say so', 'diluxone-users' ),
+			),
+		),
+		__( 'A web address cannot have spaces, so one of the two has to happen. The first is what almost everybody expects; the second is for a site that would rather nobody ends up with a name they did not type.', 'diluxone-users' )
+	);
+
+	diluxone_users_ui_number(
+		array(
+			'label'  => __( 'How often it can change', 'diluxone-users' ),
+			'name'   => 'diluxone_users_handle_cooldown',
+			'value'  => (string) diluxone_users_option( 'diluxone_users_handle_cooldown' ),
+			'suffix' => __( 'days between one change and the next', 'diluxone-users' ),
+			'min'    => 0,
+			'help'   => __( '0 means whenever they like. A name that changes every day does not identify anybody, and the old address stops working each time.', 'diluxone-users' ),
+		)
+	);
+
+	diluxone_users_ui_textarea(
+		array(
+			'label' => __( 'Names nobody can take', 'diluxone-users' ),
+			'name'  => 'diluxone_users_handle_reserved',
+			'value' => (string) diluxone_users_option( 'diluxone_users_handle_reserved' ),
+			'rows'  => 3,
+			'code'  => true,
+			'help'  => __( 'One per line, or separated by commas. The obvious ones —admin, support, api, login— are already blocked; these are yours to add.', 'diluxone-users' ),
+		)
+	);
+
+	/*
+	 * What is true whatever is answered above goes beside the answers and not
+	 * under the last of them. There is nothing to decide about taken names —
+	 * the site always checks both lists — and a paragraph with nothing to
+	 * decide, printed at the foot of a column of settings, reads like a
+	 * setting somebody forgot to draw a control for.
+	 */
+	diluxone_users_ui_aside_close(
+		static function () use ( $offered ): void {
+			if ( ! $offered ) {
+				diluxone_users_ui_notice(
+					__( 'Nobody is choosing a name while this is turned off. What is set here is kept, and it applies the day it is turned on.', 'diluxone-users' )
+				);
+			}
+
+			diluxone_users_ui_note(
+				__( 'Taken names', 'diluxone-users' ),
+				sprintf(
+					/* translators: 1: user_nicename, 2: user_login */
+					esc_html__( 'Always checked, and against two things: the public names already in use (%1$s) and the usernames that came with the accounts (%2$s). The second one matters because a site that lets people sign in by public name would otherwise have two people answering to the same text, and the link would go to the wrong account.', 'diluxone-users' ),
+					'<code>user_nicename</code>',
+					'<code>user_login</code>'
+				)
+			);
+
+			diluxone_users_ui_links(
+				__( 'Where the name is used', 'diluxone-users' ),
+				array(
+					array(
+						'url'   => diluxone_users_admin_url( 'diluxone-users-login', array( 'tab' => 'ways' ) ),
+						'label' => __( 'Signing in with it', 'diluxone-users' ),
+						'help'  => __( 'Whether the sign-in box takes a public name as well as an e-mail address.', 'diluxone-users' ),
+					),
+					array(
+						'url'   => diluxone_users_admin_url( 'diluxone-users-fields' ),
+						'label' => __( 'Their first and last name', 'diluxone-users' ),
+						'help'  => __( 'Where the public name comes from while nobody is choosing one.', 'diluxone-users' ),
+					),
+				)
+			);
+		}
+	);
 }
 
 /**

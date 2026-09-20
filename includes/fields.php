@@ -49,30 +49,6 @@ function diluxone_users_field_types(): array {
 }
 
 /**
- * Does this type use the options list, and what for?
- *
- * In "closed list" and "text with suggestions" the options are the values. In
- * "country" they are the ISO codes pinned to the top of the list, and in
- * "phone" the country that comes selected by default. The rest do not use them.
- */
-function diluxone_users_field_uses_options( string $type ): string {
-	switch ( $type ) {
-		case 'select':
-		case 'datalist':
-			return 'values';
-
-		case 'country':
-			return 'preferred';
-
-		case 'phone':
-			return 'default';
-
-		default:
-			return '';
-	}
-}
-
-/**
  * The fields that already belong to WordPress.
  *
  * First and last name are not this plugin's invention: WordPress has had them
@@ -205,6 +181,82 @@ function diluxone_users_groups(): array {
 		'main'  => __( 'Main block — what the site needs', 'diluxone-users' ),
 		'extra' => __( 'Extra block — “if you like, tell us more”', 'diluxone-users' ),
 	);
+}
+
+/**
+ * May a field be called this?
+ *
+ * A field's key is not a label: it is the user meta key the account form
+ * writes to, with whatever the person typed. So a field named
+ * `diluxone_users_2fa_on` is a box on the front end that turns somebody's
+ * second factor off, and one named `wp_capabilities` is a box that edits
+ * their role — neither of which goes anywhere near the checks that guard
+ * those things properly.
+ *
+ * WordPress's own two names are allowed because they are the two this plugin
+ * deliberately adopts: first and last name are fields like any other, in the
+ * same list and under the same rules, and they are stored where WordPress
+ * looks for them.
+ */
+function diluxone_users_field_key_allowed( string $key ): bool {
+	if ( '' === $key ) {
+		return false;
+	}
+
+	if ( diluxone_users_field_is_native( $key ) ) {
+		return true;
+	}
+
+	/*
+	 * Two lists, and the difference between them matters more than it looks.
+	 *
+	 * The exact names are names: `diluxone_users_avatar` is taken,
+	 * `diluxone_users_avatar_size` is not, and a field the site calls "Avatar
+	 * size" has to be able to exist. Treating them as prefixes looked tidier
+	 * and meant every name starting with a taken one was taken too — which,
+	 * for the key generator that appends `_2` until it finds a free name, is
+	 * a loop with no way out.
+	 *
+	 * The prefixes are prefixes: everything under them is generated, one row
+	 * per passkey, per provider, per notice, per field counter, so no exact
+	 * list of them can be written down.
+	 */
+	$taken = array(
+		'session_tokens',
+		'capabilities',
+		'user_level',
+		'admin_color',
+		'locale',
+		'nickname',
+		'description',
+		'diluxone_users_2fa_on',
+		'diluxone_users_2fa_pending',
+		'diluxone_users_2fa_epoch',
+		'diluxone_users_2fa_email',
+		'diluxone_users_2fa_fails',
+		'diluxone_users_2fa_lock',
+		'diluxone_users_totp',
+		'diluxone_users_totp_pending',
+		'diluxone_users_totp_used',
+		'diluxone_users_backup_codes',
+		'diluxone_users_passkeys',
+		'diluxone_users_handle',
+		'diluxone_users_handle_changed',
+		'diluxone_users_avatar',
+		'diluxone_users_devices',
+	);
+
+	if ( in_array( $key, $taken, true ) ) {
+		return false;
+	}
+
+	foreach ( array( 'wp_', '_diluxone_users', 'diluxone_users_pk_', 'diluxone_users_sso_', 'diluxone_users_notify_', 'diluxone_users_edits_' ) as $start ) {
+		if ( 0 === strpos( $key, $start ) ) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 /**
@@ -499,14 +551,58 @@ function diluxone_users_sanitize( array $field, string $value ): string {
 }
 
 /**
- * Saves a person's fields from a raw array (typically $_POST). It only looks
- * at the keys that exist as a field.
+ * What a form sent for the fields this plugin defines, and nothing else.
+ *
+ * The one place that reads the superglobal for a field, and it reads it by
+ * name: for every field the site has declared, its key and — for a phone —
+ * its dialling-code companion. Whatever else is in the request is not in the
+ * answer, which is what makes `diluxone_users_save()` a function that takes
+ * an array rather than a function that takes the request.
+ *
+ * It is also how the callers stop handing `$_POST` to a callee. That the
+ * callee sanitised every value it recognised was true; it was true three
+ * calls deep, where nobody reading the call site could see it.
+ *
+ * @param string $group Only one block of the form, or all of it.
+ * @return array<string, string>
+ */
+function diluxone_users_posted_fields( string $group = '' ): array {
+	$sent = array();
+
+	foreach ( diluxone_users_fields( $group ) as $field ) {
+		foreach ( array( (string) $field['key'], (string) $field['key'] . '_dial' ) as $name ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- every caller verifies before asking; the values are sanitised per field type in diluxone_users_save().
+			if ( ! isset( $_POST[ $name ] ) ) {
+				continue;
+			}
+
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- as above: the field's own sanitiser runs on save, and it is the one that knows the type.
+			$value = wp_unslash( $_POST[ $name ] );
+
+			if ( is_scalar( $value ) ) {
+				$sent[ $name ] = (string) $value;
+			}
+		}
+	}
+
+	return $sent;
+}
+
+/**
+ * Saves a person's fields from an array of what a form sent — the one
+ * `diluxone_users_posted_fields()` builds, already unslashed and holding
+ * nothing but this plugin's own field names. It only looks at the keys that
+ * exist as a field.
+ *
+ * Unslashing happens once, there. It used to happen here as well, on a value
+ * one caller had already unslashed, and a name with a backslash in it lost
+ * the backslash on the way through registration and kept it everywhere else.
  *
  * An empty value deletes the meta instead of storing an empty string: that
  * way the user does not pile up rows that say nothing.
  *
- * @param array<string, mixed> $input
- * @param string               $group Limits it to one group, or '' for all.
+ * @param array<string, string> $input
+ * @param string                $group Limits it to one group, or '' for all.
  * @return array<int, string> Labels of the required fields that are missing.
  */
 function diluxone_users_save( int $user_id, array $input, string $group = '' ): array {
@@ -525,13 +621,13 @@ function diluxone_users_save( int $user_id, array $input, string $group = '' ): 
 			continue;
 		}
 
-		$raw = (string) wp_unslash( $input[ $key ] );
+		$raw = (string) $input[ $key ];
 
 		// The phone arrives in two parts: the country dialling code, from its
 		// list, and the number. They are joined here and not in the browser so
 		// it also holds when the form arrives without JavaScript.
 		if ( 'phone' === $field['type'] && '' !== trim( $raw ) ) {
-			$dial = diluxone_users_country_dial( sanitize_text_field( (string) wp_unslash( $input[ $key . '_dial' ] ?? '' ) ) );
+			$dial = diluxone_users_country_dial( sanitize_text_field( (string) ( $input[ $key . '_dial' ] ?? '' ) ) );
 			$raw  = '+' . $dial . preg_replace( '/\D/', '', $raw );
 		}
 

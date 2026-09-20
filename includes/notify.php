@@ -293,23 +293,22 @@ function diluxone_users_notify_new_device( int $user_id, string $via ): void {
 
 	$device = trim( sprintf( '%s · %s %s', $agent['device'], $agent['browser'], $agent['os'] ) );
 
-	diluxone_users_notify(
-		$user_id,
-		'diluxone_users_notify_login',
-		sprintf(
-				/* translators: %s: site name */
-			__( 'New sign-in to your account on %s', 'diluxone-users' ),
-			diluxone_users_site_name()
-		),
-		sprintf(
-				/* translators: 1: device and browser, 2: date and time, 3: how they signed in, 4: address of the account area */
-			__( "Somebody just signed in to your account.\n\n%1\$s\n%2\$s\nWay in: %3\$s\n\nIf it was you, there is nothing to do. If it was not, close that session and review your security here:\n%4\$s", 'diluxone-users' ),
-			$device,
-			wp_date( 'j M Y, H:i' ),
-			diluxone_users_via_label( $via ),
-			diluxone_users_account_url( 'security' )
+	// The wording is not written here any more: it is one of the four
+	// templates a site can rewrite per language, and this only says what goes
+	// in the gaps.
+	$mail = diluxone_users_mail_compose(
+		'new_device',
+		array(
+			'{device}'  => $device,
+			'{via}'     => diluxone_users_via_label( $via ),
+			'{when}'    => (string) wp_date( 'j M Y, H:i' ),
+			'{account}' => diluxone_users_account_url( 'security' ),
+			'{site}'    => diluxone_users_site_name(),
+			'{name}'    => diluxone_users_mail_person( '', $user_id ),
 		)
 	);
+
+	diluxone_users_notify( $user_id, 'diluxone_users_notify_login', $mail['subject'], $mail['body'] );
 }
 add_action( 'diluxone_users_logged_in', 'diluxone_users_notify_new_device', 10, 2 );
 
@@ -336,20 +335,16 @@ function diluxone_users_via_label( string $via ): string {
  * passkey, that is the moment to find out.
  */
 function diluxone_users_notify_security( int $user_id, string $event ): void {
-	diluxone_users_notify(
-		$user_id,
-		'diluxone_users_notify_security',
-		sprintf(
-				/* translators: %s: site name */
-			__( 'Your security on %s changed', 'diluxone-users' ),
-			diluxone_users_site_name()
-		),
-		sprintf(
-				/* translators: 1: what changed, 2: date and time, 3: address of the account area */
-			__( "This changed in your account:\n\n%1\$s\n%2\$s\n\nIf it was you, there is nothing to do. If it was not, review your security here:\n%3\$s", 'diluxone-users' ),
-			$event,
-			wp_date( 'j M Y, H:i' ),
-			diluxone_users_account_url( 'security' )
+	$mail = diluxone_users_mail_compose(
+		'security_changed',
+		array(
+			'{event}'   => $event,
+			'{when}'    => (string) wp_date( 'j M Y, H:i' ),
+			'{account}' => diluxone_users_account_url( 'security' ),
+			'{site}'    => diluxone_users_site_name(),
+			'{name}'    => diluxone_users_mail_person( '', $user_id ),
 		)
 	);
+
+	diluxone_users_notify( $user_id, 'diluxone_users_notify_security', $mail['subject'], $mail['body'] );
 }

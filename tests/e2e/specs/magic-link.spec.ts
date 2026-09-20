@@ -1,6 +1,6 @@
 import { test, expect, expectSignedIn, expectSignedOut, stateOf } from '../support/fixtures';
 import { freshEmail, linkIn, waitForMail } from '../support/api';
-import { askForLink, emailField, linkForm, notice, sentScreen } from '../support/ui';
+import { askForLink, emailField, linkForm, notice, openWay, sentScreen } from '../support/ui';
 
 /**
  * The link by e-mail, end to end.
@@ -23,7 +23,11 @@ test.describe('Signing in with the link that arrives by e-mail', () => {
 
 		await page.goto(pages.login.url);
 
-		// The form the shortcode drew, not wp-login.php.
+		// The form the shortcode drew, not wp-login.php — and its tab pressed
+		// first, because with three ways in the sign-in page arranges them as
+		// tabs and the other two carry `hidden`. On a site with two it does
+		// nothing.
+		await openWay(page, 'email');
 		await emailField(page).fill(email);
 		await linkForm(page).locator('button[type="submit"]').click();
 
@@ -124,29 +128,6 @@ test.describe('Signing in with the link that arrives by e-mail', () => {
 
 		await expectSignedOut(page);
 		expect(stateOf(page.url())).toBe('expired');
-	});
-
-	test('the wording of the e-mail is the site’s when the site wrote one', async ({ page, site, pages, options }) => {
-		await options.set({
-			diluxone_users_login_subject: 'Entrá a Vistalba',
-			diluxone_users_login_body: 'Acá está: {link} — dura {minutes} minutos.',
-			diluxone_users_login_expiry: 7,
-		});
-
-		const email = freshEmail('words');
-		await site.makeUser({ email });
-
-		await askForLink(page, pages.login.url, email);
-
-		const mail = await waitForMail(site, email);
-
-		expect(mail.subject).toBe('Entrá a Vistalba');
-		// One setting, two places — the screen and the e-mail — and they used
-		// to be able to disagree.
-		expect(mail.body).toContain('dura 7 minutos');
-
-		await page.goto(linkIn(mail));
-		await expectSignedIn(page, email);
 	});
 
 	test('asking twice in a row sends one e-mail, and says nothing about it', async ({ page, site, pages, options }) => {

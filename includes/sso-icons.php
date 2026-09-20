@@ -13,6 +13,14 @@
  * silhouette use `currentColor`, which is how those same guidelines admit
  * them over coloured backgrounds.
  *
+ * WordPress.com is the one that has no mark here, and on purpose. The "W" is
+ * a WordPress Foundation trademark, its policy does not read as an invitation
+ * the way the others' do, and the people who review a plugin for the
+ * directory are that foundation's own volunteers. A button that identifies
+ * itself in words costs nothing; an argument about a logo costs a review
+ * round. Anything with no mark of its own falls back to the plain globe
+ * below, so a button is never a blank square.
+ *
  * @package DiluxOneUsers
  */
 
@@ -37,15 +45,12 @@ function diluxone_users_sso_icon_is_colored( string $id ): bool {
  */
 function diluxone_users_sso_icon( string $id ): string {
 	$paths = diluxone_users_sso_icon_paths();
-
-	if ( ! isset( $paths[ $id ] ) ) {
-		return '';
-	}
+	$path  = (string) ( $paths[ $id ] ?? $paths['fallback'] );
 
 	return sprintf(
 		'<svg class="diluxone-users-social__logo" width="20" height="20" viewBox="0 0 24 24" fill="%1$s" aria-hidden="true" focusable="false">%2$s</svg>',
 		diluxone_users_sso_icon_is_colored( $id ) ? 'none' : 'currentColor',
-		$paths[ $id ]
+		$path
 	);
 }
 
@@ -56,6 +61,10 @@ function diluxone_users_sso_icon( string $id ): string {
  */
 function diluxone_users_sso_icon_paths(): array {
 	$paths = array(
+
+		// The plain globe, for a network that has no mark here — because it
+		// was left out, or because an add-on registered a provider of its own.
+		'fallback'  => '<path d="M12 1.2a10.8 10.8 0 1 0 0 21.6 10.8 10.8 0 0 0 0-21.6m0 1.4c1.3 0 2.7 1.7 3.4 4.5a20 20 0 0 1-6.8 0c.7-2.8 2.1-4.5 3.4-4.5M8.3 3.3c-.6 1-1.1 2.3-1.4 3.7a15 15 0 0 1-2.4-.8 9.5 9.5 0 0 1 3.8-2.9m7.4 0a9.5 9.5 0 0 1 3.8 2.9 15 15 0 0 1-2.4.8c-.3-1.4-.8-2.7-1.4-3.7M3.6 7.4c.9.4 1.9.7 3 .9A25 25 0 0 0 6.4 12H2.7c.1-1.7.4-3.2.9-4.6m16.8 0c.5 1.4.8 2.9.9 4.6h-3.7a25 25 0 0 0-.2-3.7c1.1-.2 2.1-.5 3-.9M7.8 8.6a22 22 0 0 0 8.4 0c.1 1.1.2 2.2.2 3.4H7.6c0-1.2.1-2.3.2-3.4M2.7 13.4h3.7c0 1.3.1 2.5.2 3.7-1.1.2-2.1.5-3 .9-.5-1.4-.8-2.9-.9-4.6m5.1 0h8.4c0 1.2-.1 2.3-.2 3.4a22 22 0 0 0-8 0c-.1-1.1-.2-2.2-.2-3.4m9.8 0h3.7c-.1 1.7-.4 3.2-.9 4.6-.9-.4-1.9-.7-3-.9.1-1.2.2-2.4.2-3.7M12 18.3c1.2 0 2.3.1 3.3.3-.7 2.5-2 4-3.3 4s-2.6-1.5-3.3-4c1-.2 2.1-.3 3.3-.3m-5.4.7c.3 1.3.8 2.5 1.3 3.4a9.5 9.5 0 0 1-3.6-2.7c.7-.3 1.5-.5 2.3-.7m10.8 0c.8.2 1.6.4 2.3.7a9.5 9.5 0 0 1-3.6 2.7c.5-.9 1-2.1 1.3-3.4"/>',
 
 		'google'    => '<path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47a5.53 5.53 0 0 1-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/>'
 			. '<path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09A12 12 0 0 0 12 24z"/>'
@@ -74,8 +83,6 @@ function diluxone_users_sso_icon_paths(): array {
 		'facebook'  => '<path d="M23 12a11 11 0 1 0-12.7 10.9v-7.7H7.5V12h2.8V9.6c0-2.8 1.6-4.3 4.2-4.3 1.2 0 2.5.2 2.5.2v2.7h-1.4c-1.4 0-1.8.9-1.8 1.7V12h3.1l-.5 3.2h-2.6v7.7A11 11 0 0 0 23 12"/>',
 
 		'github'    => '<path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.2 4.9 18.2 5.2 18.2 5.2c.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/>',
-
-		'wordpress' => '<path d="M12 0a12 12 0 1 0 0 24 12 12 0 0 0 0-24m0 1.2a10.7 10.7 0 0 1 8.5 4.2h-.4c-1 0-1.8.9-1.8 1.9 0 .9.5 1.6 1 2.5.4.7.9 1.6.9 3 0 .9-.4 2-.8 3.5l-1.1 3.6-3.9-11.6c.6 0 1.2-.1 1.2-.1.6-.1.5-.9-.1-.9 0 0-1.7.1-2.9.1-1.1 0-2.8-.1-2.8-.1-.6 0-.7.9-.1.9 0 0 .5 0 1.1.1l1.7 4.6-2.4 7.1-3.9-11.7c.6 0 1.2-.1 1.2-.1.6-.1.5-.9-.1-.9 0 0-1.7.1-2.9.1h-.7A10.7 10.7 0 0 1 12 1.2M1.2 12c0-1.6.3-3 .9-4.4l5.1 14.1A10.8 10.8 0 0 1 1.2 12M12 22.8c-1 0-2-.2-3-.5l3.2-9.4 3.3 9.1v.2c-1.1.4-2.3.6-3.5.6m9.5-15.9c.8 1.5 1.3 3.3 1.3 5.1 0 4-2.2 7.5-5.4 9.3l3.3-9.5c.6-1.6.8-2.8.8-3.9v-1"/>',
 
 		'yahoo'     => '<path d="M1 5.4h4.6l2.7 6.9 2.7-6.9h4.5L9.7 21.7H5.1l1.9-4.4zm17.6 8.7c1.3 0 2.4 1.1 2.4 2.4s-1.1 2.4-2.4 2.4-2.4-1.1-2.4-2.4 1.1-2.4 2.4-2.4M17.1 2.3H22l-4.4 10.2h-3.4z"/>',
 

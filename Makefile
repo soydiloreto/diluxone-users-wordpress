@@ -113,14 +113,18 @@ i18n-mo: ## Compile every languages/*.po into the .mo WordPress actually reads.
 	@echo "✔ $$(ls languages/*.mo | wc -l) .mo files built."
 
 .PHONY: i18n-check
-i18n-check: ## Fail if any shipped .po is malformed or has untranslated strings.
+i18n-check: ## Fail if any shipped .po is malformed, untranslated or fuzzy.
+	@# Fuzzy counts as incomplete. A fuzzy entry is msgmerge's guess carried
+	@# over from a string that has since changed, and WordPress does not show
+	@# it at all — so a locale full of them reads as English while the
+	@# statistics line calls it translated. The same three words CI checks.
 	@fail=0; \
 	for po in languages/*.po; do \
 	  out=$$(msgfmt --check --statistics -o /dev/null "$$po" 2>&1) || fail=1; \
 	  printf "%-34s %s\n" "$$po" "$$out"; \
-	  case "$$out" in *untranslated*) fail=1;; esac; \
+	  case "$$out" in *untranslated*|*fuzzy*) fail=1;; esac; \
 	done; \
-	if [ "$$fail" -ne 0 ]; then echo "✗ translations incomplete or malformed"; exit 1; fi; \
+	if [ "$$fail" -ne 0 ]; then echo "✗ translations incomplete, fuzzy or malformed"; exit 1; fi; \
 	echo "✔ every locale complete."
 
 # -- Tests -------------------------------------------------------------
@@ -149,6 +153,42 @@ test-e2e: ## Run the Playwright end-to-end suite against the wp-env dev site (mu
 test-e2e-ui: ## The same suite in Playwright's own window, for writing and debugging one.
 	@mkdir -p build
 	npx playwright test --ui
+
+# The layout invariants: the same browser, the same site, no baseline images.
+# It is part of `make test-e2e` — this target is for running only that, which
+# is what you want while moving a block around.
+.PHONY: test-layout
+test-layout: ## Only the layout measurements: overlap, overflow, air, blank boxes, the rail.
+	@mkdir -p build
+	npx playwright test admin-layout
+
+# The pictures. Its own target and its own Playwright project because a
+# baseline image belongs to the machine that took it: same fonts, same
+# smoothing, same scrollbars. `make test-e2e` and CI do not compare them.
+.PHONY: test-visual
+test-visual: ## Compare every screen with the picture committed beside the specs.
+	@mkdir -p build
+	DU_SNAPSHOTS=1 npx playwright test --project=visual
+
+# The thirteen pictures the wordpress.org listing shows. Not a comparison —
+# it writes .wordpress-org/screenshot-1..13.png, and the captions under
+# `== Screenshots ==` in readme.txt are what they answer to. Re-run it after
+# anything that changes how a screen looks, and read the diff in git before
+# committing: that diff is the shop window.
+.PHONY: screenshots
+screenshots: ## Retake the 13 listing screenshots (needs `make env` first).
+	@mkdir -p build
+	DU_LISTING=1 npx playwright test --project=listing
+	@echo "✔ $$(ls .wordpress-org/screenshot-*.png 2>/dev/null | wc -l) pictures in .wordpress-org/"
+
+# When the screen changed because you changed it. Look at what git shows you
+# in tests/e2e/snapshots/ before committing: that diff IS the review of the
+# redesign, and accepting it without looking is how a bug becomes the baseline.
+.PHONY: test-visual-update
+test-visual-update: ## Take the pictures again and accept them as the new baseline.
+	@mkdir -p build
+	DU_SNAPSHOTS=1 npx playwright test --project=visual --update-snapshots
+	@echo "✔ Pictures rewritten. \`git diff --stat tests/e2e/snapshots\` is the change you are accepting."
 
 .PHONY: test-all
 test-all: test-unit test-integration test-e2e ## All three: the fast one, the one that needs wp-env, and the one that needs a browser.

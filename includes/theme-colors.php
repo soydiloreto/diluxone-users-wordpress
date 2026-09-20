@@ -25,20 +25,116 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * The parts of the plugin a colour can play, and what each one is for.
+ * The parts of the plugin a colour can play, and what each one paints.
  *
- * @return array<string, string>
+ * Two strings per part and not one, because the row that asks about it has
+ * two jobs: name the part, so the answer chosen beside it is about something,
+ * and say where in the plugin that colour turns up, so the answer can be
+ * given by somebody who has never read the stylesheet. "Accent — buttons,
+ * links, the open section" was one line doing both and doing neither: a list
+ * of nouns with a dash in front of it reads as a translation of the word
+ * before the dash, not as an example of where to look.
+ *
+ * @return array<string, array{name: string, paints: string}>
  */
 function diluxone_users_color_roles(): array {
 	return array(
-		'accent'      => __( 'Accent — buttons, links, the open section', 'diluxone-users' ),
-		'accent-ink'  => __( 'On top of the accent — the text inside a filled button', 'diluxone-users' ),
-		'text'        => __( 'Text', 'diluxone-users' ),
-		'muted'       => __( 'Quiet text — captions and help', 'diluxone-users' ),
-		'surface'     => __( 'Surface — the ground a panel is drawn on', 'diluxone-users' ),
-		'surface-alt' => __( 'Second surface — a row that stands out from it', 'diluxone-users' ),
-		'border'      => __( 'Lines', 'diluxone-users' ),
+		'accent'      => array(
+			'name'   => __( 'Accent', 'diluxone-users' ),
+			'paints' => __( 'Filled buttons, links, and the section of the menu somebody is reading.', 'diluxone-users' ),
+		),
+		'accent-ink'  => array(
+			'name'   => __( 'On the accent', 'diluxone-users' ),
+			'paints' => __( 'The letters inside a filled button — white on almost every site.', 'diluxone-users' ),
+		),
+		'text'        => array(
+			'name'   => __( 'Text', 'diluxone-users' ),
+			'paints' => __( 'Headings, and every line meant to be read first. Nearly black rather than black.', 'diluxone-users' ),
+		),
+		'muted'       => array(
+			'name'   => __( 'Quiet text', 'diluxone-users' ),
+			'paints' => __( 'The sentence under a field, a date, the help beside a tick box.', 'diluxone-users' ),
+		),
+		'surface'     => array(
+			'name'   => __( 'Surface', 'diluxone-users' ),
+			'paints' => __( 'The ground every panel, card and box is drawn on.', 'diluxone-users' ),
+		),
+		'surface-alt' => array(
+			'name'   => __( 'Second surface', 'diluxone-users' ),
+			'paints' => __( 'What stands out from that ground without a line around it: the other row of a list.', 'diluxone-users' ),
+		),
+		'border'      => array(
+			'name'   => __( 'Lines', 'diluxone-users' ),
+			'paints' => __( 'Every line: the edge of a panel, of a field, the rule between two rows.', 'diluxone-users' ),
+		),
 	);
+}
+
+/**
+ * The colour the plugin’s own stylesheet gives each part.
+ *
+ * It is written here as well as in assets/diluxone-users.css, and the copy is
+ * deliberate: the sheet is the only place these can be DECLARED — every
+ * component reads `var(--diluxone-users-surface)` and nothing else — and
+ * nothing in the dashboard can ask a stylesheet what a property resolves to.
+ * The accent is the exception and is not copied twice: it is a setting, and
+ * the setting already knows its own default.
+ *
+ * @return array<string, string> Role => colour.
+ */
+function diluxone_users_color_own(): array {
+	return array(
+		'accent'      => diluxone_users_style_accent(),
+		'accent-ink'  => '#ffffff',
+		'text'        => '#16181d',
+		'muted'       => '#626a7a',
+		'surface'     => '#ffffff',
+		'surface-alt' => '#f5f6f8',
+		'border'      => '#e2e5ec',
+	);
+}
+
+/**
+ * The colour to paint in the square beside a part — always one, never none.
+ *
+ * Two different things used to leave that square empty, and an empty square
+ * with a border on a settings screen is a tick box nobody has ticked: seven of
+ * them in a column, and the question stopped being "which colour does what"
+ * and became "what have I failed to switch on".
+ *
+ * The first was “leave it to the plugin”, which was painted `transparent`
+ * when the honest answer is that the plugin has a colour for that part and
+ * this is it. The second is the good case and the common one: a theme that
+ * hands over `var(--ast-global-color-0)` instead of a hex is a theme the
+ * plugin follows live, into its dark mode — and that value is exactly the
+ * one the dashboard cannot resolve, because the theme’s stylesheet is not
+ * loaded in here.
+ *
+ * So the variable is passed on with the plugin’s own colour behind it. Where
+ * the property exists the fallback is never reached; where it does not — in
+ * this screen — the square shows what the part would look like if the theme
+ * said nothing, which is the truest thing that can be shown from here.
+ *
+ * @param string $role One of diluxone_users_color_roles().
+ * @param string $slug The palette slug chosen for it, or '' for none.
+ */
+function diluxone_users_color_swatch( string $role, string $slug ): string {
+	$own     = diluxone_users_color_own();
+	$mine    = (string) ( $own[ $role ] ?? '#ffffff' );
+	$palette = diluxone_users_theme_palette();
+
+	if ( '' === $slug || ! isset( $palette[ $slug ] ) ) {
+		return $mine;
+	}
+
+	$colour = $palette[ $slug ]['color'];
+
+	// Only ever a `var(...)`, an rgb/hsl or a hex: diluxone_users_color_value()
+	// refused everything else on the way in, so the closing bracket is there
+	// to be found.
+	return 0 === stripos( $colour, 'var(' )
+		? substr( $colour, 0, -1 ) . ', ' . $mine . ')'
+		: $colour;
 }
 
 /**
@@ -82,7 +178,18 @@ function diluxone_users_theme_palette(): array {
 	 *
 	 * @param array<string, array<string, string>> $palette Keyed by slug.
 	 */
-	return (array) apply_filters( 'diluxone_users_theme_palette', $palette );
+	$palette = (array) apply_filters( 'diluxone_users_theme_palette', $palette );
+
+	/*
+	 * Validated after the filter and not only before it. Every value in here
+	 * ends up printed into a `:root{}` block, and a filter that returns a
+	 * palette is the one caller that can hand over a value nothing checked.
+	 */
+	foreach ( $palette as $slug => $entry ) {
+		$palette[ $slug ] = array_map( 'diluxone_users_color_value', array_map( 'strval', (array) $entry ) );
+	}
+
+	return $palette;
 }
 
 /**

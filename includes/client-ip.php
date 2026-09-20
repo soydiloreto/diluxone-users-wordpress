@@ -33,6 +33,7 @@ defined( 'ABSPATH' ) || exit;
  */
 function diluxone_users_ip_headers(): array {
 	return array(
+		''                      => __( 'None — read the connection', 'diluxone-users' ),
 		'HTTP_X_FORWARDED_FOR'  => 'X-Forwarded-For',  // The de facto standard: nginx, Traefik, most load balancers, Azure.
 		'HTTP_X_REAL_IP'        => 'X-Real-IP',        // nginx, when set up that way.
 		'HTTP_CF_CONNECTING_IP' => 'CF-Connecting-IP', // Cloudflare.
@@ -41,12 +42,20 @@ function diluxone_users_ip_headers(): array {
 }
 
 /**
- * The one header the site's proxy writes.
+ * The one header the site's proxy writes, or nothing.
  *
  * One and not a list: the proxy in front of a site writes one of them, and
- * every other one that arrives was written by the client. With nothing
- * chosen it is X-Forwarded-For, which nearly every proxy appends to — and
- * appending is what makes it safe to read from the right.
+ * every other one that arrives was written by the client.
+ *
+ * Nothing is the default, and that is the correction that matters. It used to
+ * fall back to X-Forwarded-For whenever the setting was empty, and the guard
+ * in front of it was "is REMOTE_ADDR private" — which is true of every site
+ * running in Docker, in Kubernetes, behind a local nginx, or on a laptop. On
+ * all of those, an address the visitor typed into a header was read as the
+ * visitor's own address, and every per-address limit in the plugin — how
+ * often a link may be asked for, how many accounts may be created — became a
+ * counter with a new key on every request. A site that is behind a proxy says
+ * so here; a site that says nothing is read from the connection.
  */
 function diluxone_users_ip_header(): string {
 	$header = strtoupper( (string) diluxone_users_option( 'diluxone_users_ip_header', '' ) );
@@ -55,11 +64,14 @@ function diluxone_users_ip_header(): string {
 	/**
 	 * Filters which header carries the client IP behind the site's proxy.
 	 *
+	 * An empty string means no header is believed and `REMOTE_ADDR` is the
+	 * answer, which is what a site with nothing in front of it wants.
+	 *
 	 * @param string $header The $_SERVER key, e.g. HTTP_X_FORWARDED_FOR.
 	 */
 	$header = (string) apply_filters( 'diluxone_users_ip_header', $header );
 
-	return '' !== $header && 0 === strpos( $header, 'HTTP_' ) ? $header : 'HTTP_X_FORWARDED_FOR';
+	return isset( diluxone_users_ip_headers()[ $header ] ) && 0 === strpos( $header, 'HTTP_' ) ? $header : '';
 }
 
 /**
@@ -206,8 +218,17 @@ function diluxone_users_ip_is_internal( string $ip ): bool {
  * @param array<string, mixed>|null $server So it can be tested with no server.
  */
 function diluxone_users_client_ip( ?array $server = null ): string {
-	$server = null === $server ? $_SERVER : $server; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+	$server = null === $server ? $_SERVER : $server; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- every candidate goes through FILTER_VALIDATE_IP below, which is stricter than any sanitiser.
 	$remote = diluxone_users_ip_from( (string) ( $server['REMOTE_ADDR'] ?? '' ) );
+	$header = diluxone_users_ip_header();
+
+	// The site named no header: nothing a client can write is read at all.
+	// This is the first question and not the second on purpose — the check
+	// below is about which hop to believe, and it can only be asked once the
+	// site has said that there is a hop.
+	if ( '' === $header ) {
+		return $remote;
+	}
 
 	// Not one of our proxies — exposed straight to the internet, or behind
 	// something the site never said it trusts: the headers are the client's.
@@ -215,7 +236,6 @@ function diluxone_users_client_ip( ?array $server = null ): string {
 		return $remote;
 	}
 
-	$header     = diluxone_users_ip_header();
 	$candidates = diluxone_users_ip_candidates( (string) ( $server[ $header ] ?? '' ) );
 
 	if ( array() === $candidates ) {
@@ -277,4 +297,47 @@ function diluxone_users_session_ip_of( array $session ): string {
 	}
 
 	return diluxone_users_ip_from( (string) ( $session['ip'] ?? '' ) );
+}
+
+/* ── How often one machine may do something ────────────────────────── */
+
+/**
+ * Has this machine already done `$what` as many times as it is allowed to?
+ *
+ * Counting is the side effect of asking, so there is one place that can
+ * forget to count — the shape `diluxone_users_register_allowed()` had, made
+ * general because it was needed in three places and copying it twice more is
+ * how the third copy ends up with a different number in it.
+ *
+ * The count is per machine and not per whatever was typed: what a script
+ * types — an address, a name — it can change on every request, so a key built
+ * from that is a new key every time and stops nothing. Where it is typing
+ * from is the part it cannot change for free.
+ *
+ * Two requests arriving in the same millisecond can both read the same number
+ * and both write the same number, so the ceiling is approximate by a request
+ * or two. That is the right trade here: these are ceilings on flooding — mail
+ * sent, accounts created, rows written — and none of them is a limit on
+ * guessing a credential. The one that is, `diluxone_users_2fa_fail()`, leaves
+ * its increment to the database for exactly this reason.
+ *
+ * @param string $what   What is being counted, e.g. `link` or `register`.
+ * @param int    $many   How many are allowed inside the window.
+ * @param int    $window How long the window is, in seconds.
+ */
+function diluxone_users_ip_burst( string $what, int $many, int $window = HOUR_IN_SECONDS ): bool {
+	if ( $many <= 0 ) {
+		return true;
+	}
+
+	$key  = 'diluxone_users_burst_' . sanitize_key( $what ) . '_' . md5( diluxone_users_client_ip() );
+	$seen = (int) get_transient( $key );
+
+	if ( $seen >= $many ) {
+		return false;
+	}
+
+	set_transient( $key, $seen + 1, $window );
+
+	return true;
 }

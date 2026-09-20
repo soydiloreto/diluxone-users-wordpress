@@ -88,6 +88,7 @@ function diluxone_users_tools_action(): void {
 		'close'  => 'diluxone_users_tool_close_sessions',
 		'export' => 'diluxone_users_tool_export',
 		'import' => 'diluxone_users_tool_import',
+		'wipe'   => 'diluxone_users_tool_wipe',
 	);
 
 	if ( ! isset( $tools[ $tool ] ) ) {
@@ -244,14 +245,26 @@ function diluxone_users_tool_export(): void {
  * @return never
  */
 function diluxone_users_tool_import(): void {
-	// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- verified above; the content is validated as JSON below.
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- verified above; the path is checked with is_uploaded_file() below and the content is validated as JSON.
 	$uploaded = isset( $_FILES['file']['tmp_name'] ) ? sanitize_text_field( wp_unslash( $_FILES['file']['tmp_name'] ) ) : '';
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified above.
+	$problem = isset( $_FILES['file']['error'] ) ? (int) $_FILES['file']['error'] : UPLOAD_ERR_NO_FILE;
 
-	if ( '' === $uploaded || ! is_uploaded_file( $uploaded ) ) {
+	if ( UPLOAD_ERR_OK !== $problem || '' === $uploaded || ! is_uploaded_file( $uploaded ) ) {
 		diluxone_users_tool_done( __( 'No file uploaded.', 'diluxone-users' ), 'error' );
 	}
 
-	$raw  = (string) file_get_contents( $uploaded ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- a local file that was just uploaded, not a URL.
+	/*
+	 * Measured before it is read. What comes out of the button beside this one
+	 * is a few kilobytes of JSON; anything past a megabyte is not that file,
+	 * and reading it first to find out means holding all of it in memory to
+	 * decide it was too big.
+	 */
+	if ( (int) filesize( $uploaded ) > MB_IN_BYTES ) {
+		diluxone_users_tool_done( __( 'That file is too big to be a settings export.', 'diluxone-users' ), 'error' );
+	}
+
+	$raw  = (string) file_get_contents( $uploaded ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- a local file that was just uploaded, not a URL, and capped above.
 	$json = json_decode( $raw, true );
 
 	if ( ! is_array( $json ) || ! isset( $json['settings'] ) || ! is_array( $json['settings'] ) ) {
@@ -263,7 +276,25 @@ function diluxone_users_tool_import(): void {
 
 	foreach ( $json['settings'] as $key => $value ) {
 		if ( 'diluxone_users_fields' === $key && is_array( $value ) ) {
-			update_option( 'diluxone_users_fields', $value );
+			/*
+			 * Through the same normaliser the fields screen uses, and not
+			 * straight into the option. The docblock above has always said
+			 * only known keys are accepted; for this one key it was not true,
+			 * and the shape a hand-edited file could put in there is read
+			 * back on the account form — where the key of a "field" is the
+			 * user meta key it writes to.
+			 */
+			$fields = array();
+
+			foreach ( $value as $field ) {
+				$clean = is_array( $field ) ? diluxone_users_normalize_field( $field ) : array( 'key' => '' );
+
+				if ( '' !== $clean['key'] && diluxone_users_field_key_allowed( (string) $clean['key'] ) ) {
+					$fields[] = $clean;
+				}
+			}
+
+			update_option( 'diluxone_users_fields', $fields );
 			++$written;
 			continue;
 		}
@@ -352,11 +383,11 @@ add_action( 'admin_post_diluxone_users_mail_test', 'diluxone_users_mail_test' );
  * @return void
  */
 function diluxone_users_tool_box( string $title, string $text, callable $form, bool $files = false, string $action = 'diluxone_users_tools' ): void {
-	if ( '' !== $title ) {
-		printf( '<h2>%s</h2>', esc_html( $title ) );
-	}
-
-	diluxone_users_intro( $text );
+	// The design system's heading and not an <h2> of this file's own: a raw
+	// heading inside these screens takes WordPress's margins instead of the
+	// one number every block leaves under it, which is six tools each sitting
+	// a different distance from the one above.
+	diluxone_users_ui_section( $title, $text );
 
 	printf(
 		'<form method="post" action="%s"%s>',
@@ -370,16 +401,6 @@ function diluxone_users_tool_box( string $title, string $text, callable $form, b
 	$form();
 
 	echo '</form>';
-}
-
-/**
- * The old Tools screen, which is now a tab.
- *
- * The menu still points here until it is taken out; it draws the maintenance
- * screen, and the redirect on the old slug lands on the right tab.
- */
-function diluxone_users_screen_tools(): void {
-	diluxone_users_screen_status();
 }
 
 /** The Tools tab: one box per thing that can be pressed. */
@@ -465,5 +486,35 @@ function diluxone_users_screen_tools_boxes(): void {
 			echo '</p>';
 		},
 		true
+	);
+
+	diluxone_users_tool_box(
+		__( 'What happens when the plugin is deleted', 'diluxone-users' ),
+		__( 'By default, nothing. The settings stay, the activity log stays, and so does everything in people’s profiles — their details, their public names, their passkeys and their second factors. That is on purpose: a plugin deleted by accident, or deleted to be installed again, should not be what loses somebody their account. Tick this only when the plugin is going for good and the data is meant to go with it. It cannot be undone, and it runs on delete, not on deactivate.', 'diluxone-users' ),
+		static function (): void {
+			echo '<input type="hidden" name="tool" value="wipe">';
+			echo '<p><label><input type="checkbox" name="wipe" value="1"';
+			checked( (bool) diluxone_users_option( 'diluxone_users_uninstall_wipe' ) );
+			echo '> ';
+			esc_html_e( 'Remove everything this plugin wrote when it is deleted', 'diluxone-users' );
+			echo '</label></p>';
+			submit_button( __( 'Save', 'diluxone-users' ), 'secondary', 'submit', false );
+		}
+	);
+}
+
+/**
+ * Remembers whether deleting the plugin should take the data with it.
+ *
+ * @return never
+ */
+function diluxone_users_tool_wipe(): void {
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified in diluxone_users_tools_action().
+	diluxone_users_save_options( array( 'diluxone_users_uninstall_wipe' => isset( $_POST['wipe'] ) ? 1 : 0 ) );
+
+	diluxone_users_tool_done(
+		diluxone_users_option( 'diluxone_users_uninstall_wipe' )
+			? __( 'Deleting the plugin will now remove everything it wrote.', 'diluxone-users' )
+			: __( 'Deleting the plugin will leave the data where it is.', 'diluxone-users' )
 	);
 }

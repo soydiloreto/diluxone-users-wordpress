@@ -7,7 +7,7 @@
  *
  * @var string                             $state     What happened ('sent', 'expired', 'email', 'error', 'social').
  * @var string                             $email     Address the link was sent to.
- * @var array<string, array<string,mixed>> $providers Available networks.
+ * @var array<string, array<string,mixed>> $providers Available networks, for a theme that draws its own.
  * @var int                                $minutes   How long the link is good for.
  * @var bool                               $title     Whether to draw the "Sign in" heading.
  *
@@ -15,6 +15,13 @@
  * is not in here: it wraps both steps of signing in, so it is printed by
  * diluxone_users_login_frame_open() and a theme replacing this file still
  * gets it.
+ *
+ * Neither are the ways in. This file used to stack them in an order written
+ * by hand, which is why nobody could change it and why the page grew down the
+ * screen without anybody deciding it would. Each one is registered now — see
+ * includes/login-ways.php — and diluxone_users_ways_render() draws whatever
+ * this site has, stacked or in tabs, in the site's own order. A theme with
+ * its own copy of this file gets the same, including a way an add-on added.
  *
  * @package DiluxOneUsers
  */
@@ -80,83 +87,28 @@ defined( 'ABSPATH' ) || exit;
 			<p class="diluxone-users-login__intro"><?php echo esc_html( $diluxone_users_intro ); ?></p>
 		<?php endif; ?>
 
-		<?php if ( 'changed' === $state ) : ?>
-			<p class="diluxone-users-notice diluxone-users-notice--ok"><?php esc_html_e( 'Your password is changed. You can sign in with it now.', 'diluxone-users' ); ?></p>
-		<?php elseif ( 'expired' === $state ) : ?>
-			<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'That link expired or was already used. Ask for a new one.', 'diluxone-users' ); ?></p>
-		<?php elseif ( 'email' === $state ) : ?>
-			<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'That email address does not look valid.', 'diluxone-users' ); ?></p>
-		<?php elseif ( 'social' === $state ) : ?>
-			<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'We could not finish signing you in with that provider. Try again or use your email.', 'diluxone-users' ); ?></p>
-		<?php elseif ( 'error' === $state ) : ?>
-			<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'Something went wrong. Try again.', 'diluxone-users' ); ?></p>
-		<?php endif; ?>
-
 		<?php
-		// Guarded: passkeys is one feature in two files, and a site running
-		// without them should get a sign-in form, not a fatal error.
+		/*
+		 * What each of these says is not written here any more: the site can
+		 * rewrite every one of them from the dashboard, in each of its
+		 * languages, and a filter can have the last word. This decides WHICH
+		 * message, which is the template's business; the wording is
+		 * includes/login-messages.php.
+		 */
+		$diluxone_users_says = array(
+			'changed' => 'login_changed',
+			'expired' => 'login_expired',
+			'email'   => 'login_email',
+			'social'  => 'login_social',
+			'error'   => 'login_error',
+		);
 		?>
-		<?php if ( diluxone_users_has_passkeys() ) : ?>
-			<?php diluxone_users_passkeys_enqueue(); ?>
-			<p class="diluxone-users-notice" data-diluxone-users-passkey-notice hidden></p>
-			<p><button type="button" class="diluxone-users-button diluxone-users-button--wide" data-diluxone-users-passkey="login"><?php echo diluxone_users_button_icon( 'key' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own markup. ?><?php esc_html_e( 'Sign in with a passkey', 'diluxone-users' ); ?></button></p>
-			<p class="diluxone-users-divider"><span><?php esc_html_e( 'or', 'diluxone-users' ); ?></span></p>
+
+		<?php if ( isset( $diluxone_users_says[ $state ] ) ) : ?>
+			<?php diluxone_users_login_notice( $diluxone_users_says[ $state ] ); ?>
 		<?php endif; ?>
 
-		<?php if ( array() !== $providers ) : ?>
-			<?php echo diluxone_users_sso_buttons( $providers ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own markup, already escaped. ?>
-
-			<p class="diluxone-users-divider">
-				<span>
-					<?php
-					echo diluxone_users_login_has_link()
-						? esc_html__( 'or with your email', 'diluxone-users' )
-						: esc_html__( 'or with your password', 'diluxone-users' );
-					?>
-				</span>
-			</p>
-		<?php endif; ?>
-
-		<?php if ( diluxone_users_login_has_link() ) : ?>
-			<form class="diluxone-users-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-				<input type="hidden" name="action" value="diluxone_users_acceso">
-				<?php wp_nonce_field( 'diluxone_users_login', 'diluxone_users_nonce' ); ?>
-
-				<label for="diluxone-users-email"><?php esc_html_e( 'Email address', 'diluxone-users' ); ?></label>
-				<input type="email" id="diluxone-users-email" name="diluxone_users_email" required autocomplete="email" placeholder="<?php echo esc_attr_x( 'you@example.com', 'placeholder for the e-mail field', 'diluxone-users' ); ?>">
-
-				<button type="submit" class="diluxone-users-button"><?php echo diluxone_users_button_icon( 'mail' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own markup. ?><?php esc_html_e( 'Send me the sign-in link', 'diluxone-users' ); ?></button>
-			</form>
-
-			<p class="diluxone-users-note diluxone-users-note--icon">
-				<?php echo diluxone_users_icon( 'info' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own markup. ?>
-				<span><?php esc_html_e( 'You get an email with a link. Click it and you are in: no password to choose or type.', 'diluxone-users' ); ?></span>
-			</p>
-		<?php endif; ?>
-
-		<?php if ( diluxone_users_login_has_password() ) : ?>
-			<?php if ( diluxone_users_login_has_link() ) : ?>
-				<p class="diluxone-users-divider"><span><?php esc_html_e( 'or with your password', 'diluxone-users' ); ?></span></p>
-			<?php endif; ?>
-
-			<?php
-			// WordPress's own form, not one of ours: it already brings the
-			// "remember me", the redirect and the nonce, and it is the part that
-			// least needs touching.
-			wp_login_form(
-				array(
-					'redirect'       => (string) apply_filters( 'diluxone_users_login_redirect', home_url( '/' ), 0 ),
-					'label_username' => __( 'Email or username', 'diluxone-users' ),
-					'label_password' => __( 'Password', 'diluxone-users' ),
-					'label_log_in'   => __( 'Sign in', 'diluxone-users' ),
-				)
-			);
-			?>
-
-			<p class="diluxone-users-note">
-				<a href="<?php echo esc_url( wp_lostpassword_url() ); ?>"><?php esc_html_e( 'I forgot my password', 'diluxone-users' ); ?></a>
-			</p>
-		<?php endif; ?>
+		<?php diluxone_users_ways_render(); ?>
 
 		<?php
 		/*

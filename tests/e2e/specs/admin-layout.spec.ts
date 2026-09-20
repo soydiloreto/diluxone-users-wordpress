@@ -1,0 +1,236 @@
+import type { Page } from '@playwright/test';
+import { test, expect } from '../support/fixtures';
+import { adminTabs, SCREENS } from '../support/screens';
+import {
+	ADMIN_RULES,
+	FRONT_RULES,
+	LayoutFinding,
+	WIDTHS,
+	expectSoundLayout,
+	layoutFindings,
+} from '../support/layout';
+import { adminUrl } from '../support/ui';
+import { ADMIN_STATE } from '../../../playwright.config';
+
+/**
+ * Every screen, measured.
+ *
+ * The suite next door proves each of these tabs answers, saves and says so.
+ * It passed green through every visual bug this plugin has had, because
+ * "answers 200 without a PHP notice" is a claim about the server and the bugs
+ * were in the browser: a block on top of another block, a column of nothing
+ * where a rail should be, a bordered box with nothing in it.
+ *
+ * What is asserted is in `support/layout.ts`, and it is deliberately not an
+ * opinion about the design — only the handful of things that are never right
+ * by accident. One test per tab, measured at four widths, so a failure names
+ * the screen, the width and the element.
+ */
+
+test.use({ storageState: ADMIN_STATE });
+
+test.describe('Every screen holds together', () => {
+	for (const tab of adminTabs()) {
+		test(tab.name, async ({ page }) => {
+			await page.goto(tab.url);
+
+			await expectSoundLayout(page);
+		});
+	}
+});
+
+/**
+ * The registry is the whole visual suite's idea of what exists, and a tab
+ * nobody wrote down is a tab nothing looks at. So it is checked against the
+ * screens themselves: the strip the dashboard draws is read, and a tab in it
+ * that is not in the registry fails here rather than going unseen for a
+ * release. A screen with one tab draws no strip — there is nothing to compare
+ * and nothing to miss.
+ */
+test.describe('No tab escapes the suite', () => {
+	for (const screen of Object.keys(SCREENS)) {
+		test(screen, async ({ page }) => {
+			await page.goto(adminUrl(screen));
+
+			const drawn = await page
+				.locator('.nav-tab-wrapper a.nav-tab')
+				.evaluateAll((links: Element[]) =>
+					links
+						.map((link) => new URL((link as HTMLAnchorElement).href).searchParams.get('tab') ?? '')
+						.filter((tab) => tab !== '')
+				);
+
+			if (drawn.length === 0) {
+				return;
+			}
+
+			expect(drawn.slice().sort()).toEqual(SCREENS[screen].slice().sort());
+		});
+	}
+});
+
+/**
+ * The one screen of the plugin's own that a stranger sees.
+ *
+ * It is drawn by the site's theme rather than by the dashboard's stylesheet,
+ * which is exactly why it is measured too: everything it inherits is
+ * somebody else's decision, and the plugin's own blocks still have to stack
+ * without touching and stay inside the page on a phone.
+ */
+test.describe('The sign-in page holds together', () => {
+	test.use({ storageState: { cookies: [], origins: [] } });
+
+	test('at every width', async ({ page, pages }) => {
+		await page.goto(pages.login.url);
+
+		await expectSoundLayout(page, FRONT_RULES, WIDTHS);
+	});
+});
+
+/**
+ * A guard on the measuring itself.
+ *
+ * Every assertion above is "the list came back empty", and a list comes back
+ * empty when the measuring is broken exactly as readily as when the screen is
+ * right. A suite that has never been seen to fail is a suite nobody has any
+ * reason to believe, so every one of the six rules is broken here on purpose,
+ * on a real screen, and has to be seen.
+ *
+ * The break is a stylesheet added to the page rather than an edit to
+ * `assets/`: the bug each one imitates is a CSS bug, the screen underneath is
+ * the real one, and nothing is left behind for the next test to trip over.
+ */
+test.describe('The measuring itself can fail', () => {
+	const WAYS = adminUrl('diluxone-users-login', 'ways');
+
+	/** Breaks the screen the given way and hands back what was measured. */
+	async function bend(page: Page, css: string): Promise<LayoutFinding[]> {
+		await page.goto(WAYS);
+		await page.addStyleTag({ content: css });
+
+		return layoutFindings(page, ADMIN_RULES);
+	}
+
+	function kinds(findings: LayoutFinding[]): string[] {
+		return findings.map((one) => one.kind);
+	}
+
+	// The bug that started all this: a block drawn on top of the one above it.
+	test('a block on top of another block', async ({ page }) => {
+		const findings = await bend(
+			page,
+			'.diluxone-users-admin .diluxone-users-studio__fields > * + * { margin-top: -40px; }'
+		);
+
+		expect(kinds(findings)).toContain('overlap');
+	});
+
+	// The room every block leaves under it, taken away: nothing is on top of
+	// anything, and the screen is a wall of text.
+	test('two blocks with nothing between them', async ({ page }) => {
+		const findings = await bend(
+			page,
+			'.diluxone-users-admin .diluxone-users-studio__aside > * { margin-bottom: 0; }'
+		);
+
+		expect(kinds(findings)).toContain('air');
+	});
+
+	test('something reaching past the edge of the screen', async ({ page }) => {
+		const findings = await bend(
+			page,
+			'.diluxone-users-admin .diluxone-users-studio__fields { min-width: 2400px; }'
+		);
+
+		expect(kinds(findings)).toContain('overflow');
+	});
+
+	test('the rail underneath instead of beside', async ({ page }) => {
+		const findings = await bend(page, '.diluxone-users-admin .diluxone-users-studio { display: block; }');
+
+		expect(kinds(findings)).toContain('rail');
+	});
+
+	/*
+	 * The rail's shape, broken the two ways it can be: a screen printing its
+	 * own markup into the column, and the state pushed below the manual.
+	 * Markup again rather than a stylesheet — both are things a screen does,
+	 * not things a stylesheet does.
+	 */
+	test('a screen printing its own markup into the rail', async ({ page }) => {
+		await page.goto(WAYS);
+		await page.evaluate(() => {
+			const mine = document.createElement('p');
+
+			mine.textContent = 'a paragraph this screen felt like adding';
+			document.querySelector('.diluxone-users-studio__aside')?.append(mine);
+		});
+
+		expect(kinds(await layoutFindings(page, ADMIN_RULES))).toContain('shape');
+	});
+
+	test('how the site stands, said after the manual', async ({ page }) => {
+		await page.goto(WAYS);
+		await page.evaluate(() => {
+			const rail = document.querySelector('.diluxone-users-studio__aside');
+			const state = document.createElement('div');
+
+			state.className = 'du-state';
+			state.textContent = 'right now, said last';
+			rail?.append(state);
+		});
+
+		expect(kinds(await layoutFindings(page, ADMIN_RULES))).toContain('shape');
+	});
+
+	/*
+	 * This one is markup rather than a stylesheet, because that is what the
+	 * bug is: a box the screen drew and then had nothing to put in.
+	 *
+	 * And it is drawn with an empty paragraph inside it on purpose. The
+	 * stylesheet already hides a box that is `:empty`, which covers the easy
+	 * half; the half it cannot see is a box whose contents came out blank —
+	 * a heading with nothing after it, a list of providers on a site with
+	 * none — because in CSS's terms that box has children and is not empty.
+	 * That is the one this rule is for.
+	 */
+	test('a bordered box with nothing in it', async ({ page }) => {
+		await page.goto(WAYS);
+		await page.evaluate(() => {
+			const box = document.createElement('div');
+
+			box.className = 'du-note';
+			box.append(document.createElement('p'));
+			box.style.height = '80px';
+			document.querySelector('.diluxone-users-studio__aside')?.append(box);
+		});
+
+		expect(kinds(await layoutFindings(page, ADMIN_RULES))).toContain('blank');
+	});
+
+	/*
+	 * A stylesheet again, and the exact shape of the bug: a component gives
+	 * itself a `display`, which outranks the browser's own rule for the
+	 * attribute, and the thing the script hid is on the screen after all.
+	 * Three components in this plugin met that separately; consolidating
+	 * their three answers into one broke the third of them, and nothing but
+	 * a photograph noticed. This is the rule that would have.
+	 */
+	test('something still on screen with hidden on it', async ({ page }) => {
+		await page.goto(WAYS);
+		await page.evaluate(() => {
+			const box = document.createElement('div');
+
+			box.className = 'du-note';
+			box.textContent = 'hidden, and on the screen anyway';
+			box.hidden = true;
+			document.querySelector('.diluxone-users-studio__aside')?.append(box);
+		});
+
+		// The component that outranks the attribute, imitated: the same weight
+		// as the rule in the stylesheet, and written afterwards.
+		await page.addStyleTag({ content: '.diluxone-users-admin .du-note { display: block; }' });
+
+		expect(kinds(await layoutFindings(page, ADMIN_RULES))).toContain('hidden');
+	});
+});

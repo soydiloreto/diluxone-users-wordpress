@@ -301,15 +301,26 @@ function diluxone_users_login_frame_close(): void {
  * stylesheet turned off, and they are hidden from screen readers — each one
  * sits next to a sentence that already says the same thing.
  *
- * @param string $name mail | info
+ * @param string $name mail | info | key | network | user
  */
 function diluxone_users_icon( string $name, int $size = 0 ): string {
 	$paths = array(
-		'mail' => '<rect x="2.5" y="4.5" width="19" height="15" rx="2"></rect><path d="m3 6 9 6.5L21 6"></path>',
-		'info' => '<circle cx="12" cy="12" r="9"></circle><path d="M12 16v-5M12 8h.01"></path>',
+		'mail'    => '<rect x="2.5" y="4.5" width="19" height="15" rx="2"></rect><path d="m3 6 9 6.5L21 6"></path>',
+		'info'    => '<circle cx="12" cy="12" r="9"></circle><path d="M12 16v-5M12 8h.01"></path>',
 		// The passkey: a key, because that is what everybody's operating
 		// system draws on the prompt this button opens.
-		'key'  => '<circle cx="8" cy="12" r="4"></circle><path d="M12 12h9M18 12v4M15.5 12v3"></path>',
+		'key'     => '<circle cx="8" cy="12" r="4"></circle><path d="M12 12h9M18 12v4M15.5 12v3"></path>',
+
+		/*
+		 * The two that name a way in on a tab. They are drawn here, in the
+		 * same hand as the other three, and that is the rule rather than an
+		 * accident: a tab strip is a row of equals, so the tab for "a social
+		 * account" cannot be Google's mark — a site with five networks would
+		 * have five logos to fit on one tab, and whichever one it picked would
+		 * be telling people the other four are not there.
+		 */
+		'network' => '<circle cx="12" cy="5" r="2.4"></circle><circle cx="5" cy="18" r="2.4"></circle><circle cx="19" cy="18" r="2.4"></circle><path d="M10.6 6.9 6.4 15.6M13.4 6.9l4.2 8.7M7.4 18h9.2"></path>',
+		'user'    => '<circle cx="12" cy="8" r="3.4"></circle><path d="M5.5 19.5a6.5 6.5 0 0 1 13 0"></path>',
 	);
 
 	if ( ! isset( $paths[ $name ] ) ) {
@@ -662,11 +673,15 @@ function diluxone_users_login_body( string $url ): string {
 function diluxone_users_login_send( int $user_id, string $email, string $token ): bool {
 	$url = diluxone_users_login_link( $user_id, $token );
 
-	// In development there is usually no mail server. Leaving the link in the
-	// log is what makes the flow testable end to end.
-	if ( 'production' !== wp_get_environment_type() ) {
-		error_log( '[diluxone-users] sign-in link for ' . $email . ': ' . $url ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-	}
+	/*
+	 * The link is not written anywhere on the way out, and that includes the
+	 * error log on a site that is not production. It is a credential: whoever
+	 * reads `debug.log` inside the next fifteen minutes signs in as that
+	 * person, with no password and no second step. A development site with
+	 * real people's addresses imported into it is the normal case, not the
+	 * strange one. Whoever needs to see the message on a machine with no mail
+	 * server has `diluxone_users_login_email` right below, or Mailpit.
+	 */
 
 	/**
 	 * Filters the e-mail before sending it.
@@ -686,6 +701,24 @@ function diluxone_users_login_send( int $user_id, string $email, string $token )
 	);
 
 	return wp_mail( $email, $message['subject'], $message['body'] );
+}
+
+/**
+ * How many sign-in links one machine may ask for in an hour.
+ *
+ * Generous on purpose: a family, an office or a school share an address, and
+ * so do the people on one conference wifi. Thirty is more than any of them
+ * reach in an hour and far below what is worth a script's while.
+ */
+function diluxone_users_login_burst(): int {
+	/**
+	 * Filters how many sign-in links one address may ask for per hour.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $burst
+	 */
+	return max( 1, (int) apply_filters( 'diluxone_users_login_burst', 30 ) );
 }
 
 /**
@@ -721,6 +754,25 @@ function diluxone_users_login_request(): void {
 		$redirect
 	);
 	$throttle = 'diluxone_users_throttle_' . md5( $email );
+
+	/*
+	 * The machine first, and the address after.
+	 *
+	 * The per-address wait below is the one a person meets: it stops the same
+	 * inbox being written to twice in a minute. It was also the only one, and
+	 * as a defence it was the wrong shape — a script holding a list of five
+	 * hundred members' addresses gets a fresh key on every line of it, and the
+	 * site mails five hundred sign-in links a minute, signed by its own
+	 * domain, until its sending reputation is gone. What a script cannot get a
+	 * fresh one of is the machine it is typing from.
+	 *
+	 * It sits before the address check so that a run of different addresses
+	 * from one place is counted as the one thing it is.
+	 */
+	if ( ! diluxone_users_ip_burst( 'link', diluxone_users_login_burst() ) ) {
+		wp_safe_redirect( $done );
+		exit;
+	}
 
 	if ( get_transient( $throttle ) ) {
 		wp_safe_redirect( $done );

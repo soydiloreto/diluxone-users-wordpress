@@ -1,6 +1,6 @@
 import { test, expect, expectSignedIn, expectSignedOut } from '../support/fixtures';
 import { freshEmail } from '../support/api';
-import { linkForm, passwordForm, signInWithPassword } from '../support/ui';
+import { linkForm, openWay, passwordForm, signInWithPassword } from '../support/ui';
 
 /**
  * The password, in each of the three answers to "how do people get in".
@@ -35,7 +35,14 @@ test.describe('Signing in with a password', () => {
 
 		await page.goto(pages.login.url);
 
+		// Each way is asked for by name before it is looked at: with three of
+		// them on, the page arranges them as tabs and two of the three carry
+		// `hidden`. Pressing the tab first asks what this test means — is the
+		// way in there, and can it be reached — instead of a question about
+		// which tab happened to open.
+		await openWay(page, 'email');
 		await expect(linkForm(page)).toBeVisible();
+		await openWay(page, 'password');
 		await expect(passwordForm(page)).toBeVisible();
 
 		await signInWithPassword(page, email, PASSWORD);
@@ -56,6 +63,7 @@ test.describe('Signing in with a password', () => {
 		await page.goto(pages.login.url);
 
 		await expect(linkForm(page)).toHaveCount(0);
+		await openWay(page, 'password');
 		await expect(passwordForm(page)).toBeVisible();
 
 		await signInWithPassword(page, email, PASSWORD);
@@ -75,6 +83,7 @@ test.describe('Signing in with a password', () => {
 
 		await page.goto(pages.login.url);
 
+		await openWay(page, 'email');
 		await expect(linkForm(page)).toBeVisible();
 		await expect(passwordForm(page)).toHaveCount(0);
 
@@ -108,6 +117,7 @@ test.describe('Signing in with a password', () => {
 		// wp-login.php. This is the whole bug: the screen is taken over, the
 		// endpoint is not.
 		await page.goto(pages.login.url);
+		await openWay(page, 'password');
 		await expect(passwordForm(page)).toBeVisible();
 
 		await signInWithPassword(page, email, PASSWORD);
@@ -124,6 +134,7 @@ test.describe('Signing in with a password', () => {
 		await page.goto('/wp-login.php');
 
 		await expect(page).toHaveURL(new RegExp(pages.login.url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+		await openWay(page, 'password');
 		await expect(passwordForm(page)).toBeVisible();
 	});
 

@@ -71,9 +71,11 @@ tools
 bin
 scripts
 
-# IDE
+# IDE and AI tooling
 .idea
 .vscode
+.claude
+.cursor
 
 # Build artifacts and logs
 build

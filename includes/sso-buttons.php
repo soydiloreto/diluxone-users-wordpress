@@ -80,9 +80,13 @@ function diluxone_users_sso_button_text( array $provider ): string {
 		$template = __( 'Continue with %s', 'diluxone-users' );
 	}
 
-	return false === strpos( $template, '%s' )
-		? $template
-		: sprintf( $template, $provider['name'] );
+	/*
+	 * Replaced and not `sprintf`ed. The box is free text somebody types, and
+	 * `sprintf` reads every `%` in it as an instruction: "Continue with %s
+	 * (50% off)" is a ValueError on PHP 8, thrown while drawing the public
+	 * sign-in page. One placeholder is all this ever needed.
+	 */
+	return str_replace( '%s', (string) $provider['name'], $template );
 }
 
 /** The container classes, according to the settings. */
@@ -116,7 +120,11 @@ function diluxone_users_sso_button( string $id, array $provider, string $url = '
 	return sprintf(
 		'<a class="diluxone-users-social diluxone-users-social--%1$s" style="--diluxone-users-brand: %2$s" href="%3$s"%4$s>%5$s<span class="diluxone-users-social__text">%6$s</span></a>',
 		esc_attr( $id ),
-		esc_attr( $provider['color'] ),
+		// A colour and not "whatever is in that key": it is printed inside a
+		// `style` attribute, where `esc_attr` stops the attribute being broken
+		// out of and says nothing about the declaration itself. The table is
+		// this plugin's, but `diluxone_users_sso_providers` is anybody's.
+		esc_attr( (string) sanitize_hex_color( (string) $provider['color'] ) ),
 		'' === $url ? '#' : esc_url( $url ),
 		'' === $url ? ' tabindex="-1" aria-hidden="true"' : '',
 		$icon,

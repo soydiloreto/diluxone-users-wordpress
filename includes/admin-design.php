@@ -31,10 +31,20 @@ function diluxone_users_screen_design(): void {
 /** Saves it. */
 function diluxone_users_design_brand_save(): void {
 	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the panel verifies it.
+
+	/*
+	 * One question on the screen, two settings underneath it. Where the look
+	 * comes from is asked once because that is how it is understood, and kept
+	 * as the two answers that are actually read — whether the stylesheet is
+	 * loaded, and whose colours are used. Storing the question as well would
+	 * be a third answer able to disagree with the two.
+	 */
+	$look = sanitize_key( wp_unslash( $_POST['diluxone_users_look'] ?? '' ) );
+
 	diluxone_users_save_options(
 		array(
-			'diluxone_users_styles'        => isset( $_POST['diluxone_users_styles'] ) ? 1 : 0,
-			'diluxone_users_colors'        => 'theme' === sanitize_key( wp_unslash( $_POST['diluxone_users_colors'] ?? '' ) ) ? 'theme' : 'own',
+			'diluxone_users_styles'        => 'site' === $look ? 0 : 1,
+			'diluxone_users_colors'        => 'theme' === $look ? 'theme' : 'own',
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- the saver sanitises the map key by key.
 			'diluxone_users_color_map'     => (array) wp_unslash( $_POST['diluxone_users_color_map'] ?? array() ),
 			'diluxone_users_style_accent'  => sanitize_hex_color( wp_unslash( $_POST['diluxone_users_style_accent'] ?? '' ) ) ?? '',
@@ -44,7 +54,6 @@ function diluxone_users_design_brand_save(): void {
 			'diluxone_users_button_style'  => sanitize_key( wp_unslash( $_POST['diluxone_users_button_style'] ?? 'solid' ) ),
 			'diluxone_users_button_icons'  => isset( $_POST['diluxone_users_button_icons'] ) ? 1 : 0,
 			'diluxone_users_notice_style'  => 'soft' === sanitize_key( wp_unslash( $_POST['diluxone_users_notice_style'] ?? '' ) ) ? 'soft' : 'bar',
-			'diluxone_users_sent_icon'     => 'circle' === sanitize_key( wp_unslash( $_POST['diluxone_users_sent_icon'] ?? '' ) ) ? 'circle' : 'plain',
 		)
 	);
 	// phpcs:enable
@@ -82,6 +91,12 @@ function diluxone_users_design_login_save(): void {
 			'diluxone_users_login_legal'        => wp_kses_post( wp_unslash( $_POST['diluxone_users_login_legal'] ?? '' ) ),
 			'diluxone_users_sent_title'         => sanitize_text_field( wp_unslash( $_POST['diluxone_users_sent_title'] ?? '' ) ),
 			'diluxone_users_sent_note'          => sanitize_text_field( wp_unslash( $_POST['diluxone_users_sent_note'] ?? '' ) ),
+			// Beside the two lines it belongs with, because the screen that
+			// draws it is this one. It was read by the brand tab's save, which
+			// is a tab that never draws it — so every save of Your brand posted
+			// no answer, the save read the absence as “plain”, and a site that
+			// had chosen the circle lost it to a screen about colours.
+			'diluxone_users_sent_icon'          => 'circle' === sanitize_key( wp_unslash( $_POST['diluxone_users_sent_icon'] ?? '' ) ) ? 'circle' : 'plain',
 		)
 	);
 	// phpcs:enable
@@ -133,11 +148,6 @@ function diluxone_users_design_account_save(): void {
 
 /* ── Social buttons ────────────────────────────────────────────────── */
 
-
-/** How the buttons look. It brings its own two columns. */
-function diluxone_users_design_social(): void {
-	diluxone_users_screen_social_buttons( diluxone_users_sso_providers() );
-}
 
 /** Saves them. */
 function diluxone_users_design_social_save(): void {
@@ -242,7 +252,9 @@ function diluxone_users_design_panels(): void {
 		array(
 			'label'    => __( 'Social login', 'diluxone-users' ),
 			'position' => 40,
-			'render'   => 'diluxone_users_design_social',
+			'render'   => 'diluxone_users_screen_social_buttons',
+			'preview'  => 'diluxone_users_social_buttons_preview',
+			'note'     => __( 'The buttons as the sign-in page draws them, on the site’s own surface. Four networks are enough to see a finish; the sign-in page shows the ones that are switched on.', 'diluxone-users' ),
 			'save'     => 'diluxone_users_design_social_save',
 		)
 	);
@@ -263,10 +275,12 @@ function diluxone_users_design_panels(): void {
 			'label'       => 'wp-login.php',
 			'position'    => 60,
 			'render'      => 'diluxone_users_screen_login_wp',
-			// The page itself and not a rendering of it, so it only changes
-			// once it is saved.
+			// The page itself and not a rendering of it. It is fetched by the
+			// browser, so what is in the frame is what is saved — and the stage
+			// puts a button under it that asks for the same page drawn with
+			// what is on this screen instead.
 			'preview_src' => wp_login_url() . '?diluxone-users-admin=1',
-			'note'        => __( 'wp-login.php as it is right now. Save to see the changes: this is the page itself, not a drawing of it.', 'diluxone-users' ),
+			'note'        => __( 'wp-login.php itself, as it is saved right now — not a drawing of it. Press the button above to see it with the choices on this screen.', 'diluxone-users' ),
 			'save'        => 'diluxone_users_design_wp_save',
 		)
 	);
@@ -283,33 +297,37 @@ add_action( 'diluxone_users_register_panels', 'diluxone_users_design_panels' );
  */
 function diluxone_users_design_register(): void {
 	diluxone_users_intro( __( 'The words on the registration form. Its shape — the frame, the picture, your mark — comes from the Sign in tab: the two forms are the same page, so the frame is chosen once.', 'diluxone-users' ) );
-	?>
-	<table class="form-table" role="presentation">
-		<?php
-		diluxone_users_words_field(
-			'diluxone_users_register_title',
-			__( 'The heading', 'diluxone-users' ),
-			__( 'Create your account', 'diluxone-users' )
-		);
 
-		diluxone_users_words_field(
-			'diluxone_users_register_intro',
-			__( 'The line under it', 'diluxone-users' ),
-			'',
-			__( 'Nothing by default. Somewhere to say what an account is for on this site.', 'diluxone-users' )
-		);
-
-		diluxone_users_words_field(
-			'diluxone_users_register_done',
-			__( 'Once it is done', 'diluxone-users' ),
-			__( 'Your account is ready', 'diluxone-users' )
-		);
-		?>
-	</table>
-	<?php
+	/*
+	 * Before the boxes and not after them: what is written here is kept and
+	 * waits, and that is worth knowing while writing it rather than once it
+	 * has been written.
+	 */
 	if ( ! diluxone_users_option( 'diluxone_users_register_form' ) ) {
-		diluxone_users_intro( __( 'This site does not use this form: accounts are made another way. What is written here waits for the day that changes.', 'diluxone-users' ) );
+		diluxone_users_ui_notice(
+			__( 'This site does not use this form: accounts are made another way. What is written here waits for the day that changes.', 'diluxone-users' ),
+			'warning'
+		);
 	}
+
+	diluxone_users_ui_words(
+		'diluxone_users_register_title',
+		__( 'The heading', 'diluxone-users' ),
+		__( 'Create your account', 'diluxone-users' )
+	);
+
+	diluxone_users_ui_words(
+		'diluxone_users_register_intro',
+		__( 'The line under it', 'diluxone-users' ),
+		'',
+		__( 'Nothing by default. Somewhere to say what an account is for on this site.', 'diluxone-users' )
+	);
+
+	diluxone_users_ui_words(
+		'diluxone_users_register_done',
+		__( 'Once it is done', 'diluxone-users' ),
+		__( 'Your account is ready', 'diluxone-users' )
+	);
 }
 
 /** Saves them. */

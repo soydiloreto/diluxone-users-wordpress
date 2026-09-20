@@ -91,11 +91,6 @@ function diluxone_users_passkeys( int $user_id ): array {
 	return is_array( $keys ) ? array_values( $keys ) : array();
 }
 
-/** Do they have at least one? */
-function diluxone_users_passkeys_ready( int $user_id ): bool {
-	return array() !== diluxone_users_passkeys( $user_id );
-}
-
 /**
  * Stores one person's list of passkeys.
  *
@@ -188,28 +183,13 @@ function diluxone_users_passkey_owner( string $id ): int {
 	}
 
 	/*
-	 * Keys stored before the index existed. They are found the old way — by
-	 * opening every list — and indexed on the spot, so each one goes through
-	 * this once. The cap is the old cap: a key that was unreachable before is
-	 * still unreachable this way, and reachable the moment its list is saved
-	 * again.
+	 * And that is the whole lookup. There used to be a second pass here for
+	 * keys stored before the index existed, which opened up to five hundred
+	 * accounts' lists one by one. There are no such keys — the index has been
+	 * written since the first key this plugin ever registered — so all that
+	 * pass could do was five hundred queries, on an unauthenticated request,
+	 * for a credential id somebody made up.
 	 */
-	$users = get_users(
-		array(
-			'meta_key' => 'diluxone_users_passkeys', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-			'fields'   => 'ID',
-			'number'   => 500,
-		)
-	);
-
-	foreach ( $users as $user_id ) {
-		if ( diluxone_users_passkey_belongs( (int) $user_id, $id ) ) {
-			update_user_meta( (int) $user_id, diluxone_users_passkey_index_key( $id ), 1 );
-
-			return (int) $user_id;
-		}
-	}
-
 	return 0;
 }
 
@@ -390,6 +370,34 @@ function diluxone_users_passkeys_login_options(): array {
 	);
 }
 
+/**
+ * The six values a browser sends for a passkey, by name.
+ *
+ * Everything here is base64url or JSON that the two handlers then decode and
+ * verify — nothing is stored as it arrives and nothing is printed — but the
+ * whole `$_POST` used to travel in, and a call site that hands over the
+ * request tells the next reader nothing about what is actually read.
+ *
+ * @return array<string, string>
+ */
+function diluxone_users_passkeys_posted(): array {
+	$sent = array();
+
+	foreach ( array( 'id', 'publicKey', 'algorithm', 'clientDataJSON', 'authenticatorData', 'signature', 'label' ) as $name ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- the caller checks the nonce for the two steps that can have one; the other two are verified by signature.
+		if ( ! isset( $_POST[ $name ] ) ) {
+			continue;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- base64url and JSON, decoded and verified by the handler; sanitising here would corrupt the bytes a signature is checked over.
+		$value = wp_unslash( $_POST[ $name ] );
+
+		$sent[ $name ] = is_scalar( $value ) ? (string) $value : '';
+	}
+
+	return $sent;
+}
+
 /** The whole dialogue with the browser goes through here. */
 function diluxone_users_passkeys_ajax(): void {
 	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the nonce is verified per step.
@@ -407,13 +415,26 @@ function diluxone_users_passkeys_ajax(): void {
 		}
 	}
 
+	/*
+	 * The two sign-in steps cannot ask for a session, so they ask the machine
+	 * instead. `login-options` writes a challenge — a row in the options table
+	 * — for anybody who asks, and a loop asking for nothing else fills that
+	 * table with rows nothing will read until WordPress next sweeps expired
+	 * transients. The ceiling is high enough that a person with several keys
+	 * on several devices never meets it.
+	 */
+	if ( in_array( $step, array( 'login-options', 'login' ), true )
+		&& ! diluxone_users_ip_burst( 'passkey', 60, 10 * MINUTE_IN_SECONDS ) ) {
+		wp_send_json_error( array( 'message' => __( 'Too many attempts. Wait a moment and try again.', 'diluxone-users' ) ), 429 );
+	}
+
 	switch ( $step ) {
 		case 'register-options':
 			wp_send_json_success( diluxone_users_passkeys_register_options() );
 				// wp_send_json_* answers and stops: there is no fall-through to the next case.
 
 		case 'register':
-			wp_send_json( diluxone_users_passkeys_register( wp_unslash( $_POST ) ) );
+			wp_send_json( diluxone_users_passkeys_register( diluxone_users_passkeys_posted() ) );
 				// wp_send_json_* answers and stops: there is no fall-through to the next case.
 
 		case 'login-options':
@@ -421,7 +442,7 @@ function diluxone_users_passkeys_ajax(): void {
 				// wp_send_json_* answers and stops: there is no fall-through to the next case.
 
 		case 'login':
-			wp_send_json( diluxone_users_passkeys_login( wp_unslash( $_POST ) ) );
+			wp_send_json( diluxone_users_passkeys_login( diluxone_users_passkeys_posted() ) );
 	}
 	// phpcs:enable
 
@@ -626,7 +647,13 @@ function diluxone_users_passkeys_login( array $post ): array {
 
 	// A passkey is already two factors in one step: something you have plus
 	// something you are or know. Asking for a code on top would be asking three.
-	$redirect = (string) apply_filters( 'diluxone_users_login_redirect', home_url( '/' ), $user_id );
+	// The browser assigns this to `location`, so it goes through the same
+	// check `wp_safe_redirect()` would apply if a header were being sent: a
+	// filter is allowed to choose the page, not the scheme.
+	$redirect = wp_validate_redirect(
+		(string) apply_filters( 'diluxone_users_login_redirect', home_url( '/' ), $user_id ),
+		home_url( '/' )
+	);
 
 	wp_set_current_user( $user_id );
 	wp_set_auth_cookie( $user_id, true );

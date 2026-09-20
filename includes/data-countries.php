@@ -287,13 +287,6 @@ function diluxone_users_countries(): array {
 	return $countries;
 }
 
-/** A country name by its ISO code. */
-function diluxone_users_country_name( string $iso ): string {
-	$countries = diluxone_users_countries();
-
-	return (string) ( $countries[ strtoupper( $iso ) ][0] ?? '' );
-}
-
 /** A country's dialling code, without the "+". */
 function diluxone_users_country_dial( string $iso ): string {
 	$countries = diluxone_users_countries();

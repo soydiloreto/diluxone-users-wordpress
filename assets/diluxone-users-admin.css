@@ -1,9 +1,14 @@
 /**
  * The plugin admin styles.
  *
- * WordPress's own classes do what they can (.wp-list-table, .form-table,
- * .button). What is added on top is rank: a title that reads as a title, an
- * option that reads as one thing, a state you can see without reading.
+ * WordPress's own classes do what they can (.wp-list-table, .button,
+ * .large-text). What is added on top is rank: a title that reads as a title,
+ * an option that reads as one thing, a state you can see without reading.
+ *
+ * There is no `.form-table` here any more, and that is the point: the
+ * two-column table is the shape every screen fell back to when this file and
+ * includes/admin-ui.php had no piece for what it wanted, and the four design
+ * systems that came out of it are what this was written to end.
  *
  * The colour is not chosen here. It arrives as --du-accent from the admin
  * colour scheme the person picked (see includes/admin-ui.php), so the plugin
@@ -35,34 +40,147 @@
 
 	--du-title: 15px;
 	--du-help: 13px;
+
+	/* The amber WordPress itself warns in. The aside has no colour of its
+	   own: it borrows the scheme's, like everything else here. */
+	--du-warn: #dba617;
+	--du-warn-wash: #fcf9e8;
+
+	/* The room between two blocks. It is a token and not a number typed into
+	   each piece because that is how it went wrong: the group of cards
+	   carried no margin at all, the field under it carried none on top, and
+	   the two met at the same pixel — a bold label printed along the bottom
+	   border of the last card, which is what "it is all stuck together" was
+	   describing and, on the second-factor screen, what read as one block
+	   sitting on top of another. One number, every block, no exceptions. */
+	--du-block: var(--du-5);
+
+	/* The measure: how wide something that is *read* gets — a line of prose,
+	   a column of options, a box you type into. It used to be the only width
+	   there was, applied to the screen and to nothing else, and that is one
+	   number doing two jobs: it kept the settings readable and it also
+	   throttled the grid of providers, the account editor and the report
+	   tables, none of which is read in lines, while the rest of a 1700px
+	   window sat empty beside them. It is still the screen's width on a screen
+	   that is only settings. Where it is not, it belongs to each block that is
+	   read — see below — `.du-wide` is how a block says it has columns of its
+	   own, and the room left over goes to the rail. */
+	--du-measure: 1000px;
+
+	/* The rail never gets narrower than this: below it there is not enough
+	   line left for a sentence, and it goes under the settings instead. */
+	--du-rail: 260px;
+
+	/* How tall WordPress's own toolbar is. It is fixed over everything, so a
+	   column that follows the page down and comes to rest at the top of the
+	   window comes to rest underneath it — or rather it does not, and the
+	   first line of whatever was stuck went under the bar. It is a token and
+	   not a number in each of those columns because there are three of them
+	   and the bar is not the same height in both sizes of window. */
+	--du-bar: 32px;
+
+	/* Where anything that follows the page comes to rest: clear of the bar,
+	   with the air two blocks leave between them, so it reads as a column
+	   that stopped rather than one glued to the chrome. */
+	--du-stick: calc(var(--du-bar) + var(--du-3));
 }
 
-/* The screen's own rhythm. WordPress gives .wrap a margin and nothing else;
-   what a settings screen needs is room to separate one question from the
-   next, and that room is what was missing. */
-.diluxone-users-admin .form-table > tbody > tr > th {
-	width: 240px;
-	padding: var(--du-5) var(--du-4) var(--du-5) 0;
-	font-size: var(--du-title);
-	font-weight: 600;
-	color: var(--du-text);
-	line-height: 1.5;
+/* Below 782px WordPress switches the admin to touch and the toolbar grows.
+   One line, and every column that rests under it follows. */
+@media screen and (max-width: 782px) {
+	.diluxone-users-admin { --du-bar: 46px; }
 }
-.diluxone-users-admin .form-table > tbody > tr > td {
-	padding: var(--du-5) 0;
+
+/* Nothing on these screens pushes the page sideways. A client id, a callback
+   address, a token pasted into a field: one long run of characters with no
+   space in it is wider than the box it is in, and a box wider than the column
+   is a screen with a horizontal scrollbar. It breaks instead. */
+.diluxone-users-admin { overflow-wrap: break-word; }
+.diluxone-users-admin img { max-width: 100%; height: auto; }
+
+/* The same thing again, one notch harder, for a name a machine reads sitting
+   inside a sentence in the rail: a filter, an option, a header. The rail is
+   three hundred pixels and several of those names are longer than that on
+   their own. `break-word` waits until the word already fills the line before
+   it breaks, which leaves the shaded box's own padding hanging past the edge
+   of the note it is in; `anywhere` breaks a step earlier and it lands inside.
+   It is asked of the two blocks that carry prose about this site, and not of
+   the screen, because a field full of a long token is a different problem
+   with a different answer. */
+.diluxone-users-admin .du-note code,
+.diluxone-users-admin .du-state code { overflow-wrap: anywhere; }
+
+/* A screen that is only settings still stops at the measure as a whole, and
+   that is the part of last round that was right: one right-hand margin, with
+   the cards, the status strip and the table all coming back to it.
+
+   What changed is that three kinds of screen are not only settings. One with a
+   second column beside it — a preview, or a rail — needs the window. So does
+   one carrying something with columns of its own: a grid of providers, an
+   editor with a list beside it, a table of rows. Those take the width
+   WordPress gives, and inside them the measure stops being the screen's and
+   becomes each block's, which is the list below. */
+.wrap.diluxone-users-admin { max-width: var(--du-measure); }
+.wrap.diluxone-users-admin:has(.diluxone-users-studio),
+.wrap.diluxone-users-admin:has(.du-wide),
+.wrap.diluxone-users-admin:has(.wp-list-table) { max-width: none; }
+
+/* What stops at the measure is each block that is read — listed here rather
+   than set on every piece, so the answer to "how wide is this" is in one place
+   even though it is no longer one number for the whole screen. Everything not
+   on this list either has columns of its own or is inside something that
+   does. */
+.diluxone-users-admin__intro,
+.diluxone-users-admin .du-section,
+.diluxone-users-admin .du-section__intro,
+.diluxone-users-admin .du-choices,
+.diluxone-users-admin .du-needs-one,
+.diluxone-users-admin .du-field,
+.diluxone-users-admin .du-fields,
+.diluxone-users-admin .du-steps,
+.diluxone-users-admin .du-state,
+.diluxone-users-admin .du-note,
+.diluxone-users-admin .du-notice,
+.diluxone-users-admin .du-links,
+.diluxone-users-admin .diluxone-users-summary { max-width: var(--du-measure); }
+
+/* Every one of them leaves the same room under it. */
+.diluxone-users-admin__intro,
+.diluxone-users-admin .du-choices,
+.diluxone-users-admin .du-needs-one,
+.diluxone-users-admin .du-field,
+.diluxone-users-admin .du-fields,
+.diluxone-users-admin .du-steps,
+.diluxone-users-admin .du-note,
+.diluxone-users-admin .du-notice,
+.diluxone-users-admin .du-links,
+.diluxone-users-admin .du-wide,
+.diluxone-users-admin .diluxone-users-cards,
+.diluxone-users-admin .diluxone-users-summary { margin-bottom: var(--du-block); }
+
+/* A block with columns of its own: the grid of providers, the editor with its
+   list beside it, a table of rows. It takes the width WordPress gives and
+   scrolls sideways rather than pushing the page over when there is genuinely
+   no room — which only happens to tables, since the grids and the editors
+   stack further down this file. The form controls inside it keep the measure:
+   a text box the width of a window is not a better text box. */
+.diluxone-users-admin .du-wide {
+	max-width: none;
+	overflow-x: auto;
 }
-/* A rule between questions, so where one ends is visible rather than
-   inferred from the gap. */
-.diluxone-users-admin .form-table > tbody > tr + tr > th,
-.diluxone-users-admin .form-table > tbody > tr + tr > td {
-	border-top: 1px solid var(--du-line-soft);
-}
-/* No width cap on a paragraph. It was asked for and taken out more than once
+
+/* What is said under a control, whichever piece said it. WordPress's own
+   `.description` is still used where WordPress's own markup is — under a
+   button, beside a link — and it has to be the same grey and the same size as
+   the line a design-system field prints, or the same sentence reads as two
+   different kinds of thing on two tabs.
+
+   No width cap on a paragraph. It was asked for and taken out more than once
    before, and it came back here in a new place: a sentence that stops at 60
    characters in the middle of a 1300px screen reads as a broken layout. What
    limits the line is the thing it is inside — a card, a table cell — and
    nothing else. */
-.diluxone-users-admin .form-table .description,
+.diluxone-users-admin .description,
 .diluxone-users-admin .du-field__help {
 	font-size: var(--du-help);
 	line-height: 1.6;
@@ -72,7 +190,6 @@
 /* The sentence under a tab's title: it introduces the whole tab, so it is not
    the same thing as the help under a control and does not look like it. */
 .diluxone-users-admin__intro {
-	margin: 0 0 var(--du-5);
 	padding-bottom: var(--du-4);
 	border-bottom: 1px solid var(--du-line);
 	font-size: 14px;
@@ -81,20 +198,54 @@
 }
 .diluxone-users-admin__actions { margin: var(--du-4) 0; }
 
-/* A heading for a group of settings inside a tab. */
+/* A heading for a group of settings inside a tab. The rule above it separates
+   it from the group before; a heading with no group before it has nothing to
+   separate, and drew a second line under the tab's own with a band of empty
+   white between the two. That band is what read as an empty bordered block at
+   the top of a screen — a box containing nothing, which is what it was. */
 .diluxone-users-admin .du-section {
-	margin: var(--du-6) 0 var(--du-2);
+	margin: var(--du-6) 0 var(--du-3);
 	padding-top: var(--du-5);
 	border-top: 1px solid var(--du-line);
 	font-size: var(--du-title);
 	font-weight: 600;
 	color: var(--du-text);
 }
+.diluxone-users-admin .du-section:first-child,
+.diluxone-users-admin .diluxone-users-admin__intro + .du-section {
+	margin-top: 0;
+	padding-top: 0;
+	border-top: 0;
+}
 .diluxone-users-admin .du-section__intro {
-	margin: 0 0 var(--du-3);
+	margin: 0 0 var(--du-4);
 	font-size: var(--du-help);
 	color: var(--du-muted);
 }
+
+/* Nothing draws a border, a ground or a rule around no content. Every one of
+   these can legitimately come out empty — a group whose options are all
+   registered by add-ons and there are none, an option whose children are
+   decided at render time, a role list on a site with one role — and every one
+   of them used to leave a box behind when it did. It is here, once, rather
+   than as a condition inside each screen that prints them. */
+.diluxone-users-admin .du-section:empty,
+.diluxone-users-admin .du-section__intro:empty,
+.diluxone-users-admin .du-choices:empty,
+.diluxone-users-admin .du-choice__children:empty,
+.diluxone-users-admin .du-choice-group:empty,
+.diluxone-users-admin .du-field:empty,
+.diluxone-users-admin .du-fold__body:empty,
+.diluxone-users-admin .du-fields:empty,
+.diluxone-users-admin .du-inline__row:empty,
+.diluxone-users-admin .du-state:empty,
+.diluxone-users-admin .du-note:empty,
+.diluxone-users-admin .du-notice:empty,
+.diluxone-users-admin .du-links:empty,
+.diluxone-users-admin .du-wide:empty,
+.diluxone-users-admin .diluxone-users-cards:empty,
+.diluxone-users-admin .diluxone-users-studio__aside:empty,
+.diluxone-users-admin .diluxone-users-scope__roles:empty { display: none; }
 
 /* ── An option, as one thing ─────────────────────────────────────────────
    The card is the whole point. A radio with its title beside it and its
@@ -102,19 +253,18 @@
    cannot tell which option that paragraph is about. Inside a border, it can.
    `.diluxone-users-roles__item` is the same component under its older name,
    so every screen already using it gets this without being touched. */
-/* The cards stop at a width where a title and two lines of help read as
-   one block; wider than this and the eye loses the left edge on the way
-   back. It is the card that is limited, not the sentence inside it. */
-.du-choices { display: flex; flex-direction: column; gap: var(--du-2); max-width: 880px; }
+/* No width of their own. The cards run to the measure, which is where the
+   status strip above them and the table below them also stop — that is the
+   whole point of there being one. */
+.du-choices { display: flex; flex-direction: column; gap: var(--du-3); }
 
 .du-choice,
 .diluxone-users-admin .diluxone-users-roles__item {
-	max-width: 880px;
 	display: flex;
 	align-items: flex-start;
 	gap: var(--du-3);
-	margin: 0 0 var(--du-2);
-	padding: var(--du-3) var(--du-4);
+	margin: 0 0 var(--du-3);
+	padding: var(--du-4);
 	border: 1px solid var(--du-line);
 	border-radius: var(--du-radius);
 	background: var(--du-ground);
@@ -163,7 +313,7 @@
 .du-choice__help,
 .diluxone-users-admin .diluxone-users-roles__item > .description {
 	display: block;
-	margin: var(--du-1) 0 0;
+	margin: var(--du-2) 0 0;
 	font-size: var(--du-help);
 	line-height: 1.55;
 	color: var(--du-muted);
@@ -174,26 +324,300 @@
 
 /* What hangs off the option that turns it on: inside it, indented, and gone
    while it is off. A setting that only exists because of another one is not
-   a row three rows below it. */
-.du-choice-group { border-left: 2px solid transparent; }
-.du-choice-group.is-open { border-left-color: var(--du-accent-edge, #c3c4c7); }
+   a row three rows below it. The indent is the whole of how that is said —
+   there was a rule down the left as well, and a coloured line drawn beside a
+   card that is already washed in the same colour is the same thing said
+   twice, in the louder of the two voices. */
 .du-choice__children {
-	margin: 0 0 var(--du-3) var(--du-6);
+	margin: var(--du-3) 0 var(--du-3) var(--du-6);
 	padding-left: var(--du-4);
 }
 .du-choice-group:not(.is-open) .du-choice__children { display: none; }
 
+/* ── A text that is already written, folded away ─────────────────────────
+   Two tabs are a list of texts the plugin ships and this site may rewrite:
+   the sentences the sign-in screen says, and the wording of every e-mail. A
+   list of thirty of those cannot be thirty open boxes, and it cannot be
+   thirty headings either — which is what it was, because this shape was
+   assembled out of the heading class and the control class and so inherited
+   a rule above every row and the browser's own disclosure triangle beside it.
+
+   It is a card, like every other row of a settings screen, and the only
+   thing it adds is that it opens. The marker is drawn here rather than left
+   to the browser: `list-style` on a summary is the one part of `<details>`
+   that still differs between engines, so it is turned off everywhere and a
+   chevron is drawn from a border, which needs no font and no image. */
+.du-fold {
+	margin: 0 0 var(--du-3);
+	border: 1px solid var(--du-line);
+	border-radius: var(--du-radius);
+	background: var(--du-ground);
+	transition: border-color .12s ease;
+}
+.du-fold:hover { border-color: var(--du-accent-edge, #8c8f94); }
+.du-fold[open] { border-color: var(--du-accent, #2271b1); }
+
+.du-fold__head {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--du-3);
+	padding: var(--du-4);
+	cursor: pointer;
+	list-style: none;
+}
+.du-fold__head::-webkit-details-marker { display: none; }
+.du-fold__head::marker { content: ''; }
+
+/* The chevron: half a square, turned. It points right while the row is shut
+   and down while it is open, which is the whole of what the row has to say
+   about its own state. The box is fixed so the title of every row starts on
+   the same column whether or not it is open. */
+.du-fold__head::before {
+	content: '';
+	flex: 0 0 auto;
+	width: 7px;
+	height: 7px;
+	margin: 6px 2px 0 2px;
+	border-right: 2px solid var(--du-muted);
+	border-bottom: 2px solid var(--du-muted);
+	transform: rotate(-45deg);
+	transition: transform .12s ease;
+}
+.du-fold[open] > .du-fold__head::before {
+	margin-top: 4px;
+	transform: rotate(45deg);
+	border-color: var(--du-accent, #2271b1);
+}
+
+.du-fold__text { display: block; }
+.du-fold__title {
+	display: block;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--du-text);
+	line-height: 1.45;
+}
+.du-fold__help {
+	display: block;
+	margin: var(--du-2) 0 0;
+	font-size: var(--du-help);
+	line-height: 1.55;
+	color: var(--du-muted);
+}
+
+/* What is inside starts under the title and not under the chevron, and the
+   rule is what says the row opened rather than the page continuing. */
+.du-fold__body {
+	margin: 0 var(--du-4) var(--du-4);
+	padding-top: var(--du-4);
+	border-top: 1px solid var(--du-line);
+}
+.du-fold__body > *:last-child { margin-bottom: 0; }
+
+/* ── A control that is not a choice ──────────────────────────────────────
+   Label over it, help under it — and the same card around it as everything
+   else on the screen.
+
+   That last part is the correction. The design system gave the card to
+   `du-choice` and stopped there, so every screen came out alternating:
+   framed cards for the questions answered by picking, and bare controls
+   sitting on the page ground for the questions answered by typing. On the
+   second-step tab that is three card questions, then a number box floating
+   against the left margin; on the proxy tab it is two loose boxes and
+   nothing else. Nobody could name it and everybody could see it — it reads
+   as two plugins.
+
+   Only where it stands on its own. A field inside a card's children, inside
+   a fold, or in a row of fields beside another one is already on a ground of
+   its own, and a card inside a card is a box somebody forgot to close. */
+.diluxone-users-admin .du-field,
+.diluxone-users-admin .du-fields {
+	padding: var(--du-4);
+	border: 1px solid var(--du-line);
+	border-radius: var(--du-radius);
+	background: var(--du-ground);
+}
+.diluxone-users-admin .du-choice__children .du-field,
+.diluxone-users-admin .du-fold__body .du-field,
+.diluxone-users-admin .du-fields .du-field,
+.diluxone-users-admin .du-wide .du-field,
+.diluxone-users-admin .du-field .du-field {
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: none;
+}
+
 /* A control that is not a choice: label over it, help under it. */
-.du-field { margin: 0 0 var(--du-4); }
 .du-field__label {
 	display: block;
-	margin-bottom: var(--du-1);
+	margin-bottom: var(--du-2);
 	font-size: var(--du-help);
 	font-weight: 600;
 	color: var(--du-text);
 }
-.du-field__help { margin: var(--du-1) 0 0; }
+.du-field__help { margin: var(--du-2) 0 0; }
+
+/* Several controls that answer one question, side by side. It wraps, so on a
+   narrow window they stack instead of being pushed off the side. */
 .du-fields { display: flex; flex-wrap: wrap; gap: var(--du-5); }
+/* The room under the row belongs to the row, not to the last field in it:
+   with each field keeping its own, a row of two left twice the gap of a row
+   of one. */
+.diluxone-users-admin .du-fields > .du-field { margin-bottom: 0; }
+
+/* ── A number and the word after it ──────────────────────────────────────
+   "30" is not a setting; "30 days" is. The unit sits on the line with the
+   box, baseline-aligned with what is typed in it, and the sentence that
+   qualifies it goes underneath as the help. Written here once because every
+   screen that wanted one was placing that word by hand and none of them
+   placed it the same. */
+.du-number {
+	display: inline-flex;
+	align-items: baseline;
+	flex-wrap: wrap;
+	gap: var(--du-2);
+}
+.du-number__unit { font-size: var(--du-help); color: var(--du-muted); }
+/* WordPress gives .small-text a right margin for exactly the layout this
+   replaces — an input with loose text after it. The gap above is doing that
+   job now, and both together read as a gap somebody forgot to close. */
+.diluxone-users-admin .du-number input[type="number"] { margin: 0; }
+
+/* ── A question answered in a line ───────────────────────────────────────
+   Title above, answers in a row. The answers are shaped by the same rule as
+   the ones in the "everybody / only some roles" control below, because it is
+   the same question in the same shape and a person meeting it on a second
+   screen should not have to work that out. Only the answers: that control's
+   fieldset also holds the list of roles and its own explanation, so the row
+   there is made by the labels rather than by the box around them. */
+.du-inline__row { display: flex; flex-wrap: wrap; gap: var(--du-1) var(--du-4); }
+/* A row sits closer under its title than a stacked control does: there is one
+   line of answers, not a box to clear. */
+.du-inline > .du-field__label { margin-bottom: var(--du-2); }
+.du-inline__choice,
+.diluxone-users-admin [data-diluxone-users-scope] > label {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--du-2);
+	font-size: 13px;
+}
+.diluxone-users-admin .du-inline__row input { margin: 0; }
+
+/* ── A list of things to do, in order ────────────────────────────────── */
+.du-steps { padding-left: var(--du-5); }
+.du-steps li { margin-bottom: var(--du-2); line-height: 1.6; }
+
+/* ── How this site stands, today ─────────────────────────────────────────
+   The first block of the rail, and the one it exists for: not what the tab
+   can be set to — what it *is* set to, here, this morning. So it is built the
+   other way round from a note: the label above is small and grey because
+   "Right now" is the same three words on every screen, and the sentence
+   underneath is in full-strength text because it is the only line on the page
+   that is about this site in particular.
+
+   The line along the top is the accent, which is the one place the rail
+   borrows it: it marks which of three or four boxes is the answer and which
+   are context. A bar down the left would have made it a notice, and it is not
+   one — nothing here is wrong.
+*/
+.du-state {
+	padding: var(--du-4);
+	border: 1px solid var(--du-line);
+	border-top: 3px solid var(--du-accent, #2271b1);
+	border-radius: var(--du-radius);
+	background: var(--du-ground);
+}
+.du-state__head {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--du-2);
+	margin-bottom: var(--du-2);
+}
+.du-state__now {
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: .06em;
+	text-transform: uppercase;
+	color: var(--du-muted);
+}
+.du-state__line {
+	margin: 0;
+	font-size: var(--du-help);
+	line-height: 1.6;
+	color: var(--du-text);
+}
+/* What qualifies the pill belongs to the pill, not to the sentence: on its
+   own line it read as a second sentence with no verb. */
+.du-state__head .diluxone-users-state__why { font-size: var(--du-help); }
+
+/* ── Something the screen says, with no control in it ────────────────── */
+.du-note__title {
+	display: block;
+	margin-bottom: var(--du-2);
+	font-size: var(--du-help);
+	font-weight: 600;
+	color: var(--du-text);
+}
+.du-note__body {
+	margin: 0;
+	font-size: var(--du-help);
+	line-height: 1.6;
+	color: var(--du-muted);
+}
+
+/* ── An aside, where it applies ──────────────────────────────────────────
+   WordPress's notice belongs to what just happened and lives at the top of
+   the page. This one belongs to a place: the tick boxes it is about are
+   three inches away, and read next to them it is a caveat rather than news.
+   A bar down the left and a wash, no icon — it is a sentence, not an alarm. */
+/* The one box already on these screens that is this same thing under an older
+   name comes along: a setting the site pins from code. Its hand-picked amber
+   becomes this one, and the name stays as it is because it lives in a screen
+   this file does not own. */
+.diluxone-users-admin .du-notice,
+.diluxone-users-admin .diluxone-users-forced {
+	border: 1px solid var(--du-line);
+	border-left-width: 4px;
+	border-radius: var(--du-radius-sm);
+}
+.diluxone-users-admin .du-notice { padding: var(--du-4); }
+.diluxone-users-admin .du-notice p { margin: 0; line-height: 1.6; }
+.diluxone-users-admin .du-notice p + p { margin-top: var(--du-2); }
+
+/* Something that will bite: a setting below that cannot take effect the way
+   this site is set up. WordPress's own amber, not one picked here. */
+.diluxone-users-admin .du-notice--warning,
+.diluxone-users-admin .diluxone-users-forced {
+	border-left-color: var(--du-warn);
+	background: var(--du-warn-wash);
+}
+
+/* Everything else it has to say. No colour of its own: the scheme's. */
+.diluxone-users-admin .du-notice--info {
+	border-left-color: var(--du-accent, #2271b1);
+	background: var(--du-accent-wash, #f0f6fc);
+}
+
+/* ── A group where none ticked is not an answer ──────────────────────────
+   The complaint is next to the group, because the group is what has to
+   change. It is written into the page by the server and the script only
+   unhides it: a sentence handed to JavaScript in an attribute is a sentence
+   that is not in the person's language on a site in eight of them. */
+.du-needs-one__said {
+	margin: var(--du-2) 0 0;
+	padding: var(--du-2) var(--du-3);
+	border-left: 4px solid #b32d2e;
+	border-radius: var(--du-radius-sm);
+	background: #fcf0f1;
+	font-size: var(--du-help);
+	color: #8a1f21;
+}
+/* While the answer is missing, the group itself says so too: the sentence
+   underneath is what it is about, and at the foot of four cards it is not
+   obvious which four. */
+.du-needs-one.is-short .du-choice { border-color: #d63638; }
 
 /* Buttons and inputs: WordPress's, with the scheme's accent on the primary
    one so it belongs to the same dashboard as everything else. */
@@ -209,13 +633,6 @@
 	border-color: var(--du-accent, #2271b1);
 	box-shadow: 0 0 0 1px var(--du-accent, #2271b1);
 }
-
-/* No reading-width cap anywhere on these screens. A paragraph that stops
-   at 72 characters in the middle of a 1400px screen reads as a broken
-   layout, not as typography — it was asked for and taken out more than
-   once, and every one of these was a separate place it came back from. */
-.diluxone-users-admin__intro { margin-bottom: 14px; }
-.diluxone-users-admin__actions { margin: 16px 0; }
 
 /* ── State pills ──────────────────────────────────────────────────── */
 .diluxone-users-pill {
@@ -244,77 +661,21 @@
 
 .diluxone-users-shortcodes td:first-child { width: 260px; }
 
-.diluxone-users-detail th { width: 220px; text-align: left; }
-
-/* ── The provider grid ────────────────────────────────────────────── */
-.diluxone-users-cards {
-	display: grid; gap: 16px; margin: 20px 0 32px;
-	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-}
-.diluxone-users-card {
-	background: #fff; border: 1px solid #dcdcde; border-radius: 4px; overflow: hidden;
-	display: flex; flex-direction: column;
-}
-.diluxone-users-card__top {
-	display: flex; align-items: center; gap: 12px;
-	padding: 26px 20px; color: #fff;
-}
-.diluxone-users-card__mark {
-	display: flex; align-items: center; justify-content: center;
-	width: 38px; height: 38px; flex-shrink: 0;
-	border-radius: 50%; background: rgba(255, 255, 255, 0.22);
-	font-size: 20px; font-weight: 700; line-height: 1;
-}
-.diluxone-users-card__mark svg { width: 22px; height: 22px; }
-.diluxone-users-card__name { font-size: 17px; font-weight: 600; }
-.diluxone-users-card__foot {
-	display: flex; align-items: center; justify-content: space-between; gap: 10px;
-	padding: 12px 14px; border-top: 1px solid #dcdcde; margin-top: auto;
-}
-.diluxone-users-card__actions { display: flex; gap: 6px; }
-
-/* ── Getting started ──────────────────────────────────────────────── */
-.diluxone-users-steps { margin: 20px 0 32px; padding-left: 20px; }
-.diluxone-users-steps li { margin-bottom: 22px; }
-.diluxone-users-steps strong { display: block; font-size: 14px; margin-bottom: 4px; }
-.diluxone-users-steps p { margin: 4px 0; }
-
-/* The step-by-step for each console: it reads like a recipe, one line per
-   click, so the steps sit closer together than in the list above. */
-.diluxone-users-steps--numbers li { margin-bottom: 12px; line-height: 1.6; }
-
-.diluxone-users-url-redirect {
-	margin: 20px 0 28px;
-	padding: 16px 20px;
-	background: #fff;
-	border: 1px solid #dcdcde;
-	border-left: 4px solid #2271b1;
-}
-.diluxone-users-url-redirect h3 { margin-top: 0; }
-.diluxone-users-url-redirect p { margin: 6px 0; }
-/* The underscore in diluxone_users_sso sits against the bottom edge of the
-   input and at a glance looks like a space. With air below, what is being
-   copied can be read. */
-.diluxone-users-url-redirect input { padding: 8px 10px; line-height: 1.6; }
-
-.diluxone-users-eye {
-	margin: 0 0 28px;
-	padding: 12px 16px;
-	background: #fcf9e8;
-	border-left: 4px solid #dba617;
-	line-height: 1.6;
-}
-
-/* A field's detail hides what that type does not use (see diluxone-users-admin.js). */
-.diluxone-users-if-type[hidden] { display: none !important; }
 .diluxone-users-multi { min-width: 26ch; }
 
-/* ── Home ─────────────────────────────────────────────────────────── */
-/* The headline cards. The icon sits in its own column so the numbers line up
-   down the row whatever the icon is, and the title goes above the number
-   because the number on its own says nothing. */
+/* ── A grid of cards ──────────────────────────────────────────────────
+   One thing per card, in a row that wraps: the four numbers the overview
+   opens with, and the twelve networks on the sign-in providers screen. It is
+   one grid and not two — it was two, and the second copy of it was the
+   providers', which is why a card had a different amount of room around it
+   depending on which screen it was on.
+
+   The room under it is `--du-block` like every other block, and not a number
+   of its own: inside a `.du-wide` those two used to add up and the grid sat
+   fifty pixels above the rule of the next section. */
 .diluxone-users-cards {
-	display: grid; gap: 16px; margin: 20px 0 28px;
+	display: grid;
+	gap: var(--du-4);
 	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 /* A card carries a thin band of the scheme's accent along its top. It is the
@@ -348,6 +709,10 @@
 	font-size: 22px; line-height: 1;
 }
 .diluxone-users-card__icon::before { font-size: 22px; width: auto; height: auto; }
+/* The other kind of mark: a network's own logo, which is an SVG and inherits
+   none of the font size above. The slot says how big a mark is, whichever of
+   the two it is given. */
+.diluxone-users-card__icon svg { width: 22px; height: 22px; }
 .diluxone-users-card__body { min-width: 0; }
 .diluxone-users-card h3 {
 	margin: 0; font-size: 13px; font-weight: 600; line-height: 1.4;
@@ -359,12 +724,23 @@
 	font-variant-numeric: tabular-nums; color: #1d2327;
 }
 .diluxone-users-card__detail { margin: 6px 0 0; color: #50575e; }
-.diluxone-users-card__link { display: inline-block; margin-top: 10px; text-decoration: none; }
+/* The ways out. A card can have two — the settings of a network and the
+   switch that puts its button up — and they sit on one line with room
+   between them rather than a space character's worth.
+
+   Centred, because the two are not always the same height: a card offering a
+   button and a plain link beside it would otherwise hang the link from the
+   top of the button's box, half a line above the words it sits next to. */
+.diluxone-users-card__links {
+	display: flex; flex-wrap: wrap; align-items: center; gap: var(--du-1) var(--du-4);
+	margin-top: var(--du-3);
+}
+.diluxone-users-card__link { text-decoration: none; }
 
 /* The welcome strip: the one place on these screens that is allowed a block
    of colour, because it is the first thing seen and it is not a control. */
 .diluxone-users-admin .diluxone-users-welcome {
-	margin: 0 0 4px;
+	margin: 0 0 var(--du-block);
 	padding: 22px 24px;
 	border: 1px solid var(--du-line, #dcdcde);
 	border-left: 4px solid var(--du-accent, #2271b1);
@@ -411,22 +787,6 @@
 .diluxone-users-usage__detail { margin: 8px 0 0; color: #50575e; }
 
 
-.diluxone-users-state th { width: 280px; text-align: left; }
-/* The note at the foot of a screen: what it explains is already above it, so
-   it takes the whole width rather than a reading column. A column here left
-   the two sentences wrapping into four lines with half the screen empty
-   beside them. */
-.diluxone-users-where {
-	margin: 28px 0 0; padding: 14px 20px;
-	background: #f6f7f7; border-left: 4px solid #2271b1;
-	line-height: 1.7;
-}
-.diluxone-users-where p { margin: 0 0 8px; }
-.diluxone-users-where p:last-child { margin-bottom: 0; }
-.diluxone-users-where__title { display: flex; align-items: center; gap: 6px; }
-.diluxone-users-where__title .dashicons { color: #2271b1; }
-.diluxone-users-where__names { margin: 0 0 8px; }
-
 /* The dialog a field is edited in.
    One scrollbar and not two: the dialog is a flex column that never overflows
    — head, body, foot — and only the body scrolls. Giving both a max-height
@@ -472,8 +832,6 @@
 	overflow-y: auto;
 	padding: 0 24px;
 }
-.diluxone-users-dialog__body .form-table { margin-top: 4px; }
-.diluxone-users-dialog__body .form-table th { width: 220px; }
 .diluxone-users-dialog__loading { color: #646970; padding-top: 16px; }
 
 /* The form's own submit row becomes the dialog's foot: it sticks to the
@@ -497,22 +855,11 @@
 	}
 	.diluxone-users-dialog__head { padding: 12px 16px; }
 	.diluxone-users-dialog__body { padding: 0 16px; }
-	/* WordPress stacks the label over the field below this width, so the fixed
-	   label column has to go with it. */
-	.diluxone-users-dialog__body .form-table th { width: auto; }
 }
-.diluxone-users-where__names li { margin: 0 0 2px; }
-.diluxone-users-where__names code { margin-left: 2px; }
 /* ── The overview screen ────────────────────────────────────────────────
    A welcome, the numbers, and then either the first steps or what people are
    actually using. The two never show together: a checklist with everything
    ticked is furniture, and usage figures on an unconfigured site are zeros. */
-.diluxone-users-welcome {
-	background: #fff; border: 1px solid #dcdcde; border-radius: 4px;
-	padding: 16px 20px; margin: 20px 0;
-}
-.diluxone-users-welcome h2 { margin: 0 0 4px; font-size: 20px; }
-.diluxone-users-welcome p  { margin: 0; color: #50575e; }
 
 /* The steps: a number in a circle and a line joining them, so the list reads
    as a road and not as four unrelated boxes. */
@@ -540,25 +887,20 @@
 .diluxone-users-step__body p { margin: 2px 0 8px; color: #50575e; }
 .diluxone-users-step.is-done .diluxone-users-step__body strong { color: #50575e; }
 
-.diluxone-users-state-box { margin: 18px 0 24px; padding: 6px 14px; }
-
-/* Every way in, with its state: the pill column is narrow and fixed so the
-   states line up and the eye can run down them. */
-.diluxone-users-doors__state { width: 90px; }
-.diluxone-users-doors th { width: 260px; }
-
-/* The "to everybody / to some roles" control: the roles hang under the radio
-   they belong to, indented enough to read as its consequence. */
-.diluxone-users-scope__roles { margin: 6px 0 0 22px; }
-
-/* Role and option lists: in a column, not in a running line.
-   Written twice with two classes on purpose. WordPress styles
-   `.form-table td fieldset label` as inline-block, and that beats a single
-   class — so inside a fieldset the list came out as one long line of words. */
-.diluxone-users-roles__item { display: block; margin-bottom: 4px; }
-.diluxone-users-scope__roles .diluxone-users-roles__item,
-.diluxone-users-pieces .diluxone-users-roles__item,
-.form-table fieldset > .diluxone-users-roles__item { display: block; margin-bottom: 4px; }
+/* Role and option lists: in a column, not in a running line. WordPress styles
+   a label inside a fieldset as inline-block, and where one of these lands in
+   WordPress's own markup that would come out as a long line of words. */
+.diluxone-users-roles__item,
+/* The roles hang off "Only some roles", so they are indented under it the
+   same way anything that hangs off a card is — the two answers above became
+   cards and this list went on sitting flush against the left margin, reading
+   as a third question rather than as the inside of the second. */
+.diluxone-users-scope__roles {
+	margin: var(--du-3) 0 var(--du-3) var(--du-6);
+	padding-left: var(--du-4);
+}
+.diluxone-users-scope__roles .diluxone-users-roles__item { display: block; margin-bottom: var(--du-2); }
+.diluxone-users-scope__roles .diluxone-users-roles__item:last-child { margin-bottom: 0; }
 
 /* ── The preview: a window of its own, to scale ──────────────────────────
    The previews used to be drawn straight into this column, and the sign-in
@@ -653,24 +995,73 @@
 .diluxone-users-zoom__canvas { overflow: auto; max-height: calc(92vh - 52px); background: #fff; }
 .diluxone-users-zoom__frame { display: block; border: 0; transform-origin: 0 0; pointer-events: none; }
 
-/* ── A screen with a preview beside it ──────────────────────────────────
-   Settings on the left, what they do on the right, and the right-hand side
-   stays put while the left one scrolls: a preview at the foot of the page is
-   something you scroll to and then cannot see the control you just moved.
-   Below 960px it goes under, because two columns of 400px are neither.
-   The buttons screen was the first to do this; now every design tab does. */
+/* ── A screen with a second column ──────────────────────────────────────
+   Settings to the left, at the measure, and beside them the room the measure
+   leaves over. There is one component for this and not two, which is the
+   point: the second column holds a preview on the design tabs and a rail of
+   explanation everywhere else, and two grids competing over which side is the
+   right-hand side is how a screen ends up with two right-hand margins.
+
+   Which one a panel gets is decided where the panel is: a preview comes from
+   `diluxone_users_screen_panels()`, a rail from
+   `diluxone_users_ui_aside_open()`. Never both — the column is one column.
+
+   Below 960px, where WordPress folds its own menu away, it goes underneath:
+   two columns of 400px are neither. */
 .diluxone-users-studio {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) minmax(360px, 620px);
-	gap: 32px;
+	/* The two tracks are named so the rules below can move one of them
+	   without restating the other: there are three shapes this component
+	   takes and one `grid-template-columns` per shape was three chances for
+	   the main column and the second one to stop agreeing. */
+
+	/* The settings stop at the measure, exactly where they stop on a screen
+	   with no second column at all. What is beside them takes the rest of the
+	   window rather than stopping at some width of its own and leaving a
+	   third margin nobody asked for. */
+	--du-studio-main: minmax(0, var(--du-measure));
+	--du-studio-side: minmax(var(--du-rail), 1fr);
+
+	grid-template-columns: var(--du-studio-main) var(--du-studio-side);
+	gap: var(--du-6);
 	align-items: start;
-	margin-top: 8px;
+	margin-top: var(--du-2);
 }
 .diluxone-users-studio__fields { min-width: 0; }
-.diluxone-users-studio__fields .form-table th { width: 200px; }
+
+/* A main column carrying something with columns of its own — a grid of cards,
+   a table of rows, the two panels of the account editor — takes the window,
+   not the measure.
+
+   This is the answer to a question two screens had answered in opposite ways.
+   The measure is what a column of settings is capped at, and capping the main
+   column of the component meant a `.du-wide` inside it was inert: the report
+   tables squeezed themselves into a thousand pixels and cut their own
+   columns, so the fields screen concluded a table cannot have a rail at all
+   and left its cross-reference above the table — which is the place this
+   round was about emptying. It can. The prose and the controls in there stop
+   at the measure on their own, block by block, so letting the column grow
+   costs them nothing.
+
+   With the main column on `1fr` the rail cannot also be `1fr`, or the two
+   split the window down the middle. It becomes what its name says: a rail of
+   a fixed width, with everything else going to the thing that needed room. */
+.diluxone-users-studio:has(.diluxone-users-studio__fields .du-wide) {
+	--du-studio-main: minmax(0, 1fr);
+}
+.diluxone-users-studio:has(.diluxone-users-studio__fields .du-wide):not(:has(.diluxone-users-studio__preview)) {
+	--du-studio-side: var(--du-rail);
+}
+
+/* A preview needs room to be a picture of a page, so it gets a width of its
+   own and it follows the page down: a preview at the foot of the screen is
+   something you scroll to and then cannot see the control you just moved. */
+.diluxone-users-studio:has(.diluxone-users-studio__preview) {
+	--du-studio-side: minmax(360px, 620px);
+}
 .diluxone-users-studio__preview {
 	position: sticky;
-	top: 46px;
+	top: var(--du-stick);
 	min-width: 0;
 }
 .diluxone-users-studio__preview h2 { margin-top: 0; }
@@ -679,84 +1070,113 @@
 .diluxone-users-studio__preview.is-working { opacity: .55; transition: opacity .12s ease; }
 .diluxone-users-studio .diluxone-users-stage { margin-top: 0; }
 
+/* The rail. Each thing in it is a box — how the site stands, a note, a list of
+   ways out — because out here they are not part of the column being read and
+   have to say so.
+
+   It follows the page, by the same mechanism as the preview beside the design
+   tabs and for the same reason: what it says is about the screen as a whole,
+   and a form of forty settings is two windows of scrolling in which the answer
+   to "what is this tab even for" is somewhere above the top of the screen.
+
+   There are two cases and one rule. A rail shorter than the window comes to
+   rest under the toolbar and stays there, which is `top` and the whole of what
+   CSS can do here. A rail taller than the window cannot: resting its top under
+   the toolbar means its last line is below the bottom edge for as long as the
+   page is scrolled, and the end of the rail is where the links are. That one
+   rests later — far enough down that its own last line lands on the bottom
+   edge — and the number is its height, which is not a number CSS knows.
+   `--du-follow-top` is where the script puts it after measuring, and the
+   fallback is the ordinary case, so a rail with no script running still
+   behaves like every other column here. */
+.diluxone-users-studio__aside {
+	position: sticky;
+	top: var(--du-follow-top, var(--du-stick));
+	min-width: 0;
+}
+.diluxone-users-studio__aside > * { margin-bottom: var(--du-block); }
+.diluxone-users-studio__aside > :last-child { margin-bottom: 0; }
+.diluxone-users-admin .diluxone-users-studio__aside .du-note {
+	max-width: none;
+	padding: var(--du-4);
+	border: 1px solid var(--du-line);
+	border-radius: var(--du-radius);
+	background: var(--du-ground);
+}
+.diluxone-users-admin .diluxone-users-studio__aside .du-note__title {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--du-2);
+	font-size: var(--du-title);
+}
+.diluxone-users-admin .diluxone-users-studio__aside .du-state,
+.diluxone-users-admin .diluxone-users-studio__aside .du-notice,
+.diluxone-users-admin .diluxone-users-studio__aside .du-links { max-width: none; }
+
+/* ── A way out to something related ──────────────────────────────────────
+   Half of what a setting needs in order to make sense is on another tab, and
+   said in the middle of the settings that is a sentence interrupting somebody
+   to suggest they leave. In the rail it is what they come looking for once
+   they have finished. A list, with a line under each: the name of a screen is
+   not on its own a reason to go there. */
+.du-links {
+	padding: var(--du-4);
+	border: 1px solid var(--du-line);
+	border-radius: var(--du-radius);
+	background: var(--du-ground-alt);
+}
+.du-links__title {
+	display: block;
+	margin-bottom: var(--du-2);
+	font-size: var(--du-help);
+	font-weight: 600;
+	color: var(--du-text);
+}
+.du-links__list { margin: 0; padding: 0; list-style: none; }
+.du-links__list li + li { margin-top: var(--du-3); }
+.du-links__list a { font-weight: 600; text-decoration: none; }
+/* The one that leaves the site says so before it is clicked, not after. */
+.du-links__away { margin-left: var(--du-1); font-size: var(--du-help); }
+.du-links__help {
+	display: block;
+	margin-top: var(--du-1);
+	font-size: var(--du-help);
+	line-height: 1.55;
+	color: var(--du-muted);
+}
+
 @media screen and (max-width: 960px) {
-	.diluxone-users-studio { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+	.diluxone-users-studio {
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--du-5);
+	}
 	.diluxone-users-studio__preview { position: static; }
+	/* Underneath, the rail is no longer beside anything: there is nothing left
+	   for it to stay level with, and a box floating over the end of a form is
+	   in the way. So it stops following and says where it starts, the way the
+	   sections of the main column do.
+
+	   This is also what the script reads to know it has nothing to measure:
+	   it asks the rail whether it is still positioned rather than carrying a
+	   second copy of the 960. */
+	.diluxone-users-studio__aside {
+		position: static;
+		padding-top: var(--du-5);
+		border-top: 1px solid var(--du-line);
+	}
 }
-
-/* ── The buttons screen ─────────────────────────────────────────────────
-   Settings on the left, preview on the right and always in view: if the
-   preview goes to the bottom you have to scroll to see what you just chose,
-   and then it is not a preview.
-   The breakpoint is the same one WordPress uses to drop to a single column. */
-.diluxone-users-buttons {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) minmax(300px, 400px);
-	gap: 28px;
-	align-items: start;
-	margin-top: 8px;
-}
-.diluxone-users-buttons__fields { min-width: 0; }
-.diluxone-users-buttons__fields .form-table th { width: 160px; }
-
-.diluxone-users-buttons__preview { position: sticky; top: 46px; min-width: 0; }
-.diluxone-users-buttons__preview h2 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: #646970; }
-
-/* The canvas imitates the site's sign-in box, which is where these buttons
-   are going to live: over just any background they are not judged the same. */
-.diluxone-users-buttons__canvas {
-	padding: 24px;
-	background: #fff;
-	border: 1px solid #dcdcde;
-	border-radius: 10px;
-	box-shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 8px 24px rgba(0, 0, 0, .04);
-}
-.diluxone-users-buttons__canvas .diluxone-users-social { cursor: default; }
-.diluxone-users-buttons__canvas .diluxone-users-socials { margin-bottom: 0; }
-
-/* The buttons are judged over both backgrounds: the dark finish vanishes on
-   white and the light one vanishes on dark. */
-.diluxone-users-buttons__backgrounds { display: flex; gap: 6px; margin: 0 0 10px; }
-.diluxone-users-buttons__background {
-	flex: 1 1 auto;
-	padding: 5px 10px;
-	border: 1px solid #dcdcde;
-	border-radius: 4px;
-	background: #f6f7f7;
-	font-size: 12px;
-	cursor: pointer;
-}
-.diluxone-users-buttons__background[aria-pressed="true"] { background: #2271b1; border-color: #2271b1; color: #fff; }
-
-.diluxone-users-buttons__canvas--dark { background: #0B1020; border-color: #0B1020; }
-
-@media (max-width: 782px) {
-	.diluxone-users-buttons { grid-template-columns: minmax(0, 1fr); }
-	.diluxone-users-buttons__preview { position: static; }
-}
-
-/* The box explaining where each section comes from: it is documentation, not
-   a setting, so it is set apart from the tables above. */
-.diluxone-users-explain { margin: 28px 0; padding: 4px 20px 16px; background: #fff; border: 1px solid #dcdcde; border-radius: 6px; }
-.diluxone-users-explain ul { margin: 10px 0 14px; padding-left: 18px; list-style: disc; }
-.diluxone-users-explain li { margin-bottom: 10px; line-height: 1.6; }
 
 /* A setting the site pins from code: the control is visible, and it says it
    does not rule. That beats hiding it — whoever looks for it has to find it. */
 .diluxone-users-forced {
 	margin: 0 0 10px; padding: 8px 12px;
-	background: #fcf9e8; border-left: 3px solid #dba617;
 }
 
 /* ── How the account area looks ─────────────────────────────────────────
-   The presets are swatches with a name, and the preview under them is the
-   real markup: what is on screen is what the site will draw. */
-.diluxone-users-presets { display: flex; flex-wrap: wrap; gap: 8px; }
-.diluxone-users-presets__one { display: inline-flex !important; align-items: center; gap: 8px; height: auto !important; padding: 6px 12px !important; }
-.diluxone-users-presets__chip { width: 16px; height: 16px; border: 1px solid rgba(0, 0, 0, .2); }
-
-/* The template cards: the shape is chosen by looking at it, so each one
-   carries a small drawing of itself above its name. */
+   The template cards: the shape is chosen by looking at it, so each one
+   carries a small drawing of itself above its name, and the preview under
+   them is the real markup — what is on screen is what the site will draw. */
 .diluxone-users-templates {
 	display: grid; gap: 12px;
 	grid-template-columns: repeat(auto-fit, minmax(190px, 250px));
@@ -832,13 +1252,7 @@
 	background: #fff; border: 1px solid #dcdcde; border-radius: 4px;
 }
 .diluxone-users-image__preview img { display: block; max-width: 100%; height: auto; border-radius: 2px; }
-/* An explicit display beats the browser's own rule for [hidden], so the empty
-   preview stayed on screen as a broken-image box. */
-.diluxone-users-image__preview[hidden] { display: none; }
 .diluxone-users-image p { margin: 0 0 4px; }
-
-/* The pieces a header is made of hang under the box that turns it on. */
-.diluxone-users-pieces { margin: 6px 0 0 22px; }
 
 /* ── The account sections: list and detail ──────────────────────────── */
 
@@ -919,7 +1333,6 @@
 	border-bottom: 1px solid #dcdcde;
 }
 .diluxone-users-endpoint-form__head h3 { flex: 1 1 auto; margin: 0; font-size: 17px; }
-.diluxone-users-endpoint-form .form-table th { width: 190px; }
 
 /* The switch: it is a link, because turning on and off reloads and saves. */
 .diluxone-users-toggle {
@@ -963,70 +1376,89 @@
 .diluxone-users-forced > :last-child { margin-bottom: 0; }
 .diluxone-users-forced ul { margin: 0; padding-left: 20px; list-style: disc; }
 
-/* The four sides of a margin, side by side and each with its name over the
-   box: four numbers in a row with the labels beside them reads as a sum. */
-.diluxone-users-sides__one { display: inline-block; margin-right: 14px; }
-.diluxone-users-sides__one label { display: block; font-size: 12px; color: #646970; }
 .diluxone-users-default { font-size: 12px; }
 
 /* The theme's palette, one part per line: a swatch, what it is, what it does.
-   Read down the swatches and the design is there before the words are. */
-.diluxone-users-palette__row { display: flex; align-items: center; gap: 10px; margin: 0 0 6px; }
+   Read down the swatches and the design is there before the words are.
+
+   The swatch is a pill and not a square, and that is the whole of what was
+   wrong with it. At 22 by 22 with a grey border it IS a checkbox — seven of
+   them down the left of a settings screen were read as seven things nobody
+   had ticked, and the two that land on a theme's white are still a bordered
+   box with nothing in it whatever colour is painted there. Nothing round and
+   twice as wide as it is tall has ever been a checkbox.
+
+   The row wraps, so the sentence saying what the colour paints gets a line of
+   its own rather than a column three words wide. The dropdowns keep their
+   measure either way, which is what keeps the column of answers lined up. */
+.diluxone-users-palette__row {
+	display: flex; flex-wrap: wrap; align-items: center;
+	gap: var(--du-2) 10px; margin: 0 0 var(--du-3);
+}
 .diluxone-users-palette__chip {
-	width: 22px; height: 22px; flex: 0 0 22px;
-	border: 1px solid #c3c4c7; border-radius: 3px;
+	width: 36px; height: 22px; flex: 0 0 36px;
+	border: 1px solid #c3c4c7; border-radius: 11px;
 }
 .diluxone-users-palette__row select { min-width: 190px; }
+.diluxone-users-palette__row > .description { flex: 1 1 16em; }
 
-/* One rule per notice: the help sits under the label, in the label's column,
-   so the select beside it is read as the answer and not as the question. */
-.diluxone-users-rules th .description { font-weight: 400; margin: 4px 0 0; }
+/* One rule per notice: every dropdown on the tab starts at the same width, so
+   the column of answers lines up instead of stepping in and out with the
+   longest word in each. */
 .diluxone-users-rules select { min-width: 340px; max-width: 100%; }
 
-/* A control that does not apply right now: dimmed, with the reason first. */
-.diluxone-users-not-now { margin: 0 0 8px; }
-.diluxone-users-row--dim th, .diluxone-users-row--dim td > *:not(.diluxone-users-not-now) { opacity: .55; }
-.diluxone-users-row--dim .diluxone-users-not-now { opacity: 1; }
-table.diluxone-users-row--dim th, table.diluxone-users-row--dim td > *:not(.diluxone-users-not-now) { opacity: .55; }
+/* A control that does not apply right now, and why: the pending pill, the
+   reason, and the one way out of it. It stays in the column with the control
+   it is about — the rail is for what the screen has to say about itself, and
+   this belongs to the box three lines below it. */
+.diluxone-users-not-now { margin: 0 0 var(--du-2); color: var(--du-muted); }
 
 /* The "everybody / only some roles" control keeps WordPress's plain radios:
    it is a qualifier on the question above it, not a question of its own, and
    drawing it as cards would give it the same weight as the thing it
    qualifies. What it does get is the room to read as a group. */
-.diluxone-users-admin [data-diluxone-users-scope] { margin: var(--du-2) 0 0; }
-.diluxone-users-admin [data-diluxone-users-scope] > label {
-	display: inline-flex;
-	align-items: center;
-	gap: var(--du-1);
-	margin-right: var(--du-4);
-	font-size: 13px;
-}
-.diluxone-users-admin [data-diluxone-users-scope] > br { display: none; }
+.diluxone-users-admin [data-diluxone-users-scope] { margin: 0; }
+/* The two answers sit on one line, so all this needs is the room between
+   them. There was a `<br>` between the two labels as well, hidden from here,
+   which is a rule undoing markup rather than markup that is right: the break
+   is gone and so is the rule that was cancelling it. */
+.diluxone-users-admin [data-diluxone-users-scope] > label + label { margin-left: var(--du-5); }
+.diluxone-users-admin [data-diluxone-users-scope] > .description { margin-top: var(--du-2); }
+/* The roles themselves. They were a run of labels separated by a margin, and
+   four of them on a line with four more wrapping under came out as a block of
+   words with tick boxes in it: nothing to run the eye down and no gap between
+   one row and the next. A wrapping row with a gap of its own gives each role
+   the same room whether it is first on a line or last. */
 .diluxone-users-admin .diluxone-users-scope__roles {
-	margin: var(--du-2) 0 0;
-	padding: var(--du-3) var(--du-4);
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--du-3) var(--du-5);
+	margin: var(--du-3) 0 0;
+	padding: var(--du-4);
 	border: 1px solid var(--du-line);
 	border-radius: var(--du-radius-sm);
 	background: var(--du-ground-alt);
 }
 .diluxone-users-admin .diluxone-users-scope__roles .diluxone-users-roles__item {
 	display: inline-flex;
-	max-width: none;
-	margin: 0 var(--du-4) var(--du-1) 0;
+	align-items: center;
+	gap: var(--du-2);
+	margin: 0;
 	padding: 0;
 	border: 0;
 	background: none;
 	font-size: 13px;
 }
 .diluxone-users-admin .diluxone-users-scope__roles .diluxone-users-roles__item:has(input:checked) { background: none; }
+.diluxone-users-admin .diluxone-users-scope__roles input { margin: 0; }
 
 /* A role that is never reached, on the list and not choosable. */
 .diluxone-users-roles__item--fixed { opacity: .7; }
 
 /* ── One state, one pill ──────────────────────────────────────────── */
-/* Qualified with the element on purpose: `.diluxone-users-state` is also the
-   class of the state tables on the notices and overview screens, and a bare
-   class here would turn those tables into a pill. */
+/* Still qualified with the element: the pill and a `<td>` full of pills read
+   the same to a selector that only looks at the class, and this file has been
+   through that once already. */
 span.diluxone-users-state {
 	display: inline-block; padding: 2px 10px; border-radius: 100px;
 	font-size: 12px; font-weight: 600; line-height: 1.8; white-space: nowrap;
@@ -1037,13 +1469,49 @@ span.diluxone-users-state {
 .diluxone-users-state--unknown { background: #e3edf7; color: #1d4f80; }
 .diluxone-users-state__why { color: #50575e; }
 
-/* The summary table every screen opens with: what, how, detail, where. The
-   first and last columns are fixed so the pills and the links line up from
-   row to row; the detail takes whatever is left. */
-.diluxone-users-summary th.diluxone-users-summary__what { width: 220px; text-align: left; }
-.diluxone-users-summary__state { width: 260px; }
-.diluxone-users-summary__change { width: 160px; text-align: right; white-space: nowrap; }
-.diluxone-users-not-now { margin: 0 0 8px; color: #50575e; }
+/* ── The status strip every screen opens with ────────────────────────────
+   What, how it is doing, a detail, and where to change it. It is the first
+   thing on the screen and it was also the loudest: WordPress's striped table
+   put a grey band behind a two-row strip and ran it to the edge of the
+   window, while the cards under it stopped short. Same screen, two right-hand
+   margins. It stops at the measure now — it is inside the screen, like
+   everything else — and it is drawn as the cards are: white, one border, a
+   hairline between rows. */
+.diluxone-users-admin .diluxone-users-summary {
+	border: 1px solid var(--du-line);
+	border-radius: var(--du-radius);
+	border-collapse: separate;
+	border-spacing: 0;
+	background: var(--du-ground);
+	box-shadow: none;
+	overflow: hidden;
+}
+.diluxone-users-admin .diluxone-users-summary.striped > tbody > tr:nth-child(odd) { background: var(--du-ground); }
+.diluxone-users-admin .diluxone-users-summary > tbody > tr + tr > th,
+.diluxone-users-admin .diluxone-users-summary > tbody > tr + tr > td { border-top: 1px solid var(--du-line-soft); }
+.diluxone-users-admin .diluxone-users-summary th,
+.diluxone-users-admin .diluxone-users-summary td {
+	padding: var(--du-3) var(--du-4);
+	line-height: 1.5;
+	vertical-align: top;
+}
+/* Three columns line up from row to row — the label, the pill, the way to
+   change it — and the detail is the one that carries a sentence.
+
+   It used to be that the three were fixed in pixels and the detail took what
+   was left, which is the wrong way round: 220 plus 260 plus 160 is 640, the
+   table beside a rail is a little under 800, and the sentence was left with
+   140px to say itself in. Every summary in the plugin read as a ribbon of
+   three-word lines beside a column of white — and nothing caught it, because
+   a squeezed column is not an overlap, an overflow, or an empty box.
+
+   So they are proportions now, and the detail gets the largest share by
+   arithmetic rather than by leftovers. The link wraps like anything else: a
+   name two words long on a narrow window is two lines, and that is better
+   than a column widened for the longest one there happens to be. */
+.diluxone-users-summary th.diluxone-users-summary__what { width: 20%; text-align: left; }
+.diluxone-users-summary__state { width: 20%; }
+.diluxone-users-summary__change { width: 20%; text-align: right; }
 
 /* ── The tabs ────────────────────────────────────────────────────────────
    WordPress's own, with the open one marked in the scheme's accent instead
@@ -1066,3 +1534,75 @@ span.diluxone-users-state {
 	color: var(--du-text, #1d2327);
 	font-weight: 600;
 }
+
+/* ── Narrow windows ──────────────────────────────────────────────────────
+   Two breakpoints and no others, because they are not this plugin's: at 960px
+   WordPress folds its own menu away, and at 782px it switches the admin to
+   touch — taller rows, bigger tick boxes, controls you hit with a thumb. A
+   third number invented here would be a place where the plugin stops looking
+   like the dashboard it is in.
+
+   The two-column shapes each stack at the breakpoint that suits them and say
+   so where they are defined: the screen with a second column and the account
+   editor at 960, the buttons preview at 782. What is left is the design
+   system's own pieces. */
+@media screen and (max-width: 782px) {
+	/* Less padding inside a card, because there is less window: the text is
+	   what the room is for. */
+	.du-choice,
+	.diluxone-users-admin .diluxone-users-roles__item { padding: var(--du-3); }
+
+	/* The indent that says "this hangs off that" costs half the line on a
+	   phone, so it shrinks to the smallest indent that still reads as one. */
+	.du-choice__children {
+		margin-left: var(--du-3);
+		padding-left: var(--du-3);
+	}
+
+	/* A row of controls is a column. They already wrap; what changes is that
+	   the gap between two of them stops being the gap of a row. */
+	.du-fields { gap: var(--du-4); }
+
+	/* The status strip is four columns of fixed width, which is 640px of
+	   table in a 400px window. Read down instead of across: what it is, how
+	   it is doing, the detail, the way to change it. */
+	.diluxone-users-admin .diluxone-users-summary,
+	.diluxone-users-admin .diluxone-users-summary > tbody,
+	.diluxone-users-admin .diluxone-users-summary > tbody > tr,
+	.diluxone-users-admin .diluxone-users-summary > tbody > tr > th,
+	.diluxone-users-admin .diluxone-users-summary > tbody > tr > td {
+		display: block;
+		width: auto;
+	}
+	.diluxone-users-admin .diluxone-users-summary > tbody > tr > th,
+	.diluxone-users-admin .diluxone-users-summary > tbody > tr + tr > td {
+		padding-bottom: var(--du-1);
+		border-top: 0;
+	}
+	.diluxone-users-admin .diluxone-users-summary > tbody > tr + tr > th { border-top: 1px solid var(--du-line-soft); }
+	.diluxone-users-admin .diluxone-users-summary > tbody > tr > td:last-child { padding-bottom: var(--du-3); }
+	.diluxone-users-summary__change { text-align: left; }
+
+	/* A box asked for 42 characters of line in a window that has about 30. */
+	.diluxone-users-search input[type="search"] { min-width: 0; flex: 1 1 100%; }
+	.diluxone-users-search__account { margin-left: 0; }
+}
+
+/* ── The last word ───────────────────────────────────────────────────────
+   Hidden means hidden. The browser's own rule for [hidden] is `display: none`
+   with the weight of a bare tag, so any component that gives itself a display
+   — the picture preview, the row of roles, the part of a field that belongs to
+   one type — beat it and stayed on screen doing nothing. Three of them found
+   that out separately and answered it three times over, the third with an
+   `!important`.
+
+   One rule instead, and it is at the bottom of the file on purpose. A rule
+   that takes something off the screen has to be able to outrank the component
+   that put it there, and with no `!important` anywhere in this sheet the only
+   other way to win a tie is to come last. `.diluxone-users-admin .something`
+   weighs exactly what `.diluxone-users-admin [hidden]` weighs — the row of
+   roles is one — so being written above it was losing by a nose, invisibly:
+   every measurement passed and the list simply stayed on screen.
+
+   Nothing goes below this line. */
+.diluxone-users-admin [hidden] { display: none; }

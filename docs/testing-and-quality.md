@@ -8,11 +8,14 @@ What every quality gate enforces, why, and how to run each one locally.
 | --- | --- | --- | --- | --- |
 | Unit tests | PHPUnit + brain/monkey + mockery | Logic regressions in pure-PHP units. | `pr-checks.yml` | `make test` |
 | Integration tests | PHPUnit + wp-env | Behaviour against a real WordPress runtime + DB. | `pr-checks.yml` | `make test-integration` |
+| End-to-end tests | Playwright + wp-env | Whole flows in a real browser: sign-in, registration, 2FA, passkeys, saving a settings screen. | `tests-e2e.yml` | `make test-e2e` |
+| Layout invariants | Playwright (measurements) | Geometry: blocks overlapping, anything past the right edge, blocks with no space between them, bordered boxes with nothing in them, something still on screen with `hidden` on it, the rail falling underneath. | `tests-e2e.yml` | `make test-layout` |
+| Visual regression | Playwright (`toHaveScreenshot`) | Everything else about how a screen looks — a line nobody asked for, a heading that grew, a ground that went grey. | (local, on purpose — see below) | `make test-visual` |
 | Coding style | PHP_CodeSniffer + WordPress Coding Standards | Style, naming, escaping, sanitisation, prepared statements, deprecated APIs. | `pr-checks.yml` | `make lint` |
 | Static analysis | PHPStan level 8 + szepeviktor/phpstan-wordpress | Type safety, unreachable code, undefined methods/properties, missing return types. **No baseline.** | `tests-stan.yml` | `make stan` |
 | Security taint analysis | Psalm + humanmade/psalm-plugin-wordpress (taint-only mode) | XSS, SQL injection, command injection, file-system traversal — user input flowing into dangerous sinks. | `psalm-taint.yml` | `make psalm` |
-| i18n | `wp i18n make-pot` | Missing translator comments on placeholders, dynamic text domains, conflicting translator hints, concat'd translatable strings. | `i18n-validate.yml` | `make i18n` |
-| Plugin Check (wp.org) | wordpress/plugin-check | The same checks the wp.org plugin team runs at submission/review time. | `pr-checks.yml` | (no Make target — runs on PR) |
+| i18n | `wp i18n make-pot` + `msgfmt` | Missing translator comments on placeholders, dynamic text domains, conflicting translator hints, concat'd translatable strings — and whether the eight shipped locales are complete. | `i18n-validate.yml` | `make i18n`, `make i18n-check` |
+| Plugin Check (wp.org) | wordpress/plugin-check | The same checks the wp.org plugin team runs at submission/review time. | `pr-checks.yml` | `make plugin-check` |
 | Security supply chain | CodeQL (JS) | Common JS vulnerability patterns. | `codeql.yml` | (no Make target — runs on PR) |
 
 Every layer must pass before a PR can land on `main` (branch protection enforces it).
@@ -113,6 +116,59 @@ Plugin Check (the wp.org-side validator) catches a partly overlapping but distin
 CI step in [`pr-checks.yml`](../.github/workflows/pr-checks.yml#L60). Runs the [official WordPress Plugin Check](https://github.com/WordPress/plugin-check-action) action with all categories enabled (`plugin_repo`, `security`, `performance`, `accessibility`, `general`) plus experimental checks. Some codes are explicitly ignored (`hidden_files`, `github_directory`, `unexpected_markdown_file`, `stable_tag_mismatch`) because they false-positive on the GitHub-flat repo layout or on the `-dev` suffix workflow.
 
 If you ever submit a new version of the plugin to wp.org, the same checks run there. CI catches them earlier so a wp.org reviewer never has to.
+
+## End-to-end tests
+
+Located in [`tests/e2e/`](../tests/e2e/). They drive a real Chromium against the wp-env dev site on port 8892, which mounts the working tree — so what is tested is what is checked out. See [`tests/e2e/README.md`](../tests/e2e/README.md) for what has to be running.
+
+```bash
+make env        # once
+make test-e2e   # every spec, including the layout measurements
+```
+
+## Layout invariants
+
+Located in [`tests/e2e/specs/admin-layout.spec.ts`](../tests/e2e/specs/admin-layout.spec.ts), with the measuring in [`tests/e2e/support/layout.ts`](../tests/e2e/support/layout.ts).
+
+Why there is a fourth layer at all: the three above answer *does the code behave*, and they answer it well. Every visual bug this plugin has shipped got past all three of them green — a block drawn on top of the card above it, half a screen of nothing beside a column of settings, a bordered box with nothing inside it, a rail that fell underneath the form it belongs beside. None of those is a wrong value or a missing hook. They are geometry, and only a browser can see geometry.
+
+So this measures it, on **every tab of every screen**, at **four widths** — 1600, 1280, and WordPress's own two breakpoints, 960 (the menu folds to icons) and 782 (the phone layout, where the second column has to give up and go underneath). Six rules, none of which is an opinion about the design:
+
+| Rule | What it means |
+| --- | --- |
+| `overlap` | No two sibling blocks share pixels. This is the one that matters: a block drawn on top of another is two rectangles intersecting. |
+| `overflow` | Nothing reaches past the right-hand edge of the plugin's own block, and the page never scrolls sideways. |
+| `air` | Two blocks of a screen never touch. Asked only between the blocks of a screen — options inside a group touch on purpose. |
+| `blank` | No box with a border or a ground and nothing inside it. The stylesheet already hides the ones that are `:empty`; this catches the ones whose contents came out blank. |
+| `rail` | Where a screen declares a second column, it is beside the settings above 960px and underneath below it. |
+| `hidden` | Nothing carrying the `hidden` attribute still has a box. The browser's own rule for it has the weight of a bare tag, so any component that gives itself a `display` outranks it and what a script hid stays on the screen. |
+
+They need no baseline image, they mean the same thing on every machine, they say which element is wrong — so they run with everything else, in `make test-e2e` and in CI.
+
+**Adding a screen or a tab.** The list lives in [`tests/e2e/support/screens.ts`](../tests/e2e/support/screens.ts) and three suites walk it: the behaviour spec, the layout spec and the picture spec. Add the slug to `SCREENS` and all three cover it. You will not forget: `admin-layout.spec.ts` reads the tab strip each screen draws and fails on a tab that is not in the registry. A screen whose content moves on its own — a report — gets an entry in `PINNED` saying which address makes it reproducible.
+
+**Proving the measuring still works.** `The measuring itself can fail` breaks a real screen six ways, one per rule, and requires each break to be seen. A suite that has never been seen to fail is a suite nobody has a reason to believe.
+
+## Visual regression (the pictures)
+
+Located in [`tests/e2e/specs/admin-snapshots.spec.ts`](../tests/e2e/specs/admin-snapshots.spec.ts); the baselines are in [`tests/e2e/snapshots/`](../tests/e2e/snapshots/).
+
+```bash
+make test-visual          # compare every screen with the picture committed
+make test-visual-update   # take the pictures again and accept them
+```
+
+The measurements know the rules a layout must not break. They do not know what a screen is *supposed to look like*, and they never will: a blue line nobody asked for keeps every rule and is still wrong. The only thing that catches that is the picture, and the only thing that makes a picture an assertion is having last week's to compare it with. One per tab, plus the sign-in page a stranger sees.
+
+Three decisions keep it from crying wolf:
+
+- **What is photographed is the plugin's own block** (`.wrap.diluxone-users-admin`), not the window. The admin bar counts how long the page took to build, the menu carries update badges, the footer prints the WordPress version — none of that is this plugin's and all of it changes on its own.
+- **What moves by itself inside that block is masked** — the dates and session counts in the reports, the environment table, an avatar. A mask keeps the element's box and fills it, so a block that changes *size* is still a difference. Only the content is forgiven, never the geometry.
+- **The window, the pixel ratio, the motion and the caret are pinned** in the `visual` project in [`playwright.config.ts`](../playwright.config.ts): 1280×900, device scale 1, `reducedMotion`, `animations: 'disabled'`, `caret: 'hide'`, and a 0.2% tolerance for antialiasing.
+
+**Updating a picture when the change IS what you wanted.** `make test-visual-update` — Playwright's `--update-snapshots` — rewrites the baselines. Then look at `git diff --stat tests/e2e/snapshots` **before committing**: that diff is the review of the redesign, and accepting it without looking is how a bug becomes the baseline.
+
+**Why it is not in CI.** A baseline image is a picture of one machine's font rendering, its sub-pixel smoothing and its scrollbars. Committing those and asking a runner to match them is a job that is red for reasons nobody can act on, and a gate nobody can act on is a gate that gets switched off. So the `visual` project only exists when `DU_SNAPSHOTS=1` is set, which `make test-visual` does, and the baselines carry the platform in their filename. The layout measurements — which are portable — carry the load in CI.
 
 ## Running everything at once
 

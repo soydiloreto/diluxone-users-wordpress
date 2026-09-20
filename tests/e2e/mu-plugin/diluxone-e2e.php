@@ -251,12 +251,19 @@ add_action( 'rest_api_init', 'diluxone_e2e_routes' );
  * time. Nothing here writes a plugin setting: which page is the sign-in page
  * is a setting, and settings are set — and put back — by the spec that wants
  * them changed.
+ *
+ * The slug says `e2e-`, the title does not, and the difference matters in one
+ * place: `listing-screenshots.spec.ts` photographs these pages for the
+ * wordpress.org listing, and the theme prints the title. A shop window with
+ * "E2E Sign in" in the heading and "E2E Account" in the menu is a shop window
+ * that says the pictures were taken in a test harness. The slug is what the
+ * suite identifies them by and it is not on screen.
  */
 function diluxone_e2e_seed( WP_REST_Request $request ): WP_REST_Response {
 	$pages = array(
-		'login'    => array( 'E2E Sign in', '[diluxone_users_login]' ),
-		'register' => array( 'E2E Register', '[diluxone_users_register]' ),
-		'account'  => array( 'E2E Account', '[diluxone_users_account]' ),
+		'login'    => array( 'Sign in', '[diluxone_users_login]' ),
+		'register' => array( 'Create your account', '[diluxone_users_register]' ),
+		'account'  => array( 'Your account', '[diluxone_users_account]' ),
 	);
 
 	$out = array();
@@ -268,11 +275,13 @@ function diluxone_e2e_seed( WP_REST_Request $request ): WP_REST_Response {
 		if ( $existing instanceof WP_Post ) {
 			$id = (int) $existing->ID;
 
-			// The shortcode may have been edited by hand in this environment.
-			if ( $page[1] !== $existing->post_content ) {
+			// The shortcode may have been edited by hand in this environment,
+			// and the title may be the one an older run of this file wrote.
+			if ( $page[1] !== $existing->post_content || $page[0] !== $existing->post_title ) {
 				wp_update_post(
 					array(
 						'ID'           => $id,
+						'post_title'   => $page[0],
 						'post_content' => $page[1],
 					)
 				);
@@ -305,11 +314,21 @@ function diluxone_e2e_seed( WP_REST_Request $request ): WP_REST_Response {
 	);
 }
 
-/** Only the plugin's own settings can be driven from here. */
+/**
+ * Only the plugin's own settings can be driven from here.
+ *
+ * Plus three of WordPress's own, and each one is here for a named reason
+ * rather than because it was convenient. `users_can_register` is a setting
+ * this plugin writes, so a spec has to be able to put it back. `WPLANG`,
+ * `blogname` and `blogdescription` are what the listing screenshots need: the
+ * pictures on an English listing have to be in English, on a site with a name
+ * rather than on "Vistalba Club". All four go through the same set-and-restore
+ * contract as everything else, so a run leaves the site as it found it.
+ */
 function diluxone_e2e_option_allowed( string $key ): bool {
 	return 0 === strpos( $key, 'diluxone_users_' )
 		|| 0 === strpos( $key, 'diluxone_e2e_' )
-		|| 'users_can_register' === $key;
+		|| in_array( $key, array( 'users_can_register', 'WPLANG', 'blogname', 'blogdescription' ), true );
 }
 
 /**

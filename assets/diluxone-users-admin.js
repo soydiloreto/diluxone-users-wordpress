@@ -140,7 +140,10 @@ diluxoneUsersFieldTypes( document );
 
 		cancel.type      = 'button';
 		cancel.className = 'button';
-		cancel.textContent = dialog.getAttribute( 'data-diluxone-users-cancel' ) || 'Cancel';
+		// The word comes from the markup, which is where it was translated.
+		// It used to fall back to an English literal, which is a string this
+		// file has no way of translating and the eight locales never see.
+		cancel.textContent = dialog.getAttribute( 'data-diluxone-users-cancel' ) || '';
 		cancel.setAttribute( 'data-diluxone-users-dialog-close', '' );
 
 		submit.appendChild( document.createTextNode( ' ' ) );
@@ -179,62 +182,6 @@ diluxoneUsersFieldTypes( document );
 			event.preventDefault();
 			popup.focus();
 		}
-	} );
-}() );
-
-/**
- * The button preview follows the selectors while they are being chosen.
- *
- * It only changes classes on the real markup: there is no copy of the design
- * in here that could drift from the site. The text is not previewed live —
- * saving is needed to see it — because the name of each network comes from
- * the server and rebuilding it here would be exactly that copy.
- */
-( function () {
-	'use strict';
-
-	var canvas = document.querySelector( '.diluxone-users-buttons__canvas .diluxone-users-socials' );
-
-	if ( ! canvas ) {
-		return;
-	}
-
-	var map = {
-		skin:  [ 'brand', 'light', 'dark' ],
-		shape: [ 'rounded', 'pill', 'square' ],
-		show:  [ 'icon-text', 'icon' ],
-		cols:  [ 'cols-0', 'cols-1', 'cols-2' ]
-	};
-
-	function apply( group, value ) {
-		var classes = map[ group ];
-		var wanted  = 'cols' === group ? 'cols-' + value : value;
-
-		classes.forEach( function ( name ) {
-			canvas.classList.toggle( 'diluxone-users-socials--' + name, name === wanted );
-		} );
-	}
-
-	document.querySelectorAll( '[data-diluxone-users-preview]' ).forEach( function ( field ) {
-		field.addEventListener( 'change', function () {
-			apply( field.getAttribute( 'data-diluxone-users-preview' ), field.value );
-		} );
-	} );
-
-	// The canvas background. A dark finish on white looks great and vanishes
-	// against the site's dark background; both have to be viewable.
-	var canvasBox = document.querySelector( '.diluxone-users-buttons__canvas' );
-
-	document.querySelectorAll( '[data-diluxone-users-background]' ).forEach( function ( button ) {
-		button.addEventListener( 'click', function () {
-			var dark = 'dark' === button.getAttribute( 'data-diluxone-users-background' );
-
-			canvasBox.classList.toggle( 'diluxone-users-buttons__canvas--dark', dark );
-
-			document.querySelectorAll( '[data-diluxone-users-background]' ).forEach( function ( other ) {
-				other.setAttribute( 'aria-pressed', String( other === button ) );
-			} );
-		} );
 	} );
 }() );
 
@@ -448,6 +395,23 @@ function diluxoneUsersChoiceGroups( root ) {
 				button.form.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 			}
 		} );
+	} );
+
+	/*
+	 * A box that cannot be typed into is a box somebody was given to copy —
+	 * the address a provider's console asks to have pasted into it. Clicking
+	 * it selects the lot, so the copy is one gesture instead of a drag that
+	 * has to end on exactly the right character. On the document, and reading
+	 * the markup rather than an attribute written into the field: the design
+	 * system draws these, and a behaviour written into one screen's tag is a
+	 * behaviour the next screen will not have.
+	 */
+	document.addEventListener( 'click', function ( event ) {
+		var field = event.target.closest && event.target.closest( '.du-field input[readonly]' );
+
+		if ( field ) {
+			field.select();
+		}
 	} );
 
 	document.querySelectorAll( '[data-diluxone-users-toggle]' ).forEach( function ( box ) {
@@ -761,32 +725,6 @@ function diluxoneUsersChoiceGroups( root ) {
 		waiting = window.setTimeout( draw, 120 );
 	} );
 
-	/*
-	 * A preset is not a setting of its own: it fills in the fields below it
-	 * and gets out of the way. It lives here because it has to redraw
-	 * afterwards, and because the fields it fills in are in this form.
-	 */
-	form.querySelectorAll( '[data-diluxone-users-preset]' ).forEach( function ( button ) {
-		button.addEventListener( 'click', function () {
-			var styles = form.querySelector( 'input[name="diluxone_users_styles"]' );
-			var accent = form.querySelector( '#diluxone_users_style_accent' );
-			var radius = form.querySelector( '#diluxone_users_style_radius' );
-
-			if ( styles ) {
-				styles.checked = '1' === button.dataset.diluxoneUsersPresetStyles;
-			}
-
-			if ( accent && button.dataset.diluxoneUsersPresetAccent ) {
-				accent.value = button.dataset.diluxoneUsersPresetAccent;
-			}
-
-			if ( radius ) {
-				radius.value = button.dataset.diluxoneUsersPresetRadius;
-			}
-
-			draw();
-		} );
-	} );
 }() );
 
 /**
@@ -865,4 +803,204 @@ function diluxoneUsersChoiceGroups( root ) {
 			} );
 		}
 	} );
+}() );
+
+/**
+ * A group where none ticked is not an answer.
+ *
+ * Two screens ask it — the doors into an account, and what the second step
+ * can be — and both used to let the form go through empty and then explain
+ * afterwards, on a page reload, at the top, away from the four boxes it was
+ * about.
+ *
+ * What is said is not in here. The server wrote the sentence into the page,
+ * in the site's language, and this only unhides it: a plugin that ships eight
+ * locales cannot keep a sentence in a script. And what actually refuses the
+ * save is on the server too — diluxone_users_ui_needs_one(). This is the part
+ * that stops somebody sending a form they did not mean to send, which is a
+ * courtesy, not a rule. With the script off nothing here happens and the
+ * server says the same thing a beat later.
+ */
+( function () {
+	'use strict';
+
+	/** The boxes of the group, ignoring anything hanging off one of them. */
+	function boxes( group ) {
+		return group.querySelectorAll( '.du-choice > input[type="checkbox"]:not(:disabled)' );
+	}
+
+	/*
+	 * A group that hangs off an answer nobody gave is not being asked, and a
+	 * group that refuses the form anyway refuses it over a complaint nobody
+	 * can read: the press does nothing and the page does not say why.
+	 *
+	 * Two things can hang it. It can be folded away inside an option that is
+	 * not the one chosen — the doors of the registration screen live inside
+	 * "registration is open" — or it can name the answer it depends on, which
+	 * is what the second-factor screen does: none of them ticked is fine while
+	 * the second step is off. Read from the form as it is right now, so an
+	 * answer changed and not yet saved counts. The server has the same rule on
+	 * the other side and lets exactly these through.
+	 */
+	function asked( group ) {
+		if ( group.closest( '.du-choice-group:not(.is-open)' ) ) {
+			return false;
+		}
+
+		var on = group.dataset.diluxoneUsersWhile;
+
+		if ( ! on ) {
+			return true;
+		}
+
+		var form = group.closest( 'form' );
+		var control = form ? form.elements[ on ] : null;
+
+		if ( ! control ) {
+			return true;
+		}
+
+		return ( group.dataset.diluxoneUsersWhileIs || '' ).split( ' ' ).indexOf( control.value ) !== -1;
+	}
+
+	function ticked( group ) {
+		return Array.prototype.some.call( boxes( group ), function ( box ) {
+			return box.checked;
+		} );
+	}
+
+	function say( group, short ) {
+		var said = group.querySelector( '[data-diluxone-users-atleast-one-said]' );
+
+		if ( said ) {
+			said.hidden = ! short;
+		}
+
+		group.classList.toggle( 'is-short', short );
+	}
+
+	/*
+	 * On the document, like the rest of this file: a form can arrive after the
+	 * page did — the field editor fetches one into a dialog — and a listener
+	 * bound to what was there at load never hears from it.
+	 */
+	document.addEventListener( 'submit', function ( event ) {
+		var stuck = null;
+
+		event.target.querySelectorAll( '[data-diluxone-users-atleast-one]' ).forEach( function ( group ) {
+			var short = asked( group ) && ! ticked( group );
+
+			say( group, short );
+
+			if ( short && ! stuck ) {
+				stuck = group;
+			}
+		} );
+
+		if ( ! stuck ) {
+			return;
+		}
+
+		event.preventDefault();
+		stuck.scrollIntoView( { block: 'center' } );
+
+		var first = stuck.querySelector( '.du-choice > input[type="checkbox"]:not(:disabled)' );
+
+		if ( first ) {
+			first.focus();
+		}
+	} );
+
+	// And gone the moment it stops being true, rather than at the next press.
+	document.addEventListener( 'change', function ( event ) {
+		var group = event.target.closest && event.target.closest( '[data-diluxone-users-atleast-one]' );
+
+		if ( group ) {
+			say( group, asked( group ) && ! ticked( group ) );
+		}
+	} );
+}() );
+
+/**
+ * A rail longer than the window still has to show its end.
+ *
+ * Staying in view while the settings scroll past is `position: sticky` in the
+ * stylesheet, and for almost every rail that is the whole story: it comes to
+ * rest under the toolbar and the form goes by underneath it.
+ *
+ * The exception is the rail that is taller than the window — the sign-in tab
+ * with three providers half configured, a state, a note and five ways out.
+ * Resting its top under the toolbar pins its first line and pushes its last
+ * one below the bottom edge, for good: no amount of scrolling brings the links
+ * back, because the thing holding them is nailed to the top of the screen. The
+ * pattern that answers it is to rest later — the rail travels up with the page
+ * until its own last line is on the bottom edge, and stops there — and the
+ * distance to rest at is the window's height less the rail's, which is a
+ * measurement and not something a stylesheet can work out.
+ *
+ * So the stylesheet keeps the rule and this hands it the one number: where the
+ * rail rests, as `--du-follow-top`. Nothing else here decides anything. With
+ * the script off, or before it runs, the fallback in the stylesheet applies and
+ * the rail behaves like the preview column does.
+ */
+( function () {
+	'use strict';
+
+	var rails = document.querySelectorAll( '[data-diluxone-users-follow]' );
+
+	if ( ! rails.length ) {
+		return;
+	}
+
+	function place( rail ) {
+		// Always measured at rest. What is worked out below is the offset, so
+		// reading the rail while a previous answer is still on it measures the
+		// answer instead of the rail.
+		rail.style.removeProperty( '--du-follow-top' );
+
+		var how = window.getComputedStyle( rail );
+
+		// Under 960px the stylesheet puts the rail below the settings and
+		// stops it following. That breakpoint is WordPress's and it is written
+		// down once, over there: what is asked here is whether the rail is
+		// still a column beside something, which is the same question without
+		// a second copy of the number.
+		if ( 'static' === how.position ) {
+			return;
+		}
+
+		var rest = parseFloat( how.top );
+
+		if ( isNaN( rest ) ) {
+			return;
+		}
+
+		// The same air under it as over it: a last line touching the bottom
+		// edge of the window reads as a line that has been cut off.
+		var room = window.innerHeight - ( rest * 2 );
+		var tall = rail.getBoundingClientRect().height;
+
+		if ( tall > room ) {
+			rail.style.setProperty( '--du-follow-top', Math.round( rest - ( tall - room ) ) + 'px' );
+		}
+	}
+
+	function all() {
+		rails.forEach( place );
+	}
+
+	// Both halves of the sum change while the page is open: the window is
+	// resized, and the rail itself grows when something in it is answered —
+	// a provider turned on adds a caveat, a state line becomes two.
+	window.addEventListener( 'resize', all );
+
+	if ( 'function' === typeof window.ResizeObserver ) {
+		var watch = new window.ResizeObserver( all );
+
+		rails.forEach( function ( rail ) {
+			watch.observe( rail );
+		} );
+	} else {
+		all();
+	}
 }() );

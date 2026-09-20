@@ -63,9 +63,36 @@ tests/e2e/
   global.teardown.ts   puts those settings back and deletes every account the
                        run made
   mu-plugin/           the three things a browser cannot do on its own
-  support/             the REST side door, the locators, and a TOTP app
-  specs/               the flows
+  support/             the REST side door, the locators, a TOTP app, the
+                       registry of screens and the layout measurements
+  specs/               the flows, and the two suites that look at the screens
+  snapshots/           one picture per tab, the baseline the pictures compare
+                       against
 ```
+
+### The three kinds of spec
+
+- **The flows** — sign-in, registration, the second step, passkeys, social,
+  the settings that change the public page. A person doing something, and
+  what the site does about it.
+- **The measurements** (`specs/admin-layout.spec.ts`, with `support/layout.ts`)
+  — every tab of every screen, at 1600, 1280, 960 and 782 pixels: nothing
+  overlapping, nothing past the edge, no two blocks touching, no bordered box
+  with nothing in it, and the rail beside the settings rather than under them.
+  They need no baseline and run with everything else.
+- **The pictures** (`specs/admin-snapshots.spec.ts`) — one photograph per tab,
+  compared with the one in `snapshots/`. Its own Playwright project and its
+  own target, `make test-visual`, because a baseline image belongs to the
+  machine that took it. `make test-visual-update` is how you accept a change
+  you meant to make.
+
+Every one of those three walks the same list of screens,
+`support/screens.ts`. Add a tab there and all three cover it — and if you
+forget, the measurements read the tab strip each screen draws and fail on a
+tab that is not in the list.
+
+See [docs/testing-and-quality.md](../../docs/testing-and-quality.md) for what
+each rule means and why the pictures are not in CI.
 
 ### The mu-plugin
 
@@ -142,6 +169,7 @@ deletes all of them. Nothing else on the site has that domain.
 | `sso.spec.ts` | A new social account, one that matches an existing address, and **H-01**: an unverified address must not be handed an existing account. Silence treated as silence. "Verified only". Cancelling at the provider. Linking and unlinking. **H-02**: a link trip with no nonce. A forged `state`. |
 | `admin-settings.spec.ts` | Every tab of every settings screen renders with no PHP notice and no footer riding up into the layout; and eight settings changed by pressing Save, each checked on the public page afterwards — including **M-10**, the legal line keeping its link. |
 | `passkeys.spec.ts` | Register a passkey from the account screen and sign in with it, against Chrome's virtual authenticator; and a key the account has removed no longer opening it. |
+| `login-ways.spec.ts` | The four ways in as one screen: with all of them on, the sign-in card fits a 1366×768 laptop in tabs and does not stacked — both halves, so the measurement cannot pass on the broken arrangement. The passkey staying above the strip. The tab that opens: the site's choice for a stranger, the cookie after that, and the way in that just failed over both. The site's order, in tabs and stacked. Every way in visible with JavaScript off. And the dashboard end: the order saved from the drag list and read back off the public page. |
 
 ### Skipped, and why
 

@@ -4,8 +4,12 @@
  * on. Behind a proxy it always stored the proxy's, which made the screen
  * useless; and if it believes any header, anybody can claim to be whoever
  * they like — and get around the limits. These tests pin the safe answer to
- * each case: only the site's own proxies are believed, and only on the one
- * header they write.
+ * each case: no header is read unless the site named one, and then only the
+ * one it named, and then only on a connection from a proxy it trusts.
+ *
+ * Almost every test below calls `behind_a_proxy()` first, and that is the
+ * point of it: reading a header is what a site opts into, so a test about
+ * reading one has to opt in the way a site does.
  */
 
 namespace Tests\Unit\DiluxOneUsers;
@@ -22,6 +26,11 @@ class ClientIpTest extends TestCase {
 		require_once DILUXONE_USERS_DIR . 'includes/client-ip.php';
 
 		$GLOBALS['_test_wp_options'] = array();
+	}
+
+	/** The site says it is behind something that writes X-Forwarded-For. */
+	private function behind_a_proxy(): void {
+		update_option( 'diluxone_users_ip_header', 'HTTP_X_FORWARDED_FOR' );
 	}
 
 	protected function tearDown(): void {
@@ -46,6 +55,8 @@ class ClientIpTest extends TestCase {
 	}
 
 	public function test_behind_an_internal_proxy_it_uses_the_header(): void {
+		$this->behind_a_proxy();
+
 		$this->assertSame( '181.45.184.48', diluxone_users_client_ip( array(
 			'REMOTE_ADDR'          => '172.20.0.1',
 			'HTTP_X_FORWARDED_FOR' => '181.45.184.48',
@@ -53,6 +64,8 @@ class ClientIpTest extends TestCase {
 	}
 
 	public function test_from_a_chain_of_proxies_it_keeps_the_client(): void {
+		$this->behind_a_proxy();
+
 		// X-Forwarded-For is "client, proxy1, proxy2": walking from the right
 		// past our own proxies, the first address that is not ours is the client.
 		$this->assertSame( '181.45.184.48', diluxone_users_client_ip( array(
@@ -62,6 +75,8 @@ class ClientIpTest extends TestCase {
 	}
 
 	public function test_what_the_client_wrote_before_the_first_proxy_is_ignored(): void {
+		$this->behind_a_proxy();
+
 		// The client sent its own X-Forwarded-For with a made-up address; the
 		// proxy appended what it saw. The made-up one is on the left and the
 		// real one is the last address that is not one of ours.
@@ -72,6 +87,8 @@ class ClientIpTest extends TestCase {
 	}
 
 	public function test_an_injected_cloudflare_header_is_ignored_behind_a_proxy_that_does_not_write_it(): void {
+		$this->behind_a_proxy();
+
 		// nginx writes X-Forwarded-For and passes everything else through: a
 		// client can send CF-Connecting-IP and, before, it won over the real
 		// header. Only the one header the site's proxy writes is read.
@@ -103,13 +120,39 @@ class ClientIpTest extends TestCase {
 		) ) );
 	}
 
-	public function test_a_header_name_that_is_not_a_header_means_the_default(): void {
+	public function test_a_header_name_that_is_not_one_of_ours_means_none(): void {
 		update_option( 'diluxone_users_ip_header', 'REMOTE_ADDR' );
 
-		$this->assertSame( 'HTTP_X_FORWARDED_FOR', diluxone_users_ip_header() );
+		$this->assertSame( '', diluxone_users_ip_header() );
+	}
+
+	public function test_with_nothing_chosen_no_header_is_read_at_all(): void {
+		// The case this plugin used to get wrong, and it is the common one:
+		// in Docker, in Kubernetes, behind a local nginx or on a laptop,
+		// REMOTE_ADDR is private. Falling back to X-Forwarded-For there meant
+		// the visitor chose their own address, and with it a fresh key for
+		// every per-machine limit in the plugin.
+		$this->assertSame( '172.20.0.1', diluxone_users_client_ip( array(
+			'REMOTE_ADDR'           => '172.20.0.1',
+			'HTTP_X_FORWARDED_FOR'  => '8.8.8.8',
+			'HTTP_CF_CONNECTING_IP' => '8.8.4.4',
+		) ) );
+	}
+
+	public function test_listing_a_proxy_is_not_on_its_own_a_licence_to_read_headers(): void {
+		// Two settings and two questions: which header is written, and who is
+		// allowed to write it. Neither answers the other.
+		update_option( 'diluxone_users_trusted_proxies', '203.0.113.0/24' );
+
+		$this->assertSame( '203.0.113.7', diluxone_users_client_ip( array(
+			'REMOTE_ADDR'          => '203.0.113.7',
+			'HTTP_X_FORWARDED_FOR' => '181.45.184.48',
+		) ) );
 	}
 
 	public function test_a_public_proxy_is_believed_only_once_the_site_lists_it(): void {
+		$this->behind_a_proxy();
+
 		// Cloudflare's edge has a public address: without the list its
 		// headers are the client's, with the list they are Cloudflare's.
 		$server = array(
@@ -125,6 +168,8 @@ class ClientIpTest extends TestCase {
 	}
 
 	public function test_listed_proxies_are_skipped_inside_the_chain_too(): void {
+		$this->behind_a_proxy();
+
 		update_option( 'diluxone_users_trusted_proxies', '203.0.113.0/24' );
 
 		$this->assertSame( '181.45.184.48', diluxone_users_client_ip( array(
@@ -134,6 +179,8 @@ class ClientIpTest extends TestCase {
 	}
 
 	public function test_a_client_on_the_internal_network_is_reported_as_such(): void {
+		$this->behind_a_proxy();
+
 		$this->assertSame( '10.0.0.9', diluxone_users_client_ip( array(
 			'REMOTE_ADDR'          => '10.0.0.5',
 			'HTTP_X_FORWARDED_FOR' => '10.0.0.9',
@@ -141,6 +188,8 @@ class ClientIpTest extends TestCase {
 	}
 
 	public function test_it_strips_the_port_azure_appends(): void {
+		$this->behind_a_proxy();
+
 		// App Service writes "ip:port" and that is not an IP.
 		$this->assertSame( '79.159.158.249', diluxone_users_client_ip( array(
 			'REMOTE_ADDR'          => '127.0.0.1',
@@ -149,6 +198,8 @@ class ClientIpTest extends TestCase {
 	}
 
 	public function test_a_junk_header_breaks_nothing(): void {
+		$this->behind_a_proxy();
+
 		$this->assertSame( '10.0.0.5', diluxone_users_client_ip( array(
 			'REMOTE_ADDR'          => '10.0.0.5',
 			'HTTP_X_FORWARDED_FOR' => 'not-an-ip-at-all',
@@ -156,6 +207,8 @@ class ClientIpTest extends TestCase {
 	}
 
 	public function test_ipv6_with_brackets_and_port(): void {
+		$this->behind_a_proxy();
+
 		$this->assertSame( '2803:9800:a::1', diluxone_users_client_ip( array(
 			'REMOTE_ADDR'          => '::1',
 			'HTTP_X_FORWARDED_FOR' => '[2803:9800:a::1]:51234',

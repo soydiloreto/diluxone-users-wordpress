@@ -31,21 +31,58 @@ function diluxone_users_2fa_panel(): void {
 }
 add_action( 'diluxone_users_register_panels', 'diluxone_users_2fa_panel' );
 
-/** Saves it. */
-function diluxone_users_2fa_save(): void {
+/**
+ * What is said when the step is on and nothing can carry the code.
+ *
+ * Written once and read twice: the group of tick boxes carries it on screen,
+ * and the save prints it when the form arrived anyway. Two copies of a
+ * sentence are two sentences by the second time somebody edits one of them.
+ */
+function diluxone_users_2fa_needs_a_method(): string {
+	return __( 'Choose at least one way of sending the code. With the second step on and none of these ticked, nobody can finish signing in.', 'diluxone-users' );
+}
+
+/**
+ * Saves it.
+ *
+ * @return bool False when the second step is on with no way of sending the
+ *              code, in which case nothing was written.
+ */
+function diluxone_users_2fa_save(): bool {
 	// phpcs:disable WordPress.Security.NonceVerification.Missing -- the panel verifies it.
+	$mode    = sanitize_key( wp_unslash( $_POST['diluxone_users_2fa_mode'] ?? 'optional' ) );
+	$methods = array_map( 'sanitize_key', (array) wp_unslash( $_POST['diluxone_users_2fa_methods'] ?? array() ) );
+	$link    = sanitize_key( wp_unslash( $_POST['diluxone_users_2fa_link'] ?? 'auto' ) );
+	$days    = absint( wp_unslash( $_POST['diluxone_users_2fa_remember_days'] ?? 30 ) );
+	// phpcs:enable
+
+	/*
+	 * Off is the one mode where none of them is an answer: nothing is asked,
+	 * so nothing has to carry a code. In the other two the step is on, and a
+	 * step on with no way of sending the code is a site whose people get as
+	 * far as the second screen and no further. It saved exactly that, without
+	 * a word, until this stood in the way.
+	 *
+	 * Before anything is written, not after: a half-saved state here is a
+	 * screen showing what was refused as though it had been kept.
+	 */
+	if ( 'off' !== $mode && ! diluxone_users_ui_needs_one( $methods, diluxone_users_2fa_needs_a_method() ) ) {
+		return false;
+	}
+
 	diluxone_users_save_options(
 		array_merge(
 			diluxone_users_scope_posted( 'diluxone_users_2fa' ),
 			array(
-				'diluxone_users_2fa_mode'          => sanitize_key( wp_unslash( $_POST['diluxone_users_2fa_mode'] ?? 'optional' ) ),
-				'diluxone_users_2fa_methods'       => array_map( 'sanitize_key', (array) wp_unslash( $_POST['diluxone_users_2fa_methods'] ?? array() ) ),
-				'diluxone_users_2fa_link'          => sanitize_key( wp_unslash( $_POST['diluxone_users_2fa_link'] ?? 'auto' ) ),
-				'diluxone_users_2fa_remember_days' => absint( wp_unslash( $_POST['diluxone_users_2fa_remember_days'] ?? 30 ) ),
+				'diluxone_users_2fa_mode'          => $mode,
+				'diluxone_users_2fa_methods'       => $methods,
+				'diluxone_users_2fa_link'          => $link,
+				'diluxone_users_2fa_remember_days' => $days,
 			)
 		)
 	);
-	// phpcs:enable
+
+	return true;
 }
 
 /**
@@ -100,12 +137,30 @@ function diluxone_users_2fa_link_today(): array {
 }
 
 /**
+ * The same answer as a word, for the pill that carries it.
+ *
+ * "Active" and "Off" are the words of a switch, and this is not one: nothing
+ * here turns the sign-in link on or off — that is on Access — and a pill
+ * saying Off beside a line about the link is read as the link being off.
+ * It was read that way, on this very screen. What is on or off is whether the
+ * second step gets asked of somebody who arrived by one, so that is what the
+ * word says, and the state underneath it stays the plugin's own.
+ */
+function diluxone_users_2fa_link_word( string $state ): string {
+	return 'active' === $state
+		? __( 'Asked', 'diluxone-users' )
+		: __( 'Not asked', 'diluxone-users' );
+}
+
+/**
  * The second factor: who is asked for it, with what, and when not.
  *
  * The methods are listed from the registry and not by hand: if an add-on adds
  * one, it shows up here on its own.
  */
 function diluxone_users_screen_login_2fa(): void {
+	diluxone_users_ui_aside_open();
+
 	diluxone_users_intro( __( 'One more thing after the password or the link: a code that only that person has. Whoever gets hold of an email still does not get in.', 'diluxone-users' ) );
 
 	// All of them are asked for, not only the ones turned on: the checkbox of a
@@ -174,9 +229,25 @@ function diluxone_users_screen_login_2fa(): void {
 		);
 	}
 
-	diluxone_users_ui_choices( $cards );
+	/*
+	 * Asked of the browser only while the step is on, and "on" is whichever
+	 * of the three above is picked at the moment of the press — not the one
+	 * that was saved. Turning it off and untying both methods in one go is a
+	 * form with nothing wrong in it, and the browser used to refuse it.
+	 */
+	diluxone_users_ui_choices(
+		$cards,
+		diluxone_users_2fa_needs_a_method(),
+		array(
+			'name' => 'diluxone_users_2fa_mode',
+			'is'   => array( 'optional', 'required' ),
+		)
+	);
 
-	diluxone_users_ui_section( __( 'Coming in by email link', 'diluxone-users' ) );
+	diluxone_users_ui_section(
+		__( 'Asking it of somebody who came in by link', 'diluxone-users' ),
+		__( 'Whether there is a sign-in link at all is decided on Access. This is only what happens after one is followed.', 'diluxone-users' )
+	);
 
 	diluxone_users_ui_choices(
 		array(
@@ -204,21 +275,153 @@ function diluxone_users_screen_login_2fa(): void {
 		)
 	);
 
-	// What the three settings above come to right now. The dependency is on
-	// screen because the alternative is deducing it from three controls.
-	diluxone_users_ui_field_open( __( 'With that, today', 'diluxone-users' ) );
-	echo '<p>' . diluxone_users_state_pill( $today['state'] ) . ' ' . esc_html( $today['line'] ) . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the pill escapes its own.
-	diluxone_users_ui_field_close();
-
 	diluxone_users_ui_section(
 		__( 'Remembering a browser', 'diluxone-users' ),
 		__( 'A signed cookie, no more: it does not let anybody in, it only saves repeating the step on a browser that already passed it.', 'diluxone-users' )
 	);
 
-	diluxone_users_ui_field_open( __( 'For how long', 'diluxone-users' ), 'diluxone_users_2fa_remember_days' );
-	?>
-	<input type="number" id="diluxone_users_2fa_remember_days" name="diluxone_users_2fa_remember_days" class="small-text" min="0" value="<?php echo esc_attr( (string) diluxone_users_option( 'diluxone_users_2fa_remember_days' ) ); ?>">
-	<?php
-	esc_html_e( 'days — 0 to ask every time', 'diluxone-users' );
-	diluxone_users_ui_field_close();
+	diluxone_users_ui_number(
+		array(
+			'label'  => __( 'For how long', 'diluxone-users' ),
+			'name'   => 'diluxone_users_2fa_remember_days',
+			'value'  => (string) diluxone_users_option( 'diluxone_users_2fa_remember_days' ),
+			'suffix' => __( 'days', 'diluxone-users' ),
+			'min'    => 0,
+			'help'   => __( '0 to ask every time.', 'diluxone-users' ),
+		)
+	);
+
+	/*
+	 * What the three answers above come to is worth saying and is not a
+	 * fourth question, and in the column of settings that is what it looked
+	 * like: a row with a pill in it, between two groups that are asking for
+	 * something. Beside them it is what it is — the screen reading itself
+	 * back — and the same goes for the two screens the code and the link
+	 * come from.
+	 */
+	diluxone_users_ui_aside_close(
+		static function () use ( $today ): void {
+			diluxone_users_ui_note(
+				__( 'The second step, for somebody who came in by link', 'diluxone-users' ),
+				$today['line'],
+				$today['state'],
+				'',
+				diluxone_users_2fa_link_word( $today['state'] )
+			);
+
+			diluxone_users_ui_links(
+				__( 'What this leans on', 'diluxone-users' ),
+				array(
+					array(
+						'url'   => diluxone_users_admin_url( 'diluxone-users-notices', array( 'tab' => 'templates' ) ),
+						'label' => __( 'E-mail notices › The e-mails', 'diluxone-users' ),
+						'help'  => __( 'The subject and the words of the message that carries the six digits are written there, not here.', 'diluxone-users' ),
+					),
+					array(
+						'url'   => diluxone_users_admin_url( 'diluxone-users-login', array( 'tab' => 'ways' ) ),
+						'label' => __( 'Access › Ways in', 'diluxone-users' ),
+						'help'  => __( 'Whether there is a sign-in link at all — the arrival the rule above is about — is decided there.', 'diluxone-users' ),
+					),
+				)
+			);
+		}
+	);
 }
+
+/**
+ * Who the second step reaches, in words.
+ *
+ * The control is two settings — all, or a list of roles — and the summary has
+ * to say the result in a line. "Some roles" with nothing ticked reaches
+ * nobody, and it says so: that is a site that thinks it asks for a code and
+ * does not.
+ */
+function diluxone_users_2fa_who(): string {
+	if ( 'all' === diluxone_users_scope( 'diluxone_users_2fa' ) ) {
+		return __( 'everybody with an account', 'diluxone-users' );
+	}
+
+	$names = wp_roles()->get_names();
+	$roles = array();
+
+	foreach ( (array) diluxone_users_option( 'diluxone_users_2fa_roles' ) as $role ) {
+		$role    = (string) $role;
+		$roles[] = translate_user_role( (string) ( $names[ $role ] ?? $role ) );
+	}
+
+	return array() === $roles
+		? __( 'nobody: it is set to some roles and none of them is ticked', 'diluxone-users' )
+		: implode( ', ', $roles );
+}
+
+/**
+ * The second step, as three lines of the security summary.
+ *
+ * Three and not one because they are three answers a person comes looking
+ * for separately: whether it is asked at all and of whom, what carries the
+ * code, and what happens to somebody who arrived by link — the last being the
+ * one nobody can work out from the settings, which is why the tab already
+ * says it out loud beside them.
+ *
+ * @param array<int, array<string, string>> $rows
+ * @return array<int, array<string, string>>
+ */
+function diluxone_users_2fa_summary_rows( array $rows ): array {
+	$mode  = (string) diluxone_users_option( 'diluxone_users_2fa_mode' );
+	$on    = 'off' !== $mode;
+	$who   = diluxone_users_2fa_who();
+	$none  = 'some' === diluxone_users_scope( 'diluxone_users_2fa' ) && array() === (array) diluxone_users_option( 'diluxone_users_2fa_roles' );
+	$today = diluxone_users_2fa_link_today();
+	$tab   = diluxone_users_admin_url( DILUXONE_USERS_SECURITY, array( 'tab' => '2fa' ) );
+
+	if ( 'required' === $mode ) {
+		/* translators: %s: who it applies to — a list of roles, or "everybody with an account" */
+		$detail = sprintf( esc_html__( 'Required of %s: they are walked through it the next time they sign in, and there is no way past.', 'diluxone-users' ), esc_html( $who ) );
+	} elseif ( 'optional' === $mode ) {
+		/* translators: %s: who it applies to — a list of roles, or "everybody with an account" */
+		$detail = sprintf( esc_html__( 'Offered to %s, and asked of whoever turned it on from their own account.', 'diluxone-users' ), esc_html( $who ) );
+	} else {
+		$detail = esc_html__( 'Nobody is asked for a second step, not even whoever has one set up. What they set up is kept.', 'diluxone-users' );
+	}
+
+	$rows[] = array(
+		'label'  => __( 'Two-step verification', 'diluxone-users' ),
+		// On, and reaching nobody, is the one answer that is neither: the
+		// site is asking for a code from a list of roles it never filled in.
+		'state'  => $on ? ( $none ? 'pending' : 'active' ) : 'off',
+		'why'    => $on && $none ? __( 'it reaches nobody as it stands', 'diluxone-users' ) : '',
+		'detail' => $detail,
+		'url'    => $tab,
+	);
+
+	// From the registry and not from a list written here: what is on is what
+	// the sign-in will actually offer, an add-on's method included.
+	$methods = array_map(
+		static fn( array $method ): string => (string) $method['label'],
+		diluxone_users_2fa_methods()
+	);
+
+	$rows[] = array(
+		'label'  => __( 'How the code arrives', 'diluxone-users' ),
+		'state'  => array() === $methods ? 'off' : ( $on ? 'active' : 'off' ),
+		'why'    => array() !== $methods && ! $on ? __( 'while the second step is off', 'diluxone-users' ) : '',
+		'detail' => array() === $methods
+			? esc_html__( 'Nothing carries it: no method is ticked, so nobody could finish signing in.', 'diluxone-users' )
+			: esc_html( implode( ', ', $methods ) ),
+		'url'    => $tab,
+	);
+
+	$rows[] = array(
+		// Not "Somebody arriving by e-mail link", which is what it said: the
+		// pill beside it answers whether the second step is asked of that
+		// somebody, and a title naming the arrival made the pill look like an
+		// answer about the link itself.
+		'label'  => __( 'The second step, on a link sign-in', 'diluxone-users' ),
+		'state'  => $today['state'],
+		'detail' => esc_html( $today['line'] ),
+		'url'    => $tab,
+	);
+
+	return $rows;
+}
+add_filter( 'diluxone_users_security_summary', 'diluxone_users_2fa_summary_rows', 10 );

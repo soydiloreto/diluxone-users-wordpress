@@ -86,8 +86,11 @@ if (!defined('DILUXONE_USERS_DIR')) {
     exit(1);
 }
 
-// 8. Mark integration test context — the plugin has no custom tables: its
-//    data lives in options and user meta, which WordPress already creates.
+// 8. Mark integration test context. Most of the plugin's data lives in
+//    options and user meta, which WordPress already creates. The one table of
+//    its own — the activity log — is created by its installer, which the suite
+//    that needs it calls in setUp(): the plugin is already active by the time
+//    this file runs, so its activation hook never fires here.
 if (!defined('DILUXONE_USERS_INTEGRATION_TESTS')) {
     define('DILUXONE_USERS_INTEGRATION_TESTS', true);
 }

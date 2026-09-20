@@ -161,16 +161,7 @@ function diluxone_users_register_burst(): int {
  * forget to count.
  */
 function diluxone_users_register_allowed(): bool {
-	$key  = 'diluxone_users_reg_' . md5( diluxone_users_client_ip() );
-	$seen = (int) get_transient( $key );
-
-	if ( $seen >= diluxone_users_register_burst() ) {
-		return false;
-	}
-
-	set_transient( $key, $seen + 1, HOUR_IN_SECONDS );
-
-	return true;
+	return diluxone_users_ip_burst( 'register', diluxone_users_register_burst() );
 }
 
 /**
@@ -205,7 +196,7 @@ function diluxone_users_register_request(): void {
 	}
 
 	// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- verified above; each field is sanitised by type inside.
-	if ( array() !== diluxone_users_register_missing( (array) wp_unslash( $_POST ) ) ) {
+	if ( array() !== diluxone_users_register_missing( diluxone_users_posted_fields() ) ) {
 		wp_safe_redirect( add_query_arg( 'diluxone-users', 'missing', $back ) );
 		exit;
 	}
@@ -234,7 +225,7 @@ function diluxone_users_register_request(): void {
 	// missing was already refused above, before there was an account to save
 	// it to.
 	// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- verified above; each field is sanitised by type.
-	diluxone_users_save( $user_id, (array) wp_unslash( $_POST ) );
+	diluxone_users_save( $user_id, diluxone_users_posted_fields() );
 
 	/**
 	 * Fires once an account has been created from the registration form.

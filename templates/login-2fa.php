@@ -23,10 +23,12 @@ $diluxone_users_actual = $methods[ $method ] ?? array(
 	<h2 class="diluxone-users-login__title"><?php esc_html_e( 'One more step', 'diluxone-users' ); ?></h2>
 	<p><?php echo esc_html( (string) $diluxone_users_actual['help'] ); ?></p>
 
-	<?php if ( 'code' === $state ) : ?>
-		<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'That code is not right, or it expired. Try the next one.', 'diluxone-users' ); ?></p>
+	<?php if ( 'locked' === $state ) : ?>
+		<?php diluxone_users_login_notice( 'two_step_locked' ); ?>
+	<?php elseif ( 'code' === $state ) : ?>
+		<?php diluxone_users_login_notice( 'two_step_wrong' ); ?>
 	<?php elseif ( 'sent' === $state ) : ?>
-		<p class="diluxone-users-notice diluxone-users-notice--ok"><?php esc_html_e( 'Sent. Check your email.', 'diluxone-users' ); ?></p>
+		<?php diluxone_users_login_notice( 'two_step_sent' ); ?>
 	<?php endif; ?>
 
 	<form class="diluxone-users-form" method="post" action="">

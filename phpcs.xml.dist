@@ -3,11 +3,12 @@
     <description>
         WordPress Coding Standards configuration for the DiluxOne Users+ plugin.
         Strict mode — runs the full WordPress ruleset (Core + Docs + Extra) plus
-        PHP 7.4+ compatibility checks. No baseline.
+        PHP 8.0+ compatibility checks. No baseline.
     </description>
 
     <!-- Files / paths to scan -->
     <file>diluxone-users.php</file>
+    <file>uninstall.php</file>
     <file>includes/</file>
     <file>templates/</file>
 
@@ -98,23 +99,6 @@
          preferences that produce noise without making the code better.
          ================================================================= -->
 
-    <!-- Modern PSR-12 conventions in the OOP layer.
-         DTOs and SyncStatus enum use PascalCase filenames + camelCase
-         methods/properties on purpose. The autoloader handles both
-         naming styles. Renaming would break every callsite. -->
-    <rule ref="WordPress.NamingConventions.ValidFunctionName">
-        <exclude-pattern>*/includes/DTOs/*</exclude-pattern>
-        <exclude-pattern>*/includes/Enums/SyncStatus.php</exclude-pattern>
-    </rule>
-    <rule ref="WordPress.NamingConventions.ValidVariableName">
-        <exclude-pattern>*/includes/DTOs/*</exclude-pattern>
-        <exclude-pattern>*/includes/Enums/SyncStatus.php</exclude-pattern>
-    </rule>
-    <rule ref="WordPress.Files.FileName">
-        <exclude-pattern>*/includes/DTOs/*</exclude-pattern>
-        <exclude-pattern>*/includes/Enums/SyncStatus.php</exclude-pattern>
-    </rule>
-
     <!-- Yoda conditions are explicitly NOT used in this project (see
          .github/copilot-instructions.md). Modern style is `$x === 5`,
          not `5 === $x`. -->
@@ -165,38 +149,10 @@
         <severity>0</severity>
     </rule>
 
-    <!-- PSR-2 underscore-prefix on method names — flagged on internal
-         _wp_die_test_handler-style helpers that follow a legacy PHP
-         convention. Harmless. -->
-    <rule ref="PSR2.Methods.MethodDeclaration.Underscore">
-        <severity>0</severity>
-    </rule>
-
-    <!-- DTO property access ripples across the whole codebase: providers,
-         managers, admin templates all read $dto->camelProp. We already
-         excluded the property *declaration* rule for DTOs/Enums above;
-         excluding the *access* rule globally for symmetry. The naming
-         convention is documented in .github/copilot-instructions.md. -->
-    <rule ref="WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase">
-        <severity>0</severity>
-    </rule>
-
-    <!-- File naming: this codebase intentionally mixes legacy WP-style
-         (class-foo.php for older classes) with modern PSR-12
-         (PascalCase.php for newer DTOs/Enums). The custom autoloader in
-         includes/enhanced-autoloader.php maps both styles to the same
-         namespace tree. Renaming files would break that mapping. -->
-    <rule ref="WordPress.Files.FileName.InvalidClassFileName">
-        <severity>0</severity>
-    </rule>
-    <rule ref="WordPress.Files.FileName.NotHyphenatedLowercase">
-        <severity>0</severity>
-    </rule>
-
     <!-- Plugin minimum WordPress version -->
-    <config name="minimum_supported_wp_version" value="5.0"/>
+    <config name="minimum_supported_wp_version" value="6.0"/>
 
-    <!-- PHP compatibility: must run cleanly on PHP 7.4 and up -->
-    <config name="testVersion" value="7.4-"/>
+    <!-- PHP compatibility: must run cleanly on PHP 8.0 and up -->
+    <config name="testVersion" value="8.0-"/>
     <rule ref="PHPCompatibilityWP"/>
 </ruleset>

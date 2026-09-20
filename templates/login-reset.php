@@ -31,7 +31,7 @@ defined( 'ABSPATH' ) || exit;
 	</p>
 
 	<?php if ( 'nomatch' === $state ) : ?>
-		<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'The two passwords are not the same. Try again.', 'diluxone-users' ); ?></p>
+		<?php diluxone_users_login_notice( 'reset_mismatch' ); ?>
 	<?php endif; ?>
 
 	<form class="diluxone-users-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">

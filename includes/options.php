@@ -55,6 +55,20 @@ function diluxone_users_option_defaults(): array {
 		// Create a new account when the e-mail does not exist.
 		// The page holding the [diluxone_users_register] shortcode.
 		'diluxone_users_register_page'         => 0,
+
+		// ── How the ways in are arranged on the screen ───────────────
+		// Stacked one under the other, behind tabs, or counted: 'auto' is
+		// stacked while there are two ways in and tabs from three, because
+		// that is where the column outgrows the laptop it is read on.
+		'diluxone_users_login_layout'          => 'auto',
+		// The order the site dragged them into, as ids. It is the order of
+		// the tabs and, stacked, the order down the page — which is what
+		// makes it worth having in both arrangements. Empty means the order
+		// each way in asked for when it registered.
+		'diluxone_users_login_order'           => array(),
+		// Which tab opens for somebody this site has never seen. After that
+		// it is whichever one they used last, which the browser remembers.
+		'diluxone_users_login_open'            => '',
 		// What the registration form says, in the site's words.
 		'diluxone_users_register_title'        => '',
 		'diluxone_users_register_intro'        => '',
@@ -151,9 +165,15 @@ function diluxone_users_option_defaults(): array {
 		'diluxone_users_sso_login'             => 1,
 		// Require the provider to say the e-mail is verified.
 		'diluxone_users_sso_verified_only'     => 0,
-		// Roles that cannot sign in with a social account. It goes as a list
-		// because there are several; the saving below treats it separately.
-		'diluxone_users_sso_blocked_roles'     => array(),
+		// Who may sign in with a social account: everybody, or only the
+		// roles ticked. Said the other way round until now — a list of roles
+		// that could NOT — which is the only question on these screens
+		// answered by the negative, and the one place the reader had to work
+		// out what an empty list meant. `all` / `some` plus the roles is the
+		// shape the second step and the dashboard profile already use, so it
+		// is the same control and the same answer everywhere.
+		'diluxone_users_sso_scope'             => 'all',
+		'diluxone_users_sso_roles'             => array(),
 
 		/* How the network buttons look. */
 		'diluxone_users_sso_button_skin'       => 'brand',
@@ -370,6 +390,26 @@ function diluxone_users_option_defaults(): array {
 		'diluxone_users_wp_profile'            => 'allow',
 		'diluxone_users_wp_profile_scope'      => 'all',
 		'diluxone_users_wp_profile_roles'      => array(),
+
+		// ── The activity log ──────────────────────────────────────────
+		// Which groups of events get a row in the plugin's own table. A fresh
+		// install records the way in and the way out and nothing else: a plugin
+		// that starts writing down every change a person makes has decided
+		// something about somebody's disk, and about somebody's privacy, that
+		// was not its to decide. The other groups are ticked by hand.
+		'diluxone_users_log_levels'            => array( 'access' ),
+		// Days a row is kept before the daily purge drops it. 0 keeps
+		// everything for ever, which is the answer with no end to it.
+		'diluxone_users_log_days'              => 90,
+
+		// ── Deleting the plugin ───────────────────────────────────────
+		// Whether removing the plugin also removes everything it wrote.
+		// Off, because most of what it wrote is not the plugin's: it is
+		// people's names, phone numbers and dates of birth, and their
+		// passkeys and second factors. A plugin deleted by accident, or
+		// deleted to be reinstalled, must not be the thing that loses
+		// them. Whoever really wants it all gone ticks this first.
+		'diluxone_users_uninstall_wipe'        => 0,
 	);
 }
 

@@ -83,7 +83,7 @@ function diluxone_users_security_submit(): void {
 				// The backup codes are generated when it is turned on, not later:
 				// the moment to write them down is before needing them.
 			if ( 0 === diluxone_users_backup_left( $user_id ) ) {
-				set_transient( 'diluxone_users_backup_' . $user_id, diluxone_users_backup_generate( $user_id ), 15 * MINUTE_IN_SECONDS );
+				diluxone_users_backup_stash( $user_id, diluxone_users_backup_generate( $user_id ) );
 			}
 
 			wp_safe_redirect( add_query_arg( 'diluxone-users', 'on', $target ) );
@@ -115,7 +115,7 @@ function diluxone_users_security_submit(): void {
 			diluxone_users_notify_security( $user_id, __( 'An authenticator app was set up.', 'diluxone-users' ) );
 
 			if ( 0 === diluxone_users_backup_left( $user_id ) ) {
-				set_transient( 'diluxone_users_backup_' . $user_id, diluxone_users_backup_generate( $user_id ), 15 * MINUTE_IN_SECONDS );
+				diluxone_users_backup_stash( $user_id, diluxone_users_backup_generate( $user_id ) );
 			}
 
 			wp_safe_redirect( add_query_arg( 'diluxone-users', 'totp', $target ) );
@@ -133,7 +133,7 @@ function diluxone_users_security_submit(): void {
 		case 'backup':
 			diluxone_users_security_confirm( $user_id, $code, $target );
 
-			set_transient( 'diluxone_users_backup_' . $user_id, diluxone_users_backup_generate( $user_id ), 15 * MINUTE_IN_SECONDS );
+			diluxone_users_backup_stash( $user_id, diluxone_users_backup_generate( $user_id ) );
 			wp_safe_redirect( add_query_arg( 'diluxone-users', 'backup', $target ) );
 			exit;
 	}
@@ -164,26 +164,17 @@ function diluxone_users_security_confirm( int $user_id, string $code, string $ta
 /**
  * The freshly generated codes, if they can still be shown.
  *
- * They live in a fifteen-minute transient and not in the user meta: they are
- * stored hashed, so this is the only window for seeing them, and that window
- * has to close on its own.
+ * They live sealed in a one-minute transient and not in the user meta: they
+ * are stored hashed, so this is the only window for seeing them, and that
+ * window has to close on its own. The sealing and the opening are in
+ * `auth.php`, beside the hashing they would otherwise undo.
+ *
+ * They are also gone on reading. The box says "shown only this once", and it
+ * was saying it while they went on appearing on every reload for fifteen
+ * minutes: either it is true or it should not be said.
  *
  * @return array<int, string>
  */
 function diluxone_users_backup_fresh( int $user_id ): array {
-	$codes = get_transient( 'diluxone_users_backup_' . $user_id );
-
-	// Without a transient, get_transient() returns false, and (array) false is
-	// an array with one empty element inside: the list came out with a blank
-	// row. It is compared before casting.
-	if ( ! is_array( $codes ) || array() === $codes ) {
-		return array();
-	}
-
-	// And they are deleted on reading. The box says "shown only this once", and
-	// it was saying it while they went on appearing on every reload for fifteen
-	// minutes: either it is true or it should not be said.
-	delete_transient( 'diluxone_users_backup_' . $user_id );
-
-	return $codes;
+	return diluxone_users_backup_unstash( $user_id );
 }

@@ -15,24 +15,47 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * A single field, in the table markup the dashboard uses.
+ * A single field: its name above it, the box, and why we ask underneath.
+ *
+ * It was a row of a `form-table` — the name in the left column, the box in
+ * the right — and that shape is the one the plugin stopped drawing. It does
+ * not come back through the door of a screen that belongs to WordPress: the
+ * block added here is the plugin's, and a person who has just set the field
+ * up on the plugin's own screen should meet it in the same shape here.
  *
  * @param array<string, mixed> $field
  */
-function diluxone_users_field_row( array $field, int $user_id ): void {
-	$value = diluxone_users_value( $user_id, $field['key'] );
-	$id    = 'diluxone-users-' . $field['key'];
-	?>
-	<tr>
-		<th><label for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $field['label'] ); ?></label></th>
-		<td>
-			<?php diluxone_users_field_input( $field, $value, $id ); ?>
-			<?php if ( '' !== $field['help'] ) : ?>
-				<p class="description"><?php echo esc_html( $field['help'] ); ?></p>
-			<?php endif; ?>
-		</td>
-	</tr>
-	<?php
+function diluxone_users_field_control( array $field, int $user_id ): void {
+	$id = 'diluxone-users-' . $field['key'];
+
+	diluxone_users_ui_field_open( (string) $field['label'], $id );
+	diluxone_users_field_input( $field, diluxone_users_value( $user_id, $field['key'] ), $id );
+	diluxone_users_ui_field_close( (string) $field['help'] );
+}
+
+/**
+ * The whole block of them, for a screen of WordPress's own.
+ *
+ * The dashboard profile and the sign-up an administrator performs want the
+ * same thing and differ in one detail: on a sign-up there is nobody yet, so
+ * there is nothing answered to show.
+ *
+ * The ground is not decoration. The design system's measurements — the scale
+ * of space, the greys, the accent taken from the colour scheme — are declared
+ * on the class `diluxone_users_ui_ground_open()` prints, and these two screens
+ * are WordPress's own and have no such ground under them. Without it the
+ * pieces get their rules and none of the numbers in them.
+ */
+function diluxone_users_fields_block( int $user_id ): void {
+	diluxone_users_ui_ground_open();
+
+	diluxone_users_ui_section( __( 'Additional details', 'diluxone-users' ) );
+
+	foreach ( diluxone_users_fields() as $field ) {
+		diluxone_users_field_control( $field, $user_id );
+	}
+
+	diluxone_users_ui_ground_close();
 }
 
 /**
@@ -45,9 +68,13 @@ function diluxone_users_field_row( array $field, int $user_id ): void {
  * @param array<string, mixed> $field
  */
 function diluxone_users_field_input( array $field, string $value, string $id = '' ): void {
-	$key              = $field['key'];
-	$id               = '' === $id ? $key : $id;
-	$required_attr    = $field['required'] ? ' required' : '';
+	$key           = $field['key'];
+	$id            = '' === $id ? $key : $id;
+	$required_attr = $field['required'] ? ' required' : '';
+	// Escaped here, where the only variable part is, and printed as it stands
+	// below. It used to go through `wp_kses_post()` at each printf — a filter
+	// for a body of HTML, wrapped around a fragment of an attribute, which is
+	// the wrong tool for the context and did nothing but quiet the sniff.
 	$placeholder_attr = '' === $field['placeholder'] ? '' : ' placeholder="' . esc_attr( $field['placeholder'] ) . '"';
 
 	// A field that cannot be changed is shown all the same: the data belongs to
@@ -89,7 +116,7 @@ function diluxone_users_field_input( array $field, string $value, string $id = '
 				esc_attr( $id ),
 				esc_attr( $key ),
 				esc_attr( $required_attr . $lock ),
-				wp_kses_post( $placeholder_attr ),
+				$placeholder_attr, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- an attribute fragment escaped where it is built.
 				esc_textarea( $value )
 			);
 			return;
@@ -194,7 +221,7 @@ function diluxone_users_field_input( array $field, string $value, string $id = '
 				esc_attr( $key ),
 				esc_attr( $national ),
 				esc_attr( $required_attr . $lock ),
-				wp_kses_post( $placeholder_attr )
+				$placeholder_attr // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- an attribute fragment escaped where it is built.
 			);
 
 			echo '</span>';
@@ -210,7 +237,7 @@ function diluxone_users_field_input( array $field, string $value, string $id = '
 				esc_attr( $value ),
 				esc_attr( $list ),
 				esc_attr( $required_attr . $lock ),
-				wp_kses_post( $placeholder_attr )
+				$placeholder_attr // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- an attribute fragment escaped where it is built.
 			);
 
 			printf( '<datalist id="%s">', esc_attr( $list ) );
@@ -237,7 +264,7 @@ function diluxone_users_field_input( array $field, string $value, string $id = '
 		esc_attr( $key ),
 		esc_attr( $value ),
 		esc_attr( $required_attr . $lock ),
-		wp_kses_post( $placeholder_attr )
+		$placeholder_attr // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- an attribute fragment escaped where it is built.
 	);
 }
 
@@ -253,19 +280,11 @@ function diluxone_users_profile_fields( $user ): void {
 		return;
 	}
 
-	$fields = diluxone_users_fields();
-
-	if ( array() === $fields ) {
+	if ( array() === diluxone_users_fields() ) {
 		return;
 	}
-	?>
-	<h2><?php esc_html_e( 'Additional details', 'diluxone-users' ); ?></h2>
-	<table class="form-table" role="presentation">
-		<?php foreach ( $fields as $field ) : ?>
-			<?php diluxone_users_field_row( $field, (int) $user->ID ); ?>
-		<?php endforeach; ?>
-	</table>
-	<?php
+
+	diluxone_users_fields_block( (int) $user->ID );
 }
 add_action( 'show_user_profile', 'diluxone_users_profile_fields' );
 add_action( 'edit_user_profile', 'diluxone_users_profile_fields' );
@@ -277,7 +296,7 @@ function diluxone_users_profile_save( int $user_id ): void {
 	}
 
 	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WordPress already verified the profile nonce before this hook.
-	diluxone_users_save( $user_id, $_POST );
+	diluxone_users_save( $user_id, diluxone_users_posted_fields() );
 }
 add_action( 'personal_options_update', 'diluxone_users_profile_save' );
 add_action( 'edit_user_profile_update', 'diluxone_users_profile_save' );
@@ -286,19 +305,13 @@ add_action( 'edit_user_profile_update', 'diluxone_users_profile_save' );
 
 /** The plugin fields, in the dashboard sign-up of a person. */
 function diluxone_users_new_user_fields( string $type ): void {
-	$fields = diluxone_users_fields();
-
-	if ( 'add-new-user' !== $type || array() === $fields ) {
+	if ( 'add-new-user' !== $type || array() === diluxone_users_fields() ) {
 		return;
 	}
-	?>
-	<h2><?php esc_html_e( 'Additional details', 'diluxone-users' ); ?></h2>
-	<table class="form-table" role="presentation">
-		<?php foreach ( $fields as $field ) : ?>
-			<?php diluxone_users_field_row( $field, 0 ); ?>
-		<?php endforeach; ?>
-	</table>
-	<?php
+
+	// Nobody yet: the account is what this form is about to create, so there
+	// is nothing answered to show and every box starts empty.
+	diluxone_users_fields_block( 0 );
 }
 add_action( 'user_new_form', 'diluxone_users_new_user_fields' );
 
@@ -362,7 +375,7 @@ add_filter( 'registration_errors', 'diluxone_users_register_validate', 10, 3 );
 /** Register save. */
 function diluxone_users_register_save( int $user_id ): void {
 	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WordPress registration verifies it itself.
-	diluxone_users_save( $user_id, $_POST );
+	diluxone_users_save( $user_id, diluxone_users_posted_fields() );
 }
 add_action( 'user_register', 'diluxone_users_register_save' );
 

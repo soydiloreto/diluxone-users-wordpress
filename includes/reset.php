@@ -114,9 +114,17 @@ function diluxone_users_reset_save(): void {
 		exit;
 	}
 
+	/*
+	 * `is_scalar` before the cast, and it is not defensiveness for its own
+	 * sake: posting `diluxone_users_pass[]=x` made both of these the literal
+	 * string "Array", which compares equal to itself, and the account's
+	 * password was then set to the word Array.
+	 */
 	// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- verified above; a password is not sanitised, it is used as typed.
-	$pass    = (string) wp_unslash( $_POST['diluxone_users_pass'] ?? '' );
-	$confirm = (string) wp_unslash( $_POST['diluxone_users_pass2'] ?? '' );
+	$typed   = wp_unslash( $_POST['diluxone_users_pass'] ?? '' );
+	$typed2  = wp_unslash( $_POST['diluxone_users_pass2'] ?? '' );
+	$pass    = is_scalar( $typed ) ? (string) $typed : '';
+	$confirm = is_scalar( $typed2 ) ? (string) $typed2 : '';
 	// phpcs:enable
 
 	if ( '' === $pass || $pass !== $confirm ) {

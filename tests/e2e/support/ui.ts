@@ -105,13 +105,46 @@ export async function submitPluginForm(page: Page, form: Locator): Promise<strin
 /** Asks for a sign-in link and waits for the screen that confirms it. */
 export async function askForLink(page: Page, loginUrl: string, email: string): Promise<void> {
 	await page.goto(loginUrl);
+	await openWay(page, 'email');
 	await emailField(page).fill(email);
 	await linkForm(page).locator('button[type="submit"]').click();
 	await expect(sentScreen(page)).toContainText(email);
 }
 
+/**
+ * Opens the way in that holds a form, when the sign-in page is showing tabs.
+ *
+ * Stacked, every way in is on the screen at once and there is nothing to
+ * press. In tabs they share one place and the ones that are not open carry
+ * `hidden`, so filling a field without this fills a field nobody can see —
+ * which is exactly how this suite found out that the arrangement had arrived:
+ * `input[name="log"]` resolved, and Playwright waited a minute for a box
+ * inside a closed tab to become visible.
+ *
+ * The tab is found by the id the plugin puts on it, never by its label: this
+ * site runs in Spanish and the plugin ships eight locales. A page with no
+ * strip, or with that way already open, costs nothing and does nothing —
+ * which is what lets wp-login.php, where there are no ways at all, go through
+ * the same helper.
+ */
+export async function openWay(page: Page, way: string): Promise<void> {
+	const tab = page.locator(`[data-diluxone-users-way-tab="${way}"]`);
+
+	if (!(await tab.isVisible().catch(() => false))) {
+		return;
+	}
+
+	if ((await tab.getAttribute('aria-selected')) === 'true') {
+		return;
+	}
+
+	await tab.click();
+	await expect(page.locator(`[data-diluxone-users-way="${way}"]`)).toBeVisible();
+}
+
 /** Signs in with a password through whichever form is on the page. */
 export async function signInWithPassword(page: Page, user: string, pass: string): Promise<void> {
+	await openWay(page, 'password');
 	await userField(page).fill(user);
 	await passField(page).fill(pass);
 	await passwordForm(page).locator('input[type="submit"], button[type="submit"]').first().click();
@@ -187,9 +220,80 @@ export function accountSection(accountUrl: string, section: string): string {
 
 /* ── The dashboard ─────────────────────────────────────────────────── */
 
-/** One of the plugin's settings screens, on one of its tabs. */
-export function adminUrl(screen: string, tab?: string): string {
-	return `/wp-admin/admin.php?page=${screen}${tab ? `&tab=${tab}` : ''}`;
+/**
+ * One of the plugin's settings screens, on one of its tabs.
+ *
+ * The third argument is for the screens that draw what the site is doing
+ * rather than what it is set to: a search that pins the list to one seeded
+ * person is the difference between a picture of a screen and a picture of
+ * whatever happened to be true when it was taken.
+ *
+ * @param query Extra query arguments, appended in the order given.
+ */
+export function adminUrl(screen: string, tab?: string, query: Record<string, string> = {}): string {
+	const extra = Object.entries(query)
+		.map(([key, value]) => `&${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+		.join('');
+
+	return `/wp-admin/admin.php?page=${screen}${tab ? `&tab=${tab}` : ''}${extra}`;
+}
+
+/** One of the tick boxes that say what the sign-in form takes. */
+export function loginWay(page: Page, way: 'link' | 'password'): Locator {
+	return page.locator(`input[name="diluxone_users_login_method[]"][value="${way}"]`);
+}
+
+/**
+ * A group of tick boxes where none ticked is not an answer.
+ *
+ * The plugin marks these in the markup — `data-diluxone-users-atleast-one` —
+ * and the script adds `is-short` to the one it is stopping the form over. The
+ * sentence beside it is written by the server in the site's own language, so
+ * the class is the hold and the words are never read.
+ */
+export function needsOne(page: Page, name: string): Locator {
+	return page
+		.locator('[data-diluxone-users-atleast-one]')
+		.filter({ has: page.locator(`input[name="${name}"]`) })
+		.first();
+}
+
+/**
+ * Sends a panel's form the way nothing on the page can intervene in.
+ *
+ * `HTMLFormElement.submit()` fires no submit event, so the courtesy in the
+ * browser never runs and the request reaches the server exactly as it would
+ * with the script switched off. That is the only way to ask whether the save
+ * itself refuses, which is the half that matters: the script is a kindness,
+ * the server is the rule.
+ */
+export async function submitPanelWithoutScript(page: Page): Promise<void> {
+	await Promise.all([
+		page.waitForLoadState('domcontentloaded'),
+		page.locator('#submit').evaluate((button: HTMLInputElement) => {
+			// Through the prototype, because `form.submit` is not the method
+			// here: `submit_button()` gives the button name="submit", and a
+			// named control shadows the form member of the same name. Calling
+			// it the obvious way reaches the button and throws.
+			HTMLFormElement.prototype.submit.call(button.form as HTMLFormElement);
+		}),
+	]);
+}
+
+/** What the dashboard shows when a save was refused. */
+export function adminError(page: Page): Locator {
+	return page.locator('.notice-error');
+}
+
+/**
+ * What the dashboard shows when a save went through.
+ *
+ * The counterpart of `adminError`, and the only honest way to ask "did it
+ * congratulate itself": the sentence inside is translated eight ways, the
+ * class the notice is printed with is not.
+ */
+export function adminSaved(page: Page): Locator {
+	return page.locator('.notice-success');
 }
 
 /**

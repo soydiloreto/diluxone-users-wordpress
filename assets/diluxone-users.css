@@ -121,6 +121,8 @@
 }
 
 .diluxone-users *,
+.diluxone-users-login-page,
+.diluxone-users-login-page *,
 .diluxone-users-account * { box-sizing: border-box; }
 
 /* ── Superficies ────────────────────────────────────────────────────── */
@@ -588,17 +590,40 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 
 /* Split: the picture takes half the window and the form the other half. The
    picture is a background and not an <img> because it is decoration — it is
-   hidden from screen readers and carries no alt text to invent. */
+   hidden from screen readers and carries no alt text to invent.
+
+   How tall the two of them are is ONE decision and not two. The row is at
+   least a screen — a split that is a stripe across the middle of the window is
+   not a split — and after that it is as tall as whichever column is taller,
+   which is the form. `svh` and not `vh`: on a phone `vh` is the window with
+   the browser's own bars pretended away, and the screen this describes is the
+   one with them. */
 .diluxone-users-login-frame.diluxone-users-login-frame--split {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 0;
 	padding: 0;
 	align-items: stretch;
-	min-height: var(--diluxone-users-login-min, min(720px, 80vh));
+	min-height: var(--diluxone-users-login-min, min(720px, 100svh));
 }
+/* The panel is never taller than the window, and stays put while the form
+   goes past it.
+
+   A form with twelve networks, a passkey, an address and a password on it is
+   genuinely longer than a laptop screen, and stretching the panel to match was
+   putting the one sentence this page came to say — the heading — at the middle
+   of a column twice the height of the window, which is to say below the fold.
+   Nothing is deformed to fix that: the panel keeps its cell and its colour,
+   it is simply as tall as a screen and it holds while the other column
+   scrolls. That is the same answer the dashboard's rail gives, and the same
+   one property to move it: a site whose header is fixed over the top of the
+   page says where the panel comes to rest, once. */
 .diluxone-users-login-frame--split .diluxone-users-login-frame__picture {
-	position: relative;
+	position: sticky;
+	top: var(--diluxone-users-login-stick, 0px);
+	align-self: start;
+	height: 100%;
+	max-height: 100svh;
 	overflow: hidden;
 	background-image: var(--diluxone-users-login-image);
 	background-size: cover;
@@ -623,7 +648,13 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	padding: var(--diluxone-users-login-box-pad, 48px);
+	/* `safe` is the difference between a form that is centred and a form whose
+	   first field is above the top of the screen: when the content is taller
+	   than the box, centring overflows in BOTH directions and the half that
+	   goes up cannot be scrolled to. Declared twice on purpose — a browser
+	   that does not know the keyword keeps the line before it. */
+	justify-content: safe center;
+	padding: var(--diluxone-users-login-box-pad, clamp(24px, 5vh, 48px));
 	max-width: var(--diluxone-users-login-box-w, 520px);
 }
 
@@ -631,7 +662,14 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
    Three rows, so the mark holds the top and the closing line holds the
    bottom however much is written between them. The rows that are empty are
    still there and empty: laying out three things and drawing two is how a
-   panel ends up with its heading against the ceiling. */
+   panel ends up with its heading against the ceiling.
+
+   The three rows share the panel's height rather than running past the bottom
+   of it, and the air between them and around them is measured against the
+   window: a laptop 768 pixels tall was spending 112 of them on padding that
+   was chosen for a desk monitor. It is still one value per site — the same
+   two properties that were here, with a floor, a preference and a ceiling
+   instead of a single number. */
 .diluxone-users-login-frame__words {
 	position: relative;
 	z-index: 1;
@@ -639,9 +677,13 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
-	gap: 32px;
-	padding: var(--diluxone-users-login-panel-pad, 56px);
+	gap: var(--diluxone-users-login-panel-gap, clamp(20px, 4vh, 32px));
+	padding: var(--diluxone-users-login-panel-pad, clamp(28px, 6vh, 56px));
 	color: var(--diluxone-users-login-panel-ink, #fff);
+	/* A panel with more written on it than fits a short window reads itself
+	   rather than losing its last line. It only ever appears when there is
+	   genuinely too much. */
+	overflow-y: auto;
 }
 /* A photograph is not a background until something separates it from the
    words on top. Only when there is both: a panel that is just a colour needs
@@ -675,7 +717,7 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 .diluxone-users-login-frame__text { margin: 0; font-size: 1.1em; line-height: 1.6; opacity: .86; }
 .diluxone-users-login-frame__points {
 	list-style: none;
-	margin: 36px 0 0;
+	margin: var(--diluxone-users-login-points-top, clamp(16px, 3vh, 36px)) 0 0;
 	padding: 0;
 	display: flex;
 	flex-direction: column;
@@ -731,12 +773,21 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	   out carries it, and one class in here loses to two out there however
 	   far down the sheet it sits. A phone got a half-width form. */
 	.diluxone-users-login-frame.diluxone-users-login-frame--split { grid-template-columns: minmax(0, 1fr); min-height: 0; }
-	.diluxone-users-login-frame--split .diluxone-users-login-frame__picture { display: none; }
+	/* Stacked, the panel is the first thing on the page and not a column
+	   beside anything, so it goes back to being as tall as what is written on
+	   it. Left sticky it would hold the top of a phone screen while the form
+	   slid underneath it. */
+	.diluxone-users-login-frame--split .diluxone-users-login-frame__picture {
+		display: none;
+		position: static;
+		height: auto;
+		max-height: none;
+	}
 	/* Unless something is written on it. A sentence the site wrote is not
 	   decoration, and taking it away on a phone takes away what the page came
 	   to say — it stacks above the form instead, with less air in it. */
 	.diluxone-users-login-frame--split .diluxone-users-login-frame__picture--words { display: block; }
-	.diluxone-users-login-frame__words { padding: var(--diluxone-users-login-panel-pad-sm, 36px 20px); gap: 24px; }
+	.diluxone-users-login-frame__words { padding: var(--diluxone-users-login-panel-pad-sm, 36px 20px); gap: 24px; overflow: visible; }
 	.diluxone-users-login-frame--split .diluxone-users-login-frame__box { padding: 32px 20px; max-width: none; }
 	.diluxone-users-login-frame__box { padding: 28px 20px; }
 	.diluxone-users-login-frame { padding-block: 24px; }
@@ -1176,6 +1227,91 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 	background: var(--diluxone-users-border);
 }
 
+/* ── The ways in ─────────────────────────────────────────────────────────
+ *
+ * The four doors of the sign-in screen, in whichever arrangement the site
+ * chose. Stacked they are what they always were — blocks with an "or" between
+ * them — and this adds nothing to that case: everything below only starts
+ * mattering once they become tabs.
+ *
+ * The strip ships hidden and the script shows it, which is the whole of the
+ * no-JavaScript story. It is the reset at the top of this sheet that keeps it
+ * off screen until then, and that is not a detail: without it a browser with
+ * the script blocked shows a row of tabs that do nothing.
+ */
+
+.diluxone-users-ways { min-width: 0; }
+.diluxone-users-way { min-width: 0; }
+
+.diluxone-users-ways__strip {
+	display: flex;
+	gap: var(--diluxone-users-ways-gap, 8px);
+	margin: 0 0 20px;
+}
+
+/* Equal thirds, and the label beside the icon rather than under it: the whole
+   point of this arrangement is the height it gives back, and two lines per tab
+   is a third of it spent on the furniture. */
+.diluxone-users-ways__tab {
+	flex: 1 1 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-width: 0;
+	padding: 10px 10px;
+	border: var(--diluxone-users-border-w) solid var(--diluxone-users-border);
+	border-radius: var(--diluxone-users-radius-sm);
+	background: var(--diluxone-users-surface);
+	color: var(--diluxone-users-muted);
+	font: inherit;
+	font-size: 0.92em;
+	font-weight: 600;
+	line-height: 1.2;
+	cursor: pointer;
+}
+/* A long word in a narrow column — "Contraseña" beside an icon in a third of
+   a phone — shortens rather than pushing the strip past the form. */
+.diluxone-users-ways__tab span {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.diluxone-users-ways__tab:hover { color: var(--diluxone-users-text); }
+.diluxone-users-ways__tab[aria-selected="true"] {
+	border-color: var(--diluxone-users-accent);
+	background: var(--diluxone-users-accent-soft);
+	color: var(--diluxone-users-accent);
+}
+/* Only the tab that is open is in the tab order, so this outline is the only
+   thing saying where the keyboard is inside the strip. */
+.diluxone-users-ways__tab:focus-visible {
+	outline: 2px solid var(--diluxone-users-accent);
+	outline-offset: 2px;
+}
+/* The panel a tab opens is focusable — some of them hold only links — and a
+   region does not need an outline drawn round the whole of it to say so. */
+.diluxone-users-way:focus { outline: none; }
+
+@media (max-width: 480px) {
+	/* On a phone the icon is what survives: three labels beside three icons in
+	   340px is three ellipses. The icon keeps its meaning, the open tab is the
+	   one in colour, and the panel underneath says the rest. */
+	.diluxone-users-ways__tab span {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+		border: 0;
+	}
+	.diluxone-users-ways__tab { padding: 12px 10px; }
+}
+
 /* ── The profile picture ────────────────────────────────────────────── */
 
 .diluxone-users-avatar__form { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
@@ -1312,3 +1448,17 @@ details.diluxone-users-key[open] > .diluxone-users-key__row .diluxone-users-key_
 .diluxone-users-handle__notice.is-free { color: var(--diluxone-users-ok); }
 .diluxone-users-handle__notice.is-taken { color: var(--diluxone-users-danger); }
 .diluxone-users-handle__notice.is-waiting { color: var(--diluxone-users-muted); font-weight: 400; }
+
+/* ── The last word ───────────────────────────────────────────────────────
+   Hidden means hidden. The browser's own rule for [hidden] carries the weight
+   of a bare tag, so any component here that gives itself a display — the tab
+   strip, the divider between two ways in — beat it and stayed on screen doing
+   nothing. Each of them answered it separately.
+
+   One rule instead, and last, for the same reason as its twin in the admin
+   sheet: a rule that takes something off the screen has to be able to outrank
+   the component that put it there, and coming last is how that is won without
+   an `!important`.
+
+   Nothing goes below this line. */
+.diluxone-users [hidden] { display: none; }

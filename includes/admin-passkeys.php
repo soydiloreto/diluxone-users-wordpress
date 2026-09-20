@@ -59,37 +59,13 @@ function diluxone_users_passkeys_settings_save(): void {
 
 /** Passkeys: whether they are offered, which ones are accepted and what is required. */
 function diluxone_users_screen_login_passkeys(): void {
+	diluxone_users_ui_aside_open();
+
 	$on    = (bool) diluxone_users_option( 'diluxone_users_passkey_enabled' );
 	$where = (string) diluxone_users_option( 'diluxone_users_passkey_where' );
 	$ways  = diluxone_users_admin_url( 'diluxone-users-login', array( 'tab' => 'ways' ) );
 
 	diluxone_users_intro( __( 'A passkey is a private key that lives on the person’s device or keychain and never leaves it. There is nothing on this side worth stealing, nothing to reuse on another site, and it cannot be phished: the browser refuses to sign for a domain that is not the one it was made for.', 'diluxone-users' ) );
-
-	// The state first, and it is read from somewhere else: what is set below
-	// only means something while passkeys are one of the ways in.
-	diluxone_users_summary_table(
-		array(
-			array(
-				'label'  => __( 'Offered on this site', 'diluxone-users' ),
-				'state'  => $on ? 'active' : 'off',
-				'detail' => $on
-					? sprintf(
-						/* translators: %s: the domain the passkeys end up tied to */
-						esc_html__( 'People can add passkeys and sign in with them. They are tied to %s: if the site moves to another domain they stop working and have to be added again, which is exactly what makes them unphishable.', 'diluxone-users' ),
-						'<code>' . esc_html( diluxone_users_passkey_rp_id() ) . '</code>'
-					)
-					: esc_html__( 'Nobody can add one or sign in with one. It is turned on beside the other ways in.', 'diluxone-users' ),
-				'url'    => $ways,
-				'change' => $on
-					? __( 'Access › Ways in →', 'diluxone-users' )
-					: __( 'Turn them on → Access › Ways in', 'diluxone-users' ),
-			),
-		)
-	);
-
-	if ( ! is_ssl() && 'local' !== wp_get_environment_type() ) {
-		echo '<p class="description diluxone-users-danger">' . esc_html__( 'This site is not on HTTPS. Browsers will refuse passkeys until it is.', 'diluxone-users' ) . '</p>';
-	}
 
 	diluxone_users_ui_section( __( 'Which passkeys are accepted', 'diluxone-users' ) );
 
@@ -137,4 +113,152 @@ function diluxone_users_screen_login_passkeys(): void {
 			),
 		)
 	);
+
+	/*
+	 * Everything this tab says and does not ask goes beside it. The state is
+	 * read from another screen, the domain caveat is a fact about the site
+	 * rather than a setting, and the way to the switch is a way out of here:
+	 * across the top of the settings all three read as things to deal with
+	 * before starting, and they were also a strip of text squeezed into a
+	 * middle column with the rest of the window empty to the right of it.
+	 */
+	diluxone_users_ui_aside_close(
+		static function () use ( $on, $ways ): void {
+			diluxone_users_ui_note(
+				__( 'Offered on this site', 'diluxone-users' ),
+				$on
+					? sprintf(
+						/* translators: %s: the domain the passkeys end up tied to */
+						esc_html__( 'People can add passkeys and sign in with them. They are tied to %s: if the site moves to another domain they stop working and have to be added again, which is exactly what makes them unphishable.', 'diluxone-users' ),
+						'<code>' . esc_html( diluxone_users_passkey_rp_id() ) . '</code>'
+					)
+					: esc_html__( 'Nobody can add one or sign in with one, whatever is chosen beside this.', 'diluxone-users' ),
+				$on ? 'active' : 'off'
+			);
+
+			// The one thing here that stops everything on this tab from ever
+			// happening, so it keeps the shape every screen uses to say so.
+			if ( ! is_ssl() && 'local' !== wp_get_environment_type() ) {
+				diluxone_users_ui_notice(
+					esc_html__( 'This site is not on HTTPS. Browsers refuse passkeys until it is, whatever is chosen here.', 'diluxone-users' ),
+					'warning'
+				);
+			}
+
+			diluxone_users_ui_links(
+				__( 'Decided elsewhere', 'diluxone-users' ),
+				array(
+					array(
+						'url'   => $ways,
+						'label' => __( 'Access › Ways in', 'diluxone-users' ),
+						'help'  => __( 'Whether passkeys are offered at all is a question about doors, and it is answered there, beside the password and the e-mail link.', 'diluxone-users' ),
+					),
+				)
+			);
+		}
+	);
 }
+
+/**
+ * How many accounts on this site have a passkey.
+ *
+ * Accounts and not keys: one indexed query over the meta key that holds a
+ * person's list, which is a number that is exactly right. Counting the keys
+ * themselves would mean opening every list — or trusting the lookup index,
+ * which does not cover the ones registered before it existed — and a summary
+ * that rounds is a summary nobody trusts twice.
+ *
+ * Not cached, like everything else on a summary: the screen is open because
+ * somebody wants to know how the site stands now.
+ */
+function diluxone_users_passkeys_count(): int {
+	global $wpdb;
+
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- user meta has no API that counts, and the number has to be the one from now.
+	return (int) $wpdb->get_var(
+		$wpdb->prepare( "SELECT COUNT(DISTINCT user_id) FROM {$wpdb->usermeta} WHERE meta_key = %s AND meta_value != ''", 'diluxone_users_passkeys' )
+	);
+}
+
+/**
+ * Passkeys, as four lines of the security summary.
+ *
+ * Whether they are offered is decided on Access and the first line says so by
+ * pointing there: a summary that sends somebody to the tab beside it for a
+ * switch that is not on it is a summary that wastes a trip.
+ *
+ * The two lines in the middle describe settings that are chosen here and only
+ * bite while passkeys are offered, so with them off the line keeps saying
+ * what is chosen — it is what applies the day they come on — and the pill
+ * says it is not in force.
+ *
+ * @param array<int, array<string, string>> $rows
+ * @return array<int, array<string, string>>
+ */
+function diluxone_users_passkeys_summary_rows( array $rows ): array {
+	$on    = (bool) diluxone_users_option( 'diluxone_users_passkey_enabled' );
+	$where = (string) diluxone_users_option( 'diluxone_users_passkey_where' );
+	$count = diluxone_users_passkeys_count();
+	$tab   = diluxone_users_admin_url( DILUXONE_USERS_SECURITY, array( 'tab' => 'passkeys' ) );
+	$ways  = diluxone_users_admin_url( 'diluxone-users-login', array( 'tab' => 'ways' ) );
+
+	// Browsers refuse the whole thing without HTTPS, so a site that has
+	// switched them on and is not on it has them on in name only.
+	$https = is_ssl() || 'local' === wp_get_environment_type();
+
+	$rows[] = array(
+		'label'  => __( 'Passkeys', 'diluxone-users' ),
+		'state'  => $on ? ( $https ? 'active' : 'pending' ) : 'off',
+		'why'    => $on && ! $https ? __( 'browsers refuse them until this site is on HTTPS', 'diluxone-users' ) : '',
+		'detail' => $on
+			? sprintf(
+				/* translators: %s: the domain the passkeys are tied to */
+				esc_html__( 'Offered, and tied to %s: a passkey made here works here and nowhere else.', 'diluxone-users' ),
+				'<code>' . esc_html( diluxone_users_passkey_rp_id() ) . '</code>'
+			)
+			: esc_html__( 'Nobody can add one or sign in with one.', 'diluxone-users' ),
+		'url'    => $ways,
+		'change' => __( 'Access › Ways in →', 'diluxone-users' ),
+	);
+
+	$rows[] = array(
+		'label'  => __( 'Which passkeys are accepted', 'diluxone-users' ),
+		'state'  => $on ? 'active' : 'off',
+		'why'    => $on ? '' : __( 'while passkeys are not offered', 'diluxone-users' ),
+		'detail' => 'device' === $where
+			? esc_html__( 'Only the device in front of them: no phone, no hardware key.', 'diluxone-users' )
+			: esc_html__( 'Any: the device being used, a USB key, or another phone.', 'diluxone-users' ),
+		'url'    => $tab,
+	);
+
+	$verify = (bool) diluxone_users_option( 'diluxone_users_passkey_verify' );
+
+	$rows[] = array(
+		'label'  => __( 'The fingerprint, the face or the PIN', 'diluxone-users' ),
+		'state'  => $on && $verify ? 'active' : 'off',
+		'why'    => $on || ! $verify ? '' : __( 'while passkeys are not offered', 'diluxone-users' ),
+		'detail' => $verify
+			? esc_html__( 'Required, which is what makes a passkey count as two things at once.', 'diluxone-users' )
+			: esc_html__( 'Not required: whoever holds an unlocked device gets in, and the passkey is worth one factor.', 'diluxone-users' ),
+		'url'    => $tab,
+	);
+
+	$rows[] = array(
+		'label'  => __( 'Registered on this site', 'diluxone-users' ),
+		// A key that was registered and cannot be used is not an active
+		// anything, however many of them there are: with passkeys off the
+		// count is history, and the line below says so.
+		'state'  => $on ? ( $count > 0 ? 'active' : 'pending' ) : 'off',
+		'why'    => 0 === $count && $on ? __( 'nobody has added one yet', 'diluxone-users' ) : '',
+		'detail' => sprintf(
+			/* translators: %s: how many accounts have at least one passkey */
+			esc_html( _n( '%s account has one.', '%s accounts have one.', $count, 'diluxone-users' ) ),
+			esc_html( number_format_i18n( $count ) )
+		) . ( $count > 0 && ! $on ? ' ' . esc_html__( 'None of them opens anything while passkeys are off.', 'diluxone-users' ) : '' ),
+		'url'    => diluxone_users_admin_url( 'diluxone-users', array( 'tab' => 'usage' ) ),
+		'change' => __( 'Overview › Usage →', 'diluxone-users' ),
+	);
+
+	return $rows;
+}
+add_filter( 'diluxone_users_security_summary', 'diluxone_users_passkeys_summary_rows', 20 );

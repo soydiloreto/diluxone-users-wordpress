@@ -35,6 +35,14 @@ const BASELINE = (pages: { login: number; register: number; account: number }) =
 	// links a suite that waits. It is one second, which still proves the key
 	// exists without anybody watching a clock.
 	diluxone_users_login_throttle: 1,
+	// Every way in on the screen at once. Left unsaid this is 'auto', which
+	// with a link, a password and the social buttons is three ways in and so
+	// tabs — and then every spec that is about something else entirely fills
+	// a box inside a closed tab and waits a minute for it to appear. The
+	// arrangement is a subject of its own: login-ways.spec.ts and the picture
+	// of the tabbed sign-in page ask for it by name, and they are the only
+	// two that should.
+	diluxone_users_login_layout: 'stack',
 	diluxone_users_login_template: 'plain',
 	diluxone_users_login_title: '',
 	diluxone_users_login_intro: '',
@@ -50,7 +58,8 @@ const BASELINE = (pages: { login: number; register: number; account: number }) =
 	diluxone_users_sso_register: 1,
 	diluxone_users_sso_link_by_email: 1,
 	diluxone_users_sso_verified_only: 0,
-	diluxone_users_sso_blocked_roles: [],
+	diluxone_users_sso_scope: 'all',
+	diluxone_users_sso_roles: [],
 
 	diluxone_users_passkey_enabled: 0,
 	diluxone_users_handle_enabled: 0,

@@ -27,12 +27,23 @@ function diluxone_users_key_from( string $label, array $used ): string {
 	$key = $base;
 	$n   = 2;
 
-	while ( in_array( $key, $used, true ) ) {
+	// Taken, or reserved: both mean the same thing here, which is that this
+	// name is not free. A field called "Avatar" would otherwise be handed the
+	// key the avatar itself is stored under and refused a moment later, with
+	// nothing on screen to say why.
+	//
+	// The bound is not decoration. This walks until it finds a free name, so
+	// it is only a loop that ends because every name it tries is a different
+	// one — and the first version of the reserved list was by prefix, which
+	// made every name it tried reserved as well. A hundred is far past any
+	// real site and is a request that fails rather than one that never
+	// answers.
+	while ( $n <= 100 && ( in_array( $key, $used, true ) || ! diluxone_users_field_key_allowed( $key ) ) ) {
 		$key = $base . '_' . $n;
 		++$n;
 	}
 
-	return $key;
+	return diluxone_users_field_key_allowed( $key ) && ! in_array( $key, $used, true ) ? $key : '';
 }
 
 /**
@@ -80,6 +91,13 @@ function diluxone_users_field_save( array $input ): string {
 
 	if ( '' === $key ) {
 		$key = diluxone_users_key_from( $label, wp_list_pluck( $fields, 'key' ) );
+	}
+
+	// The key is the meta key this field writes to, so a handful of names are
+	// not available: WordPress's own, and the ones this plugin uses to hold
+	// somebody's second factor and their keys.
+	if ( ! diluxone_users_field_key_allowed( $key ) ) {
+		return '';
 	}
 
 	$field = diluxone_users_normalize_field(
@@ -268,11 +286,78 @@ function diluxone_users_fields_panels(): void {
 }
 add_action( 'diluxone_users_register_panels', 'diluxone_users_fields_panels' );
 
-/** Screen fields list. */
+/**
+ * What both screens say while nobody can register on this site.
+ *
+ * The fields are what the registration form asks for, so a site where nobody
+ * signs themselves up has a screenful of questions that are put to nobody.
+ * That is not a mistake and there is nothing to fix — an administrator
+ * creating accounts by hand still fills them in — but it is worth saying
+ * where the questions are, rather than leaving somebody to wonder why the
+ * form they spent the afternoon on never appears anywhere.
+ *
+ * The same sentence belongs on the registration tab, said from the other
+ * side: there the doors are the subject and the fields are the consequence.
+ * It is written once, here, so the two cannot drift apart — and what it asks
+ * is the registration screen's own answer, `diluxone_users_register_doors_open()`,
+ * rather than a second reading of the four options underneath it.
+ *
+ * @param string $from 'fields' on the fields screen, 'register' on the registration tab.
+ */
+function diluxone_users_nobody_registers_notice( string $from = 'fields' ): void {
+	if ( array() !== diluxone_users_register_doors_open() ) {
+		return;
+	}
+
+	$here = 'register' === $from;
+
+	$says = __( 'This site has registration closed: no door into an account is open, so nobody signs themselves up.', 'diluxone-users' ) . ' ' . (
+		$here
+			? __( 'Which decides the user fields as well: they are asked of nobody, and the only person who ever fills them in is whoever administers the site, creating an account by hand.', 'diluxone-users' )
+			: __( 'So nothing on this screen is asked of anybody: the only person who ever fills these in is whoever administers the site, creating an account by hand.', 'diluxone-users' )
+	);
+
+	diluxone_users_ui_notice(
+		$says . sprintf(
+			' <a href="%s">%s</a>',
+			esc_url(
+				$here
+					? diluxone_users_admin_url( 'diluxone-users-fields' )
+					: diluxone_users_admin_url( 'diluxone-users-login', array( 'tab' => 'register' ) )
+			),
+			$here
+				? esc_html__( 'The fields it is about →', 'diluxone-users' )
+				: esc_html__( 'Open a door →', 'diluxone-users' )
+		),
+		'warning'
+	);
+}
+
+/**
+ * Screen fields list.
+ *
+ * Seven columns of what a field is: its name, its type, where it goes,
+ * whether the form needs it, how often it can change, whether it is on, and
+ * the two arrows that move it. That is a table of rows and not a column of
+ * options, so it takes the width WordPress gives instead of the measure — at
+ * the measure the same seven columns cut their own words in half and left the
+ * right-hand third of the window empty to do it.
+ *
+ * It has a rail all the same, and that is the part this screen had wrong. A
+ * wide block and a rail are not a choice between two: the rail is a fixed
+ * column at the side and the table takes everything else, which is more room
+ * than it had when the whole screen stopped at the measure. What the rail is
+ * for is the two things this tab used to say above the table and under it —
+ * that nobody signs themselves up on this site, and where the definitions and
+ * the answers are actually stored. Neither is something to do, and above the
+ * table the first one pushed the table itself below the fold.
+ */
 function diluxone_users_screen_fields_list(): void {
 	$fields = diluxone_users_fields( '', false );
 	$types  = diluxone_users_field_types();
 	$groups = diluxone_users_groups();
+
+	diluxone_users_ui_aside_open();
 	?>
 	<p class="diluxone-users-admin__actions">
 		<a class="button button-primary"
@@ -282,6 +367,8 @@ function diluxone_users_screen_fields_list(): void {
 			<?php esc_html_e( 'Add field', 'diluxone-users' ); ?>
 		</a>
 	</p>
+
+	<?php diluxone_users_ui_wide_open(); ?>
 
 	<table class="wp-list-table widefat fixed striped diluxone-users-list">
 		<thead>
@@ -407,50 +494,48 @@ function diluxone_users_screen_fields_list(): void {
 	</table>
 
 	<?php
-	diluxone_users_fields_where();
+	diluxone_users_ui_wide_close();
+
+	diluxone_users_ui_aside_close(
+		static function (): void {
+			diluxone_users_nobody_registers_notice();
+			diluxone_users_fields_where();
+		}
+	);
+
 	diluxone_users_field_dialog();
 }
 
 /**
  * Where the definitions and the answers actually live.
  *
- * At the foot and not at the top: it is background, and background above the
- * thing it is background for pushes the thing itself below the fold. It runs
- * the full width of the screen because it is a note, not body copy — forcing
- * it into a reading column here only made the two lines wrap into four with a
- * desert to their right.
+ * In the rail, which is where background belongs: above the table it pushed
+ * the table below the fold, and under it it was read after somebody had
+ * stopped reading.
+ *
+ * It is a note of the design system's and not a panel of its own any more. It
+ * was a box with a title, a rule down its left and an icon, drawn here by
+ * hand — which is to say it was the plugin's second way of saying something
+ * with no control in it, two screens away from the first.
  */
 function diluxone_users_fields_where(): void {
-	?>
-	<div class="diluxone-users-where">
-		<p class="diluxone-users-where__title">
-			<span class="dashicons dashicons-info-outline" aria-hidden="true"></span>
-			<strong><?php esc_html_e( 'Where all this lives', 'diluxone-users' ); ?></strong>
-		</p>
-		<p>
-			<?php esc_html_e( 'What each field IS —its name, type and behaviour— is one WordPress option. What each PERSON answered is user meta: one row per person and per field, with the field key as the name. No extra tables.', 'diluxone-users' ); ?>
-		</p>
-		<?php
-		// The two names go on lines of their own and not inside the sentence
-		// above. A <code> chip is an atom the browser cannot break, so in the
-		// middle of a paragraph it jumps to the next line whole and leaves the
-		// previous one short — which reads as a line break that nobody typed.
-		?>
-		<ul class="diluxone-users-where__names">
-			<li>
-				<?php esc_html_e( 'The definition:', 'diluxone-users' ); ?>
-				<code>diluxone_users_fields</code>
-			</li>
-			<li>
-				<?php esc_html_e( 'The answers:', 'diluxone-users' ); ?>
-				<code><?php echo esc_html( $GLOBALS['wpdb']->usermeta ); ?></code>
-			</li>
-		</ul>
-		<p>
-			<?php esc_html_e( 'That is why the key cannot change once the field exists, and why deleting a field leaves the answers alone: they are two different things.', 'diluxone-users' ); ?>
-		</p>
-	</div>
-	<?php
+	// The two names go in a paragraph of their own and not inside the sentence
+	// before them. A <code> chip is an atom the browser cannot break, so in
+	// the middle of a paragraph it jumps to the next line whole and leaves the
+	// previous one short — which reads as a line break that nobody typed.
+	diluxone_users_ui_note(
+		__( 'Where all this lives', 'diluxone-users' ),
+		array(
+			esc_html__( 'What each field IS —its name, type and behaviour— is one WordPress option. What each PERSON answered is user meta: one row per person and per field, with the field key as the name. No extra tables.', 'diluxone-users' ),
+			sprintf(
+				'%1$s <code>diluxone_users_fields</code> · %2$s <code>%3$s</code>',
+				esc_html__( 'The definition:', 'diluxone-users' ),
+				esc_html__( 'The answers:', 'diluxone-users' ),
+				esc_html( $GLOBALS['wpdb']->usermeta )
+			),
+			esc_html__( 'That is why the key cannot change once the field exists, and why deleting a field leaves the answers alone: they are two different things.', 'diluxone-users' ),
+		)
+	);
 }
 
 /**
@@ -506,46 +591,61 @@ function diluxone_users_screen_field_edit( string $key ): void {
 	?>
 	<p><a href="<?php echo esc_url( diluxone_users_admin_url( 'diluxone-users-fields' ) ); ?>">&larr; <?php esc_html_e( 'Back to the list', 'diluxone-users' ); ?></a></p>
 
+	<?php
+	/*
+	 * The class is what the dialog lifts. This screen is fetched whole and the
+	 * form is taken out of it (see diluxone-users-admin.js), so it is the one
+	 * thing on the page that has to be findable by name — and it was not, so
+	 * every "Edit" fell through to loading the whole screen instead of opening
+	 * the dialog over the list.
+	 */
+	?>
 	<form method="post" class="diluxone-users-form-admin">
 		<?php wp_nonce_field( 'diluxone_users_field', 'diluxone_users_field_nonce' ); ?>
 		<input type="hidden" name="diluxone_users_field[key]" value="<?php echo esc_attr( $field['key'] ); ?>">
 
 		<?php diluxone_users_ui_section( __( 'What it is', 'diluxone-users' ) ); ?>
 
-		<?php diluxone_users_ui_field_open( __( 'Name', 'diluxone-users' ), 'diluxone-users-label' ); ?>
-			<input type="text" id="diluxone-users-label" name="diluxone_users_field[label]" class="regular-text" value="<?php echo esc_attr( $field['label'] ); ?>" required>
 		<?php
-		diluxone_users_ui_field_close(
-			$fresh
-				? __( 'The key is generated from the name.', 'diluxone-users' )
-				: sprintf(
-					/* translators: %s: the key the answers are stored under */
-					__( 'Key: <code>%s</code> — it cannot change: it is the name the data is stored under.', 'diluxone-users' ),
-					esc_html( $field['key'] )
-				)
+		diluxone_users_ui_text(
+			array(
+				'label'    => __( 'Name', 'diluxone-users' ),
+				'id'       => 'diluxone-users-label',
+				'name'     => 'diluxone_users_field[label]',
+				'value'    => (string) $field['label'],
+				'required' => true,
+				'help'     => $fresh
+					? __( 'The key is generated from the name.', 'diluxone-users' )
+					: sprintf(
+						/* translators: %s: the key the answers are stored under */
+						__( 'Key: <code>%s</code> — it cannot change: it is the name the data is stored under.', 'diluxone-users' ),
+						esc_html( $field['key'] )
+					),
+			)
 		);
 		?>
 
-		<?php diluxone_users_ui_field_open( __( 'Type', 'diluxone-users' ), 'diluxone-users-type' ); ?>
-			<?php
-			/*
-			 * WordPress's own come with their type set: changing the type of
-			 * the first name does not improve it, and can break it.
-			 */
-			?>
-			<select id="diluxone-users-type" name="diluxone_users_field[type]" <?php disabled( diluxone_users_field_is_native( $field['key'] ) ); ?>>
-				<?php foreach ( diluxone_users_field_types() as $value => $name ) : ?>
-					<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $field['type'], $value ); ?>><?php echo esc_html( $name ); ?></option>
-				<?php endforeach; ?>
-			</select>
-			<?php if ( diluxone_users_field_is_native( $field['key'] ) ) : ?>
-				<input type="hidden" name="diluxone_users_field[type]" value="<?php echo esc_attr( $field['type'] ); ?>">
-			<?php endif; ?>
 		<?php
-		diluxone_users_ui_field_close(
-			diluxone_users_field_is_native( $field['key'] )
-				? __( 'This one is WordPress’s own: it can be renamed, reordered, made required or hidden, but it keeps its type and cannot be deleted.', 'diluxone-users' )
-				: __( '“Country” shows the full list with its dial codes; “Phone with country code” splits the number in two and stores it in international format.', 'diluxone-users' )
+		/*
+		 * WordPress's own come with their type set: changing the type of the
+		 * first name does not improve it, and can break it. Switched off, the
+		 * box sends nothing — so `keep` posts the type it is showing, and the
+		 * save reads a locked field as the field it is rather than as a field
+		 * whose type somebody cleared.
+		 */
+		diluxone_users_ui_select(
+			array(
+				'label'    => __( 'Type', 'diluxone-users' ),
+				'id'       => 'diluxone-users-type',
+				'name'     => 'diluxone_users_field[type]',
+				'value'    => (string) $field['type'],
+				'options'  => diluxone_users_field_types(),
+				'disabled' => diluxone_users_field_is_native( $field['key'] ),
+				'keep'     => true,
+				'help'     => diluxone_users_field_is_native( $field['key'] )
+					? __( 'This one is WordPress’s own: it can be renamed, reordered, made required or hidden, but it keeps its type and cannot be deleted.', 'diluxone-users' )
+					: __( '“Country” shows the full list with its dial codes; “Phone with country code” splits the number in two and stores it in international format.', 'diluxone-users' ),
+			)
 		);
 		?>
 
@@ -577,11 +677,18 @@ function diluxone_users_screen_field_edit( string $key ): void {
 					'title'    => __( 'Only a few times, and then no more', 'diluxone-users' ),
 					'help'     => __( 'The field closes once they have used up their goes. For what should not keep moving: a document number, a date of birth.', 'diluxone-users' ),
 					'children' => static function () use ( $field ): void {
-						diluxone_users_ui_field_open( __( 'How many times', 'diluxone-users' ), 'diluxone-users-edit-max' );
-						?>
-						<input type="number" id="diluxone-users-edit-max" name="diluxone_users_field[edit_max]" min="1" max="99" class="small-text" value="<?php echo esc_attr( (string) $field['edit_max'] ); ?>">
-						<?php
-						diluxone_users_ui_field_close( __( 'Counted one person at a time, and only for the changes they make themselves: saving the same thing again spends nothing, and an administrator fixing it spends nobody’s goes.', 'diluxone-users' ) );
+						diluxone_users_ui_number(
+							array(
+								'label'  => __( 'How many times', 'diluxone-users' ),
+								'id'     => 'diluxone-users-edit-max',
+								'name'   => 'diluxone_users_field[edit_max]',
+								'value'  => (string) $field['edit_max'],
+								'suffix' => __( 'changes, and then it closes', 'diluxone-users' ),
+								'min'    => 1,
+								'max'    => 99,
+								'help'   => __( 'Counted one person at a time, and only for the changes they make themselves: saving the same thing again spends nothing, and an administrator fixing it spends nobody’s goes.', 'diluxone-users' ),
+							)
+						);
 					},
 				),
 				array(
@@ -593,21 +700,32 @@ function diluxone_users_screen_field_edit( string $key ): void {
 				),
 			)
 		);
-	?>
+		?>
 
 		<?php diluxone_users_ui_section( __( 'What the person sees', 'diluxone-users' ) ); ?>
 
-		<?php diluxone_users_ui_field_open( __( 'Where it goes', 'diluxone-users' ), 'diluxone-users-group' ); ?>
-			<select id="diluxone-users-group" name="diluxone_users_field[group]">
-				<?php foreach ( diluxone_users_groups() as $g => $g_label ) : ?>
-					<option value="<?php echo esc_attr( $g ); ?>" <?php selected( $field['group'], $g ); ?>><?php echo esc_html( $g_label ); ?></option>
-				<?php endforeach; ?>
-			</select>
-		<?php diluxone_users_ui_field_close( __( 'The profile form shows two blocks: the essentials first, and underneath the optional ones with their own explanation. This decides which one the field lands in.', 'diluxone-users' ) ); ?>
+		<?php
+		diluxone_users_ui_select(
+			array(
+				'label'   => __( 'Where it goes', 'diluxone-users' ),
+				'id'      => 'diluxone-users-group',
+				'name'    => 'diluxone_users_field[group]',
+				'value'   => (string) $field['group'],
+				'options' => diluxone_users_groups(),
+				'help'    => __( 'The profile form shows two blocks: the essentials first, and underneath the optional ones with their own explanation. This decides which one the field lands in.', 'diluxone-users' ),
+			)
+		);
 
-		<?php diluxone_users_ui_field_open( __( 'Help text', 'diluxone-users' ), 'diluxone-users-help' ); ?>
-			<input type="text" id="diluxone-users-help" name="diluxone_users_field[help]" class="large-text" value="<?php echo esc_attr( $field['help'] ); ?>">
-		<?php diluxone_users_ui_field_close( __( 'Why we are asking. Shown under the field.', 'diluxone-users' ) ); ?>
+		diluxone_users_ui_text(
+			array(
+				'label' => __( 'Help text', 'diluxone-users' ),
+				'id'    => 'diluxone-users-help',
+				'name'  => 'diluxone_users_field[help]',
+				'value' => (string) $field['help'],
+				'help'  => __( 'Why we are asking. Shown under the field.', 'diluxone-users' ),
+			)
+		);
+		?>
 
 		<?php
 		/*
@@ -618,15 +736,33 @@ function diluxone_users_screen_field_edit( string $key ): void {
 		 */
 		?>
 		<div class="diluxone-users-if-type" data-type="text textarea email url number datalist phone">
-			<?php diluxone_users_ui_field_open( __( 'Placeholder text', 'diluxone-users' ), 'diluxone-users-placeholder' ); ?>
-				<input type="text" id="diluxone-users-placeholder" name="diluxone_users_field[placeholder]" class="regular-text" value="<?php echo esc_attr( $field['placeholder'] ); ?>">
-			<?php diluxone_users_ui_field_close( __( 'Shown in grey inside the empty field.', 'diluxone-users' ) ); ?>
+			<?php
+			diluxone_users_ui_text(
+				array(
+					'label' => __( 'Placeholder text', 'diluxone-users' ),
+					'id'    => 'diluxone-users-placeholder',
+					'name'  => 'diluxone_users_field[placeholder]',
+					'value' => (string) $field['placeholder'],
+					'help'  => __( 'Shown in grey inside the empty field.', 'diluxone-users' ),
+				)
+			);
+			?>
 		</div>
 
 		<div class="diluxone-users-if-type" data-type="select datalist">
-			<?php diluxone_users_ui_field_open( __( 'Values', 'diluxone-users' ), 'diluxone-users-options' ); ?>
-				<textarea id="diluxone-users-options" name="diluxone_users_field[options]" class="large-text code" rows="5"><?php echo esc_textarea( implode( "\n", 'country' === $field['type'] || 'phone' === $field['type'] ? array() : $field['options'] ) ); ?></textarea>
-			<?php diluxone_users_ui_field_close( __( 'One per line. In a fixed list they are the only accepted values; in text with suggestions they are just hints and the person can write something else.', 'diluxone-users' ) ); ?>
+			<?php
+			diluxone_users_ui_textarea(
+				array(
+					'label' => __( 'Values', 'diluxone-users' ),
+					'id'    => 'diluxone-users-options',
+					'name'  => 'diluxone_users_field[options]',
+					'value' => implode( "\n", 'country' === $field['type'] || 'phone' === $field['type'] ? array() : $field['options'] ),
+					'rows'  => 5,
+					'code'  => true,
+					'help'  => __( 'One per line. In a fixed list they are the only accepted values; in text with suggestions they are just hints and the person can write something else.', 'diluxone-users' ),
+				)
+			);
+			?>
 		</div>
 
 		<div class="diluxone-users-if-type" data-type="country">
@@ -650,16 +786,24 @@ function diluxone_users_screen_field_edit( string $key ): void {
 		</div>
 
 		<div class="diluxone-users-if-type" data-type="phone">
-			<?php diluxone_users_ui_field_open( __( 'Country selected by default', 'diluxone-users' ), 'diluxone-users-default-country' ); ?>
-				<select id="diluxone-users-default-country" name="diluxone_users_field[default_country]">
-					<option value=""><?php esc_html_e( '— None —', 'diluxone-users' ); ?></option>
-					<?php foreach ( diluxone_users_countries_sorted() as $iso => $country_name ) : ?>
-						<option value="<?php echo esc_attr( $iso ); ?>" <?php selected( ( $field['options'][0] ?? '' ), $iso ); ?>>
-							<?php echo esc_html( $country_name . ' +' . diluxone_users_country_dial( $iso ) ); ?>
-						</option>
-					<?php endforeach; ?>
-				</select>
-			<?php diluxone_users_ui_field_close( __( 'The dial code the field comes with. The person can change it: the full list is always there.', 'diluxone-users' ) ); ?>
+			<?php
+			$diluxone_users_dials = array( '' => __( '— None —', 'diluxone-users' ) );
+
+			foreach ( diluxone_users_countries_sorted() as $diluxone_users_iso => $diluxone_users_country ) {
+				$diluxone_users_dials[ $diluxone_users_iso ] = $diluxone_users_country . ' +' . diluxone_users_country_dial( (string) $diluxone_users_iso );
+			}
+
+			diluxone_users_ui_select(
+				array(
+					'label'   => __( 'Country selected by default', 'diluxone-users' ),
+					'id'      => 'diluxone-users-default-country',
+					'name'    => 'diluxone_users_field[default_country]',
+					'value'   => (string) ( $field['options'][0] ?? '' ),
+					'options' => $diluxone_users_dials,
+					'help'    => __( 'The dial code the field comes with. The person can change it: the full list is always there.', 'diluxone-users' ),
+				)
+			);
+			?>
 		</div>
 
 		<?php
@@ -693,24 +837,115 @@ function diluxone_users_screen_field_edit( string $key ): void {
 	diluxone_users_screen_close();
 }
 
-/** Screen fields usage. */
+/**
+ * Where the fields turn up on the site, and how somebody puts them there.
+ *
+ * The tab used to be six lines of shortcode with a sentence each, and the
+ * sentence assumed the reader already knew what a shortcode was and where one
+ * goes — which is the one thing somebody on this tab does not know, or they
+ * would not be reading it. So it starts a step earlier: what the thing in
+ * square brackets is, where it is typed, and what turns up on the page when
+ * it is.
+ *
+ * The other half of the old tab was copying files out of templates/ into a
+ * theme, and that is not a smaller version of the same job: it is a different
+ * person, on a day when the shortcode is already on the page and the markup
+ * is not what they want. It keeps its own block, with who it is for in the
+ * title, so nobody pasting a shortcode reads it as a step they have missed.
+ */
 function diluxone_users_screen_fields_usage(): void {
-	diluxone_users_intro( __( 'The fields show up on their own in the dashboard profile, when adding a user and in the WordPress registration form. On the front end you place them with a shortcode.', 'diluxone-users' ) );
+	diluxone_users_ui_aside_open();
+
+	diluxone_users_intro( __( 'Inside the dashboard the fields place themselves: they are on every profile, on the form for adding a person and on WordPress’s own registration form, with nothing to set up. On the pages visitors see, you say where they go — and that is what the lines below are for.', 'diluxone-users' ) );
+
+	diluxone_users_ui_section(
+		__( 'What a shortcode is, if you have never used one', 'diluxone-users' ),
+		__( 'A word between square brackets, typed into a page. Nobody visiting the site ever sees the brackets: while the page is being drawn, WordPress swaps the line for the real thing — a form, a list, a set of buttons. Put it twice and the thing appears twice; delete the line and it is gone. Nothing else on the page is affected.', 'diluxone-users' )
+	);
+
+	diluxone_users_ui_steps(
+		array(
+			__( 'Open the page it belongs on, or make one: Pages › Add page.', 'diluxone-users' ),
+			__( 'Add a block and pick the one called “Shortcode”. Typing “shortcode” into the block search finds it.', 'diluxone-users' ),
+			__( 'Paste one of the lines below into that block — the square brackets included, and nothing else with them.', 'diluxone-users' ),
+			__( 'Publish the page and open it the way a visitor would. What the line stands for is what you see.', 'diluxone-users' ),
+		)
+	);
+
+	diluxone_users_ui_note(
+		__( 'If your site does not use blocks', 'diluxone-users' ),
+		__( 'With the classic editor, or inside a page builder’s text widget, there is no block to add: type the line into the text of the page and it works the same way.', 'diluxone-users' )
+	);
+
+	diluxone_users_ui_section(
+		__( 'The lines, and what each one puts on the page', 'diluxone-users' ),
+		__( 'One of them is enough for a page: everything each line needs — its heading, its buttons, its messages — comes with it.', 'diluxone-users' )
+	);
 	?>
 	<table class="widefat striped diluxone-users-shortcodes">
 		<tbody>
-			<tr><td><code>[diluxone_users_fields]</code></td><td><?php esc_html_e( 'Every field, for the person to edit.', 'diluxone-users' ); ?></td></tr>
-			<tr><td><code>[diluxone_users_fields group="basic"]</code></td><td><?php esc_html_e( 'Only the basic ones. With group="optional", only the others.', 'diluxone-users' ); ?></td></tr>
-			<tr><td><code>[diluxone_users_login]</code></td><td><?php esc_html_e( 'The email sign-in form and the social buttons.', 'diluxone-users' ); ?></td></tr>
-			<tr><td><code>[diluxone_users_login title="yes"]</code></td><td><?php esc_html_e( 'The same, with a “Sign in” heading above it — for anywhere the page title does not already say it.', 'diluxone-users' ); ?></td></tr>
-			<tr><td><code>[diluxone_users_accounts]</code></td><td><?php esc_html_e( 'Linked providers, to link or unlink.', 'diluxone-users' ); ?></td></tr>
-			<tr><td><code>[diluxone_users_sessions]</code></td><td><?php esc_html_e( 'Open sessions, with the button to close them.', 'diluxone-users' ); ?></td></tr>
+			<tr>
+				<td><code>[diluxone_users_fields]</code></td>
+				<td><?php esc_html_e( 'A form with every field on it, for whoever is signed in to fill in and save. Somebody who is not signed in sees nothing at all in its place.', 'diluxone-users' ); ?></td>
+			</tr>
+			<tr>
+				<td><code>[diluxone_users_fields group="basic"]</code></td>
+				<td><?php esc_html_e( 'The same form with only the basic fields on it. With group="optional" it is the other half, which is how the two end up on two pages, or one under each heading of the same page.', 'diluxone-users' ); ?></td>
+			</tr>
+			<tr>
+				<td><code>[diluxone_users_login]</code></td>
+				<td><?php esc_html_e( 'The way in: the box that asks for an e-mail address, and under it whichever buttons are switched on — the social networks, the password, the passkey. Somebody already signed in is told so instead.', 'diluxone-users' ); ?></td>
+			</tr>
+			<tr>
+				<td><code>[diluxone_users_login title="yes"]</code></td>
+				<td><?php esc_html_e( 'The same box with a “Sign in” heading above it, for a page whose own title does not already say what it is for.', 'diluxone-users' ); ?></td>
+			</tr>
+			<tr>
+				<td><code>[diluxone_users_accounts]</code></td>
+				<td><?php esc_html_e( 'The social networks this person signs in with, each with the button that links a new one or unlinks one they have. It belongs on the page where people look after their own account.', 'diluxone-users' ); ?></td>
+			</tr>
+			<tr>
+				<td><code>[diluxone_users_sessions]</code></td>
+				<td><?php esc_html_e( 'Every browser and phone this person is still signed in on, when each one signed in, and a button that closes any of them — the page somebody wants after losing a laptop.', 'diluxone-users' ); ?></td>
+			</tr>
 		</tbody>
 	</table>
-
-	<h2><?php esc_html_e( 'Fitting them into your design', 'diluxone-users' ); ?></h2>
-	<p class="diluxone-users-admin__intro">
-		<?php esc_html_e( 'Copy any file from the plugin’s templates/ folder into your theme, inside a diluxone-users/ folder, and edit it there. The plugin will use yours. You can also turn off its stylesheet in Design → Your brand.', 'diluxone-users' ); ?>
-	</p>
 	<?php
+	diluxone_users_ui_aside_close(
+		static function (): void {
+			diluxone_users_ui_note(
+				__( 'None of this needs a designer', 'diluxone-users' ),
+				__( 'What these lines draw already takes the colour, the corners and the wording set on the Design screen, so a pasted shortcode looks like the rest of the site on the day it is pasted. There is nothing to style and nothing below to do.', 'diluxone-users' )
+			);
+
+			diluxone_users_ui_note(
+				__( 'For whoever writes the theme', 'diluxone-users' ),
+				array(
+					sprintf(
+						/* translators: 1: the plugin's templates folder, 2: the folder to copy it into, inside the theme */
+						esc_html__( 'The markup itself can be replaced, and it is not a step anybody else has missed: copy any file from %1$s into the theme, inside a %2$s folder, and edit it there. The plugin uses the theme’s copy from then on, and its own updates leave it alone.', 'diluxone-users' ),
+						'<code>templates/</code>',
+						'<code>diluxone-users/</code>'
+					),
+					esc_html__( 'A theme that would rather write all of it, classes included, can turn the plugin’s stylesheet off on the Design screen.', 'diluxone-users' ),
+				)
+			);
+
+			diluxone_users_ui_links(
+				__( 'Where the look is set', 'diluxone-users' ),
+				array(
+					array(
+						'url'   => diluxone_users_admin_url( 'diluxone-users-design', array( 'tab' => 'brand' ) ),
+						'label' => __( 'Your brand', 'diluxone-users' ),
+						'help'  => __( 'The colour, the corners and the switch that turns the plugin’s stylesheet off.', 'diluxone-users' ),
+					),
+					array(
+						'url'   => diluxone_users_admin_url( 'diluxone-users-account' ),
+						'label' => __( 'Account area', 'diluxone-users' ),
+						'help'  => __( 'Where these fields end up for the person they belong to, section by section.', 'diluxone-users' ),
+					),
+				)
+			);
+		}
+	);
 }

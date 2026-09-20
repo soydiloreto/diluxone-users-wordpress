@@ -54,7 +54,6 @@ ordering assumption.
 | Sessions | `sessions.php` |
 | Notifications the plugin sends itself | `notify.php` |
 | Admin screens | `admin*.php` |
-| Data migrations | `upgrade.php` |
 
 Templates live in `templates/` and are overridable from the active theme at
 `wp-content/themes/<theme>/diluxone-users/<path>.php`, resolved by
@@ -75,9 +74,8 @@ can restyle the plugin by redefining tokens, without copying its stylesheet.
   `sanitize_email`, `wp_kses_post` for HTML. Raw superglobals are a defect.
 - **All output** must be escaped: `esc_html`, `esc_attr`, `esc_url`,
   `esc_textarea`. A template that echoes a variable unescaped is a defect.
-- **All SQL** must use `$wpdb->prepare()`. The only unprepared queries are the
-  two prefix migrations in `upgrade.php`, which take no user input and are
-  documented as such.
+- **All SQL** must use `$wpdb->prepare()`, with no exceptions. Where a table
+  name has to be interpolated it comes from `$wpdb->prefix` and nowhere else.
 - **Secrets are never logged and never stored in the clear.** Two-step codes
   and backup codes are stored hashed (`wp_hash`); the sign-in token likewise.
   A pull request that stores any of them readable is a defect, not a
@@ -109,9 +107,10 @@ can restyle the plugin by redefining tokens, without copying its stylesheet.
 
 ### Data
 
-- Renaming an option or a user meta key **requires a migration** in
-  `upgrade.php`. The plugin already carries one (the `usmw_` → `diluxone_users_`
-  rename); it is the reference for how to do the next one.
+- Renaming an option or a user meta key **requires a migration**, in a file of
+  its own, run once and marked as done. There is none in the tree right now:
+  1.0.0 is the first published version, so there is no earlier shape to come
+  from, and a migration for a state no site can be in is dead code.
 - Field keys are user-visible configuration: once a field exists, its key does
   not change, because the key is also the meta key holding everybody's answer.
 

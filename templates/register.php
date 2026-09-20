@@ -54,21 +54,35 @@ defined( 'ABSPATH' ) || exit;
 			<p class="diluxone-users-login__intro"><?php echo esc_html( $diluxone_users_intro ); ?></p>
 		<?php endif; ?>
 
-		<?php if ( 'taken' === $state ) : ?>
-			<p class="diluxone-users-notice diluxone-users-notice--error">
-				<?php esc_html_e( 'There is already an account with that address.', 'diluxone-users' ); ?>
-				<a href="<?php echo esc_url( diluxone_users_login_url() ); ?>"><?php esc_html_e( 'Sign in instead', 'diluxone-users' ); ?></a>
-			</p>
-		<?php elseif ( 'email' === $state ) : ?>
-			<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'That email address does not look valid.', 'diluxone-users' ); ?></p>
-		<?php elseif ( 'missing' === $state ) : ?>
-			<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'Some required fields are missing.', 'diluxone-users' ); ?></p>
-		<?php elseif ( 'slow' === $state ) : ?>
-			<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'One moment: wait a few seconds and try again.', 'diluxone-users' ); ?></p>
-		<?php elseif ( 'closed' === $state ) : ?>
-			<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'This site does not take new accounts right now.', 'diluxone-users' ); ?></p>
-		<?php elseif ( 'error' === $state ) : ?>
-			<p class="diluxone-users-notice diluxone-users-notice--error"><?php esc_html_e( 'Something went wrong. Try again.', 'diluxone-users' ); ?></p>
+		<?php
+		// The same arrangement the sign-in page uses: this decides which
+		// message, and includes/login-messages.php holds what it says. The one
+		// with something after it is "taken" — the sentence tells somebody
+		// their address is known, and the link is what they do about it, so it
+		// travels with the message rather than underneath it.
+		$diluxone_users_says = array(
+			'taken'   => 'register_taken',
+			'email'   => 'register_email',
+			'missing' => 'register_missing',
+			'slow'    => 'register_slow',
+			'closed'  => 'register_closed',
+			'error'   => 'register_error',
+		);
+		?>
+
+		<?php if ( isset( $diluxone_users_says[ $state ] ) ) : ?>
+			<?php
+			diluxone_users_login_notice(
+				$diluxone_users_says[ $state ],
+				'taken' === $state
+					? sprintf(
+						'<a href="%1$s">%2$s</a>',
+						esc_url( diluxone_users_login_url() ),
+						esc_html__( 'Sign in instead', 'diluxone-users' )
+					)
+					: ''
+			);
+			?>
 		<?php endif; ?>
 
 		<?php if ( array() !== $providers ) : ?>

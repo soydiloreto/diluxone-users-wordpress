@@ -84,7 +84,11 @@ function diluxone_users_users_column_row( string $out, string $column, int $user
 	}
 
 	if ( array() === $chips ) {
-		return '<span class="diluxone-users-muted">' . esc_html__( 'Only the e-mail link', 'diluxone-users' ) . '</span>';
+		// The same pill as every other answer in this column, in its off
+		// colour: a class of its own here was one grey this stylesheet never
+		// defined, so the sentence came out at full strength beside the pills.
+		return '<span class="diluxone-users-pill diluxone-users-pill--off">'
+			. esc_html__( 'Only the e-mail link', 'diluxone-users' ) . '</span>';
 	}
 
 	$html = '';
@@ -108,6 +112,16 @@ add_filter( 'manage_users_custom_column', 'diluxone_users_users_column_row', 10,
  * for somebody else: take a lost passkey off, unlink a social account, and
  * turn off an authenticator app that person no longer has. Nothing here can
  * add anything: only the owner of an account can add a way into it.
+ *
+ * It is drawn in two halves and they are not the same kind of thing. What
+ * this account has is a report and is read; what can be taken off it is a
+ * decision and is ticked. As one two-column table they were the same five
+ * rows — a title on the left, a sentence or a tick box on the right, no way
+ * to tell which of them would do something when the profile was saved.
+ *
+ * The ground is opened by hand because this is WordPress's screen and not the
+ * plugin's: it is what the design system is scoped to, and without it the
+ * cards below would be drawn with none of it.
  */
 function diluxone_users_profile_block( WP_User $user ): void {
 	if ( ! current_user_can( 'edit_users' ) ) {
@@ -115,116 +129,210 @@ function diluxone_users_profile_block( WP_User $user ): void {
 	}
 
 	$person   = diluxone_users_person( (int) $user->ID );
+	$passkeys = diluxone_users_passkeys( (int) $user->ID );
 	$sessions = diluxone_users_sessions( (int) $user->ID );
 	$last     = $sessions[0] ?? null;
+	$networks = array();
+
+	foreach ( $person['social'] as $id ) {
+		$networks[ $id ] = (string) ( diluxone_users_sso_providers()[ $id ]['name'] ?? $id );
+	}
 	?>
 	<h2><?php echo esc_html( diluxone_users_plugin_name() ); ?></h2>
 
-	<table class="form-table" role="presentation">
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Public name', 'diluxone-users' ); ?></th>
-			<td>
-				<?php
-				echo '' !== $person['handle']
+	<?php
+	diluxone_users_ui_ground_open();
+	diluxone_users_ui_aside_open();
+
+	/*
+	 * Not one row of this table is a switch. It is five facts about one
+	 * account — a name they picked, a session, an app they set up, the keys
+	 * and the networks on it — and "Off" beside any of them says an
+	 * administrator turned something off for this person, which is not what
+	 * any of them mean and not something this screen can do. So they keep the
+	 * one state vocabulary and the colour that goes with it, and each says
+	 * what its own absence is called.
+	 *
+	 * Each word carries the row it belongs to as its context, and that is not
+	 * bookkeeping: "None" agrees with a masculine name, a feminine passkey and
+	 * a masculine account, and three languages out of the eight would have had
+	 * to pick one of the three and be wrong twice.
+	 */
+	diluxone_users_summary_table(
+		array(
+			array(
+				'label'  => __( 'Public name', 'diluxone-users' ),
+				'state'  => '' !== $person['handle'] ? 'active' : 'off',
+				'word'   => '' !== $person['handle']
+					? _x( 'Chosen', 'the public name of one account', 'diluxone-users' )
+					: _x( 'None', 'the public name of one account', 'diluxone-users' ),
+				'detail' => '' !== $person['handle']
 					? '<code>' . esc_html( $person['handle'] ) . '</code>'
-					: '<span class="diluxone-users-muted">' . esc_html__( 'None chosen', 'diluxone-users' ) . '</span>';
-				?>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Last seen', 'diluxone-users' ); ?></th>
-			<td>
-				<?php if ( null === $last ) : ?>
-					<span class="diluxone-users-muted"><?php esc_html_e( 'No open session.', 'diluxone-users' ); ?></span>
-				<?php else : ?>
-					<?php
-					printf(
+					: esc_html__( 'None chosen. The account is known by its e-mail address.', 'diluxone-users' ),
+			),
+			array(
+				'label'  => __( 'Last seen', 'diluxone-users' ),
+				// Read from the sessions that are open, so with none open there
+				// is nothing to read: the site cannot tell, which is the one
+				// state that means exactly that. It is not a thing switched off.
+				'state'  => null !== $last ? 'active' : 'unknown',
+				'detail' => null !== $last
+					? sprintf(
 						/* translators: 1: how long ago, 2: device and browser, 3: IP address */
 						esc_html__( '%1$s ago, from %2$s (%3$s)', 'diluxone-users' ),
 						esc_html( human_time_diff( (int) $last['started'] ) ),
 						esc_html( trim( $last['device'] . ' · ' . $last['browser'] ) ),
 						esc_html( $last['ip'] )
-					);
-					?>
-					<br>
-					<a href="
-					<?php
-					echo esc_url(
-						diluxone_users_admin_url(
-							DILUXONE_USERS_SECURITY,
+					)
+					: esc_html__( 'No open session.', 'diluxone-users' ),
+				'url'    => diluxone_users_admin_url(
+					DILUXONE_USERS_REPORTS,
+					array(
+						'tab' => 'sessions',
+						's'   => $user->user_email,
+					)
+				),
+				'change' => __( 'Every session →', 'diluxone-users' ),
+			),
+			array(
+				'label'  => __( 'Two-step verification', 'diluxone-users' ),
+				'state'  => $person['second_step'] ? 'active' : 'off',
+				'detail' => $person['totp']
+					? esc_html__( 'An authenticator app is set up.', 'diluxone-users' )
+					: esc_html__( 'No authenticator app.', 'diluxone-users' ),
+			),
+			array(
+				'label'  => __( 'Passkeys', 'diluxone-users' ),
+				'state'  => $person['passkeys'] > 0 ? 'active' : 'off',
+				'word'   => $person['passkeys'] > 0
+					? _x( 'In use', 'the passkeys on one account', 'diluxone-users' )
+					: _x( 'None', 'the passkeys on one account', 'diluxone-users' ),
+				'detail' => $person['passkeys'] > 0
+					? esc_html(
+						sprintf(
+							/* translators: %d: how many passkeys */
+							_n( '%d passkey on this account.', '%d passkeys on this account.', $person['passkeys'], 'diluxone-users' ),
+							$person['passkeys']
+						)
+					)
+					: esc_html__( 'None.', 'diluxone-users' ),
+			),
+			array(
+				'label'  => __( 'Linked accounts', 'diluxone-users' ),
+				'state'  => array() !== $networks ? 'active' : 'off',
+				'word'   => array() !== $networks
+					? _x( 'Linked', 'the social networks on one account', 'diluxone-users' )
+					: _x( 'None', 'the social networks on one account', 'diluxone-users' ),
+				'detail' => array() !== $networks
+					? esc_html( implode( ', ', $networks ) )
+					: esc_html__( 'None.', 'diluxone-users' ),
+			),
+		)
+	);
+
+	$diluxone_users_off = array();
+
+	if ( $person['totp'] ) {
+		$diluxone_users_off[] = array(
+			'type'  => 'checkbox',
+			'name'  => 'diluxone_users_forget_totp',
+			'value' => '1',
+			'title' => __( 'Remove the authenticator app', 'diluxone-users' ),
+			'help'  => __( 'For somebody who lost the phone it lived on. They set a new one up from their own account.', 'diluxone-users' ),
+		);
+	}
+
+	foreach ( $passkeys as $diluxone_users_key ) {
+		$diluxone_users_off[] = array(
+			'type'  => 'checkbox',
+			'name'  => 'diluxone_users_forget_passkey[]',
+			'value' => (string) $diluxone_users_key['id'],
+			'title' => sprintf(
+				/* translators: 1: the name given to the passkey, 2: date it was added */
+				__( 'Remove “%1$s”, added on %2$s', 'diluxone-users' ),
+				(string) ( $diluxone_users_key['label'] ?? __( 'Passkey', 'diluxone-users' ) ),
+				date_i18n( (string) get_option( 'date_format' ), (int) ( $diluxone_users_key['created'] ?? 0 ) )
+			),
+			'help'  => __( 'The device keeps its half and it stops opening this account. They can add it again.', 'diluxone-users' ),
+		);
+	}
+
+	foreach ( $networks as $diluxone_users_id => $diluxone_users_name ) {
+		$diluxone_users_off[] = array(
+			'type'  => 'checkbox',
+			'name'  => 'diluxone_users_unlink[]',
+			'value' => (string) $diluxone_users_id,
+			'title' => sprintf(
+				/* translators: %s: name of the social network */
+				__( 'Unlink %s', 'diluxone-users' ),
+				$diluxone_users_name
+			),
+			'help'  => __( 'Unlinking does not delete anything: that network simply stops opening this account.', 'diluxone-users' ),
+		);
+	}
+
+	/*
+	 * Drawn only when there is something to draw. A heading over an empty
+	 * group is the box with nothing in it that the rest of this admin
+	 * spent a week getting rid of.
+	 */
+	if ( array() !== $diluxone_users_off ) {
+		diluxone_users_ui_section(
+			__( 'Take a way in off this account', 'diluxone-users' ),
+			__( 'Ticked here, it goes when the profile is saved.', 'diluxone-users' )
+		);
+
+		diluxone_users_ui_choices( $diluxone_users_off );
+	}
+
+	/*
+	 * What this block cannot do belongs beside it and not inside the group
+	 * that does the taking off: on an account with nothing to take off that
+	 * group is not drawn at all, and the sentence went with it — so the one
+	 * screen where somebody might reasonably look for "add a passkey for this
+	 * person" was also the one that never said why there is no such thing.
+	 *
+	 * The ways out are the plugin's own screens, which is where the rules
+	 * this account is living under are written. They are not on WordPress's
+	 * own profile screen and nothing here suggests they are.
+	 */
+	diluxone_users_ui_aside_close(
+		static function () use ( $user ): void {
+			diluxone_users_ui_note(
+				__( 'What this block does', 'diluxone-users' ),
+				__( 'It reads what this account has, and it can take a way in off it. It cannot add one: only the owner of an account can do that, from their own account area.', 'diluxone-users' )
+			);
+
+			diluxone_users_ui_links(
+				__( 'The rules this account lives under', 'diluxone-users' ),
+				array(
+					array(
+						'url'   => diluxone_users_admin_url( 'diluxone-users-login' ),
+						'label' => __( 'Access', 'diluxone-users' ),
+						'help'  => __( 'Which ways in the site offers at all. Nothing above can give this account one the site does not have.', 'diluxone-users' ),
+					),
+					array(
+						'url'   => diluxone_users_admin_url( 'diluxone-users-security' ),
+						'label' => __( 'Security', 'diluxone-users' ),
+						'help'  => __( 'Whether a second step is asked for after the door, and what a passkey has to prove.', 'diluxone-users' ),
+					),
+					array(
+						'url'   => diluxone_users_admin_url(
+							DILUXONE_USERS_REPORTS,
 							array(
 								'tab' => 'sessions',
 								's'   => $user->user_email,
 							)
-						)
-					);
-					?>
-					">
-						<?php esc_html_e( 'See every session', 'diluxone-users' ); ?>
-					</a>
-				<?php endif; ?>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Two-step verification', 'diluxone-users' ); ?></th>
-			<td>
-				<?php if ( $person['totp'] ) : ?>
-					<p><?php esc_html_e( 'An authenticator app is set up.', 'diluxone-users' ); ?></p>
-					<label>
-						<input type="checkbox" name="diluxone_users_forget_totp" value="1">
-						<?php esc_html_e( 'Remove the authenticator app — for somebody who lost the phone it lived on', 'diluxone-users' ); ?>
-					</label>
-				<?php else : ?>
-					<span class="diluxone-users-muted"><?php esc_html_e( 'No authenticator app.', 'diluxone-users' ); ?></span>
-				<?php endif; ?>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Passkeys', 'diluxone-users' ); ?></th>
-			<td>
-				<?php if ( 0 === $person['passkeys'] ) : ?>
-					<span class="diluxone-users-muted"><?php esc_html_e( 'None.', 'diluxone-users' ); ?></span>
-				<?php else : ?>
-					<?php foreach ( diluxone_users_passkeys( (int) $user->ID ) as $key ) : ?>
-						<label class="diluxone-users-roles__item">
-							<input type="checkbox" name="diluxone_users_forget_passkey[]" value="<?php echo esc_attr( (string) $key['id'] ); ?>">
-							<?php
-							printf(
-								/* translators: 1: the name given to the passkey, 2: date it was added */
-								esc_html__( 'Remove “%1$s”, added on %2$s', 'diluxone-users' ),
-								esc_html( (string) ( $key['label'] ?? __( 'Passkey', 'diluxone-users' ) ) ),
-								esc_html( date_i18n( (string) get_option( 'date_format' ), (int) ( $key['created'] ?? 0 ) ) )
-							);
-							?>
-						</label>
-					<?php endforeach; ?>
-				<?php endif; ?>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><?php esc_html_e( 'Linked accounts', 'diluxone-users' ); ?></th>
-			<td>
-				<?php if ( array() === $person['social'] ) : ?>
-					<span class="diluxone-users-muted"><?php esc_html_e( 'None.', 'diluxone-users' ); ?></span>
-				<?php else : ?>
-					<?php foreach ( $person['social'] as $id ) : ?>
-						<label class="diluxone-users-roles__item">
-							<input type="checkbox" name="diluxone_users_unlink[]" value="<?php echo esc_attr( $id ); ?>">
-							<?php
-							printf(
-								/* translators: %s: name of the social network */
-								esc_html__( 'Unlink %s', 'diluxone-users' ),
-								esc_html( (string) ( diluxone_users_sso_providers()[ $id ]['name'] ?? $id ) )
-							);
-							?>
-						</label>
-					<?php endforeach; ?>
-					<p class="description"><?php esc_html_e( 'Unlinking does not delete anything: that network simply stops opening this account.', 'diluxone-users' ); ?></p>
-				<?php endif; ?>
-			</td>
-		</tr>
-	</table>
-	<?php
+						),
+						'label' => __( 'Every session this account has open', 'diluxone-users' ),
+						'help'  => __( 'Where it signed in from, on what, and the button that closes them all.', 'diluxone-users' ),
+					),
+				)
+			);
+		}
+	);
+
+	diluxone_users_ui_ground_close();
 }
 add_action( 'edit_user_profile', 'diluxone_users_profile_block' );
 
@@ -235,7 +343,12 @@ add_action( 'edit_user_profile', 'diluxone_users_profile_block' );
  * of them is something the person can add again from their own account.
  */
 function diluxone_users_profile_block_save( int $user_id ): void {
-	if ( ! current_user_can( 'edit_users' ) ) {
+	// `edit_user` and not `edit_users`: the first is asked about this account
+	// and goes through `map_meta_cap()`, which is where a network, a role
+	// another plugin invented, and `DISALLOW_FILE_EDIT`-style constants get
+	// their say. The second is a blanket yes that says nothing about whose
+	// second factor is about to be removed.
+	if ( ! current_user_can( 'edit_user', $user_id ) ) {
 		return;
 	}
 

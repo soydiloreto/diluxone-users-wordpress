@@ -68,7 +68,18 @@ detail and a "Change it →" link to the tab that owns it.
 There is one vocabulary of state, four words, on every screen:
 `active`, `pending` (half set up, or waiting on something — always with a
 reason), `off`, and `unknown` for what cannot be told from inside the site.
-`diluxone_users_state_pill( $state, $why )` draws one.
+`diluxone_users_state_pill( $state, $why, $word )` draws one.
+
+The state is not negotiable and the word is. Most rows are switches and read
+as Active or Off in any language; a row that names something with no switch on
+it — a page nobody chose, a toolbar, the mail going out, a count — reads "Off"
+as *somebody turned this off*, which is not what it means. Pass `$word` and the
+colour, the shape and the four states stay the one vocabulary while the word
+says what that state is called there. A summary row carries it as `word`,
+`diluxone_users_ui_note()` takes it as its fifth argument, and
+`diluxone_users_check()` as its seventh. Give the word a `_x()` context naming
+the row it belongs to whenever it is a single adjective: the same "None" has to
+agree with a masculine name and a feminine key, and it cannot do both.
 
 A control that does not apply right now stays on the screen and keeps saving —
 what is chosen applies the day the reason goes away — but it is dimmed and

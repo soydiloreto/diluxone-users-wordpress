@@ -37,6 +37,23 @@ const DILUXONE_USERS_2FA_TRIES = 5;
 const DILUXONE_USERS_2FA_RESEND_WAIT = 60;
 
 /**
+ * How many wrong codes an ACCOUNT survives, counting across attempts.
+ *
+ * The five above belong to one attempt and the attempt is thrown away when
+ * they run out — which reads like a limit and is not one, because starting
+ * another attempt costs whoever has the password a single request. This is
+ * the count that does not reset: it belongs to the account, it survives the
+ * attempt being destroyed, and only a code that is actually right clears it.
+ */
+const DILUXONE_USERS_2FA_LOCK_AFTER = 10;
+
+/** The first wait once that count is reached. It doubles with every failure after. */
+const DILUXONE_USERS_2FA_LOCK_WAIT = 5 * MINUTE_IN_SECONDS;
+
+/** The longest that wait ever grows to, so a locked account is never locked for good. */
+const DILUXONE_USERS_2FA_LOCK_MAX = 6 * HOUR_IN_SECONDS;
+
+/**
  * Sets one of the plugin's cookies, the same way every time.
  *
  * Every cookie the plugin writes is HttpOnly, Secure over HTTPS and
@@ -485,13 +502,81 @@ function diluxone_users_2fa_pending( int $user_id, string $nonce ): array {
 	return hash_equals( (string) ( $pending['nonce'] ?? '' ), wp_hash( $nonce ) ) ? $pending : array();
 }
 
+/* ── The count that belongs to the account ─────────────────────────── */
+
+/**
+ * Is this account's second step closed for the moment?
+ *
+ * Asked before a code is even looked at. While it is true nothing is counted
+ * either: a lock that grows every time somebody knocks is a way of keeping
+ * the owner out for ever, which is the attack this was meant to stop.
+ *
+ * It is asked twice in `diluxone_users_2fa_handle()` and the second answer is
+ * not the first one: the verification in between is what may have closed the
+ * door. Hence the tag — without it the analyser carries the first `false`
+ * forward and calls the second question dead code.
+ *
+ * @phpstan-impure
+ */
+function diluxone_users_2fa_locked( int $user_id ): bool {
+	return (int) get_user_meta( $user_id, 'diluxone_users_2fa_lock', true ) > time();
+}
+
+/**
+ * Counts a wrong code against the account and closes the door when there
+ * have been too many.
+ *
+ * The increment is left to MySQL rather than read here and written back:
+ * twenty codes submitted at once all read the same number, all write the same
+ * number, and twenty guesses cost one. `meta_value + 1` is one statement and
+ * cannot be interleaved, which is the only version of this that is a limit.
+ *
+ * @return int How many failures the account has now.
+ */
+function diluxone_users_2fa_fail( int $user_id ): int {
+	global $wpdb;
+
+	add_user_meta( $user_id, 'diluxone_users_2fa_fails', 0, true );
+
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- an increment only the database can do without a race; the cache is dropped right below.
+	$wpdb->query(
+		$wpdb->prepare(
+			"UPDATE {$wpdb->usermeta} SET meta_value = meta_value + 1 WHERE user_id = %d AND meta_key = %s",
+			$user_id,
+			'diluxone_users_2fa_fails'
+		)
+	);
+
+	wp_cache_delete( $user_id, 'user_meta' );
+
+	$fails = (int) get_user_meta( $user_id, 'diluxone_users_2fa_fails', true );
+
+	if ( $fails >= DILUXONE_USERS_2FA_LOCK_AFTER ) {
+		// Doubling, capped twice over: the exponent so the arithmetic stays
+		// an integer, and the result so an account is never locked for good.
+		$over = min( 20, $fails - DILUXONE_USERS_2FA_LOCK_AFTER );
+		$wait = (int) min( DILUXONE_USERS_2FA_LOCK_MAX, DILUXONE_USERS_2FA_LOCK_WAIT * ( 2 ** $over ) );
+
+		update_user_meta( $user_id, 'diluxone_users_2fa_lock', time() + $wait );
+	}
+
+	return $fails;
+}
+
+/** A code that was right: the account starts from zero again. */
+function diluxone_users_2fa_forgive( int $user_id ): void {
+	delete_user_meta( $user_id, 'diluxone_users_2fa_fails' );
+	delete_user_meta( $user_id, 'diluxone_users_2fa_lock' );
+}
+
 /**
  * Counts a wrong code against the attempt.
  *
  * Returns whether the attempt is still alive. On the last strike it is
- * thrown away whole: the person starts over from the first step, which is
- * the only thing that makes the count mean anything — a limit that resets
- * on reload is not a limit.
+ * thrown away whole: the person starts over from the first step. That much is
+ * about the screen, not about safety — starting over costs one request, so
+ * the limit that means anything is `diluxone_users_2fa_fail()` above, which
+ * this attempt cannot reset by dying.
  */
 function diluxone_users_2fa_strike( int $user_id, string $nonce ): bool {
 	$pending = diluxone_users_2fa_pending( $user_id, $nonce );
@@ -559,21 +644,36 @@ function diluxone_users_2fa_send( int $user_id, string $method ): void {
  * one thing that was still in their way. What is asked for is proof of the
  * second step itself, by any method the person has ready, backup codes
  * included.
+ *
+ * It counts against the same account limit the sign-in challenge does, and
+ * for the same reason: this is the door that turns the second step off, so a
+ * stolen session must not be able to guess its way through it either. Every
+ * wrong code here also runs the backup list, which is eight password hashes —
+ * without the count that is a way of spending somebody else's CPU as well.
  */
 function diluxone_users_2fa_reauth( int $user_id, string $code ): bool {
-	if ( '' === trim( $code ) ) {
+	if ( '' === trim( $code ) || diluxone_users_2fa_locked( $user_id ) ) {
 		return false;
 	}
 
 	if ( diluxone_users_backup_use( $user_id, $code ) ) {
+		diluxone_users_2fa_forgive( $user_id );
+
 		return true;
 	}
 
 	foreach ( diluxone_users_2fa_available( $user_id ) as $method ) {
 		if ( is_callable( $method['verify'] ) && call_user_func( $method['verify'], $user_id, $code ) ) {
+			diluxone_users_2fa_forgive( $user_id );
+
 			return true;
 		}
 	}
+
+	diluxone_users_2fa_fail( $user_id );
+
+	/** This action is documented in includes/auth.php */
+	do_action( 'diluxone_users_2fa_failed', $user_id, 'reauth' );
 
 	return false;
 }
@@ -583,19 +683,48 @@ function diluxone_users_2fa_reauth( int $user_id, string $code ): bool {
  *
  * Backup codes are always tried, whichever method was chosen: they are
  * precisely for when the method is not at hand.
+ *
+ * Every answer passes through the account's own count, and this is the only
+ * place that can clear it: a code that is right is the single piece of
+ * evidence that the person guessing is the owner.
  */
 function diluxone_users_2fa_verify( int $user_id, string $method, string $code ): bool {
+	if ( diluxone_users_2fa_locked( $user_id ) ) {
+		return false;
+	}
+
 	if ( diluxone_users_backup_use( $user_id, $code ) ) {
+		diluxone_users_2fa_forgive( $user_id );
+
 		return true;
 	}
 
 	$methods = diluxone_users_2fa_available( $user_id );
 
-	if ( ! isset( $methods[ $method ] ) || ! is_callable( $methods[ $method ]['verify'] ) ) {
-		return false;
+	if ( isset( $methods[ $method ] ) && is_callable( $methods[ $method ]['verify'] )
+		&& call_user_func( $methods[ $method ]['verify'], $user_id, $code ) ) {
+		diluxone_users_2fa_forgive( $user_id );
+
+		return true;
 	}
 
-	return (bool) call_user_func( $methods[ $method ]['verify'], $user_id, $code );
+	diluxone_users_2fa_fail( $user_id );
+
+	/**
+	 * Fires when a second-factor code was refused.
+	 *
+	 * The log listens to this one. It exists because a wrong second step
+	 * never reaches `wp_login_failed` — WordPress said yes to the password
+	 * and this plugin is what said no afterwards — so without it the one
+	 * event worth seeing when an account is under attack is the one the log
+	 * never hears about.
+	 *
+	 * @param int    $user_id Whose second step was being answered.
+	 * @param string $method  The way it was being answered, or `reauth`.
+	 */
+	do_action( 'diluxone_users_2fa_failed', $user_id, $method );
+
+	return false;
 }
 
 /**
@@ -647,7 +776,17 @@ function diluxone_users_2fa_handle(): void {
 		exit;
 	}
 
+	if ( diluxone_users_2fa_locked( $user_id ) ) {
+		// Said before anything is looked at, and said plainly: an account
+		// that is waiting out its own wait should read that, not "the code is
+		// wrong" over and over with no way of telling the difference.
+		wp_safe_redirect( add_query_arg( 'diluxone-users', 'locked', $back ) );
+		exit;
+	}
+
 	if ( '' === $code || ! diluxone_users_2fa_verify( $user_id, $method, $code ) ) {
+		$state = diluxone_users_2fa_locked( $user_id ) ? 'locked' : 'code';
+
 		// A wrong code costs a try; the last one costs the attempt, and the
 		// person is back at the first step as if the window had closed.
 		if ( ! diluxone_users_2fa_strike( $user_id, $key ) ) {
@@ -655,7 +794,7 @@ function diluxone_users_2fa_handle(): void {
 			exit;
 		}
 
-		wp_safe_redirect( add_query_arg( 'diluxone-users', 'code', $back ) );
+		wp_safe_redirect( add_query_arg( 'diluxone-users', $state, $back ) );
 		exit;
 	}
 
@@ -783,6 +922,77 @@ function diluxone_users_backup_generate( int $user_id, int $many = 8 ): array {
 	update_user_meta( $user_id, 'diluxone_users_backup_codes', $hashes );
 
 	return $plain;
+}
+
+/**
+ * The key the codes travel under, from the salts and not from the database.
+ *
+ * `wp_salt()` reads `wp-config.php` — a file outside the database — which is
+ * the whole point: whoever walks off with a database dump walks off with a
+ * box they have no key to. WordPress guarantees the sodium functions exist
+ * even where PHP was built without the extension, because core loads its own
+ * implementation in `wp-includes/sodium_compat/`.
+ */
+function diluxone_users_backup_key(): string {
+	return sodium_crypto_generichash( wp_salt( 'secure_auth' ), '', SODIUM_CRYPTO_SECRETBOX_KEYBYTES );
+}
+
+/**
+ * Keeps the freshly generated codes for as long as one redirect takes.
+ *
+ * They are hashed for storage and then have to survive the hop between "save"
+ * and the screen that shows them. Writing them into the options table as they
+ * read would undo the hashing in one line — an options row holding eight
+ * working second factors, for whoever can read the database or a backup taken
+ * in that window. So they go in sealed, the key is not in there with them,
+ * and the window is a minute rather than a quarter of an hour.
+ *
+ * @param array<int, string> $codes
+ */
+function diluxone_users_backup_stash( int $user_id, array $codes ): void {
+	$nonce = random_bytes( SODIUM_CRYPTO_SECRETBOX_NONCEBYTES );
+	$box   = sodium_crypto_secretbox( (string) wp_json_encode( array_values( $codes ) ), $nonce, diluxone_users_backup_key() );
+
+	set_transient( 'diluxone_users_backup_' . $user_id, base64_encode( $nonce . $box ), MINUTE_IN_SECONDS ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- a binary value going into a text column, not obfuscation.
+}
+
+/**
+ * Opens it again, once.
+ *
+ * Anything that does not open — a truncated row, a site whose salts were
+ * rotated between the two requests — is an empty list and not an error: the
+ * codes exist and are hashed, and the way out of here is to ask for a new set.
+ *
+ * @return array<int, string>
+ */
+function diluxone_users_backup_unstash( int $user_id ): array {
+	$stored = get_transient( 'diluxone_users_backup_' . $user_id );
+
+	if ( ! is_string( $stored ) || '' === $stored ) {
+		return array();
+	}
+
+	delete_transient( 'diluxone_users_backup_' . $user_id );
+
+	$raw = (string) base64_decode( $stored, true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- reading back what was written above.
+
+	if ( strlen( $raw ) <= SODIUM_CRYPTO_SECRETBOX_NONCEBYTES ) {
+		return array();
+	}
+
+	$plain = sodium_crypto_secretbox_open(
+		substr( $raw, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES ),
+		substr( $raw, 0, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES ),
+		diluxone_users_backup_key()
+	);
+
+	if ( ! is_string( $plain ) ) {
+		return array();
+	}
+
+	$codes = json_decode( $plain, true );
+
+	return is_array( $codes ) ? array_values( array_map( 'strval', $codes ) ) : array();
 }
 
 /**

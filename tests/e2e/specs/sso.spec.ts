@@ -170,13 +170,18 @@ test.describe('Signing in with a social account', () => {
 		expect(stateOf(page.url())).toBe('social');
 	});
 
-	test('a blocked role cannot come in through a network, even with the identity linked', async ({
+	test('a role outside the list cannot come in through a network, even with the identity linked', async ({
 		page,
 		site,
 		pages,
 		options,
 	}) => {
-		await options.set({ diluxone_users_sso_blocked_roles: ['editor'] });
+		// Said the way the screen says it: everybody, or only these. An
+		// editor is not on the list, so the editor uses the e-mail link.
+		await options.set({
+			diluxone_users_sso_scope: 'some',
+			diluxone_users_sso_roles: ['subscriber'],
+		});
 
 		const email = freshEmail('sso-blocked');
 		await site.makeUser({
