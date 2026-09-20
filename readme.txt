@@ -51,6 +51,40 @@ second switch to remember. With no social provider enabled there is no
 "Linked accounts" section at all; with neither data download nor account
 deletion allowed there is no "Your data" section.
 
+== External services ==
+
+This plugin talks to a third-party service only when an administrator has
+pasted that provider's credentials and turned it on, and only when somebody
+clicks its button on the sign-in page (or when an administrator runs the live
+test on its settings screen). With no provider enabled, the plugin makes no
+outbound request at all.
+
+What is sent to a provider, in every case, is the same: the client ID and
+client secret you registered with them, the authorisation code the browser came
+back with, and the redirect URL of your site. What comes back is the person's
+identifier at that provider, their e-mail address and their name. Nothing else
+about your site or its visitors is transmitted.
+
+* **Google** — accounts.google.com, oauth2.googleapis.com, openidconnect.googleapis.com. [Terms](https://policies.google.com/terms), [Privacy](https://policies.google.com/privacy)
+* **Microsoft** — login.microsoftonline.com, graph.microsoft.com. [Terms](https://www.microsoft.com/servicesagreement), [Privacy](https://privacy.microsoft.com/privacystatement)
+* **LinkedIn** — www.linkedin.com, api.linkedin.com. [Terms](https://www.linkedin.com/legal/user-agreement), [Privacy](https://www.linkedin.com/legal/privacy-policy)
+* **X (Twitter)** — twitter.com, api.twitter.com. [Terms](https://x.com/en/tos), [Privacy](https://x.com/en/privacy)
+* **Facebook** — www.facebook.com, graph.facebook.com. [Terms](https://www.facebook.com/terms.php), [Privacy](https://www.facebook.com/privacy/policy)
+* **GitHub** — github.com, api.github.com. [Terms](https://docs.github.com/en/site-policy/github-terms/github-terms-of-service), [Privacy](https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement)
+* **WordPress.com** — public-api.wordpress.com. [Terms](https://wordpress.com/tos/), [Privacy](https://automattic.com/privacy/)
+* **Yahoo** — api.login.yahoo.com. [Terms](https://legal.yahoo.com/us/en/yahoo/terms/otos/index.html), [Privacy](https://legal.yahoo.com/us/en/yahoo/privacy/index.html)
+* **Twitch** — id.twitch.tv. [Terms](https://www.twitch.tv/p/legal/terms-of-service/), [Privacy](https://www.twitch.tv/p/legal/privacy-notice/)
+* **Discord** — discord.com. [Terms](https://discord.com/terms), [Privacy](https://discord.com/privacy)
+* **GitLab** — gitlab.com. [Terms](https://handbook.gitlab.com/handbook/legal/subscription-agreement/), [Privacy](https://handbook.gitlab.com/handbook/legal/privacy/)
+* **Amazon** — www.amazon.com, api.amazon.com. [Terms](https://www.amazon.com/gp/help/customer/display.html?nodeId=508088), [Privacy](https://www.amazon.com/gp/help/customer/display.html?nodeId=468496)
+
+**Gravatar** (Automattic) is WordPress's own avatar service, not a call this
+plugin makes — but this plugin has a switch for it, and it comes on. While it
+is on, every visitor's browser requests each author's avatar from
+gravatar.com, which receives a hash of that person's e-mail address and the
+visitor's IP. Turn it off on **DiluxOne Users+ → Design → Profile photo**.
+[Terms](https://automattic.com/terms/), [Privacy](https://automattic.com/privacy/)
+
 == Installation ==
 
 1. Upload the plugin folder to `/wp-content/plugins/`.
@@ -97,40 +131,6 @@ deleted by accident, or deleted in order to be installed again, should not be
 what loses somebody their account. To have it all removed on delete, tick
 **Remove everything this plugin wrote** on **DiluxOne Users+ → Maintenance →
 Tools** first.
-
-== External Services ==
-
-This plugin talks to a third-party service only when an administrator has
-pasted that provider's credentials and turned it on, and only when somebody
-clicks its button on the sign-in page (or when an administrator runs the live
-test on its settings screen). With no provider enabled, the plugin makes no
-outbound request at all.
-
-What is sent to a provider, in every case, is the same: the client ID and
-client secret you registered with them, the authorisation code the browser came
-back with, and the redirect URL of your site. What comes back is the person's
-identifier at that provider, their e-mail address and their name. Nothing else
-about your site or its visitors is transmitted.
-
-* **Google** — accounts.google.com, oauth2.googleapis.com, openidconnect.googleapis.com. [Terms](https://policies.google.com/terms), [Privacy](https://policies.google.com/privacy)
-* **Microsoft** — login.microsoftonline.com, graph.microsoft.com. [Terms](https://www.microsoft.com/servicesagreement), [Privacy](https://privacy.microsoft.com/privacystatement)
-* **LinkedIn** — www.linkedin.com, api.linkedin.com. [Terms](https://www.linkedin.com/legal/user-agreement), [Privacy](https://www.linkedin.com/legal/privacy-policy)
-* **X (Twitter)** — twitter.com, api.twitter.com. [Terms](https://x.com/en/tos), [Privacy](https://x.com/en/privacy)
-* **Facebook** — www.facebook.com, graph.facebook.com. [Terms](https://www.facebook.com/terms.php), [Privacy](https://www.facebook.com/privacy/policy)
-* **GitHub** — github.com, api.github.com. [Terms](https://docs.github.com/en/site-policy/github-terms/github-terms-of-service), [Privacy](https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement)
-* **WordPress.com** — public-api.wordpress.com. [Terms](https://wordpress.com/tos/), [Privacy](https://automattic.com/privacy/)
-* **Yahoo** — api.login.yahoo.com. [Terms](https://legal.yahoo.com/us/en/yahoo/terms/otos/index.html), [Privacy](https://legal.yahoo.com/us/en/yahoo/privacy/index.html)
-* **Twitch** — id.twitch.tv. [Terms](https://www.twitch.tv/p/legal/terms-of-service/), [Privacy](https://www.twitch.tv/p/legal/privacy-notice/)
-* **Discord** — discord.com. [Terms](https://discord.com/terms), [Privacy](https://discord.com/privacy)
-* **GitLab** — gitlab.com. [Terms](https://handbook.gitlab.com/handbook/legal/subscription-agreement/), [Privacy](https://handbook.gitlab.com/handbook/legal/privacy/)
-* **Amazon** — www.amazon.com, api.amazon.com. [Terms](https://www.amazon.com/gp/help/customer/display.html?nodeId=508088), [Privacy](https://www.amazon.com/gp/help/customer/display.html?nodeId=468496)
-
-**Gravatar** (Automattic) is WordPress's own avatar service, not a call this
-plugin makes — but this plugin has a switch for it, and it comes on. While it
-is on, every visitor's browser requests each author's avatar from
-gravatar.com, which receives a hash of that person's e-mail address and the
-visitor's IP. Turn it off on **DiluxOne Users+ → Design → Profile photo**.
-[Terms](https://automattic.com/terms/), [Privacy](https://automattic.com/privacy/)
 
 == Third-party resources ==
 

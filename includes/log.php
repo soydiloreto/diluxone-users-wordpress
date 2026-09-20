@@ -101,8 +101,11 @@ function diluxone_users_log_table(): string {
  * by date, because the purge and the filters both walk it; and by event,
  * because the filter for one kind of thing is the other half of the first
  * question.
+ *
+ * @return bool True when the table is in place afterwards. On false the schema
+ *              option stays unwritten, so the next admin request tries again.
  */
-function diluxone_users_log_install(): void {
+function diluxone_users_log_install(): bool {
 	global $wpdb;
 
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -126,7 +129,32 @@ function diluxone_users_log_install(): void {
 
 	dbDelta( $sql );
 
+	// dbDelta says nothing about failure: it returns the same empty array when
+	// the table is already current and when the statement was refused. Ask the
+	// database instead. Recording the schema version after a failed run would
+	// mean never trying again, and every write to the log would land on a
+	// table that is not there.
+	if ( ! diluxone_users_log_table_exists() ) {
+		return false;
+	}
+
 	update_option( DILUXONE_USERS_LOG_SCHEMA_OPTION, DILUXONE_USERS_LOG_SCHEMA, false );
+
+	return true;
+}
+
+/**
+ * Whether the activity table is actually in the database.
+ *
+ * @return bool
+ */
+function diluxone_users_log_table_exists(): bool {
+	global $wpdb;
+
+	$table = diluxone_users_log_table();
+
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- schema check; there is no API for it and caching it would defeat the point.
+	return $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) ) === $table;
 }
 
 /**
@@ -161,7 +189,12 @@ add_action( 'admin_init', 'diluxone_users_log_ready', 0 );
  * and never on the other. The new site gets its table the first time somebody
  * opens its dashboard, which is the check above.
  */
-register_activation_hook( DILUXONE_USERS_FILE, 'diluxone_users_log_install' );
+register_activation_hook(
+	DILUXONE_USERS_FILE,
+	static function (): void {
+		diluxone_users_log_install();
+	}
+);
 
 /** A plugin that is switched off leaves no event of its own behind. */
 function diluxone_users_log_unschedule(): void {

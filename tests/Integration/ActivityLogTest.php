@@ -37,6 +37,43 @@ class ActivityLogTest extends IntegrationTestCase {
 		$this->recording( array( 'access', 'account', 'security' ) );
 	}
 
+	public function test_a_failed_install_does_not_record_the_schema_version(): void {
+		global $wpdb;
+
+		$table = diluxone_users_log_table();
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->query( "DROP TABLE IF EXISTS `{$table}`" );
+		delete_option( DILUXONE_USERS_LOG_SCHEMA_OPTION );
+
+		// Make the CREATE impossible, the way a missing grant would. dbDelta
+		// reports nothing either way, which is the whole point.
+		$suppress = $wpdb->suppress_errors( true );
+		$break    = static function ( $query ) use ( $table ) {
+			return str_replace( "CREATE TABLE {$table} ", "CREATE TABLE `no such db`.`{$table}` ", (string) $query );
+		};
+		add_filter( 'query', $break );
+
+		$installed = diluxone_users_log_install();
+
+		remove_filter( 'query', $break );
+		$wpdb->suppress_errors( $suppress );
+
+		$this->assertFalse( $installed, 'the failure reaches the caller' );
+		$this->assertFalse( diluxone_users_log_table_exists(), 'nothing was created' );
+		$this->assertFalse(
+			get_option( DILUXONE_USERS_LOG_SCHEMA_OPTION ),
+			'the schema option stays unwritten, so the next admin request tries again '
+			. 'instead of writing every log line into a table that is not there'
+		);
+
+		$this->assertTrue( diluxone_users_log_install(), 'and the retry works' );
+		$this->assertSame(
+			DILUXONE_USERS_LOG_SCHEMA,
+			(int) get_option( DILUXONE_USERS_LOG_SCHEMA_OPTION )
+		);
+	}
+
 	/** Not a row in it, so a count is a count of what the test did. */
 	private function empty_table(): void {
 		global $wpdb;
